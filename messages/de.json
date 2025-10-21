@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "services": "Leistungen",
+    "blog": "Blog",
+    "contact": "Kontakt"
+  },
+  "hero": {
+    "title": "Professionelle Steuerberatung in Deutschland",
+    "subtitle": "Expertenhilfe für Privatpersonen und Unternehmen",
+    "cta": "Beratung buchen"
+  },
+  "services": {
+    "title": "Unsere Leistungen",
+    "subtitle": "Umfassende Steuerberatungslösungen",
+    "tax_declaration": {
+      "title": "Steuererklärung",
+      "description": "Professionelle Erstellung Ihrer Jahressteuererklärung"
+    },
+    "business_consulting": {
+      "title": "Unternehmensberatung",
+      "description": "Expertenberatung für Unternehmen und Unternehmer"
+    },
+    "accounting": {
+      "title": "Buchhaltung",
+      "description": "Vollständige Buchführung und Finanzbuchhaltung"
+    }
+  },
+  "process": {
+    "title": "Unser Prozess",
+    "subtitle": "Einfach und transparent",
+    "step1": {
+      "title": "Erstberatung",
+      "description": "Kostenlose Beratung zum Verständnis Ihrer Bedürfnisse"
+    },
+    "step2": {
+      "title": "Analyse & Planung",
+      "description": "Wir analysieren Ihre Situation und erstellen einen maßgeschneiderten Plan"
+    },
+    "step3": {
+      "title": "Umsetzung",
+      "description": "Wir kümmern uns um alles und halten Sie auf dem Laufenden"
+    }
+  },
+  "testimonials": {
+    "title": "Was unsere Kunden sagen",
+    "subtitle": "Vertrauen von Hunderten von Kunden"
+  },
+  "contact": {
+    "title": "Beratung buchen",
+    "subtitle": "Kontaktieren Sie uns noch heute",
+    "name": "Name",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "message": "Nachricht",
+    "submit": "Nachricht senden",
+    "success": "Vielen Dank! Wir werden uns bald bei Ihnen melden.",
+    "error": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut."
+  },
+  "footer": {
+    "about": "Über uns",
+    "about_text": "Professionelle Steuerberatung in Deutschland",
+    "quick_links": "Schnelllinks",
+    "legal": "Rechtliches",
+    "impressum": "Impressum",
+    "datenschutz": "Datenschutzerklärung",
+    "copyright": "© 2024 Steuerberatung. Alle Rechte vorbehalten."
+  },
+  "blog": {
+    "title": "Steuertipps & Neuigkeiten",
+    "subtitle": "Bleiben Sie über Steuervorschriften informiert",
+    "read_more": "Weiterlesen"
+  }
+}

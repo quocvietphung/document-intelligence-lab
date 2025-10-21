@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "blog": "Blog",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Professional Tax Consulting in Germany",
+    "subtitle": "Expert advice for individuals and businesses",
+    "cta": "Book Consultation"
+  },
+  "services": {
+    "title": "Our Services",
+    "subtitle": "Comprehensive tax consulting solutions",
+    "tax_declaration": {
+      "title": "Tax Declaration",
+      "description": "Professional preparation of your annual tax returns"
+    },
+    "business_consulting": {
+      "title": "Business Consulting",
+      "description": "Expert advice for businesses and entrepreneurs"
+    },
+    "accounting": {
+      "title": "Accounting Services",
+      "description": "Complete bookkeeping and financial accounting"
+    }
+  },
+  "process": {
+    "title": "Our Process",
+    "subtitle": "Simple and transparent",
+    "step1": {
+      "title": "Initial Consultation",
+      "description": "Free consultation to understand your needs"
+    },
+    "step2": {
+      "title": "Analysis & Planning",
+      "description": "We analyze your situation and create a tailored plan"
+    },
+    "step3": {
+      "title": "Implementation",
+      "description": "We handle everything while keeping you informed"
+    }
+  },
+  "testimonials": {
+    "title": "What Our Clients Say",
+    "subtitle": "Trusted by hundreds of clients"
+  },
+  "contact": {
+    "title": "Book a Consultation",
+    "subtitle": "Get in touch with us today",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "message": "Message",
+    "submit": "Send Message",
+    "success": "Thank you! We'll contact you soon.",
+    "error": "Something went wrong. Please try again."
+  },
+  "footer": {
+    "about": "About Us",
+    "about_text": "Professional tax consulting services in Germany",
+    "quick_links": "Quick Links",
+    "legal": "Legal",
+    "impressum": "Impressum",
+    "datenschutz": "Privacy Policy",
+    "copyright": "© 2024 Tax Consulting. All rights reserved."
+  },
+  "blog": {
+    "title": "Tax Tips & News",
+    "subtitle": "Stay informed about tax regulations",
+    "read_more": "Read more"
+  }
+}
