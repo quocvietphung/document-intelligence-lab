@@ -1,0 +1,126 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "services": "Dienstleistungen",
+    "blog": "Blog",
+    "contact": "Kontakt"
+  },
+  "hero": {
+    "title": "Ihre Experten für Steuerberatung in Deutschland",
+    "subtitle": "Professionelle Beratung für Privatpersonen und Unternehmen",
+    "cta": "Beratungstermin vereinbaren",
+    "ctaSecondary": "Mehr erfahren"
+  },
+  "services": {
+    "title": "Unsere Dienstleistungen",
+    "subtitle": "Umfassende steuerliche Beratung für alle Ihre Bedürfnisse",
+    "tax_consulting": {
+      "title": "Steuerberatung",
+      "description": "Ganzheitliche Beratung für Ihre steuerlichen Angelegenheiten. Wir unterstützen Sie bei der Optimierung Ihrer Steuerlast und helfen Ihnen, alle gesetzlichen Anforderungen zu erfüllen."
+    },
+    "income_tax": {
+      "title": "Einkommensteuer",
+      "description": "Professionelle Erstellung Ihrer Einkommensteuererklärung. Wir sorgen dafür, dass Sie alle möglichen Abzüge nutzen und keine Fristen verpassen."
+    },
+    "vat": {
+      "title": "Umsatzsteuer",
+      "description": "Experten für Umsatzsteuervoranmeldungen und -erklärungen. Wir helfen Ihnen bei der korrekten Abwicklung aller umsatzsteuerlichen Verpflichtungen."
+    }
+  },
+  "process": {
+    "title": "Unser Prozess",
+    "subtitle": "So einfach arbeiten wir zusammen",
+    "step1": {
+      "title": "Erstgespräch",
+      "description": "Vereinbaren Sie einen Termin für ein kostenloses Erstgespräch"
+    },
+    "step2": {
+      "title": "Analyse",
+      "description": "Wir analysieren Ihre steuerliche Situation und entwickeln eine maßgeschneiderte Strategie"
+    },
+    "step3": {
+      "title": "Umsetzung",
+      "description": "Wir setzen die vereinbarten Maßnahmen professionell um"
+    },
+    "step4": {
+      "title": "Betreuung",
+      "description": "Fortlaufende Betreuung und Anpassung an neue gesetzliche Anforderungen"
+    }
+  },
+  "testimonials": {
+    "title": "Was unsere Kunden sagen",
+    "subtitle": "Erfahrungen von zufriedenen Mandanten",
+    "testimonial1": {
+      "text": "Hervorragende Beratung! Das Team hat mir geholfen, meine Steuerlast erheblich zu reduzieren.",
+      "author": "Michael Schmidt",
+      "role": "Unternehmer"
+    },
+    "testimonial2": {
+      "text": "Sehr professionell und immer erreichbar. Ich fühle mich gut betreut.",
+      "author": "Sandra Müller",
+      "role": "Freiberuflerin"
+    },
+    "testimonial3": {
+      "text": "Die Zusammenarbeit ist unkompliziert und effizient. Kann ich nur empfehlen!",
+      "author": "Thomas Weber",
+      "role": "IT-Spezialist"
+    }
+  },
+  "contact": {
+    "title": "Kontaktieren Sie uns",
+    "subtitle": "Vereinbaren Sie einen Beratungstermin",
+    "form": {
+      "name": "Name",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "service": "Gewünschte Dienstleistung",
+      "message": "Ihre Nachricht",
+      "submit": "Anfrage senden",
+      "success": "Vielen Dank! Wir melden uns in Kürze bei Ihnen.",
+      "error": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+    }
+  },
+  "blog": {
+    "title": "Steuertipps & Neuigkeiten",
+    "subtitle": "Aktuelle Informationen rund um das Thema Steuern",
+    "readMore": "Weiterlesen"
+  },
+  "footer": {
+    "company": "Steuerberatung Deutschland",
+    "description": "Ihre Experten für Steuerberatung in Deutschland",
+    "quickLinks": "Schnellzugriff",
+    "legal": "Rechtliches",
+    "impressum": "Impressum",
+    "datenschutz": "Datenschutz",
+    "contact": "Kontakt",
+    "rights": "Alle Rechte vorbehalten"
+  },
+  "impressum": {
+    "title": "Impressum",
+    "responsibleFor": "Verantwortlich für den Inhalt",
+    "company": "Steuerberatungsgesellschaft Deutschland GmbH",
+    "address": "Musterstraße 123, 10115 Berlin, Deutschland",
+    "contact": "Kontakt",
+    "phone": "Telefon: +49 30 12345678",
+    "email": "E-Mail: info@steuerberatung-deutschland.de",
+    "register": "Handelsregister",
+    "registerNumber": "HRB 12345 B",
+    "taxNumber": "Steuernummer: 12/345/67890",
+    "chamber": "Steuerberaterkammer Berlin",
+    "liability": "Haftungsausschluss",
+    "liabilityText": "Trotz sorgfältiger inhaltlicher Kontrolle übernehmen wir keine Haftung für die Inhalte externer Links. Für den Inhalt der verlinkten Seiten sind ausschließlich deren Betreiber verantwortlich."
+  },
+  "datenschutz": {
+    "title": "Datenschutzerklärung",
+    "intro": "Einleitung",
+    "introText": "Mit der folgenden Datenschutzerklärung möchten wir Sie darüber aufklären, welche Arten Ihrer personenbezogenen Daten (nachfolgend auch kurz als \"Daten\" bezeichnet) wir zu welchen Zwecken und in welchem Umfang verarbeiten.",
+    "responsible": "Verantwortlicher",
+    "responsibleText": "Steuerberatungsgesellschaft Deutschland GmbH, Musterstraße 123, 10115 Berlin, Deutschland",
+    "dataProcessing": "Arten der verarbeiteten Daten",
+    "dataProcessingList": "Bestandsdaten, Kontaktdaten, Inhaltsdaten, Nutzungsdaten, Meta-/Kommunikationsdaten",
+    "purposes": "Zwecke der Verarbeitung",
+    "purposesList": "Bereitstellung unseres Onlineangebotes und Nutzerfreundlichkeit, Kontaktanfragen und Kommunikation, Sicherheitsmaßnahmen",
+    "rights": "Ihre Rechte",
+    "rightsText": "Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch gemäß den gesetzlichen Bestimmungen der DSGVO."
+  }
+}
