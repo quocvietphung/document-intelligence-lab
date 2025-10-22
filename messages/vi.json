@@ -1,0 +1,84 @@
+{
+  "nav": {
+    "home": "Trang chủ",
+    "services": "Dịch vụ",
+    "blog": "Blog",
+    "contact": "Liên hệ"
+  },
+  "hero": {
+    "title": "Tư vấn Thuế Chuyên nghiệp tại Việt Nam và Đức",
+    "subtitle": "Tư vấn chuyên gia cho cá nhân và doanh nghiệp",
+    "cta": "Đặt lịch tư vấn"
+  },
+  "services": {
+    "title": "Dịch vụ của chúng tôi",
+    "subtitle": "Giải pháp tư vấn thuế toàn diện",
+    "tax_declaration": {
+      "title": "Khai báo Thuế",
+      "description": "Chuẩn bị chuyên nghiệp tờ khai thuế hàng năm của bạn"
+    },
+    "business_consulting": {
+      "title": "Tư vấn Kinh doanh",
+      "description": "Tư vấn chuyên gia cho doanh nghiệp và doanh nhân"
+    },
+    "accounting": {
+      "title": "Dịch vụ Kế toán",
+      "description": "Kế toán và tài chính hoàn chỉnh"
+    }
+  },
+  "process": {
+    "title": "Quy trình của chúng tôi",
+    "subtitle": "Đơn giản và minh bạch",
+    "step1": {
+      "title": "Tư vấn ban đầu",
+      "description": "Tư vấn miễn phí để hiểu nhu cầu của bạn"
+    },
+    "step2": {
+      "title": "Phân tích & Lập kế hoạch",
+      "description": "Chúng tôi phân tích tình hình của bạn và tạo kế hoạch phù hợp"
+    },
+    "step3": {
+      "title": "Thực hiện",
+      "description": "Chúng tôi xử lý mọi thứ và giữ liên lạc với bạn"
+    }
+  },
+  "testimonials": {
+    "title": "Khách hàng nói gì về chúng tôi",
+    "subtitle": "Được tin tưởng bởi hàng trăm khách hàng"
+  },
+  "contact": {
+    "title": "Đặt lịch tư vấn",
+    "subtitle": "Liên hệ với chúng tôi ngay hôm nay",
+    "name": "Họ tên",
+    "email": "Email",
+    "phone": "Số điện thoại",
+    "message": "Tin nhắn",
+    "submit": "Gửi tin nhắn",
+    "success": "Cảm ơn bạn! Chúng tôi sẽ liên hệ với bạn sớm.",
+    "error": "Đã xảy ra lỗi. Vui lòng thử lại."
+  },
+  "footer": {
+    "about": "Về chúng tôi",
+    "about_text": "Dịch vụ tư vấn thuế chuyên nghiệp tại Việt Nam và Đức",
+    "quick_links": "Liên kết nhanh",
+    "legal": "Pháp lý",
+    "impressum": "Impressum",
+    "datenschutz": "Chính sách bảo mật",
+    "terms_of_service": "Điều khoản dịch vụ",
+    "copyright": "© 2024 Tư vấn Thuế. Bảo lưu mọi quyền."
+  },
+  "blog": {
+    "title": "Mẹo thuế & Tin tức",
+    "subtitle": "Cập nhật các quy định về thuế",
+    "read_more": "Đọc thêm"
+  },
+  "chatbot": {
+    "title": "Trợ lý tư vấn",
+    "placeholder": "Đặt câu hỏi về thuế, nghề nghiệp, hoặc đăng ký kinh doanh...",
+    "button_label": "Chat với chúng tôi",
+    "welcome": "Xin chào! Tôi có thể giúp gì cho bạn về tư vấn thuế, hướng nghiệp, hoặc đăng ký kinh doanh tại Việt Nam và Đức?",
+    "send": "Gửi",
+    "close": "Đóng",
+    "error": "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại."
+  }
+}

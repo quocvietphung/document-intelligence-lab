@@ -53,6 +53,14 @@ export default function Footer() {
                   {t("datenschutz")}
                 </Link>
               </li>
+              <li>
+                <Link
+                  href={`/${locale}/terms`}
+                  className="text-gray-400 hover:text-white"
+                >
+                  {t("terms_of_service")}
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

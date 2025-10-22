@@ -3,16 +3,23 @@
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 export default function Navigation() {
   const t = useTranslations("nav");
   const locale = useLocale();
   const pathname = usePathname();
+  const [showLanguages, setShowLanguages] = useState(false);
 
-  const toggleLocale = () => {
-    const newLocale = locale === "en" ? "de" : "en";
+  const getLocalePath = (newLocale: string) => {
     const path = pathname.replace(`/${locale}`, `/${newLocale}`);
     return path;
+  };
+
+  const localeLabels: Record<string, string> = {
+    en: "🇬🇧 EN",
+    de: "🇩🇪 DE",
+    vi: "🇻🇳 VI"
   };
 
   return (
@@ -52,13 +59,27 @@ export default function Navigation() {
             </Link>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <Link
-              href={toggleLocale()}
-              className="text-sm font-medium text-gray-700 hover:text-blue-600"
+          <div className="flex items-center space-x-4 relative">
+            <button
+              onClick={() => setShowLanguages(!showLanguages)}
+              className="text-sm font-medium text-gray-700 hover:text-blue-600 focus:outline-none"
             >
-              {locale === "en" ? "🇩🇪 DE" : "🇬🇧 EN"}
-            </Link>
+              {localeLabels[locale]}
+            </button>
+            {showLanguages && (
+              <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-50">
+                {Object.keys(localeLabels).map((loc) => (
+                  <Link
+                    key={loc}
+                    href={getLocalePath(loc)}
+                    onClick={() => setShowLanguages(false)}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    {localeLabels[loc]}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

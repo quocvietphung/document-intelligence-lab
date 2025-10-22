@@ -64,11 +64,21 @@
     "legal": "Legal",
     "impressum": "Impressum",
     "datenschutz": "Privacy Policy",
+    "terms_of_service": "Terms of Service",
     "copyright": "© 2024 Tax Consulting. All rights reserved."
   },
   "blog": {
     "title": "Tax Tips & News",
     "subtitle": "Stay informed about tax regulations",
     "read_more": "Read more"
+  },
+  "chatbot": {
+    "title": "Consulting Assistant",
+    "placeholder": "Ask about taxes, career guidance, or business registration...",
+    "button_label": "Chat with us",
+    "welcome": "Hello! How can I help you with tax consulting, career guidance, or business registration in Vietnam and Germany?",
+    "send": "Send",
+    "close": "Close",
+    "error": "Sorry, an error occurred. Please try again."
   }
 }

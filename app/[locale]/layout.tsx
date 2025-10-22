@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/routing";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import ChatBot from "@/components/chatbot/ChatBot";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -37,6 +38,7 @@ export default async function LocaleLayout({
           <Navigation />
           <main className="min-h-screen">{children}</main>
           <Footer />
+          <ChatBot />
         </NextIntlClientProvider>
       </body>
     </html>
