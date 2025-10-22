@@ -1,16 +1,17 @@
 # Tax Consulting Website
 
-A professional Next.js 15 website for tax consulting (Steuerberatung) services in Germany with bilingual support (German/English).
+A professional Next.js 15 website for tax consulting (Steuerberatung) services in Germany and Vietnam with trilingual support (German/English/Vietnamese) and AI-powered chatbot assistance.
 
 ## Features
 
 - ✅ **Next.js 15** with App Router and React 19
 - ✅ **TypeScript** for type safety
 - ✅ **Tailwind CSS** for responsive styling
-- ✅ **Internationalization (i18n)** - German and English support
+- ✅ **Internationalization (i18n)** - German, English, and Vietnamese support
+- ✅ **AI Chatbot** - Powered by Vercel AI SDK with OpenAI integration
 - ✅ **Server Actions** for form handling
 - ✅ **SEO Optimized** with proper meta tags
-- ✅ **GDPR Compliant** with Impressum and Datenschutz pages
+- ✅ **GDPR Compliant** with Impressum, Datenschutz, and Terms of Service pages
 - ✅ **Responsive Design** - Mobile, tablet, and desktop friendly
 
 ## Project Structure
@@ -22,10 +23,12 @@ tax-consulting/
 │   │   ├── blog/          # Blog pages
 │   │   ├── impressum/     # Impressum (legal notice)
 │   │   ├── datenschutz/   # Privacy policy (GDPR)
+│   │   ├── terms/         # Terms of Service
 │   │   ├── layout.tsx     # Locale-specific layout
 │   │   └── page.tsx       # Homepage
 │   ├── api/
-│   │   └── booking/       # Booking API endpoint
+│   │   ├── booking/       # Booking API endpoint
+│   │   └── chat/          # AI Chatbot API endpoint
 │   ├── layout.tsx         # Root layout
 │   └── globals.css        # Global styles
 ├── components/
@@ -35,14 +38,19 @@ tax-consulting/
 │   │   ├── ProcessSection.tsx
 │   │   ├── TestimonialsSection.tsx
 │   │   └── ContactSection.tsx
+│   ├── chatbot/           # AI Chatbot components
+│   │   ├── ChatBot.tsx    # Floating chat button
+│   │   └── ChatWindow.tsx # Chat interface
 │   ├── Navigation.tsx     # Navigation bar
 │   └── Footer.tsx         # Footer component
 ├── messages/              # Translation files
 │   ├── en.json           # English translations
-│   └── de.json           # German translations
+│   ├── de.json           # German translations
+│   └── vi.json           # Vietnamese translations
 ├── lib/                   # Utility functions
 ├── i18n.ts               # i18n configuration
-└── middleware.ts         # Next.js middleware for i18n
+├── middleware.ts         # Next.js middleware for i18n
+└── .env.example          # Environment variables template
 
 ```
 
@@ -66,14 +74,26 @@ cd tax-consulting
 npm install
 ```
 
-3. Run the development server:
+3. Set up environment variables:
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` and add your OpenAI API key:
+```
+OPENAI_API_KEY=your-openai-api-key-here
+```
+
+4. Run the development server:
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-The default locale is German. To access the English version, visit [http://localhost:3000/en](http://localhost:3000/en).
+The default locale is German. To access other versions:
+- English: [http://localhost:3000/en](http://localhost:3000/en)
+- Vietnamese: [http://localhost:3000/vi](http://localhost:3000/vi)
 
 ## Available Scripts
 
@@ -99,6 +119,16 @@ The default locale is German. To access the English version, visit [http://local
 ### Legal Pages
 - **Impressum** - Legal notice (required in Germany)
 - **Datenschutz** - Privacy policy (GDPR compliant)
+- **Terms of Service** - User agreement and terms
+
+## AI Chatbot
+
+The website features an AI-powered chatbot that helps users with:
+- Tax consulting questions
+- Career guidance
+- Business registration in Vietnam and Germany
+
+See [CHATBOT_README.md](./CHATBOT_README.md) for detailed setup and customization instructions.
 
 ## API Routes
 
@@ -123,13 +153,30 @@ Handles booking/contact form submissions.
 }
 ```
 
+### POST /api/chat
+AI chatbot endpoint using Vercel AI SDK.
+
+**Request Body:**
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "parts": [{ "type": "text", "text": "Your question here" }]
+    }
+  ]
+}
+```
+
+**Response:** Streaming text response from OpenAI GPT-4o-mini model.
+
 ## Internationalization
 
-The website supports German (de) and English (en) languages. Translations are managed in `messages/` directory.
+The website supports German (de), English (en), and Vietnamese (vi) languages. Translations are managed in `messages/` directory.
 
 - Default locale: German (de)
-- Available locales: de, en
-- Language switcher in navigation bar
+- Available locales: de, en, vi
+- Language switcher in navigation bar with flag icons
 
 ## SEO
 
@@ -144,7 +191,8 @@ The website supports German (de) and English (en) languages. Translations are ma
 
 1. Push your code to GitHub
 2. Import the repository in Vercel
-3. Deploy with default settings
+3. Add environment variable: `OPENAI_API_KEY=your-key-here`
+4. Deploy with default settings
 
 ### Other Platforms
 
@@ -171,6 +219,17 @@ npm start
 Add or modify translations in:
 - `messages/en.json` (English)
 - `messages/de.json` (German)
+- `messages/vi.json` (Vietnamese)
+
+Each file includes sections for:
+- Navigation
+- Hero section
+- Services
+- Process
+- Testimonials
+- Contact form
+- Footer
+- Chatbot interface
 
 ### Styling
 
