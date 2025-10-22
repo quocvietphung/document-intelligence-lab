@@ -64,11 +64,21 @@
     "legal": "Rechtliches",
     "impressum": "Impressum",
     "datenschutz": "Datenschutzerklärung",
+    "terms_of_service": "Nutzungsbedingungen",
     "copyright": "© 2024 Steuerberatung. Alle Rechte vorbehalten."
   },
   "blog": {
     "title": "Steuertipps & Neuigkeiten",
     "subtitle": "Bleiben Sie über Steuervorschriften informiert",
     "read_more": "Weiterlesen"
+  },
+  "chatbot": {
+    "title": "Beratungsassistent",
+    "placeholder": "Fragen Sie nach Steuern, Karriereberatung oder Unternehmensregistrierung...",
+    "button_label": "Mit uns chatten",
+    "welcome": "Hallo! Wie kann ich Ihnen bei Steuerberatung, Karriereberatung oder Unternehmensregistrierung in Vietnam und Deutschland helfen?",
+    "send": "Senden",
+    "close": "Schließen",
+    "error": "Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
   }
 }
