@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
+// Helper function to escape HTML to prevent XSS
+function escapeHtml(text: string): string {
+  const map: { [key: string]: string } = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -46,12 +58,12 @@ Please respond to the customer at: ${email}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">Viet Tax Consulting</h2>
-          <p>Dear ${name},</p>
+          <p>Dear ${escapeHtml(name)},</p>
           <p>Thank you for reaching out to Viet Tax Consulting.<br>
           We have received your booking request and will contact you shortly.</p>
           <div style="background-color: #f3f4f6; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <strong>Your message:</strong><br>
-            "${message}"
+            "${escapeHtml(message)}"
           </div>
           <p>Best regards,<br>
           <strong>Viet Phung Consulting Team</strong></p>
@@ -59,13 +71,39 @@ Please respond to the customer at: ${email}`,
       `,
     };
 
-    // Send both emails
-    await Promise.all([
+    // Send emails with individual error handling
+    const emailResults = await Promise.allSettled([
       transporter.sendMail(adminEmail),
       transporter.sendMail(customerEmail),
     ]);
 
-    console.log("Booking emails sent successfully:", { name, email });
+    // Check if at least one email was sent successfully
+    const adminEmailSuccess = emailResults[0].status === "fulfilled";
+    const customerEmailSuccess = emailResults[1].status === "fulfilled";
+
+    if (!adminEmailSuccess && !customerEmailSuccess) {
+      // Both emails failed
+      console.error("Both emails failed to send:", {
+        adminError: emailResults[0].status === "rejected" ? emailResults[0].reason : null,
+        customerError: emailResults[1].status === "rejected" ? emailResults[1].reason : null,
+      });
+      throw new Error("Failed to send emails");
+    }
+
+    // Log partial success if only one email was sent
+    if (!adminEmailSuccess) {
+      console.warn("Admin email failed to send, but customer email succeeded");
+    }
+    if (!customerEmailSuccess) {
+      console.warn("Customer email failed to send, but admin email succeeded");
+    }
+
+    console.log("Booking emails sent successfully:", { 
+      name, 
+      email,
+      adminEmailSent: adminEmailSuccess,
+      customerEmailSent: customerEmailSuccess
+    });
 
     return NextResponse.json(
       {
