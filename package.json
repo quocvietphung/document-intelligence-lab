@@ -11,9 +11,11 @@
   "dependencies": {
     "@ai-sdk/openai": "^2.0.53",
     "@ai-sdk/react": "^2.0.76",
+    "@types/nodemailer": "^7.0.3",
     "ai": "^5.0.76",
     "next": "^15.0.0",
     "next-intl": "^3.0.0",
+    "nodemailer": "^7.0.10",
     "openai": "^6.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

@@ -79,10 +79,23 @@ npm install
 cp .env.example .env.local
 ```
 
-Edit `.env.local` and add your OpenAI API key:
+Edit `.env.local` and add your API keys and SMTP settings:
 ```
+# OpenAI API key for chatbot
 OPENAI_API_KEY=your-openai-api-key-here
+
+# Gmail SMTP for booking email system
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password-here
+ADMIN_EMAIL=admin@yourdomain.com
 ```
+
+**Setting up Gmail App Password:**
+1. Enable 2-factor authentication on your Gmail account
+2. Go to [Google Account Settings](https://myaccount.google.com/security)
+3. Select "2-Step Verification" → "App passwords"
+4. Generate a new app password for "Mail"
+5. Copy the 16-character password to `SMTP_PASS` in `.env.local`
 
 4. Run the development server:
 ```bash
@@ -133,14 +146,20 @@ See [CHATBOT_README.md](./CHATBOT_README.md) for detailed setup and customizatio
 ## API Routes
 
 ### POST /api/booking
-Handles booking/contact form submissions.
+Handles booking/contact form submissions and sends email notifications.
+
+**Features:**
+- Sends confirmation email to the customer
+- Sends notification email to the admin
+- Uses Gmail SMTP (requires App Password)
+- No database storage required
 
 **Request Body:**
 ```json
 {
   "name": "string",
   "email": "string",
-  "phone": "string",
+  "phone": "string (optional)",
   "message": "string"
 }
 ```
@@ -149,9 +168,19 @@ Handles booking/contact form submissions.
 ```json
 {
   "success": true,
-  "message": "Booking request received successfully"
+  "message": "Booking email sent successfully"
 }
 ```
+
+**Testing Locally:**
+1. Set up SMTP credentials in `.env.local` (see Installation section)
+2. Use the `BookingForm` component or send a POST request:
+```bash
+curl -X POST http://localhost:3000/api/booking \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test User","email":"test@example.com","message":"Test booking"}'
+```
+3. Check both admin and customer emails for confirmations
 
 ### POST /api/chat
 AI chatbot endpoint using Vercel AI SDK.

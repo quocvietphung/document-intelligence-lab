@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 
 export async function POST(request: Request) {
   try {
@@ -13,21 +14,63 @@ export async function POST(request: Request) {
       );
     }
 
-    // Here you would typically:
-    // 1. Send an email notification
-    // 2. Store the booking in a database
-    // 3. Send confirmation email to the user
-    
-    // For now, we'll just log it and return success
-    console.log("New booking request:", { name, email, phone, message });
+    // Configure nodemailer transporter with Gmail
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
 
-    // Simulate email sending delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Email to admin with booking details
+    const adminEmail = {
+      from: `"Viet Tax Consulting" <${process.env.SMTP_USER}>`,
+      to: process.env.ADMIN_EMAIL,
+      subject: `📩 New Booking from ${name}`,
+      text: `New booking request received:
+
+Name: ${name}
+Email: ${email}
+Phone: ${phone || "Not provided"}
+Message: ${message}
+
+Please respond to the customer at: ${email}`,
+    };
+
+    // Email to customer with confirmation
+    const customerEmail = {
+      from: `"Viet Tax Consulting" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "✅ Booking Received – Viet Tax Consulting",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">Viet Tax Consulting</h2>
+          <p>Dear ${name},</p>
+          <p>Thank you for reaching out to Viet Tax Consulting.<br>
+          We have received your booking request and will contact you shortly.</p>
+          <div style="background-color: #f3f4f6; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <strong>Your message:</strong><br>
+            "${message}"
+          </div>
+          <p>Best regards,<br>
+          <strong>Viet Phung Consulting Team</strong></p>
+        </div>
+      `,
+    };
+
+    // Send both emails
+    await Promise.all([
+      transporter.sendMail(adminEmail),
+      transporter.sendMail(customerEmail),
+    ]);
+
+    console.log("Booking emails sent successfully:", { name, email });
 
     return NextResponse.json(
       {
         success: true,
-        message: "Booking request received successfully",
+        message: "Booking email sent successfully",
       },
       { status: 200 }
     );
