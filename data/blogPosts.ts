@@ -4,6 +4,9 @@ export type BlogPost = {
   title: { en: string; de: string; vi: string };
   excerpt: { en: string; de: string; vi: string };
   content: { en: string; de: string; vi: string }; // HTML string
+  coverImage?: string;
+  tags?: string[];
+  author?: { name: string; avatar?: string };
 };
 
 export const blogPosts: BlogPost[] = [
@@ -52,6 +55,9 @@ export const blogPosts: BlogPost[] = [
         </ul>
       `,
     },
+    coverImage: "https://images.unsplash.com/photo-1523289333742-bea4c7c0a2e6?auto=format&fit=crop&w=1400&q=80",
+    tags: ["Taxes", "Freelancer", "Deductions"],
+    author: { name: "Tax Consulting" },
   },
   {
     id: "company-setup-germany",
@@ -71,6 +77,9 @@ export const blogPosts: BlogPost[] = [
       de: `<p>Die Unternehmensgründung in Deutschland umfasst die Wahl der Rechtsform, Anmeldung beim Gewerbeamt, Registrierung beim Finanzamt und häufig die USt-Registrierung. Diese Checkliste führt durch die wichtigsten Schritte und Unterlagen.</p>`,
       vi: `<p>Thành lập doanh nghiệp ở Đức gồm chọn loại hình pháp lý, đăng ký kinh doanh, đăng ký tại cơ quan thuế và đăng ký VAT nếu cần. Checklist này hướng dẫn các bước chính và giấy tờ cần thiết.</p>`,
     },
+    coverImage: "https://images.unsplash.com/photo-1498079022511-d15614cb1c02?auto=format&fit=crop&w=1400&q=80",
+    tags: ["Business", "Startups", "Registration"],
+    author: { name: "Tax Consulting" },
   },
   {
     id: "freelancer-tax-tips",
@@ -87,9 +96,12 @@ export const blogPosts: BlogPost[] = [
     },
     content: {
       en: `<p>Freelancers should track expenses, invoice correctly, set aside money for taxes and consider pension arrangements. We explain bookkeeping basics and helpful apps.</p>`,
-      de: `<p>Freiberufler sollten Ausgaben dokumentieren, korrekt fakturieren, Rücklagen für Steuern bilden und Vorsorge prüfen. Wir erklären Buchhaltungsgrundlagen und nützliche Apps.</p>`,
+      de: `<p>Freiberufler sollten Ausgaben dokumentieren, korrekt fakturieren, Rücklagen für Steuern bilden und Vorsorge prüfen. Wir erklären Buchhaltungsgrundlagen và nützliche Apps.</p>`,
       vi: `<p>Freelancer nên theo dõi chi phí, lập hóa đơn đúng, để dành tiền thuế và cân nhắc đóng bảo hiểm hưu trí. Bài viết trình bày cơ bản về kế toán và app hữu ích.</p>`,
     },
+    coverImage: "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1400&q=80",
+    tags: ["Freelancer", "Bookkeeping", "Tips"],
+    author: { name: "Tax Consulting" },
   },
 ];
 
