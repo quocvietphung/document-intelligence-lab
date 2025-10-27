@@ -17,9 +17,17 @@
       "title": "Khai báo Thuế",
       "description": "Chuẩn bị chuyên nghiệp tờ khai thuế hàng năm của bạn"
     },
-    "business_consulting": {
-      "title": "Tư vấn Kinh doanh",
-      "description": "Tư vấn chuyên gia cho doanh nghiệp và doanh nhân"
+    "tax_optimization": {
+      "title": "Tối ưu Thuế",
+      "description": "Tư vấn chiến lược để giảm gánh nặng thuế và tận dụng các khoản khấu trừ"
+    },
+    "real_estate": {
+      "title": "Tư vấn Bất động sản",
+      "description": "Tư vấn về đầu tư, thuế và quản lý bất động sản tại Đức"
+    },
+    "it_consulting": {
+      "title": "Tư vấn CNTT",
+      "description": "Giải pháp kỹ thuật số và tự động hóa cho quy trình thuế và tài chính hiện đại"
     },
     "accounting": {
       "title": "Dịch vụ Kế toán",
@@ -59,7 +67,7 @@
   },
   "footer": {
     "about": "Về chúng tôi",
-    "about_text": "Dịch vụ tư vấn thuế chuyên nghiệp tại Việt Nam và Đức",
+    "about_text": "Dịch vụ tư vấn thuế chuyên nghiệp và giải pháp tài chính số tại Đức",
     "quick_links": "Liên kết nhanh",
     "legal": "Pháp lý",
     "impressum": "Impressum",
@@ -76,7 +84,7 @@
     "title": "Trợ lý tư vấn",
     "placeholder": "Đặt câu hỏi về thuế, nghề nghiệp, hoặc đăng ký kinh doanh...",
     "button_label": "Chat với chúng tôi",
-    "welcome": "Xin chào! Tôi có thể giúp gì cho bạn về tư vấn thuế, hướng nghiệp, hoặc đăng ký kinh doanh tại Việt Nam và Đức?",
+    "welcome": "Xin chào! Tôi có thể giúp gì cho bạn về tư vấn thuế, tối ưu thuế, tư vấn bất động sản hoặc tư vấn CNTT tại Việt Nam và Đức?",
     "send": "Gửi",
     "close": "Đóng",
     "error": "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại."

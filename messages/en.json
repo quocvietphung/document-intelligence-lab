@@ -17,9 +17,17 @@
       "title": "Tax Declaration",
       "description": "Professional preparation of your annual tax returns"
     },
-    "business_consulting": {
-      "title": "Business Consulting",
-      "description": "Expert advice for businesses and entrepreneurs"
+    "tax_optimization": {
+      "title": "Tax Optimization",
+      "description": "Strategic advice to reduce your tax burden and make the most of deductions"
+    },
+    "real_estate": {
+      "title": "Real Estate Consulting",
+      "description": "Advice on investments, taxation and management of real estate in Germany"
+    },
+    "it_consulting": {
+      "title": "IT Consulting",
+      "description": "Digital solutions and automation for modern tax and financial processes"
     },
     "accounting": {
       "title": "Accounting Services",
@@ -59,7 +67,7 @@
   },
   "footer": {
     "about": "About Us",
-    "about_text": "Professional tax consulting services in Germany",
+    "about_text": "Professional tax consulting and digital financial solutions in Germany",
     "quick_links": "Quick Links",
     "legal": "Legal",
     "impressum": "Impressum",
@@ -76,7 +84,7 @@
     "title": "Consulting Assistant",
     "placeholder": "Ask about taxes, career guidance, or business registration...",
     "button_label": "Chat with us",
-    "welcome": "Hello! How can I help you with tax consulting, career guidance, or business registration in Vietnam and Germany?",
+    "welcome": "Hello! How can I help you with tax consulting, tax optimization, real estate consulting or IT consulting in Vietnam and Germany?",
     "send": "Send",
     "close": "Close",
     "error": "Sorry, an error occurred. Please try again."
