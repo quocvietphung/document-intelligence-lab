@@ -17,13 +17,21 @@
       "title": "Steuererklärung",
       "description": "Professionelle Erstellung Ihrer Jahressteuererklärung"
     },
-    "business_consulting": {
-      "title": "Unternehmensberatung",
-      "description": "Expertenberatung für Unternehmen und Unternehmer"
+    "tax_optimization": {
+      "title": "Steueroptimierung",
+      "description": "Strategische Beratung zur Reduzierung Ihrer Steuerlast und zur optimalen Nutzung von Abzugsmöglichkeiten"
+    },
+    "real_estate": {
+      "title": "Immobilienberatung",
+      "description": "Beratung zu Investitionen, Besteuerung und Verwaltung von Immobilien in Deutschland"
+    },
+    "it_consulting": {
+      "title": "IT-Beratung",
+      "description": "Digitale Lösungen und Automatisierung für moderne Steuer- und Finanzprozesse"
     },
     "accounting": {
       "title": "Buchhaltung",
-      "description": "Vollständige Buchführung und Finanzbuchhaltung"
+      "description": "Vollständige Buchführung und Finanzbuchhaltung für Unternehmen und Selbständige"
     }
   },
   "process": {
@@ -59,7 +67,7 @@
   },
   "footer": {
     "about": "Über uns",
-    "about_text": "Professionelle Steuerberatung in Deutschland",
+    "about_text": "Professionelle Steuerberatung und digitale Finanzlösungen in Deutschland",
     "quick_links": "Schnelllinks",
     "legal": "Rechtliches",
     "impressum": "Impressum",
@@ -76,7 +84,7 @@
     "title": "Beratungsassistent",
     "placeholder": "Fragen Sie nach Steuern, Karriereberatung oder Unternehmensregistrierung...",
     "button_label": "Mit uns chatten",
-    "welcome": "Hallo! Wie kann ich Ihnen bei Steuerberatung, Karriereberatung oder Unternehmensregistrierung in Vietnam und Deutschland helfen?",
+    "welcome": "Hallo! Wie kann ich Ihnen bei Steuerberatung, Steueroptimierung, Immobilienberatung oder IT-Beratung in Vietnam und Deutschland helfen?",
     "send": "Senden",
     "close": "Schließen",
     "error": "Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
