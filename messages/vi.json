@@ -63,7 +63,15 @@
     "message": "Tin nhắn",
     "submit": "Gửi tin nhắn",
     "success": "Cảm ơn bạn! Chúng tôi sẽ liên hệ với bạn sớm.",
-    "error": "Đã xảy ra lỗi. Vui lòng thử lại."
+    "error": "Đã xảy ra lỗi. Vui lòng thử lại.",
+    "booking_title": "Đặt lịch hẹn",
+    "booking_subtitle": "Chọn dịch vụ, ngày và giờ cho buổi tư vấn của bạn",
+    "service_label": "Dịch vụ",
+    "date_label": "Ngày",
+    "time_label": "Giờ",
+    "book_now": "Đặt ngay",
+    "hotline_label": "Đường dây nóng",
+    "hotline_note": "Hỗ trợ Thứ hai–Thứ sáu 9:00–17:00"
   },
   "footer": {
     "about": "Về chúng tôi",

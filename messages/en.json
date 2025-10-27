@@ -63,7 +63,15 @@
     "message": "Message",
     "submit": "Send Message",
     "success": "Thank you! We'll contact you soon.",
-    "error": "Something went wrong. Please try again."
+    "error": "Something went wrong. Please try again.",
+    "booking_title": "Schedule a Consultation",
+    "booking_subtitle": "Choose a service, date and time for your appointment",
+    "service_label": "Service",
+    "date_label": "Date",
+    "time_label": "Time",
+    "book_now": "Book Now",
+    "hotline_label": "Hotline",
+    "hotline_note": "Available Mon–Fri 9:00–17:00"
   },
   "footer": {
     "about": "About Us",

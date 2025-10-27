@@ -63,7 +63,15 @@
     "message": "Nachricht",
     "submit": "Nachricht senden",
     "success": "Vielen Dank! Wir werden uns bald bei Ihnen melden.",
-    "error": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut."
+    "error": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
+    "booking_title": "Termin vereinbaren",
+    "booking_subtitle": "Wählen Sie Service, Datum und Uhrzeit für Ihre Beratung",
+    "service_label": "Leistung",
+    "date_label": "Datum",
+    "time_label": "Uhrzeit",
+    "book_now": "Termin buchen",
+    "hotline_label": "Hotline",
+    "hotline_note": "Erreichbar Mo–Fr 9:00–17:00"
   },
   "footer": {
     "about": "Über uns",
