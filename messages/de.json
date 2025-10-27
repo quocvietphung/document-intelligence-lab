@@ -86,7 +86,8 @@
   "blog": {
     "title": "Steuertipps & Neuigkeiten",
     "subtitle": "Bleiben Sie über Steuervorschriften informiert",
-    "read_more": "Weiterlesen"
+    "read_more": "Weiterlesen",
+    "not_found": "Beitrag nicht gefunden."
   },
   "chatbot": {
     "title": "Beratungsassistent",

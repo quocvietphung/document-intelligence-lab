@@ -86,7 +86,8 @@
   "blog": {
     "title": "Tax Tips & News",
     "subtitle": "Stay informed about tax regulations",
-    "read_more": "Read more"
+    "read_more": "Read more",
+    "not_found": "Post not found."
   },
   "chatbot": {
     "title": "Consulting Assistant",

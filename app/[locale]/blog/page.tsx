@@ -1,46 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import ReviewsSection from "../../../components/sections/ReviewsSection";
-
-// Sample blog posts data
-const blogPosts = [
-	{
-		id: "tax-deductions-2024",
-		title: {
-			en: "Top Tax Deductions for 2024",
-			de: "Top Steuerabzüge für 2024",
-		},
-		excerpt: {
-			en: "Learn about the most important tax deductions you can claim in 2024 to maximize your tax savings.",
-			de: "Erfahren Sie mehr über die wichtigsten Steuerabzüge, die Sie 2024 geltend machen können, um Ihre Steuerersparnisse zu maximieren.",
-		},
-		date: "2024-01-15",
-	},
-	{
-		id: "freelancer-tax-tips",
-		title: {
-			en: "Tax Tips for Freelancers",
-			de: "Steuertipps für Freiberufler",
-		},
-		excerpt: {
-			en: "Essential tax advice for freelancers and self-employed professionals in Germany.",
-			de: "Wichtige Steuerberatung für Freiberufler und Selbständige in Deutschland.",
-		},
-		date: "2024-02-01",
-	},
-	{
-		id: "business-expenses",
-		title: {
-			en: "Understanding Business Expenses",
-			de: "Geschäftsausgaben verstehen",
-		},
-		excerpt: {
-			en: "A comprehensive guide to what counts as deductible business expenses.",
-			de: "Ein umfassender Leitfaden zu abzugsfähigen Geschäftsausgaben.",
-		},
-		date: "2024-02-15",
-	},
-];
+import blogPosts from "../../../data/blogPosts";
 
 export default async function BlogPage({
 	params,
@@ -62,30 +23,40 @@ export default async function BlogPage({
 				</div>
 
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-					{blogPosts.map((post) => (
-						<article
+					{blogPosts.map((post) => {
+						let titleText = post.title.en;
+						if (locale === "de") titleText = post.title.de;
+						else if (locale === "vi") titleText = post.title.vi;
+
+						let excerptText = post.excerpt.en;
+						if (locale === "de") excerptText = post.excerpt.de;
+						else if (locale === "vi") excerptText = post.excerpt.vi;
+
+						return (
+							<article
 							key={post.id}
 							className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
 						>
 							<div className="p-6">
 								<div className="text-sm text-gray-500 mb-2">
-									{new Date(post.date).toLocaleDateString()}
+									{new Date(post.date).toLocaleDateString(locale)}
 								</div>
 								<h2 className="text-2xl font-bold text-gray-900 mb-3">
-									{locale === "de" ? post.title.de : post.title.en}
+									{titleText}
 								</h2>
 								<p className="text-gray-600 mb-4">
-									{locale === "de" ? post.excerpt.de : post.excerpt.en}
+									{excerptText}
 								</p>
 								<Link
-									href={`/blog/${post.id}`}
+									href={`/${locale}/blog/${post.id}`}
 									className="text-blue-600 hover:text-blue-800 font-semibold"
 								>
 									{t("read_more")} →
 								</Link>
 							</div>
 						</article>
-					))}
+						);
+					})}
 				</div>
 
 				{/* Reviews section inserted below blog list */}

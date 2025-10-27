@@ -86,7 +86,8 @@
   "blog": {
     "title": "Mẹo thuế & Tin tức",
     "subtitle": "Cập nhật các quy định về thuế",
-    "read_more": "Đọc thêm"
+    "read_more": "Đọc thêm",
+    "not_found": "Không tìm thấy bài viết."
   },
   "chatbot": {
     "title": "Trợ lý tư vấn",
