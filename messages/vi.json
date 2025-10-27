@@ -96,5 +96,13 @@
     "send": "Gửi",
     "close": "Đóng",
     "error": "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại."
+  },
+  "reviews": {
+    "title": "Mọi người nói gì",
+    "subtitle": "Những đánh giá và phản hồi đã được xác thực",
+    "placeholder_quote": "Người đánh giá này đã cung cấp phản hồi hữu ích.",
+    "verified": "Đã xác thực",
+    "unverified": "Chưa xác thực",
+    "note_html": "Các đánh giá lấy từ các nền tảng công khai; vui lòng kiểm tra trực tiếp trên trang gốc để biết bối cảnh đầy đủ."
   }
 }

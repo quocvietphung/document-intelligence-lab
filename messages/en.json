@@ -96,5 +96,13 @@
     "send": "Send",
     "close": "Close",
     "error": "Sorry, an error occurred. Please try again."
+  },
+  "reviews": {
+    "title": "What People Say",
+    "subtitle": "Verified reviews and testimonials",
+    "placeholder_quote": "This reviewer has provided valuable feedback.",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "note_html": "Reviews are sourced from public platforms; please verify directly on the original site for full context."
   }
 }

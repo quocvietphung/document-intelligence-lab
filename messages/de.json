@@ -96,5 +96,13 @@
     "send": "Senden",
     "close": "Schließen",
     "error": "Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+  },
+  "reviews": {
+    "title": "Was die Leute sagen",
+    "subtitle": "Verifizierte Bewertungen und Erfahrungsberichte",
+    "placeholder_quote": "Dieser Rezensent hat wertvolles Feedback gegeben.",
+    "verified": "Verifiziert",
+    "unverified": "Nicht verifiziert",
+    "note_html": "Bewertungen stammen aus öffentlichen Plattformen; bitte überprüfen Sie die Originalquelle für den vollständigen Kontext."
   }
 }
