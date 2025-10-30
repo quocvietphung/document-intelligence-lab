@@ -18,7 +18,8 @@
     "openai": "^6.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "pdf-parse": "^1.1.1"
+    "pdf-parse": "^1.1.1",
+    "natural": "^6.2.0"
   },
   "devDependencies": {
     "@types/node": "^20",

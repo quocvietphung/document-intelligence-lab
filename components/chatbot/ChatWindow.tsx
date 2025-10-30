@@ -9,11 +9,18 @@ interface ChatWindowProps {
   onClose: () => void;
 }
 
+type FallbackReply = {
+  id: string;
+  text: string;
+  rag?: Array<{ id: string; file: string; chunkIndex: number; text: string; score?: number }>;
+};
+
 export default function ChatWindow({ onClose }: ChatWindowProps) {
   const t = useTranslations("chatbot");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
-  
+  const [fallbackReplies, setFallbackReplies] = useState<FallbackReply[]>([]);
+
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({ api: "/api/chat" }),
     messages: [
@@ -33,14 +40,51 @@ export default function ChatWindow({ onClose }: ChatWindowProps) {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, fallbackReplies]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-    
-    sendMessage({ text: input });
+
+    // snapshot assistant count before sending
+    const prevAssistantCount = messages.filter((m) => m.role === "assistant").length;
+
+    // send via SDK transport (keeps existing behaviour)
+    try {
+      sendMessage({ text: input });
+    } catch (err) {
+      // ignore; we'll fallback
+      console.warn("sendMessage error (ignored):", err);
+    }
+
+    const textToSend = input;
     setInput("");
+
+    // After a short delay, if no assistant reply was appended, call debug endpoint and show fallback
+    const CHECK_DELAY_MS = 1500;
+    setTimeout(async () => {
+      try {
+        const currentAssistantCount = messages.filter((m) => m.role === "assistant").length;
+        if (currentAssistantCount <= prevAssistantCount) {
+          // no assistant reply yet — call debug endpoint
+          const res = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: textToSend, debug: true }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const replyText = data?.reply ?? data?.text ?? "(no reply)";
+            const rag = Array.isArray(data?.ragSnippets) ? data.ragSnippets : data?.ragSnippets ?? [];
+            setFallbackReplies((prev) => [...prev, { id: String(Date.now()), text: replyText, rag }]);
+          } else {
+            console.warn("Fallback debug request failed", await res.text());
+          }
+        }
+      } catch (err) {
+        console.error("Fallback fetch error:", err);
+      }
+    }, CHECK_DELAY_MS);
   };
 
   return (
@@ -75,18 +119,13 @@ export default function ChatWindow({ onClose }: ChatWindowProps) {
         {messages.map((message) => {
           const isUser = message.role === "user";
           return (
-            <div
-              key={message.id}
-              className={`flex ${isUser ? "justify-end" : "justify-start"}`}
-            >
+            <div key={message.id} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
               <div
                 className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                  isUser
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-800"
+                  isUser ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-800"
                 }`}
               >
-                {message.parts.map((part, idx) => {
+                {message.parts.map((part: any, idx: number) => {
                   if (part.type === "text") {
                     return (
                       <p key={idx} className="text-sm whitespace-pre-wrap">
@@ -100,6 +139,27 @@ export default function ChatWindow({ onClose }: ChatWindowProps) {
             </div>
           );
         })}
+
+        {/* Render fallback replies (from debug endpoint) */}
+        {fallbackReplies.map((f) => (
+          <div key={f.id} className="flex justify-start">
+            <div className="max-w-[80%] rounded-lg px-4 py-2 bg-gray-100 text-gray-800">
+              <p className="text-sm whitespace-pre-wrap">{f.text}</p>
+              {f.rag && f.rag.length > 0 && (
+                <div className="mt-2 text-xs text-gray-600">
+                  <div className="font-semibold">Retrieved snippets:</div>
+                  {f.rag.map((s, i) => (
+                    <div key={i} className="mt-1 border-l-2 pl-2">
+                      <div className="text-xs font-medium">{s.file} (chunk {s.chunkIndex})</div>
+                      <div className="text-xs whitespace-pre-wrap">{s.text}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+
         {isLoading && (
           <div className="flex justify-start">
             <div className="bg-gray-100 rounded-lg px-4 py-2">
@@ -111,11 +171,10 @@ export default function ChatWindow({ onClose }: ChatWindowProps) {
             </div>
           </div>
         )}
+
         {error && (
           <div className="flex justify-center">
-            <div className="bg-red-100 text-red-700 rounded-lg px-4 py-2 text-sm">
-              {t("error")}
-            </div>
+            <div className="bg-red-100 text-red-700 rounded-lg px-4 py-2 text-sm">{t("error")}</div>
           </div>
         )}
         <div ref={messagesEndRef} />
