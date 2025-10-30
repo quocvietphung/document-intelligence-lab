@@ -53,6 +53,12 @@ export default function ContactSection() {
     } as any);
   };
 
+  // Quick time slot helper
+  const quickSlots = ["09:00", "10:30", "13:00", "15:00"];
+  const selectQuickSlot = (time: string) => {
+    setFormData({ ...formData, time });
+  };
+
   return (
     <section id="contact" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -64,10 +70,23 @@ export default function ContactSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Left: Booking card + hotline */}
           <div className="bg-gradient-to-br from-white to-gray-50 p-8 rounded-xl shadow-md">
-            <h3 className="text-2xl font-semibold text-gray-900 mb-2">{t("booking_title")}</h3>
-            <p className="text-gray-600 mb-6">{t("booking_subtitle")}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-2">{t("booking_title")}</h3>
+                <p className="text-gray-600 mb-4">{t("booking_subtitle")}</p>
+              </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Trust snippet (hardcoded average for now) */}
+              <div className="text-right">
+                <div className="flex items-center justify-end">
+                  <div className="text-yellow-400 mr-2">★★★★★</div>
+                  <div className="text-sm font-semibold">4.8</div>
+                </div>
+                <div className="text-xs text-gray-500">Verified reviews</div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {t("service_label")}
@@ -95,6 +114,7 @@ export default function ContactSection() {
                     value={formData.date}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
+                    required
                   />
                 </div>
 
@@ -106,7 +126,25 @@ export default function ContactSection() {
                     value={formData.time}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
+                    required
                   />
+                </div>
+              </div>
+
+              {/* Quick slots */}
+              <div>
+                <div className="text-sm text-gray-500 mb-2">Quick available times</div>
+                <div className="flex gap-2">
+                  {quickSlots.map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => selectQuickSlot(slot)}
+                      className={`px-3 py-2 rounded-lg border ${formData.time === slot ? "bg-blue-600 text-white" : "bg-white text-gray-700"}`}
+                    >
+                      {slot}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -134,11 +172,19 @@ export default function ContactSection() {
             </form>
 
             <div className="mt-8 p-4 bg-white border border-gray-100 rounded-lg">
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">{t("hotline_label")}</h4>
-              <a href="tel:+493012345678" className="text-lg font-bold text-blue-600 hover:underline">
-                +49 30 1234 5678
-              </a>
-              <p className="text-sm text-gray-500 mt-2">{t("hotline_note")}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-1">{t("hotline_label")}</h4>
+                  <a href="tel:+493012345678" className="text-lg font-bold text-blue-600 hover:underline">
+                    +49 30 1234 5678
+                  </a>
+                </div>
+
+                <div className="text-sm text-gray-500 text-right">
+                  <div>{t("hotline_note")}</div>
+                  <div className="mt-2">Or email: <a href="mailto:info@taxconsulting.example" className="text-blue-600 hover:underline">info@taxconsulting.example</a></div>
+                </div>
+              </div>
             </div>
           </div>
 

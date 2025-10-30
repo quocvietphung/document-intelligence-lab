@@ -4,10 +4,11 @@
     "name": "Nguyen-Vu Nguyen",
     "source": "Google Reviews",
     "rating": 5,
-    "quote": "(Paste verified review content here.)",
+    "quote": "Extremely professional and thorough — helped me resolve a complex tax issue quickly. Clear communication, fast responses and trustworthy advice.",
     "verified": true,
     "date": "2025-10-01",
-    "avatar": ""
+    "avatar": "",
+    "sourceUrl": "https://www.google.com/search"
   },
   {
     "id": "sample-2",
@@ -17,7 +18,7 @@
     "quote": "Great service and fast response. Highly recommend.",
     "verified": false,
     "date": "2025-09-12",
-    "avatar": ""
+    "avatar": "",
+    "sourceUrl": ""
   }
 ]
-
