@@ -2,6 +2,7 @@
   "nav": {
     "home": "Home",
     "services": "Services",
+    "gold": "Gold",
     "blog": "Blog",
     "contact": "Contact"
   },
@@ -105,5 +106,50 @@
     "verified": "Verified",
     "unverified": "Unverified",
     "note_html": "Reviews are sourced from public platforms; please verify directly on the original site for full context."
+  },
+  "gold": {
+    "title": "Gold Investment Consulting",
+    "subtitle": "Expert guidance for gold investments and market analysis",
+    "services": {
+      "priceAnalysis": "Price Analysis",
+      "priceAnalysisDesc": "Real-time gold price monitoring and trend analysis",
+      "investmentAdvice": "Investment Advice",
+      "investmentAdviceDesc": "Strategic investment recommendations for gold portfolios",
+      "taxOptimization": "Tax Optimization",
+      "taxOptimizationDesc": "Tax-efficient strategies for gold investments"
+    },
+    "marketInsights": {
+      "title": "Market Insights",
+      "factors": {
+        "title": "Key Market Factors",
+        "economic": "Economic indicators and GDP growth",
+        "inflation": "Inflation rates and purchasing power",
+        "geopolitical": "Geopolitical events and market stability",
+        "currency": "Currency fluctuations and exchange rates"
+      },
+      "tips": {
+        "title": "Investment Tips",
+        "diversify": "Diversify across different gold products",
+        "longTerm": "Focus on long-term holding strategies",
+        "monitor": "Monitor market news and economic data",
+        "consult": "Consult with financial experts regularly"
+      }
+    },
+    "cta": {
+      "title": "Ready to Invest in Gold?",
+      "subtitle": "Get personalized advice for your gold investment strategy",
+      "button": "Book Consultation"
+    },
+    "priceWidget": {
+      "title": "Gold Price",
+      "subtitle": "Live market data",
+      "perOunce": "per troy ounce",
+      "chart": "24h Trend",
+      "last24h": "Last 24 hours",
+      "lastUpdated": "Last updated",
+      "refresh": "Refresh",
+      "error": "Unable to load data",
+      "retry": "Try again"
+    }
   }
 }

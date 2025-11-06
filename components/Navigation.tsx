@@ -31,7 +31,7 @@ export default function Navigation() {
               TaxConsult
             </Link>
           </div>
-          
+
           <div className="hidden md:flex space-x-8">
             <Link
               href={`/${locale}`}
@@ -44,6 +44,12 @@ export default function Navigation() {
               className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
             >
               {t("services")}
+            </Link>
+            <Link
+              href={`/${locale}/gold`}
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+            >
+              {t("gold")}
             </Link>
             <Link
               href={`/${locale}/blog`}

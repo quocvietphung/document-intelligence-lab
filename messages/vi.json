@@ -2,6 +2,7 @@
   "nav": {
     "home": "Trang chủ",
     "services": "Dịch vụ",
+    "gold": "Vàng",
     "blog": "Blog",
     "contact": "Liên hệ"
   },
@@ -105,5 +106,50 @@
     "verified": "Đã xác thực",
     "unverified": "Chưa xác thực",
     "note_html": "Các đánh giá lấy từ các nền tảng công khai; vui lòng kiểm tra trực tiếp trên trang gốc để biết bối cảnh đầy đủ."
+  },
+  "gold": {
+    "title": "Tư vấn Đầu tư Vàng",
+    "subtitle": "Hướng dẫn chuyên nghiệp cho đầu tư vàng và phân tích thị trường",
+    "services": {
+      "priceAnalysis": "Phân tích Giá",
+      "priceAnalysisDesc": "Theo dõi giá vàng thời gian thực và phân tích xu hướng",
+      "investmentAdvice": "Tư vấn Đầu tư",
+      "investmentAdviceDesc": "Khuyến nghị chiến lược đầu tư cho danh mục vàng",
+      "taxOptimization": "Tối ưu Thuế",
+      "taxOptimizationDesc": "Chiến lược tối ưu thuế cho đầu tư vàng"
+    },
+    "marketInsights": {
+      "title": "Thông tin Thị trường",
+      "factors": {
+        "title": "Các Yếu tố Thị trường Chính",
+        "economic": "Chỉ số kinh tế và tăng trưởng GDP",
+        "inflation": "Tỷ lệ lạm phát và sức mua",
+        "geopolitical": "Sự kiện địa chính trị và ổn định thị trường",
+        "currency": "Biến động tiền tệ và tỷ giá hối đoái"
+      },
+      "tips": {
+        "title": "Lời khuyên Đầu tư",
+        "diversify": "Đa dạng hóa qua các sản phẩm vàng khác nhau",
+        "longTerm": "Tập trung vào chiến lược nắm giữ dài hạn",
+        "monitor": "Theo dõi tin tức thị trường và dữ liệu kinh tế",
+        "consult": "Thường xuyên tham khảo ý kiến chuyên gia tài chính"
+      }
+    },
+    "cta": {
+      "title": "Sẵn sàng Đầu tư Vàng?",
+      "subtitle": "Nhận tư vấn cá nhân hóa cho chiến lược đầu tư vàng của bạn",
+      "button": "Đặt lịch Tư vấn"
+    },
+    "priceWidget": {
+      "title": "Giá Vàng",
+      "subtitle": "Dữ liệu thị trường trực tiếp",
+      "perOunce": "mỗi ounce troy",
+      "chart": "Xu hướng 24h",
+      "last24h": "24 giờ qua",
+      "lastUpdated": "Cập nhật lần cuối",
+      "refresh": "Làm mới",
+      "error": "Không thể tải dữ liệu",
+      "retry": "Thử lại"
+    }
   }
 }

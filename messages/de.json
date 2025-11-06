@@ -2,6 +2,7 @@
   "nav": {
     "home": "Startseite",
     "services": "Leistungen",
+    "gold": "Gold",
     "blog": "Blog",
     "contact": "Kontakt"
   },
@@ -105,5 +106,50 @@
     "verified": "Verifiziert",
     "unverified": "Nicht verifiziert",
     "note_html": "Bewertungen stammen aus öffentlichen Plattformen; bitte überprüfen Sie die Originalquelle für den vollständigen Kontext."
+  },
+  "gold": {
+    "title": "Gold-Investment-Beratung",
+    "subtitle": "Expertenberatung für Goldinvestitionen und Marktanalyse",
+    "services": {
+      "priceAnalysis": "Preisanalyse",
+      "priceAnalysisDesc": "Echtzeit-Überwachung der Goldpreise und Trendanalyse",
+      "investmentAdvice": "Investment-Beratung",
+      "investmentAdviceDesc": "Strategische Investment-Empfehlungen für Goldportfolios",
+      "taxOptimization": "Steueroptimierung",
+      "taxOptimizationDesc": "Steueroptimierte Strategien für Goldinvestitionen"
+    },
+    "marketInsights": {
+      "title": "Markteinsichten",
+      "factors": {
+        "title": "Wichtige Marktfaktoren",
+        "economic": "Wirtschaftliche Indikatoren und BIP-Wachstum",
+        "inflation": "Inflationsraten und Kaufkraft",
+        "geopolitical": "Geopolitische Ereignisse und Marktstabilität",
+        "currency": "Währungsschwankungen und Wechselkurse"
+      },
+      "tips": {
+        "title": "Investment-Tipps",
+        "diversify": "Diversifizieren Sie über verschiedene Goldprodukte",
+        "longTerm": "Fokus auf langfristige Haltestrategien",
+        "monitor": "Überwachen Sie Marktnews und Wirtschaftsdaten",
+        "consult": "Beraten Sie regelmäßig mit Finanzexperten"
+      }
+    },
+    "cta": {
+      "title": "Bereit für Gold-Investitionen?",
+      "subtitle": "Erhalten Sie personalisierte Beratung für Ihre Gold-Investment-Strategie",
+      "button": "Beratung buchen"
+    },
+    "priceWidget": {
+      "title": "Goldpreis",
+      "subtitle": "Live-Marktdaten",
+      "perOunce": "pro Feinunze",
+      "chart": "24h Trend",
+      "last24h": "Letzte 24 Stunden",
+      "lastUpdated": "Zuletzt aktualisiert",
+      "refresh": "Aktualisieren",
+      "error": "Daten konnten nicht geladen werden",
+      "retry": "Erneut versuchen"
+    }
   }
 }
