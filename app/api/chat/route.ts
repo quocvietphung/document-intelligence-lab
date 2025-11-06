@@ -217,21 +217,17 @@ export async function POST(req: NextRequest) {
         ? createSystemMessage(lastUserMessage.content, ragContext)
         : createSystemMessage("");
 
-    // Build final messages - combine system prompt with user message to stay at 1 message
-    // This way AI still has ERGO context but we only send 1 message to API
-    const combinedMessage = `${systemPrompt}
-
----USER QUERY---
-${lastUserMessage?.content || ""}`;
-
+    // Build final messages with system prompt and all previous messages
+    // Keep the full conversation history for better context
     const messagesWithSystem = [
       {
-        role: "user",
-        content: combinedMessage,
+        role: "system",
+        content: systemPrompt,
       },
+      ...convertedMessages,
     ];
 
-    console.log(`[chat/route] Sending ${messagesWithSystem.length} message to Azure OpenAI (optimized - combined message with context)`);
+    console.log(`[chat/route] Sending ${messagesWithSystem.length} messages to Azure OpenAI`);
 
     // Build Azure OpenAI API URL
     const url = `${AZURE_OPENAI_ENDPOINT}openai/deployments/${AZURE_OPENAI_DEPLOYMENT_NAME}/chat/completions?api-version=${AZURE_OPENAI_API_VERSION}`;

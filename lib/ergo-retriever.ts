@@ -47,10 +47,40 @@ export async function loadErgoDocs(): Promise<ErgoDocsData> {
       }
 
       cachedErgoDocs = converted;
+    } else if (data && data.docs && typeof data.docs === "object") {
+      // Handle new format from extract-ergo-pdf.js with { generatedAt, totalPdfs, totalChunks, docs: {...} }
+      const converted: ErgoDocsData = {};
+
+      for (const [fileKey, chunks] of Object.entries(data.docs)) {
+        if (Array.isArray(chunks)) {
+          // Ensure all chunks are strings
+          converted[fileKey] = chunks.map((chunk: any) =>
+            typeof chunk === "string" ? chunk : String(chunk || "").trim()
+          ).filter((chunk: string) => chunk.length > 0);
+        }
+      }
+
+      cachedErgoDocs = converted;
+    } else if (typeof data === "object" && data !== null) {
+      // Handle old object format
+      const converted: ErgoDocsData = {};
+
+      for (const [fileKey, value] of Object.entries(data)) {
+        if (fileKey !== "generatedAt" && fileKey !== "totalPdfs" && fileKey !== "totalChunks") {
+          if (Array.isArray(value)) {
+            converted[fileKey] = value.map((chunk: any) =>
+              typeof chunk === "string" ? chunk : String(chunk || "").trim()
+            ).filter((chunk: string) => chunk.length > 0);
+          }
+        }
+      }
+
+      cachedErgoDocs = Object.keys(converted).length > 0 ? converted : data;
     } else {
       cachedErgoDocs = data;
     }
 
+    console.log(`[ergo-retriever] Loaded ERGO docs with ${Object.keys(cachedErgoDocs || {}).length} files`);
     return cachedErgoDocs || {};
   } catch (error) {
     console.error("[ergo-retriever] Error loading ERGO documentation:", error);
@@ -86,11 +116,20 @@ export async function retrieveErgoDocuments(
   for (const [fileId, chunks] of Object.entries(ergoDocs)) {
     console.log(`[ergo-retriever] Processing file: ${fileId}`);
 
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
+    // Ensure chunks is an array
+    const chunkArray = Array.isArray(chunks) ? chunks : [];
 
-      // Chunk is already a string from loaded data
-      const chunkText = String(chunk || "");
+    for (let i = 0; i < chunkArray.length; i++) {
+      const chunk = chunkArray[i];
+
+      // Ensure chunk is converted to string safely
+      const chunkText = typeof chunk === "string" ? chunk : String(chunk || "").trim();
+
+      // Skip empty chunks
+      if (!chunkText || chunkText.length === 0) {
+        chunkIndex++;
+        continue;
+      }
 
       const relevance = calculateRelevance(query, chunkText);
 
