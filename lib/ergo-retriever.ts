@@ -206,18 +206,23 @@ export function formatRetrievedContext(
   documents: ErgoBundleItem[]
 ): string {
   if (documents.length === 0) {
-    return "";
+    return "⚠️ KEINE ERGO-DOKUMENTE GEFUNDEN für diese Abfrage. Müssen Sie den Benutzer informieren, dass die angeforderten Informationen nicht verfügbar sind.";
   }
 
-  let context =
-    "## Relevante ERGO Dokumentation\n\nNutze folgende Informationen aus den ERGO Dokumenten zur Beantwortung:\n\n";
+  let context = "📚 ERGO DOKUMENTENQUELLEN - VERWENDEN SIE DIESE FÜR DIE ANTWORT:\n";
+  context += "=" .repeat(70) + "\n\n";
 
   for (let i = 0; i < documents.length; i++) {
     const doc = documents[i];
-    const formattedText = formatDocumentText(doc.text, 600);
-    context += `### Quelle ${i + 1}: ${doc.file}\n`;
-    context += `${formattedText}\n\n`;
+    const formattedText = formatDocumentText(doc.text, 800);
+    context += `📄 DOKUMENT ${i + 1}: ${doc.file}\n`;
+    context += "-".repeat(70) + "\n";
+    context += `${formattedText}\n`;
+    context += "\n";
   }
+
+  context += "=" .repeat(70) + "\n";
+  context += "⚠️ WICHTIG: Sie MÜSSEN die obigen Informationen verwenden, um spezifische Antworten zu geben. Generische Antworten sind nicht akzeptabel.\n";
 
   return context;
 }

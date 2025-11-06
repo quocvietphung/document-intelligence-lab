@@ -107,7 +107,7 @@ export function isErgoRelated(query: string): boolean {
 /**
  * Format document text for display
  */
-export function formatDocumentText(text: string | any, maxLength: number = 500): string {
+export function formatDocumentText(text: string | any, maxLength: number = 1200): string {
   // Ensure text is a string
   const textStr = typeof text === "string" ? text : String(text || "");
 
@@ -115,17 +115,17 @@ export function formatDocumentText(text: string | any, maxLength: number = 500):
     return textStr;
   }
 
-  // Try to cut at sentence boundary
+  // Try to cut at sentence boundary for better readability
   const truncated = textStr.substring(0, maxLength);
   const lastPeriodIndex = truncated.lastIndexOf(".");
   const lastCommaIndex = truncated.lastIndexOf(",");
   const cutIndex = Math.max(lastPeriodIndex, lastCommaIndex);
 
-  if (cutIndex > maxLength * 0.8) {
-    return truncated.substring(0, cutIndex + 1) + " ...";
+  if (cutIndex > maxLength * 0.75) {
+    return truncated.substring(0, cutIndex + 1);
   }
 
-  return truncated + " ...";
+  return truncated.trimEnd();
 }
 
 /**
