@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, FormEvent } from "react";
+import { useEffect, useRef, FormEvent } from "react";
 import { useTranslations } from "next-intl";
-import { useCustomChat, type ChatMessage } from "@/lib/useCustomChat";
+import { useCustomChat } from "@/lib/useCustomChat";
 
 interface ChatWindowProps {
   onClose: () => void;
@@ -93,29 +93,7 @@ export default function ChatWindow({ onClose }: ChatWindowProps) {
                     {message.content}
                   </p>
 
-                  {/* RAG Sources (for assistant messages) */}
-                  {!isUser && ragDocs && ragDocs.length > 0 && (
-                    <div className="mt-3 pt-2 border-t border-gray-300 text-xs">
-                      <div className="font-semibold text-blue-700 mb-2">
-                        📚 Nguồn (ERGO):
-                      </div>
-                      <div className="space-y-1">
-                        {ragDocs.map((doc, i) => (
-                          <div
-                            key={i}
-                            className="bg-white rounded p-1.5 text-gray-700"
-                          >
-                            <div className="font-medium text-blue-600">
-                              {doc.file.split("/").pop()}
-                            </div>
-                            <div className="text-gray-600 line-clamp-2">
-                              {doc.summary}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+
                 </div>
               </div>
             );

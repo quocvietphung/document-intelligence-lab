@@ -143,20 +143,35 @@ export async function POST(req: NextRequest) {
 
       console.log("[chat/route] Debug response:", reply.substring(0, 100));
 
+      const formattedRagDocs = ragDocuments
+        .filter(
+          (doc) =>
+            doc &&
+            typeof doc === "object" &&
+            doc.file &&
+            typeof doc.text === "string"
+        )
+        .map((doc) => {
+          const fileName = String(doc.file || "Unknown");
+          const summary = (doc.text || "").slice(0, 300).trim();
+
+          return {
+            id: doc.id || "",
+            file: fileName,
+            chunkIndex: doc.chunkIndex || 0,
+            summary: summary || "No summary available",
+          };
+        });
+
       return NextResponse.json({
         reply,
-        ragSnippets: ragDocuments.map((doc) => ({
+        ragSnippets: formattedRagDocs.map((doc) => ({
           id: doc.id,
           file: doc.file,
           chunkIndex: doc.chunkIndex,
-          text: doc.text,
+          text: doc.summary,
         })),
-        ragDocuments: ragDocuments.map((doc) => ({
-          id: doc.id,
-          file: doc.file,
-          chunkIndex: doc.chunkIndex,
-          summary: doc.text.slice(0, 300),
-        })),
+        ragDocuments: formattedRagDocs,
       });
     }
 
@@ -245,14 +260,37 @@ export async function POST(req: NextRequest) {
     console.log("[chat/route] Got response from Azure OpenAI");
 
     // Add RAG metadata to response
+    const formattedRagDocuments = ragDocuments
+      .filter(
+        (doc) =>
+          doc &&
+          typeof doc === "object" &&
+          doc.file &&
+          typeof doc.text === "string"
+      )
+      .map((doc) => {
+        // Ensure file name is clean
+        const fileName = String(doc.file || "Unknown");
+        const summary = (doc.text || "").slice(0, 300).trim();
+
+        return {
+          id: doc.id || "",
+          file: fileName,
+          chunkIndex: doc.chunkIndex || 0,
+          summary: summary || "Keine Zusammenfassung verfügbar",
+        };
+      });
+
+    console.log(
+      `[chat/route] Formatted ${formattedRagDocuments.length} RAG documents`
+    );
+    formattedRagDocuments.forEach((doc, i) => {
+      console.log(`[chat/route] RAG Doc ${i + 1}: ${doc.file}`);
+    });
+
     return NextResponse.json({
       ...data,
-      ragDocuments: ragDocuments.map((doc) => ({
-        id: doc.id,
-        file: doc.file,
-        chunkIndex: doc.chunkIndex,
-        summary: doc.text.slice(0, 300),
-      })),
+      ragDocuments: formattedRagDocuments,
     });
   } catch (error) {
     console.error("[chat/route] Error:", error);

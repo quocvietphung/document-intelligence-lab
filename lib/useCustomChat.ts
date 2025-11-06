@@ -99,16 +99,37 @@ export function useCustomChat(apiEndpoint: string = "/api/chat"): UseChatReturn 
         setMessages((prev) => [...prev, assistantMessage]);
 
         // Store RAG documents if available (for later display)
-        if (data.ragDocuments) {
-          // Add to last message as metadata
-          setMessages((prev) => {
-            const updated = [...prev];
-            const lastMsg = updated[updated.length - 1];
-            if (lastMsg) {
-              (lastMsg as any).ragDocuments = data.ragDocuments;
-            }
-            return updated;
-          });
+        if (data.ragDocuments && Array.isArray(data.ragDocuments)) {
+          console.log(
+            "[useCustomChat] RAG documents received:",
+            data.ragDocuments
+          );
+
+          // Validate RAG documents structure
+          const validRagDocs = data.ragDocuments.filter(
+            (doc: any) =>
+              doc &&
+              typeof doc === "object" &&
+              typeof doc.file === "string" &&
+              typeof doc.summary === "string"
+          );
+
+          if (validRagDocs.length > 0) {
+            console.log(
+              "[useCustomChat] Valid RAG documents:",
+              validRagDocs.length
+            );
+
+            // Add to last message as metadata
+            setMessages((prev) => {
+              const updated = [...prev];
+              const lastMsg = updated[updated.length - 1];
+              if (lastMsg) {
+                (lastMsg as any).ragDocuments = validRagDocs;
+              }
+              return updated;
+            });
+          }
         }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err) || "Unknown error";

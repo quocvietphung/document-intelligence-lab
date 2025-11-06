@@ -15,8 +15,11 @@ export interface RelevanceScore {
  */
 export function calculateAdvancedRelevance(
   query: string,
-  text: string
+  text: string | any
 ): RelevanceScore {
+  // Ensure text is a string
+  const textStr = typeof text === "string" ? text : String(text || "");
+
   const queryTerms = query
     .toLowerCase()
     .split(/\s+/)
@@ -28,21 +31,21 @@ export function calculateAdvancedRelevance(
   for (const term of queryTerms) {
     // Count exact word matches
     const wordRegex = new RegExp(`\\b${term}\\b`, "gi");
-    const exactMatches = text.match(wordRegex);
+    const exactMatches = textStr.match(wordRegex);
     if (exactMatches) {
       keywordMatches += exactMatches.length;
     }
 
     // Count partial matches (important for German compound words)
     const partialRegex = new RegExp(`\\b${term}\\w*\\b`, "gi");
-    const partialMatches = text.match(partialRegex);
+    const partialMatches = textStr.match(partialRegex);
     if (partialMatches) {
       termFrequency += partialMatches.length;
     }
   }
 
   // Factor in document length (prefer content-rich chunks)
-  const documentLengthFactor = Math.log(text.length + 1) * 0.1;
+  const documentLengthFactor = Math.log(textStr.length + 1) * 0.1;
 
   const totalScore =
     keywordMatches * 10 + termFrequency * 3 + documentLengthFactor;
@@ -126,13 +129,16 @@ export function isErgoRelated(query: string): boolean {
 /**
  * Format document text for display
  */
-export function formatDocumentText(text: string, maxLength: number = 500): string {
-  if (text.length <= maxLength) {
-    return text;
+export function formatDocumentText(text: string | any, maxLength: number = 500): string {
+  // Ensure text is a string
+  const textStr = typeof text === "string" ? text : String(text || "");
+
+  if (textStr.length <= maxLength) {
+    return textStr;
   }
 
   // Try to cut at sentence boundary
-  const truncated = text.substring(0, maxLength);
+  const truncated = textStr.substring(0, maxLength);
   const lastPeriodIndex = truncated.lastIndexOf(".");
   const lastCommaIndex = truncated.lastIndexOf(",");
   const cutIndex = Math.max(lastPeriodIndex, lastCommaIndex);

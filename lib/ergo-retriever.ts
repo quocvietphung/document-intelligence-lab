@@ -64,16 +64,30 @@ export async function retrieveErgoDocuments(
 
   let chunkIndex = 0;
   for (const [fileId, chunks] of Object.entries(ergoDocs)) {
+    console.log(`[ergo-retriever] Processing file: ${fileId}`);
+
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
-      const relevance = calculateRelevance(query, chunk);
+
+      // Ensure chunk is a string
+      const chunkText = typeof chunk === "string" ? chunk : String(chunk || "");
+
+      const relevance = calculateRelevance(query, chunkText);
 
       if (relevance > 0) {
+        const filePath = getFilePathFromId(fileId);
+        const fileName =
+          filePath.split("/").pop() || fileId.split("::")[0] || "Unknown";
+
+        console.log(
+          `[ergo-retriever] Found relevant doc: ${fileName} (score: ${relevance.toFixed(2)})`
+        );
+
         results.push({
           id: `${fileId}::${i}`,
-          file: getFilePathFromId(fileId),
+          file: fileName, // Use just the file name, not full path
           chunkIndex: i,
-          text: chunk,
+          text: chunkText,
         });
       }
       chunkIndex++;
@@ -86,6 +100,10 @@ export async function retrieveErgoDocuments(
     const scoreB = calculateRelevance(query, b.text);
     return scoreB - scoreA;
   });
+
+  console.log(
+    `[ergo-retriever] Retrieved ${results.length} documents, returning top ${topK}`
+  );
 
   return results.slice(0, topK);
 }
