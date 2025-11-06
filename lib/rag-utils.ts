@@ -98,32 +98,10 @@ export function extractKeyTerms(query: string): string[] {
  * Check if query is related to ERGO products
  */
 export function isErgoRelated(query: string): boolean {
-  const ergoKeywords = [
-    "ergo",
-    "versicherung",
-    "versicherungen",
-    "krankenversicherung",
-    "altersvorsorge",
-    "pension",
-    "rente",
-    "leben",
-    "sachversicherung",
-    "haftpflicht",
-    "kfz",
-    "auto",
-    "haus",
-    "immobilien",
-    "steuer",
-    "steuern",
-    "steuerlich",
-    "versicherter",
-    "beiträge",
-    "prämien",
-    "versicherungsvertrag",
-  ];
-
-  const queryLower = query.toLowerCase();
-  return ergoKeywords.some((keyword) => queryLower.includes(keyword));
+  // ALWAYS use ERGO documentation for every query
+  // This ensures RAG is always active and retrieves relevant documents
+  // The relevance scoring in calculateAdvancedRelevance will filter out non-relevant docs
+  return true;
 }
 
 /**

@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
             doc &&
             typeof doc === "object" &&
             doc.file &&
-            typeof doc.text === "string"
+            doc.text
         )
         .map((doc) => {
           const fileName = String(doc.file || "Unknown");
@@ -217,16 +217,21 @@ export async function POST(req: NextRequest) {
         ? createSystemMessage(lastUserMessage.content, ragContext)
         : createSystemMessage("");
 
-    // Build final messages with system prompt
+    // Build final messages - combine system prompt with user message to stay at 1 message
+    // This way AI still has ERGO context but we only send 1 message to API
+    const combinedMessage = `${systemPrompt}
+
+---USER QUERY---
+${lastUserMessage?.content || ""}`;
+
     const messagesWithSystem = [
       {
-        role: "system",
-        content: systemPrompt,
+        role: "user",
+        content: combinedMessage,
       },
-      ...convertedMessages,
     ];
 
-    console.log(`[chat/route] Sending ${messagesWithSystem.length} messages to Azure OpenAI`);
+    console.log(`[chat/route] Sending ${messagesWithSystem.length} message to Azure OpenAI (optimized - combined message with context)`);
 
     // Build Azure OpenAI API URL
     const url = `${AZURE_OPENAI_ENDPOINT}openai/deployments/${AZURE_OPENAI_DEPLOYMENT_NAME}/chat/completions?api-version=${AZURE_OPENAI_API_VERSION}`;
@@ -266,7 +271,7 @@ export async function POST(req: NextRequest) {
           doc &&
           typeof doc === "object" &&
           doc.file &&
-          typeof doc.text === "string"
+          doc.text
       )
       .map((doc) => {
         // Ensure file name is clean
@@ -281,12 +286,6 @@ export async function POST(req: NextRequest) {
         };
       });
 
-    console.log(
-      `[chat/route] Formatted ${formattedRagDocuments.length} RAG documents`
-    );
-    formattedRagDocuments.forEach((doc, i) => {
-      console.log(`[chat/route] RAG Doc ${i + 1}: ${doc.file}`);
-    });
 
     return NextResponse.json({
       ...data,
