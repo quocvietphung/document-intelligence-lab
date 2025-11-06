@@ -21,6 +21,7 @@ tax-consulting/
 ├── app/
 │   ├── [locale]/          # Internationalized routes
 │   │   ├── blog/          # Blog pages
+│   │   ├── gold/          # 💰 Gold Investment Consulting (NEW)
 │   │   ├── impressum/     # Impressum (legal notice)
 │   │   ├── datenschutz/   # Privacy policy (GDPR)
 │   │   ├── terms/         # Terms of Service
@@ -28,7 +29,8 @@ tax-consulting/
 │   │   └── page.tsx       # Homepage
 │   ├── api/
 │   │   ├── booking/       # Booking API endpoint
-│   │   └── chat/          # AI Chatbot API endpoint
+│   │   ├── chat/          # AI Chatbot API endpoint (RAG-powered)
+│   │   └── gold-price/    # 💰 Gold Price API (NEW)
 │   ├── layout.tsx         # Root layout
 │   └── globals.css        # Global styles
 ├── components/
@@ -40,17 +42,32 @@ tax-consulting/
 │   │   └── ContactSection.tsx
 │   ├── chatbot/           # AI Chatbot components
 │   │   ├── ChatBot.tsx    # Floating chat button
-│   │   └── ChatWindow.tsx # Chat interface
+│   │   └── ChatWindow.tsx # Chat interface (with RAG sources)
+│   ├── GoldPriceWidget.tsx # 💰 Live gold price widget (NEW)
+│   ├── GoldInvestmentCalculator.tsx # 💰 ROI calculator (NEW)
 │   ├── Navigation.tsx     # Navigation bar
 │   └── Footer.tsx         # Footer component
 ├── messages/              # Translation files
 │   ├── en.json           # English translations
 │   ├── de.json           # German translations
 │   └── vi.json           # Vietnamese translations
-├── lib/                   # Utility functions
+├── data/
+│   ├── ergo_docs.json    # 📚 ERGO documents (5,076 chunks - 20.4 MB) (NEW)
+│   ├── ergo_prompt.json  # 📚 Optimized RAG prompt (16.5 KB) (NEW)
+│   ├── reviews.json      # Client reviews
+│   └── blogPosts.ts      # Blog posts
+├── lib/
+│   ├── ergo-retriever.ts # 🔍 RAG document retrieval
+│   ├── rag-utils.ts      # 📊 BM25 scoring & text processing
+│   ├── prompt-templates.ts # 💬 Multilingual prompts
+│   └── rag.test.ts       # ✅ Test suite (200+ lines)
+├── scripts/
+│   ├── extract-all-ergo-pdfs.js # 📄 PDF extraction (NEW)
+│   └── generate-ergo-prompt-v2.js # 🔧 Prompt generation (NEW)
 ├── i18n.ts               # i18n configuration
-├── middleware.ts         # Next.js middleware for i18n
-└── .env.example          # Environment variables template
+├── RAG_CHATBOT_INDEX.md  # 📚 RAG Documentation
+├── ERGO_RAG_UPDATE.md    # 🚀 Latest Updates (NEW)
+└── README.md             # This file
 
 ```
 
