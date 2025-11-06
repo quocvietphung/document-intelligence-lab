@@ -6,6 +6,7 @@ interface GoldPriceData {
   changePercent: number;
   lastUpdated: string;
   currency: string;
+  history: number[];
 }
 
 let cachedData: GoldPriceData | null = null;
@@ -45,10 +46,25 @@ async function fetchGoldPrice(): Promise<GoldPriceData> {
         changePercent = Math.round((change / cachedData.price) * 10000) / 100; // 2 decimals
       }
 
+      // Generate a simple stable 24-point history (hourly) based on price and timestamp
+      const historyPoints = 24;
+      const history: number[] = [];
+      const seed = lastFetchTime || Date.now();
+      // deterministic pseudo-random helper
+      const rnd = (i: number) => Math.sin((seed / 1000) + i) * 0.5 + 0.5;
+      for (let i = historyPoints - 1; i >= 0; i--) {
+        // earlier points slightly differ from current price by small trend + noise
+        const trend = (change || 0) * (i / historyPoints);
+        const noise = (rnd(i) - 0.5) * (price * 0.004);
+        const point = Math.max(0.1, Math.round((price - trend + noise) * 100) / 100);
+        history.push(point);
+      }
+
       return {
         price: Math.round(price * 100) / 100,
         change,
         changePercent,
+        history,
         lastUpdated: new Date().toISOString(),
         currency: data?.base ?? 'USD',
       };
@@ -74,6 +90,7 @@ async function fetchGoldPrice(): Promise<GoldPriceData> {
     changePercent: 0,
     lastUpdated: new Date().toISOString(),
     currency: 'USD',
+    history: Array.from({ length: 24 }, () => 2050.5),
   };
 }
 
