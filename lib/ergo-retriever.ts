@@ -99,17 +99,9 @@ export async function retrieveErgoDocuments(
         const fileName =
           filePath.split("/").pop() || fileId.split("::")[0] || "Unknown";
 
-        console.log(
-          `[ergo-retriever] Found relevant doc:`
-        );
-        console.log(`  - fileId: ${fileId}`);
-        console.log(`  - filePath: ${filePath}`);
-        console.log(`  - fileName: ${fileName}`);
-        console.log(`  - score: ${relevance.toFixed(2)}`);
-
         results.push({
           id: `${fileId}::${i}`,
-          file: fileName, // Use just the file name, not full path
+          file: fileName,
           chunkIndex: i,
           text: chunkText,
         });
