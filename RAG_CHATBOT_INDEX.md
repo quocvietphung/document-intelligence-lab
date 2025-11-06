@@ -11,8 +11,8 @@
 # Edit .env.local with your Azure OpenAI credentials
 AZURE_OPENAI_API_KEY=your-key
 AZURE_OPENAI_ENDPOINT=your-endpoint
-AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4-turbo
-AZURE_OPENAI_API_VERSION=2024-10-21
+AZURE_OPENAI_DEPLOYMENT_NAME=gpt-35-turbo
+AZURE_OPENAI_API_VERSION=2024-12-01-preview
 ```
 
 ### 2. Install & Run
@@ -46,7 +46,7 @@ User Question
     ├─ Include retrieved documents
     └─ Detect language (DE/EN/VI)
     ↓
-[Azure OpenAI] → gpt-4-turbo
+[Azure OpenAI] → gpt-35-turbo
     ├─ Context-aware response
     ├─ Based on real ERGO docs
     └─ No hallucinations
@@ -117,8 +117,8 @@ User: "Bảo hiểm ERGO bao gồm những gì?"
 # Azure OpenAI (Required)
 AZURE_OPENAI_API_KEY=xxx
 AZURE_OPENAI_ENDPOINT=https://xxx.openai.azure.com/
-AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4-turbo
-AZURE_OPENAI_API_VERSION=2024-10-21
+AZURE_OPENAI_DEPLOYMENT_NAME=gpt-35-turbo
+AZURE_OPENAI_API_VERSION=2024-12-01-preview
 
 # Optional
 RAG_DEBUG=true              # Enable debug logging
@@ -241,7 +241,7 @@ npm start
 ```bash
 # Deploy to Azure App Service / Vercel / etc
 # Ensure .env variables are set in hosting platform
-# Monitor costs: RAG calls use gpt-4-turbo (~$0.03 per call)
+# Monitor costs: RAG calls use gpt-35-turbo (~$0.001 per call)
 ```
 
 ---
