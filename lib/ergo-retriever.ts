@@ -114,7 +114,6 @@ export async function retrieveErgoDocuments(
 
     let chunkIndex = 0;
     for (const [fileId, chunks] of Object.entries(ergoDocs)) {
-        console.log(`[ergo-retriever] Processing file: ${fileId}`);
 
         // Ensure chunks is an array
         const chunkArray = Array.isArray(chunks) ? chunks : [];
@@ -156,9 +155,9 @@ export async function retrieveErgoDocuments(
         return scoreB - scoreA;
     });
 
-    console.log(
-        `[ergo-retriever] Retrieved ${results.length} documents, returning top ${topK}`
-    );
+        console.log(
+            `[ergo-retriever] ✅ Retrieved ${results.length} relevant chunks, returning top ${topK}`
+        );
 
     return results.slice(0, topK);
 }
