@@ -24,16 +24,73 @@ let cachedErgoDocs: ErgoDocsData | null = null;
  */
 export async function loadErgoDocs(): Promise<ErgoDocsData> {
   if (cachedErgoDocs) {
+    console.log("[ergo-retriever] Using cached ERGO docs");
     return cachedErgoDocs;
   }
 
   try {
     const filePath = path.join(process.cwd(), "data", "ergo_docs.json");
+    console.log(`[ergo-retriever] Loading ERGO docs from: ${filePath}`);
+
     const fileContent = fs.readFileSync(filePath, "utf-8");
-    cachedErgoDocs = JSON.parse(fileContent);
+    console.log(
+      `[ergo-retriever] File loaded, size: ${fileContent.length} bytes`
+    );
+
+    const data = JSON.parse(fileContent);
+    console.log(`[ergo-retriever] JSON parsed successfully`);
+
+    // Handle both array and object formats
+    if (Array.isArray(data)) {
+      console.log(`[ergo-retriever] File is array format with ${data.length} items`);
+
+      // Convert array to object format (group by file)
+      const converted: ErgoDocsData = {};
+
+      for (const item of data) {
+        if (item && item.file && item.text) {
+          const fileKey = item.file;
+          if (!converted[fileKey]) {
+            converted[fileKey] = [];
+          }
+          converted[fileKey].push(item.text);
+        }
+      }
+
+      cachedErgoDocs = converted;
+
+      // Log stats
+      let totalChunks = 0;
+      if (cachedErgoDocs) {
+        for (const chunks of Object.values(cachedErgoDocs)) {
+          if (Array.isArray(chunks)) {
+            totalChunks += chunks.length;
+          }
+        }
+        console.log(
+          `[ergo-retriever] Converted to ${Object.keys(cachedErgoDocs).length} files with ${totalChunks} total chunks`
+        );
+      }
+    } else {
+      // Already in object format
+      cachedErgoDocs = data;
+
+      let totalChunks = 0;
+      if (cachedErgoDocs) {
+        for (const chunks of Object.values(cachedErgoDocs)) {
+          if (Array.isArray(chunks)) {
+            totalChunks += chunks.length;
+          }
+        }
+        console.log(
+          `[ergo-retriever] Loaded ${Object.keys(cachedErgoDocs).length} files with ${totalChunks} total chunks`
+        );
+      }
+    }
+
     return cachedErgoDocs || {};
   } catch (error) {
-    console.error("Error loading ERGO documentation:", error);
+    console.error("[ergo-retriever] Error loading ERGO documentation:", error);
     return {};
   }
 }
@@ -69,8 +126,8 @@ export async function retrieveErgoDocuments(
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
 
-      // Ensure chunk is a string
-      const chunkText = typeof chunk === "string" ? chunk : String(chunk || "");
+      // Chunk is already a string from loaded data
+      const chunkText = String(chunk || "");
 
       const relevance = calculateRelevance(query, chunkText);
 
