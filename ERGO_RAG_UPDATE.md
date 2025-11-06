@@ -20,7 +20,7 @@
 
 ### 3. **Scripts Added** ✅
 - `scripts/extract-all-ergo-pdfs.js` - Extract PDFs
-- `scripts/generate-ergo-prompt-v2.js` - Generate optimized prompts
+- `scripts/generate-ergo-prompt.js` - Generate optimized prompts
 
 ---
 
@@ -31,7 +31,7 @@
 | `ergo_docs.json` | 20.4 MB | Full document corpus (5,076 chunks) |
 | `ergo_prompt.json` | 16.5 KB | Optimized RAG prompt (top 4 chunks) |
 | `scripts/extract-all-ergo-pdfs.js` | 3 KB | PDF extraction script |
-| `scripts/generate-ergo-prompt-v2.js` | 2 KB | Prompt generation script |
+| `scripts/generate-ergo-prompt.js` | 2 KB | Prompt generation script |
 
 ---
 
@@ -160,7 +160,7 @@ If you add new ERGO PDFs:
 node scripts/extract-all-ergo-pdfs.js
 
 # 3. Generate optimized prompt
-node scripts/generate-ergo-prompt-v2.js
+node scripts/generate-ergo-prompt.js
 
 # 4. Test
 npm run dev
@@ -172,7 +172,7 @@ npm run dev
 
 ### New Files
 - ✅ `scripts/extract-all-ergo-pdfs.js`
-- ✅ `scripts/generate-ergo-prompt-v2.js`
+- ✅ `scripts/generate-ergo-prompt.js`
 
 ### Updated Files
 - ✅ `data/ergo_docs.json` (20.4 MB - full corpus)
@@ -222,7 +222,7 @@ npm run dev                           # Start dev server
 npm run build                         # Build for production
 npm start                             # Run production
 node scripts/extract-all-ergo-pdfs.js # Extract PDFs
-node scripts/generate-ergo-prompt-v2.js # Generate prompts
+node scripts/generate-ergo-prompt.js # Generate prompts
 npx ts-node lib/rag.test.ts           # Run tests
 ```
 

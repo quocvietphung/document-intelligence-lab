@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Generate optimized ergo_prompt.json from ergo_docs.json
- * Selects best chunks for RAG to improve chatbot responses
+ * Generate optimized ergo_prompt.json - Memory optimized version
  */
 
 const fs = require('fs');
@@ -12,15 +11,11 @@ const ROOT_DIR = path.join(__dirname, '..');
 const ERGO_DOCS_FILE = path.join(ROOT_DIR, 'data', 'ergo_docs.json');
 const OUTPUT_FILE = path.join(ROOT_DIR, 'data', 'ergo_prompt.json');
 
-// Keywords to identify important chunks (for German insurance documents)
 const IMPORTANCE_KEYWORDS = [
-  'versicherung', 'leistung', 'versicherungsschutz', 'tarif', 'beitrag',
-  'prämie', 'deckung', 'anspruch', 'bedingung', 'kündigung', 'ablauf',
-  'garantie', 'risiko', 'preis', 'kosten', 'produktübersicht', 'highlights',
-  'versicherte', 'leistungsbeispiel', 'ergo', 'dkv', 'aok', 'tk',
-  'krankheit', 'unfall', 'zahnarzt', 'pflege', 'altersvorsorge', 'pension',
-  'pension', 'rente', 'vermögen', 'immobilie', 'krankentagegeld',
-  'zahnersatz', 'behandlung', 'ambulant', 'stationär', 'operativ'
+  'versicherung', 'leistung', 'tarif', 'beitrag', 'deckung',
+  'produktübersicht', 'highlights', 'krankheit', 'zahnarzt', 'pflege',
+  'altersvorsorge', 'pension', 'rente', 'zahnersatz', 'ambulant',
+  'stationär', 'operativ', 'prämie', 'kosten', 'preis'
 ];
 
 function scoreChunk(text) {
@@ -29,126 +24,114 @@ function scoreChunk(text) {
   const lowerText = text.toLowerCase();
   let score = 0;
 
-  // Score based on keyword presence
-  IMPORTANCE_KEYWORDS.forEach(keyword => {
-    if (lowerText.includes(keyword)) {
-      score += 1;
-    }
-  });
+  // Count keywords
+  const keywordMatches = IMPORTANCE_KEYWORDS.filter(kw => lowerText.includes(kw)).length;
+  score += keywordMatches * 0.5;
 
-  // Boost score for structured content (lists, numbers)
-  if (text.includes('€') || text.includes('Euro')) score += 5;
-  if (text.match(/\d{1,3}[.,]\d{2}/)) score += 3;
-  if (text.match(/\d+\s*%/)) score += 2;
-  if (text.match(/^-\s+|^•\s+|^\d+\.\s+/m)) score += 2;
+  // Boost for pricing/numbers
+  if (text.match(/€|EUR|Euro/)) score += 3;
+  if (text.match(/\d+\s*%/)) score += 1;
+  if (text.match(/\d+,\d+\s*€/)) score += 2;
 
-  // Text length quality score
-  if (text.length > 200) score += 2;
-  if (text.length > 500) score += 1;
+  // Structure bonus
+  if (text.match(/^[-•]\s+|^\d+\.\s+/m)) score += 1;
 
-  // Penalize duplicates or too-short content
-  if (text.length < 100) score -= 1;
+  // Length quality
+  if (text.length > 300) score += 2;
 
-  return Math.max(0, score);
+  return Math.max(0, Math.round(score * 10) / 10);
 }
 
-async function generatePrompt() {
-  console.log('📖 Reading ergo_docs.json...');
+async function generate() {
+  console.log('📖 Loading ergo_docs.json...');
 
-  if (!fs.existsSync(ERGO_DOCS_FILE)) {
-    console.error('❌ ergo_docs.json not found. Run extract-all-ergo-pdfs.js first.');
-    process.exit(1);
-  }
+  const data = JSON.parse(fs.readFileSync(ERGO_DOCS_FILE, 'utf-8'));
+  const docs = data.docs || {};
 
-  const docsData = JSON.parse(fs.readFileSync(ERGO_DOCS_FILE, 'utf-8'));
-  const docs = docsData.docs || {};
-
-  console.log(`✅ Loaded ${Object.keys(docs).length} documents`);
-  console.log('🔍 Scoring chunks...\n');
+  console.log(`✅ Loaded ${Object.keys(docs).length} documents with ${data.totalChunks} chunks\n`);
+  console.log('🔍 Scoring chunks...');
 
   const scored = [];
+  let processedCount = 0;
 
-  Object.entries(docs).forEach(([filename, chunks], fileIdx) => {
-    chunks.forEach((chunk, chunkIdx) => {
+  // Process each document
+  Object.entries(docs).forEach(([filename, chunks]) => {
+    chunks.forEach((chunk, idx) => {
       const score = scoreChunk(chunk);
-
       if (score > 0) {
         scored.push({
           file: filename,
-          chunkIndex: chunkIdx,
+          chunkIndex: idx,
           text: chunk,
-          score: score,
-          length: chunk.length
+          score: score
         });
       }
+      processedCount++;
     });
   });
 
-  // Sort by score descending
+  // Sort by score
   scored.sort((a, b) => b.score - a.score);
 
-  console.log(`📊 Scored ${scored.length} chunks`);
-  console.log(`🏆 Top scores: ${scored.slice(0, 5).map(s => s.score).join(', ')}`);
+  console.log(`✅ Processed ${processedCount} chunks\n`);
 
-  // Select top chunks up to ~15,000 characters
-  const selectedChunks = [];
-  let totalChars = 0;
-  const maxChars = 15000;
+  // Select top chunks (~15KB)
+  const selected = [];
+  let totalSize = 0;
+  const maxSize = 15000;
 
   for (const chunk of scored) {
-    if (totalChars + chunk.length <= maxChars) {
-      selectedChunks.push(chunk);
-      totalChars += chunk.length;
+    if (totalSize + chunk.text.length <= maxSize) {
+      selected.push(chunk);
+      totalSize += chunk.text.length;
+    } else {
+      break;
     }
   }
 
-  console.log(`\n📝 Selected ${selectedChunks.length} top chunks (~${totalChars} chars)`);
+  console.log(`📝 Selected ${selected.length} top chunks (${totalSize} bytes)`);
 
-  // Create metadata for each selected chunk
-  const included = selectedChunks.map((chunk, idx) => ({
-    id: `${chunk.file}::${chunk.chunkIndex}`,
-    file: `ERGO_products_data/${chunk.file}`,
-    chunkIndex: chunk.chunkIndex,
-    length: chunk.length,
-    score: chunk.score
+  // Build included metadata
+  const included = selected.map(c => ({
+    id: `${c.file}::${c.chunkIndex}`,
+    file: `ERGO_products_data/${c.file}`,
+    chunkIndex: c.chunkIndex,
+    length: c.text.length,
+    score: c.score
   }));
 
-  // Combine top chunks into a single prompt
-  const combinedPrompt = selectedChunks
-    .map(c => `[${c.file} - Chunk ${c.chunkIndex}]\n${c.text}`)
+  // Combine text
+  const combinedPrompt = selected
+    .map(c => c.text)
     .join('\n\n---\n\n');
 
-  // Create output
+  // Output
   const output = {
     generatedAt: new Date().toISOString(),
-    maxChars: maxChars,
-    selectedCount: selectedChunks.length,
-    totalChars: totalChars,
+    version: '2.0',
+    maxChars: maxSize,
+    selectedCount: selected.length,
+    totalChars: totalSize,
     totalDocsAvailable: Object.keys(docs).length,
-    totalChunksAvailable: scored.length,
+    totalChunksAvailable: data.totalChunks,
+    topScores: selected.slice(0, 5).map(c => c.score),
     included: included,
-    combinedPrompt: combinedPrompt,
-    instructions: {
-      de: 'Nutze die untenstehenden ERGO-Dokumente um Fragen zu Versicherungsprodukten zu beantworten.',
-      en: 'Use the ERGO documents below to answer questions about insurance products.',
-      vi: 'Sử dụng các tài liệu ERGO dưới đây để trả lời các câu hỏi về các sản phẩm bảo hiểm.'
-    }
+    combinedPrompt: combinedPrompt
   };
 
-  // Write to file
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(output, null, 2));
 
-  console.log('\n' + '='.repeat(60));
-  console.log('✅ PROMPT GENERATION COMPLETE');
-  console.log('='.repeat(60));
-  console.log(`📄 Output File: ${OUTPUT_FILE}`);
-  console.log(`📊 Included Chunks: ${selectedChunks.length}`);
-  console.log(`💾 File Size: ${(fs.statSync(OUTPUT_FILE).size / 1024).toFixed(2)} KB`);
-  console.log('='.repeat(60) + '\n');
+  console.log('\n' + '='.repeat(50));
+  console.log('✅ SUCCESS');
+  console.log('='.repeat(50));
+  console.log(`📄 ergo_prompt.json: ${(fs.statSync(OUTPUT_FILE).size / 1024).toFixed(1)} KB`);
+  console.log(`📚 Selected: ${selected.length} chunks`);
+  console.log(`💾 Total: ~${totalSize} bytes`);
+  console.log('='.repeat(50));
 }
 
-generatePrompt().catch(err => {
-  console.error('❌ Generation failed:', err);
+generate().catch(err => {
+  console.error('❌ Error:', err.message);
   process.exit(1);
 });
 

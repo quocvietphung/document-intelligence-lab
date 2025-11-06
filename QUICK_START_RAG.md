@@ -31,7 +31,7 @@ ergo_prompt.json created
 
 ### 3. Scripts Created ✅
 - `scripts/extract-all-ergo-pdfs.js` - Extract PDFs
-- `scripts/generate-ergo-prompt-v2.js` - Generate prompts
+- `scripts/generate-ergo-prompt.js` - Generate prompts
 
 ### 4. Integration Complete ✅
 - `lib/ergo-retriever.ts` - Ready (loads 5,076 chunks)
@@ -62,7 +62,7 @@ Then ask chatbot:
 | `data/ergo_docs.json` | 20.4 MB | Full corpus (5,076 chunks) |
 | `data/ergo_prompt.json` | 16.5 KB | Optimized RAG prompt |
 | `scripts/extract-all-ergo-pdfs.js` | 3 KB | PDF extraction |
-| `scripts/generate-ergo-prompt-v2.js` | 2 KB | Prompt generation |
+| `scripts/generate-ergo-prompt.js` | 2 KB | Prompt generation |
 | `ERGO_RAG_UPDATE.md` | 8 KB | Detailed update report |
 | `ERGO_RAG_COMPLETE.md` | 12 KB | Full implementation summary |
 
@@ -115,7 +115,7 @@ npm run build
 node scripts/extract-all-ergo-pdfs.js
 
 # Generate prompts
-node scripts/generate-ergo-prompt-v2.js
+node scripts/generate-ergo-prompt.js
 
 # Run tests
 npx ts-node lib/rag.test.ts

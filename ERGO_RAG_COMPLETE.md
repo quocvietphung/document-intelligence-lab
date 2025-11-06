@@ -32,7 +32,7 @@ You asked for:
 ### 3. **Production-Ready Scripts** ✅
 ```
 ✅ extract-all-ergo-pdfs.js    - Extract new PDFs anytime
-✅ generate-ergo-prompt-v2.js  - Generate optimized prompts
+✅ generate-ergo-prompt.js  - Generate optimized prompts
 ```
 
 ### 4. **Fully Integrated RAG** ✅
@@ -89,7 +89,7 @@ Chatbot: "Nach ERGO Dokumenten bietet ERGO folgende
 | `data/ergo_docs.json` | 20.4 MB | Full ERGO corpus (5,076 chunks) |
 | `data/ergo_prompt.json` | 16.5 KB | Optimized RAG prompt |
 | `scripts/extract-all-ergo-pdfs.js` | 3 KB | Extract PDFs script |
-| `scripts/generate-ergo-prompt-v2.js` | 2 KB | Generate prompts script |
+| `scripts/generate-ergo-prompt.js` | 2 KB | Generate prompts script |
 | `ERGO_RAG_UPDATE.md` | 8 KB | This update report |
 
 ### Updated Files
@@ -235,12 +235,12 @@ Nguồn: [PDF Reference + Chunk Number]
 # 2. Run extraction
 node scripts/extract-all-ergo-pdfs.js
 # 3. Generate prompt
-node scripts/generate-ergo-prompt-v2.js
+node scripts/generate-ergo-prompt.js
 # 4. Test & deploy
 ```
 
 ### Customize Scoring
-Edit `scripts/generate-ergo-prompt-v2.js`:
+Edit `scripts/generate-ergo-prompt.js`:
 - Change `IMPORTANCE_KEYWORDS` array
 - Adjust scoring weights
 - Modify chunk size (currently ~500 words)
@@ -296,7 +296,7 @@ Edit `lib/prompt-templates.ts`:
 
 If you need to:
 - **Add more PDFs**: Run `node scripts/extract-all-ergo-pdfs.js`
-- **Adjust RAG quality**: Edit scoring in `generate-ergo-prompt-v2.js`
+- **Adjust RAG quality**: Edit scoring in `generate-ergo-prompt.js`
 - **Change languages**: Update `lib/prompt-templates.ts`
 - **Debug issues**: Check `RAG_CHATBOT_INDEX.md` troubleshooting section
 

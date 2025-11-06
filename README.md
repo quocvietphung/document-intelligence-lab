@@ -63,7 +63,7 @@ tax-consulting/
 │   └── rag.test.ts       # ✅ Test suite (200+ lines)
 ├── scripts/
 │   ├── extract-all-ergo-pdfs.js # 📄 PDF extraction (NEW)
-│   └── generate-ergo-prompt-v2.js # 🔧 Prompt generation (NEW)
+│   └── generate-ergo-prompt.js # 🔧 Prompt generation (NEW)
 ├── i18n.ts               # i18n configuration
 ├── RAG_CHATBOT_INDEX.md  # 📚 RAG Documentation
 ├── ERGO_RAG_UPDATE.md    # 🚀 Latest Updates (NEW)
