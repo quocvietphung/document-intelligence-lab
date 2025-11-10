@@ -189,15 +189,25 @@ export default function GoldPriceWidget() {
 
   const isPositive = (goldData.change ?? 0) >= 0;
 
+  // Derive 24h high/low from history
+  const high24h = history.length ? Math.max(...history) : perUnitUSD;
+  const low24h = history.length ? Math.min(...history) : perUnitUSD;
+
+  const formatUnitPrice = (price: number) => {
+    return currency === 'USD'
+      ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(price)
+      : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(price);
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
+    <div className="bg-white rounded-xl shadow-lg p-6" aria-labelledby="gold-widget-title">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center" aria-hidden="true">
             <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{t('priceWidget.title')}</h3>
+            <h3 id="gold-widget-title" className="text-lg font-semibold text-gray-900">{t('priceWidget.title')}</h3>
             <p className="text-sm text-gray-500">{t('priceWidget.subtitle')}</p>
           </div>
         </div>
@@ -211,7 +221,7 @@ export default function GoldPriceWidget() {
             </select>
           </label>
 
-          <div className="inline-flex rounded-md bg-gray-100 p-1">
+          <div className="inline-flex rounded-md bg-gray-100 p-1" role="group" aria-label="Unit selector">
             <button onClick={() => setUnit('ounce')} aria-pressed={unit === 'ounce'} className={`px-3 py-1 text-sm font-medium ${unit === 'ounce' ? 'bg-white shadow rounded' : 'text-gray-600'}`}>
               oz
             </button>
@@ -220,28 +230,57 @@ export default function GoldPriceWidget() {
             </button>
           </div>
 
-          <button onClick={fetchGoldPrice} title={t('priceWidget.refresh')} className="p-2 text-gray-400 hover:text-gray-600">
+          <button onClick={fetchGoldPrice} title={t('priceWidget.refresh')} className="p-2 text-gray-400 hover:text-gray-600" aria-label={t('priceWidget.refresh')}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           </button>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 items-center">
-        <div className="text-center md:text-left">
-          <div className="text-3xl md:text-4xl font-bold text-gray-900">{formatPriceLocal(perUnitUSD)}</div>
-          <div className="text-sm text-gray-500 mt-1">{unit === 'ounce' ? t('priceWidget.perOunce') : `per gram`}</div>
+      <div className="grid md:grid-cols-3 gap-6 items-start">
+        <div className="md:col-span-1 text-center md:text-left">
+          <div className="flex items-center gap-2">
+            <div className="text-3xl md:text-4xl font-bold text-gray-900" aria-live="polite">{formatPriceLocal(perUnitUSD)}</div>
+            <span aria-hidden="true" className={`mt-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+              {isPositive ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7 7 7M12 3v18"/></svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7-7-7M12 21V3"/></svg>
+              )}
+            </span>
+          </div>
+          <div className="text-sm text-gray-500 mt-1">{unit === 'ounce' ? t('priceWidget.perOunce') : 'per gram'}</div>
 
           <div className={`inline-block mt-3 px-3 py-1 rounded-full text-sm font-medium ${isPositive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
             {formatChange(goldData.change, goldData.changePercent)}
           </div>
 
-          <div className="text-xs text-gray-400 mt-2">{t('priceWidget.lastUpdated')}: {new Date(goldData.lastUpdated).toLocaleString()}</div>
+          <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
+            <div className="p-2 rounded bg-gray-50">
+              <div className="text-gray-500">24h High</div>
+              <div className="font-semibold text-gray-900">{formatUnitPrice(unit === 'ounce' ? high24h : high24h / OUNCE_TO_GRAM)}</div>
+            </div>
+            <div className="p-2 rounded bg-gray-50">
+              <div className="text-gray-500">24h Low</div>
+              <div className="font-semibold text-gray-900">{formatUnitPrice(unit === 'ounce' ? low24h : low24h / OUNCE_TO_GRAM)}</div>
+            </div>
+          </div>
+
+          <div className="text-xs text-gray-400 mt-2" aria-label={t('priceWidget.lastUpdated')}>
+            {t('priceWidget.lastUpdated')}: {new Date(goldData.lastUpdated).toLocaleString()} • Data ~5m cache
+          </div>
         </div>
 
-        <div className="flex flex-col items-center">
-          <div className="mb-2">{renderSparkline(history)}</div>
+        <div className="md:col-span-2 flex flex-col items-center">
+          <div className="mb-2 w-full flex justify-center">{renderSparkline(history)}</div>
           <div className="text-xs text-gray-500">{t('priceWidget.chart')} • {t('priceWidget.last24h')}</div>
+          {!fxRate && currency === 'VND' && (
+            <div className="mt-2 text-[11px] text-amber-600">Tỷ giá tạm thời chưa tải được – hiển thị USD quy đổi giả định.</div>
+          )}
         </div>
+      </div>
+
+      <div className="mt-4 border-t pt-3 text-[11px] text-gray-500 leading-relaxed">
+        * Giá vàng hiển thị dựa trên nguồn công khai, có thể trễ tới 5 phút. Sử dụng cho mục đích tham khảo đầu tư, không phải khuyến nghị mua/bán. Exchange rate nguồn exchangerate.host.
       </div>
     </div>
   );
