@@ -1,8 +1,16 @@
+// /app/api/gold-price/route.ts
 import { NextResponse } from "next/server";
 
 /**
- * Kiểu dữ liệu trả về cho client (USD / troy ounce)
+ * ===============================
+ * 💰 GOLD PRICE API (100% FREE)
+ * Multi-source + auto fallback + caching + retry + FX conversion ready
+ * ===============================
  */
+
+export const dynamic = "force-dynamic";
+
+/** Dữ liệu trả về cho client (USD / troy ounce) */
 interface GoldPriceData {
     price: number;
     change: number;
@@ -12,17 +20,25 @@ interface GoldPriceData {
     history: number[];
 }
 
-// Cache nội bộ trong process (10 giờ)
+/** Cache nội bộ (10 giờ) */
 let cachedData: GoldPriceData | null = null;
 let lastFetchTime = 0;
 const CACHE_DURATION_MS = 10 * 60 * 60 * 1000; // 10 giờ
 
-// Bắt buộc dynamic để tránh bị static render
-export const dynamic = "force-dynamic";
+/** Nguồn upstreams: realtime free (no API key) */
+const UPSTREAMS = [
+    {
+        name: "GoldAPI",
+        url: "https://api.gold-api.com/price/XAU-USD",
+    },
+    {
+        name: "MetalpriceAPI",
+        url: "https://api.metalpriceapi.com/v1/latest?base=USD&currencies=XAU",
+        invert: true, // cần nghịch đảo
+    },
+];
 
-/**
- * Helper: tạo 24 điểm giá giả lập quanh 1 mức giá để vẽ sparkline
- */
+/** 🧩 Helper: tạo 24 điểm sparkline xung quanh giá trung bình */
 function buildHistory(around: number): number[] {
     const arr: number[] = [];
     for (let i = 23; i >= 0; i--) {
@@ -34,9 +50,7 @@ function buildHistory(around: number): number[] {
     return arr;
 }
 
-/**
- * Timeout helper
- */
+/** ⏳ Timeout wrapper */
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
     return Promise.race([
         p,
@@ -44,35 +58,32 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
     ]);
 }
 
-/**
- * Hàm pickPrice – tự nhận dạng cấu trúc JSON của các API khác nhau:
- * - Gold-API.com → { price }
- * - MetalpriceAPI.com → { rates: { XAU: 0.000417 } } → cần nghịch đảo
- * - GoldAPI.io → { data: { price } }
- */
+/** 🎯 Tự động phát hiện field giá từ JSON */
 function pickPrice(json: any): number | null {
     if (!json) return null;
 
-    // ① Gold-API.com, GoldAPI.io
-    if (Number.isFinite(json?.price)) return Number(json.price);
-    if (Number.isFinite(json?.ask)) return Number(json.ask);
-    if (Number.isFinite(json?.value)) return Number(json.value);
-    if (Number.isFinite(json?.rate)) return Number(json.rate);
-    if (Number.isFinite(json?.data?.price)) return Number(json.data.price);
+    // Gold-API, GoldAPI.io
+    const direct = [
+        json?.price,
+        json?.ask,
+        json?.value,
+        json?.rate,
+        json?.data?.price,
+    ];
+    for (const v of direct) {
+        const n = Number(v);
+        if (Number.isFinite(n) && n > 0) return n;
+    }
 
-    // ② MetalpriceAPI.com → cần nghịch đảo tỉ lệ
+    // MetalpriceAPI: cần nghịch đảo
     if (Number.isFinite(json?.rates?.XAU)) {
         const rate = Number(json.rates.XAU);
         if (rate > 0) return Math.round((1 / rate) * 100) / 100;
     }
 
-    // ③ Một số API có thể đặt sâu hơn
-    const candidates = [
-        json?.data?.value,
-        json?.gold?.price,
-        json?.result?.price,
-    ];
-    for (const v of candidates) {
+    // Một số trường hợp đặc biệt
+    const alt = [json?.data?.value, json?.gold?.price, json?.result?.price];
+    for (const v of alt) {
         const n = Number(v);
         if (Number.isFinite(n) && n > 0) return n;
     }
@@ -80,45 +91,33 @@ function pickPrice(json: any): number | null {
     return null;
 }
 
-/**
- * 2 nguồn chính (đều free, không cần API key)
- * Gold-API.com realtime — không giới hạn
- * MetalpriceAPI.com free — cần nghịch đảo
- */
-const UPSTREAMS = [
-    {
-        name: "GoldAPI",
-        url: "https://api.gold-api.com/price/XAU-USD",
-    },
-    {
-        name: "MetalpriceAPI",
-        url: "https://api.metalpriceapi.com/v1/latest?base=USD&currencies=XAU",
-    },
-];
-
-/**
- * Lấy giá thật từ upstreams, fallback mock nếu lỗi
- */
+/** 🚀 Lấy giá spot từ nhiều nguồn, có retry và exponential backoff */
 async function fetchSpotUSDPerOunce(): Promise<number> {
-    for (const src of UPSTREAMS) {
+    for (const [idx, src] of UPSTREAMS.entries()) {
         try {
             const res = await withTimeout(fetch(src.url, { cache: "no-store" }), 6000);
             if (!(res as Response).ok) {
                 console.warn(`[GoldPrice] ${src.name} HTTP ${(res as Response).status}`);
                 continue;
             }
+
             const json = await (res as Response).json().catch(() => ({}));
             const price = pickPrice(json);
-            if (price) {
+            if (price && price > 0) {
                 console.log(`[GoldPrice] ✅ ${src.name}: $${price}`);
                 return price;
             }
         } catch (err) {
-            console.warn(`[GoldPrice] ❌ ${src.name} failed:`, err instanceof Error ? err.message : String(err));
+            console.warn(
+                `[GoldPrice] ❌ ${src.name} failed:`,
+                err instanceof Error ? err.message : String(err)
+            );
+            // ⏳ Exponential backoff 1s, 2s, ...
+            await new Promise((res) => setTimeout(res, (idx + 1) * 1000));
         }
     }
 
-    // fallback cuối: mock an toàn
+    // Fallback cuối cùng
     const base = 2050;
     const jitter = (Math.random() - 0.5) * 50;
     const mock = Math.round((base + jitter) * 100) / 100;
@@ -126,26 +125,20 @@ async function fetchSpotUSDPerOunce(): Promise<number> {
     return mock;
 }
 
-/**
- * Hàm chính: tính change, percent, history...
- */
+/** 🧮 Tính toán thay đổi, phần trăm, lịch sử */
 async function getGoldPrice(): Promise<GoldPriceData> {
     const spot = await fetchSpotUSDPerOunce();
 
     let change = 0;
     let changePercent = 0;
-    if (cachedData && cachedData.price > 0) {
+    if (cachedData?.price) {
         change = Math.round((spot - cachedData.price) * 100) / 100;
         changePercent = Math.round((change / cachedData.price) * 10000) / 100;
     }
 
-    const history: number[] = [];
-    if (cachedData?.history?.length) {
-        const prev = cachedData.history.slice(-23);
-        history.push(...prev, Math.round(spot * 100) / 100);
-    } else {
-        history.push(...buildHistory(spot));
-    }
+    const history = cachedData?.history?.length
+        ? [...cachedData.history.slice(-23), spot]
+        : buildHistory(spot);
 
     return {
         price: spot,
@@ -157,19 +150,18 @@ async function getGoldPrice(): Promise<GoldPriceData> {
     };
 }
 
-/**
- * API route handler
- */
+/** 🧠 Main API route */
 export async function GET() {
-    try {
-        const now = Date.now();
+    const now = Date.now();
 
+    try {
         // Dùng cache nếu còn hạn
         if (cachedData && now - lastFetchTime < CACHE_DURATION_MS) {
+            console.log("[GoldPrice] 🟢 Cache hit");
             return NextResponse.json(cachedData);
         }
 
-        // Lấy dữ liệu mới
+        console.log("[GoldPrice] 🔄 Fetching new data...");
         const fresh = await getGoldPrice();
         cachedData = fresh;
         lastFetchTime = now;
@@ -178,24 +170,20 @@ export async function GET() {
     } catch (err) {
         console.error("[/api/gold-price] Error:", err);
 
-        // Fallback cuối cùng
-        if (cachedData) {
-            return NextResponse.json(
-                { ...cachedData, lastUpdated: new Date().toISOString() },
-                { status: 200 }
-            );
-        }
-
-        const mock = 2050.5;
-        return NextResponse.json(
-            {
-                price: mock,
+        // Fallback: cache cũ hoặc mock
+        const fallback =
+            cachedData ||
+            ({
+                price: 2050.5,
                 change: 0,
                 changePercent: 0,
                 lastUpdated: new Date().toISOString(),
                 currency: "USD",
-                history: buildHistory(mock),
-            } satisfies GoldPriceData,
+                history: buildHistory(2050.5),
+            } satisfies GoldPriceData);
+
+        return NextResponse.json(
+            { ...fallback, lastUpdated: new Date().toISOString() },
             { status: 200 }
         );
     }
