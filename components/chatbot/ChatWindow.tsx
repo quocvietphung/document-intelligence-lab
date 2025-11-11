@@ -3,26 +3,25 @@
 import { useEffect, useRef, FormEvent, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useCustomChat } from "@/lib/useCustomChat";
+import { getWelcomeMessage, detectLanguage } from "@/lib/prompt-templates";
 
 interface ChatWindowProps {
   isMinimized: boolean;
   onToggleMinimize: () => void;
 }
 
-type RagDocument = {
-  id: string;
-  file: string;
-  chunkIndex: number;
-  summary: string;
-};
-
 export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindowProps) {
   const t = useTranslations("chatbot");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const { messages, input, setInput, sendMessage, isLoading, error } =
+  const { messages, input, setInput, sendMessage, isLoading, error, addMessage } =
     useCustomChat("/api/chat");
   const [isExpanded, setIsExpanded] = useState(false);
+  const [displayedWelcome, setDisplayedWelcome] = useState("");
+  const [showWelcomeTyping, setShowWelcomeTyping] = useState(true);
+  const [welcomeComplete, setWelcomeComplete] = useState(false);
+
+  const welcomeText = t("welcome") + ". Ask me anything about ERGO insurance and tax consulting";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -31,6 +30,31 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Typing effect for welcome message
+  useEffect(() => {
+    if (messages.length === 0 && !welcomeComplete) {
+      if (displayedWelcome.length < welcomeText.length) {
+        const timer = setTimeout(() => {
+          setDisplayedWelcome(welcomeText.slice(0, displayedWelcome.length + 1));
+        }, 30); // Tốc độ gõ
+        return () => clearTimeout(timer);
+      } else {
+        setShowWelcomeTyping(false);
+        setWelcomeComplete(true);
+      }
+    }
+  }, [displayedWelcome, messages.length, welcomeComplete, welcomeText]);
+
+  // When welcome typing completes, insert the assistant welcome into messages history
+  useEffect(() => {
+    if (welcomeComplete && messages.length === 0) {
+      const lang = detectLanguage(t("welcome") as string);
+      const welcome = getWelcomeMessage(lang, true, false);
+      // Ensure we don't add duplicate
+      addMessage({ role: "assistant", content: welcome, isWelcome: true });
+    }
+  }, [welcomeComplete, messages.length, addMessage, t]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -110,7 +134,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
               <p className="text-blue-100 text-xs">Always here to help</p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
@@ -156,26 +180,21 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
         {/* ========== MESSAGES AREA ========== */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-white via-gray-50 to-gray-100 scroll-smooth">
-          {messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full mx-auto flex items-center justify-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-8 w-8 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-800">{t("welcome")}</h4>
-                  <p className="text-gray-500 text-sm mt-1">Ask me anything about ERGO insurance and tax consulting</p>
-                </div>
+          {messages.length === 0 && displayedWelcome.length > 0 && (
+            <div className="flex justify-start animate-fadeIn">
+              <div className="max-w-[70%] bg-white text-gray-900 rounded-2xl rounded-bl-none px-5 py-3 shadow-sm border border-gray-200">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                  {displayedWelcome}
+                  {showWelcomeTyping && <span className="animate-pulse">|</span>}
+                </p>
+                <span className="text-xs mt-2 block text-gray-400">
+                  {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
               </div>
             </div>
-          ) : (
+          )}
+
+          {messages.length > 0 && (
             messages.map((message) => {
               const isUser = message.role === "user";
 
@@ -301,4 +320,3 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
     </div>
   );
 }
-

@@ -20,6 +20,8 @@ export interface UseChatReturn {
   sendMessage: (content: string) => Promise<void>;
   isLoading: boolean;
   error: string | null;
+  // allow extra metadata on messages (e.g. isWelcome) via index signature
+  addMessage: (msg: Omit<ChatMessage, "id" | "timestamp"> & Record<string, any>) => void;
 }
 
 export function useCustomChat(apiEndpoint: string = "/api/chat"): UseChatReturn {
@@ -28,6 +30,16 @@ export function useCustomChat(apiEndpoint: string = "/api/chat"): UseChatReturn 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messageIdCounter = useRef(0);
+
+  const addMessage = useCallback((msg: Omit<ChatMessage, "id" | "timestamp"> & Record<string, any>) => {
+    const id = `msg-${messageIdCounter.current++}`;
+    const fullMsg: ChatMessage = {
+      id,
+      timestamp: Date.now(),
+      ...msg,
+    } as ChatMessage;
+    setMessages((prev) => [...prev, fullMsg]);
+  }, []);
 
   const sendMessage = useCallback(
     async (userContent: string) => {
@@ -50,7 +62,7 @@ export function useCustomChat(apiEndpoint: string = "/api/chat"): UseChatReturn 
       try {
         // Prepare messages in format that API expects
         const messagesToSend = messages
-          .filter((m) => m.role === "user" || m.role === "assistant")
+          .filter((m) => (m.role === "user" || m.role === "assistant") && !( (m as any).isWelcome ))
           .map((m) => ({
             role: m.role,
             content: m.content,
@@ -159,6 +171,6 @@ export function useCustomChat(apiEndpoint: string = "/api/chat"): UseChatReturn 
     sendMessage,
     isLoading,
     error,
+    addMessage,
   };
 }
-
