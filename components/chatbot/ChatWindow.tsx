@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, FormEvent } from "react";
+import { useEffect, useRef, FormEvent, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useCustomChat } from "@/lib/useCustomChat";
 
 interface ChatWindowProps {
-  onClose: () => void;
+  isMinimized: boolean;
+  onToggleMinimize: () => void;
 }
 
 type RagDocument = {
@@ -15,11 +16,13 @@ type RagDocument = {
   summary: string;
 };
 
-export default function ChatWindow({ onClose }: ChatWindowProps) {
+export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindowProps) {
   const t = useTranslations("chatbot");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const { messages, input, setInput, sendMessage, isLoading, error } =
     useCustomChat("/api/chat");
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -29,22 +32,38 @@ export default function ChatWindow({ onClose }: ChatWindowProps) {
     scrollToBottom();
   }, [messages]);
 
+  // Auto-resize textarea
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 120) + "px";
+    }
+  }, [input]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
     await sendMessage(input);
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+    }
   };
 
-  return (
-    <div className="fixed bottom-6 right-6 z-50 w-96 h-[600px] bg-white rounded-lg shadow-2xl flex flex-col">
-      {/* Header */}
-      <div className="bg-blue-600 text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
-        <h3 className="font-semibold text-lg">{t("title")}</h3>
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e as any);
+    }
+  };
+
+  if (isMinimized) {
+    return (
+      <div className="fixed bottom-6 right-6 z-50">
         <button
-          onClick={onClose}
-          className="text-white hover:text-gray-200 transition-colors"
-          aria-label={t("close")}
+          onClick={onToggleMinimize}
+          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full p-4 shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center"
+          aria-label="Open chat"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -57,101 +76,228 @@ export default function ChatWindow({ onClose }: ChatWindowProps) {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
+              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
             />
           </svg>
         </button>
       </div>
+    );
+  }
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-        {messages.length === 0 ? (
-          <div className="text-center text-gray-400 mt-10">
-            <p>{t("welcome")}</p>
-          </div>
-        ) : (
-          messages.map((message) => {
-            const isUser = message.role === "user";
-            const ragDocs = (message as any).ragDocuments as
-              | RagDocument[]
-              | undefined;
-
-            return (
-              <div
-                key={message.id}
-                className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+  return (
+    <div className={`fixed z-50 transition-all duration-300 ease-out flex flex-col ${
+      isExpanded 
+        ? "bottom-6 right-6 w-[90vw] h-[90vh] max-w-5xl max-h-[900px]" 
+        : "bottom-6 right-6 w-[480px] h-[700px]"
+    }`}>
+      {/* Modern Chat Container */}
+      <div className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden h-full">
+        {/* ========== HEADER ========== */}
+        <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white px-6 py-5 flex items-center justify-between border-b border-blue-700">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-md">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="currentColor"
+                viewBox="0 0 24 24"
               >
-                <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                    isUser
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-900"
-                  }`}
-                >
-                  {/* Message content */}
-                  <p className="text-sm whitespace-pre-wrap">
-                    {message.content}
-                  </p>
+                <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-bold text-lg">{t("title")}</h3>
+              <p className="text-blue-100 text-xs">Always here to help</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-all"
+              title={isExpanded ? "Minimize" : "Expand"}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                {isExpanded ? (
+                  <path d="M6 14l6-6 6 6" stroke="currentColor" fill="none" strokeWidth="2" />
+                ) : (
+                  <path d="M6 10l6 6 6-6" stroke="currentColor" fill="none" strokeWidth="2" />
+                )}
+              </svg>
+            </button>
 
+            <button
+              onClick={onToggleMinimize}
+              className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-all"
+              title="Minimize"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M20 12H4"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
 
+        {/* ========== MESSAGES AREA ========== */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-white via-gray-50 to-gray-100 scroll-smooth">
+          {messages.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full mx-auto flex items-center justify-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800">{t("welcome")}</h4>
+                  <p className="text-gray-500 text-sm mt-1">Ask me anything about ERGO insurance and tax consulting</p>
                 </div>
               </div>
-            );
-          })
-        )}
+            </div>
+          ) : (
+            messages.map((message) => {
+              const isUser = message.role === "user";
 
-        {/* Loading indicator */}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-gray-200 rounded-lg px-4 py-2">
-              <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+              return (
                 <div
-                  className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
-                  style={{ animationDelay: "0.2s" }}
-                ></div>
-                <div
-                  className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
-                  style={{ animationDelay: "0.4s" }}
-                ></div>
+                  key={message.id}
+                  className={`flex ${isUser ? "justify-end" : "justify-start"} animate-fadeIn`}
+                >
+                  <div
+                    className={`max-w-[70%] rounded-2xl px-5 py-3 shadow-sm transition-all ${
+                      isUser
+                        ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-br-none"
+                        : "bg-white text-gray-900 rounded-bl-none border border-gray-200"
+                    }`}
+                  >
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                      {message.content}
+                    </p>
+                    <span className={`text-xs mt-2 block ${isUser ? "text-blue-100" : "text-gray-400"}`}>
+                      {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+
+          {/* Loading indicator */}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-white rounded-2xl rounded-bl-none px-5 py-3 shadow-sm border border-gray-200">
+                <div className="flex space-x-2">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.2s" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.4s" }}
+                  ></div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Error message */}
-        {error && (
-          <div className="flex justify-center">
-            <div className="bg-red-100 text-red-700 rounded-lg px-4 py-2 text-sm">
-              {error}
+          {/* Error message */}
+          {error && (
+            <div className="flex justify-center">
+              <div className="bg-red-50 text-red-700 rounded-2xl px-5 py-3 text-sm border border-red-200 shadow-sm">
+                <p className="font-medium">Error: {error}</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* ========== INPUT AREA ========== */}
+        <div className="border-t border-gray-200 bg-white p-5 shadow-lg">
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="flex space-x-3">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={t("placeholder")}
+                className="flex-1 px-5 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm resize-none bg-gray-50 hover:bg-white transition-colors max-h-[120px]"
+                disabled={isLoading}
+                autoFocus
+                rows={1}
+              />
+              <button
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-400 text-white px-6 py-3 rounded-2xl transition-all font-medium h-auto flex items-center justify-center shadow-md hover:shadow-lg active:scale-95 duration-200"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.41,22.99 3.50612381,23.1 4.13399899,22.8429026 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.9702544,11.6889879 L4.13399899,1.16179957 C3.34915502,0.9 2.40734225,1.00636533 1.77946707,1.4776575 C0.994623095,2.10604706 0.837654326,3.0486314 1.15159189,3.99721575 L3.03521743,10.4382088 C3.03521743,10.5953061 3.34915502,10.7524035 3.50612381,10.7524035 L16.6915026,11.5379023 C16.6915026,11.5379023 17.1624089,11.5379023 17.1624089,12.0091944 C17.1624089,12.4744748 16.6915026,12.4744748 16.6915026,12.4744748 Z" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">Press Shift+Enter for new line</p>
+          </form>
+        </div>
       </div>
 
-      {/* Input Form */}
-      <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200">
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={t("placeholder")}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm"
-            disabled={isLoading}
-            autoFocus
-          />
-          <button
-            type="submit"
-            disabled={isLoading || !input.trim()}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
-          >
-            {t("send")}
-          </button>
-        </div>
-      </form>
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #cbd5e0;
+          border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #a0aec0;
+        }
+      `}</style>
     </div>
   );
 }
