@@ -1,7 +1,8 @@
-// /app/api/gold-price/route.ts
 import { NextResponse } from "next/server";
 
-/** Dữ liệu trả về cho client (USD / troy ounce) */
+/**
+ * Kiểu dữ liệu trả về cho client (USD / troy ounce)
+ */
 interface GoldPriceData {
     price: number;
     change: number;
@@ -11,20 +12,17 @@ interface GoldPriceData {
     history: number[];
 }
 
-// Vercel/Next có thể reuse process ⇒ cache trong bộ nhớ
+// Cache nội bộ trong process (10 giờ)
 let cachedData: GoldPriceData | null = null;
 let lastFetchTime = 0;
+const CACHE_DURATION_MS = 10 * 60 * 60 * 1000; // 10 giờ
 
-// Cache 10 giờ
-const CACHE_DURATION_MS = 10 * 60 * 60 * 1000;
-
-// App Route luôn động (không bị prerender)
+// Bắt buộc dynamic để tránh bị static render
 export const dynamic = "force-dynamic";
 
-// Gold Price API (free, real-time, no key)
-const GOLD_API_BASE = "https://api.gold-api.com";
-const SYMBOL = "XAU-USD"; // vàng (XAU) định giá theo USD
-
+/**
+ * Helper: tạo 24 điểm giá giả lập quanh 1 mức giá để vẽ sparkline
+ */
 function buildHistory(around: number): number[] {
     const arr: number[] = [];
     for (let i = 23; i >= 0; i--) {
@@ -36,57 +34,103 @@ function buildHistory(around: number): number[] {
     return arr;
 }
 
-function withTimeout<T>(p: Promise<T>, ms: number) {
+/**
+ * Timeout helper
+ */
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
     return Promise.race([
         p,
         new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms)),
     ]);
 }
 
-/** Parse linh hoạt vì tài liệu có thể thay đổi field tên */
+/**
+ * Hàm pickPrice – tự nhận dạng cấu trúc JSON của các API khác nhau:
+ * - Gold-API.com → { price }
+ * - MetalpriceAPI.com → { rates: { XAU: 0.000417 } } → cần nghịch đảo
+ * - GoldAPI.io → { data: { price } }
+ */
 function pickPrice(json: any): number | null {
-    const cand = [
-        json?.price,
-        json?.ask,
-        json?.value,
-        json?.rate,
-        json?.data?.price,
+    if (!json) return null;
+
+    // ① Gold-API.com, GoldAPI.io
+    if (Number.isFinite(json?.price)) return Number(json.price);
+    if (Number.isFinite(json?.ask)) return Number(json.ask);
+    if (Number.isFinite(json?.value)) return Number(json.value);
+    if (Number.isFinite(json?.rate)) return Number(json.rate);
+    if (Number.isFinite(json?.data?.price)) return Number(json.data.price);
+
+    // ② MetalpriceAPI.com → cần nghịch đảo tỉ lệ
+    if (Number.isFinite(json?.rates?.XAU)) {
+        const rate = Number(json.rates.XAU);
+        if (rate > 0) return Math.round((1 / rate) * 100) / 100;
+    }
+
+    // ③ Một số API có thể đặt sâu hơn
+    const candidates = [
+        json?.data?.value,
+        json?.gold?.price,
+        json?.result?.price,
     ];
-    for (const v of cand) {
+    for (const v of candidates) {
         const n = Number(v);
         if (Number.isFinite(n) && n > 0) return n;
     }
+
     return null;
 }
 
+/**
+ * 2 nguồn chính (đều free, không cần API key)
+ * Gold-API.com realtime — không giới hạn
+ * MetalpriceAPI.com free — cần nghịch đảo
+ */
+const UPSTREAMS = [
+    {
+        name: "GoldAPI",
+        url: "https://api.gold-api.com/price/XAU-USD",
+    },
+    {
+        name: "MetalpriceAPI",
+        url: "https://api.metalpriceapi.com/v1/latest?base=USD&currencies=XAU",
+    },
+];
+
+/**
+ * Lấy giá thật từ upstreams, fallback mock nếu lỗi
+ */
 async function fetchSpotUSDPerOunce(): Promise<number> {
-    // endpoint phổ biến của Gold Price API cho real-time price
-    // ví dụ: GET https://api.gold-api.com/price/XAU-USD
-    const url = `${GOLD_API_BASE}/price/${SYMBOL}`;
-    const res = await withTimeout(fetch(url, { cache: "no-store" }), 6000);
-    if (!("ok" in res) || !(res as Response).ok) {
-        throw new Error(`upstream HTTP ${(res as Response).status}`);
+    for (const src of UPSTREAMS) {
+        try {
+            const res = await withTimeout(fetch(src.url, { cache: "no-store" }), 6000);
+            if (!(res as Response).ok) {
+                console.warn(`[GoldPrice] ${src.name} HTTP ${(res as Response).status}`);
+                continue;
+            }
+            const json = await (res as Response).json().catch(() => ({}));
+            const price = pickPrice(json);
+            if (price) {
+                console.log(`[GoldPrice] ✅ ${src.name}: $${price}`);
+                return price;
+            }
+        } catch (err) {
+            console.warn(`[GoldPrice] ❌ ${src.name} failed:`, err instanceof Error ? err.message : String(err));
+        }
     }
-    const json = await (res as Response).json().catch(() => ({}));
-    const price = pickPrice(json);
-    if (!price) throw new Error("invalid price payload");
-    return Math.round(price * 100) / 100;
-}
 
-function mockSpot(): number {
+    // fallback cuối: mock an toàn
     const base = 2050;
-    const jitter = (Math.random() - 0.5) * 50; // ±25
-    return Math.round((base + jitter) * 100) / 100;
+    const jitter = (Math.random() - 0.5) * 50;
+    const mock = Math.round((base + jitter) * 100) / 100;
+    console.warn(`[GoldPrice] ⚠️ Using mock price: ${mock}`);
+    return mock;
 }
 
+/**
+ * Hàm chính: tính change, percent, history...
+ */
 async function getGoldPrice(): Promise<GoldPriceData> {
-    let spot: number;
-    try {
-        spot = await fetchSpotUSDPerOunce(); // ưu tiên nguồn thật (free, no key)
-    } catch {
-        // fallback an toàn nếu upstream lỗi
-        spot = mockSpot();
-    }
+    const spot = await fetchSpotUSDPerOunce();
 
     let change = 0;
     let changePercent = 0;
@@ -113,25 +157,35 @@ async function getGoldPrice(): Promise<GoldPriceData> {
     };
 }
 
+/**
+ * API route handler
+ */
 export async function GET() {
     try {
         const now = Date.now();
+
+        // Dùng cache nếu còn hạn
         if (cachedData && now - lastFetchTime < CACHE_DURATION_MS) {
             return NextResponse.json(cachedData);
         }
+
+        // Lấy dữ liệu mới
         const fresh = await getGoldPrice();
         cachedData = fresh;
         lastFetchTime = now;
+
         return NextResponse.json(fresh);
     } catch (err) {
         console.error("[/api/gold-price] Error:", err);
-        // Fallback cuối: trả cache cũ hoặc mock cố định
+
+        // Fallback cuối cùng
         if (cachedData) {
             return NextResponse.json(
                 { ...cachedData, lastUpdated: new Date().toISOString() },
                 { status: 200 }
             );
         }
+
         const mock = 2050.5;
         return NextResponse.json(
             {
