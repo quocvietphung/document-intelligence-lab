@@ -1,147 +1,148 @@
-import { NextRequest, NextResponse } from 'next/server';
+// /app/api/gold-price/route.ts
+import { NextResponse } from "next/server";
 
+/** Dữ liệu trả về cho client (USD / troy ounce) */
 interface GoldPriceData {
-  price: number;
-  change: number;
-  changePercent: number;
-  lastUpdated: string;
-  currency: string;
-  history: number[];
+    price: number;
+    change: number;
+    changePercent: number;
+    lastUpdated: string;
+    currency: "USD";
+    history: number[];
 }
 
+// Vercel/Next có thể reuse process ⇒ cache trong bộ nhớ
 let cachedData: GoldPriceData | null = null;
 let lastFetchTime = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-async function fetchGoldPrice(): Promise<GoldPriceData> {
-  const API_URL = process.env.GOLD_API_URL || 'https://api.metalpriceapi.com/v1/latest?api_key=demo&base=USD&currencies=XAU';
-  const provider = process.env.GOLD_API_PROVIDER || 'metalpriceapi';
-  const maxAttempts = 3;
-  let attempt = 0;
+// Cache 10 giờ
+const CACHE_DURATION_MS = 10 * 60 * 60 * 1000;
 
-  function derivePrice(raw: any): number {
-    if (!raw) return 0;
-    let price = Number(raw) || 0;
-    // Many APIs when base=USD & currencies=XAU return XAU per 1 USD (~0.0004). Invert to get USD per XAU.
-    if (price > 0 && price < 5) {
-      price = 1 / price; // invert tiny rate
+// App Route luôn động (không bị prerender)
+export const dynamic = "force-dynamic";
+
+// Gold Price API (free, real-time, no key)
+const GOLD_API_BASE = "https://api.gold-api.com";
+const SYMBOL = "XAU-USD"; // vàng (XAU) định giá theo USD
+
+function buildHistory(around: number): number[] {
+    const arr: number[] = [];
+    for (let i = 23; i >= 0; i--) {
+        const noise =
+            (Math.sin(Date.now() / 1000 + i) * 0.5 + (Math.random() - 0.5)) *
+            (around * 0.003);
+        arr.push(Math.round((around - noise) * 100) / 100);
     }
-    return price;
-  }
+    return arr;
+}
 
-  while (attempt < maxAttempts) {
+function withTimeout<T>(p: Promise<T>, ms: number) {
+    return Promise.race([
+        p,
+        new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms)),
+    ]);
+}
+
+/** Parse linh hoạt vì tài liệu có thể thay đổi field tên */
+function pickPrice(json: any): number | null {
+    const cand = [
+        json?.price,
+        json?.ask,
+        json?.value,
+        json?.rate,
+        json?.data?.price,
+    ];
+    for (const v of cand) {
+        const n = Number(v);
+        if (Number.isFinite(n) && n > 0) return n;
+    }
+    return null;
+}
+
+async function fetchSpotUSDPerOunce(): Promise<number> {
+    // endpoint phổ biến của Gold Price API cho real-time price
+    // ví dụ: GET https://api.gold-api.com/price/XAU-USD
+    const url = `${GOLD_API_BASE}/price/${SYMBOL}`;
+    const res = await withTimeout(fetch(url, { cache: "no-store" }), 6000);
+    if (!("ok" in res) || !(res as Response).ok) {
+        throw new Error(`upstream HTTP ${(res as Response).status}`);
+    }
+    const json = await (res as Response).json().catch(() => ({}));
+    const price = pickPrice(json);
+    if (!price) throw new Error("invalid price payload");
+    return Math.round(price * 100) / 100;
+}
+
+function mockSpot(): number {
+    const base = 2050;
+    const jitter = (Math.random() - 0.5) * 50; // ±25
+    return Math.round((base + jitter) * 100) / 100;
+}
+
+async function getGoldPrice(): Promise<GoldPriceData> {
+    let spot: number;
     try {
-      const response = await fetch(API_URL, { next: { revalidate: 300 } });
+        spot = await fetchSpotUSDPerOunce(); // ưu tiên nguồn thật (free, no key)
+    } catch {
+        // fallback an toàn nếu upstream lỗi
+        spot = mockSpot();
+    }
 
-      if (!response.ok) {
-        const text = await response.text().catch(() => '');
-        throw new Error(`Failed to fetch gold price (status=${response.status}): ${text}`);
-      }
-
-      const data: any = await response.json().catch(() => ({}));
-
-      let price = 0;
-      if (provider === 'metalpriceapi') {
-        // Expect shape { base: 'USD', rates: { XAU: 0.00043 } }
-        const rate = data?.rates?.XAU ?? data?.XAU ?? data?.price;
-        price = derivePrice(rate);
-      } else if (provider === 'metalsapi') {
-        // Hypothetical shape { success: true, rates: { XAU: 2365.12 } } (already USD per ounce)
-        const rate = data?.rates?.XAU ?? data?.price;
-        price = Number(rate) || 0;
-      } else if (provider === 'goldapi') {
-        // Example shape { price: 2365.12 }
-        price = Number(data?.price) || 0;
-      } else {
-        const generic = data?.rates?.XAU ?? data?.price;
-        price = derivePrice(generic);
-      }
-
-      if (!price || price <= 0 || !isFinite(price)) {
-        throw new Error(`Invalid price after parsing provider='${provider}' raw=${JSON.stringify(data).slice(0,200)}`);
-      }
-
-      // Compute change versus cached price
-      let change = 0;
-      let changePercent = 0;
-      if (cachedData && cachedData.price > 0) {
-        change = Math.round((price - cachedData.price) * 100) / 100;
+    let change = 0;
+    let changePercent = 0;
+    if (cachedData && cachedData.price > 0) {
+        change = Math.round((spot - cachedData.price) * 100) / 100;
         changePercent = Math.round((change / cachedData.price) * 10000) / 100;
-      }
+    }
 
-      // Build history: reuse previous history (shift + new) to preserve continuity
-      const history: number[] = [];
-      if (cachedData?.history?.length) {
-        const prev = cachedData.history.slice(-23); // keep last 23 points
-        history.push(...prev, Math.round(price * 100) / 100);
-      } else {
-        // initialize synthetic history around current price
-        for (let i = 23; i >= 0; i--) {
-          const noise = (Math.sin((Date.now()/1000)+i) * 0.5 + (Math.random()-0.5)) * (price * 0.003);
-            history.push(Math.round((price - noise) * 100) / 100);
-        }
-      }
+    const history: number[] = [];
+    if (cachedData?.history?.length) {
+        const prev = cachedData.history.slice(-23);
+        history.push(...prev, Math.round(spot * 100) / 100);
+    } else {
+        history.push(...buildHistory(spot));
+    }
 
-      return {
-        price: Math.round(price * 100) / 100,
+    return {
+        price: spot,
         change,
         changePercent,
         history,
         lastUpdated: new Date().toISOString(),
-        currency: 'USD',
-      };
-    } catch (err) {
-      attempt++;
-      const delayMs = 200 * Math.pow(2, attempt); // 400, 800, 1600
-      console.warn(`gold-price: attempt ${attempt} failed, retrying in ${delayMs}ms:`, err);
-      if (attempt < maxAttempts) {
-        await new Promise((res) => setTimeout(res, delayMs));
-        continue;
-      }
-      console.error('Error fetching gold price after retries:', err);
-    }
-  }
-
-  // Fallback: if we have cached data, refresh timestamp & zero change; else static mock
-  if (cachedData) {
-    return {
-      ...cachedData,
-      lastUpdated: new Date().toISOString(),
-      change: 0,
-      changePercent: 0,
+        currency: "USD",
     };
-  }
-
-  return {
-    price: 2050.5,
-    change: 0,
-    changePercent: 0,
-    lastUpdated: new Date().toISOString(),
-    currency: 'USD',
-    history: Array.from({ length: 24 }, () => 2050.5),
-  };
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    const now = Date.now();
-
-    // Check if we have cached data and it's still fresh
-    if (cachedData && (now - lastFetchTime) < CACHE_DURATION) {
-      return NextResponse.json(cachedData);
+export async function GET() {
+    try {
+        const now = Date.now();
+        if (cachedData && now - lastFetchTime < CACHE_DURATION_MS) {
+            return NextResponse.json(cachedData);
+        }
+        const fresh = await getGoldPrice();
+        cachedData = fresh;
+        lastFetchTime = now;
+        return NextResponse.json(fresh);
+    } catch (err) {
+        console.error("[/api/gold-price] Error:", err);
+        // Fallback cuối: trả cache cũ hoặc mock cố định
+        if (cachedData) {
+            return NextResponse.json(
+                { ...cachedData, lastUpdated: new Date().toISOString() },
+                { status: 200 }
+            );
+        }
+        const mock = 2050.5;
+        return NextResponse.json(
+            {
+                price: mock,
+                change: 0,
+                changePercent: 0,
+                lastUpdated: new Date().toISOString(),
+                currency: "USD",
+                history: buildHistory(mock),
+            } satisfies GoldPriceData,
+            { status: 200 }
+        );
     }
-
-    // Fetch new data
-    const data = await fetchGoldPrice();
-    cachedData = data;
-    lastFetchTime = now;
-
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error in gold price API:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch gold price' },
-      { status: 500 }
-    );
-  }
 }
