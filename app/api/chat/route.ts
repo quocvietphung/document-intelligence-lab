@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { retrieveErgoDocuments, formatRetrievedContext } from "@/lib/ergo-retriever";
-import { createSystemMessage } from "@/lib/prompt-templates";
+import { createSystemMessage, stripMarkdown } from "@/lib/prompt-templates";
 
 /**
  * Azure OpenAI API Configuration from environment variables
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       const ragContext = formatRetrievedContext(ragDocuments);
 
       // Create system prompt
-      const systemPrompt = createSystemMessage(userMessage, ragContext);
+      const systemPrompt = createSystemMessage(userMessage, ragContext, true);
 
       // Create messages for Azure OpenAI (proper format only)
       const messages = [
@@ -138,8 +138,9 @@ export async function POST(req: NextRequest) {
       }
 
       const data = await response.json();
-      const reply =
+      const rawReply =
         data.choices?.[0]?.message?.content || "Không thể lấy được phản hồi";
+      const reply = stripMarkdown(rawReply);
 
       console.log("[chat/route] Debug response:", reply.substring(0, 100));
 
@@ -214,8 +215,8 @@ export async function POST(req: NextRequest) {
     // Create system prompt with RAG context
     const systemPrompt =
       lastUserMessage && lastUserMessage.content
-        ? createSystemMessage(lastUserMessage.content, ragContext)
-        : createSystemMessage("");
+        ? createSystemMessage(lastUserMessage.content, ragContext, true)
+        : createSystemMessage("", "", true);
 
     // Build final messages with system prompt and all previous messages
     // Keep the full conversation history for better context
@@ -260,6 +261,19 @@ export async function POST(req: NextRequest) {
 
     console.log("[chat/route] Got response from Azure OpenAI");
 
+    // Strip Markdown from all content in the response
+    if (data.choices && Array.isArray(data.choices)) {
+      data.choices = data.choices.map((choice: any) => ({
+        ...choice,
+        message: choice.message
+          ? {
+              ...choice.message,
+              content: stripMarkdown(choice.message.content || ""),
+            }
+          : choice.message,
+      }));
+    }
+
     // Add RAG metadata to response
     const formattedRagDocuments = ragDocuments
       .filter(
@@ -302,4 +316,3 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   return NextResponse.json({ message: "Chat API is running" });
 }
-
