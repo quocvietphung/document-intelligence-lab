@@ -1,16 +1,14 @@
-// /app/api/gold-price/route.ts
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 
 /**
- * ===============================
- * 💰 GOLD PRICE API (100% FREE)
- * Multi-source + auto fallback + caching + retry + FX conversion ready
- * ===============================
+ * 💰 GOLD PRICE API (FREE, JSON CACHE 10h)
+ * Multi-source + auto fallback + retry + JSON persistence across restarts
  */
 
 export const dynamic = "force-dynamic";
 
-/** Dữ liệu trả về cho client (USD / troy ounce) */
 interface GoldPriceData {
     price: number;
     change: number;
@@ -20,12 +18,17 @@ interface GoldPriceData {
     history: number[];
 }
 
-/** Cache nội bộ (10 giờ) */
+/** Đường dẫn file cache (Vercel/Node cho phép /tmp) */
+const CACHE_FILE = path.join("/tmp", "gold_cache.json");
+
+/** Biến cache trong bộ nhớ */
 let cachedData: GoldPriceData | null = null;
 let lastFetchTime = 0;
+let lastSuccessfulSource: string | null = null;
+
 const CACHE_DURATION_MS = 10 * 60 * 60 * 1000; // 10 giờ
 
-/** Nguồn upstreams: realtime free (no API key) */
+/** Các nguồn upstream (GoldAPI + MetalpriceAPI) */
 const UPSTREAMS = [
     {
         name: "GoldAPI",
@@ -34,11 +37,41 @@ const UPSTREAMS = [
     {
         name: "MetalpriceAPI",
         url: "https://api.metalpriceapi.com/v1/latest?base=USD&currencies=XAU",
-        invert: true, // cần nghịch đảo
+        invert: true,
     },
 ];
 
-/** 🧩 Helper: tạo 24 điểm sparkline xung quanh giá trung bình */
+/** 📂 Load cache từ JSON (nếu có) */
+function loadCacheFromFile() {
+    try {
+        if (fs.existsSync(CACHE_FILE)) {
+            const content = JSON.parse(fs.readFileSync(CACHE_FILE, "utf8"));
+            cachedData = content.cachedData ?? null;
+            lastFetchTime = content.lastFetchTime ?? 0;
+            lastSuccessfulSource = content.lastSuccessfulSource ?? null;
+            console.log(`[GoldPrice] 📂 Loaded cache from ${CACHE_FILE}`);
+        }
+    } catch (err) {
+        console.warn("[GoldPrice] ⚠️ Failed to load cache:", err);
+    }
+}
+
+/** 💾 Lưu cache vào JSON */
+function saveCacheToFile() {
+    try {
+        const payload = {
+            cachedData,
+            lastFetchTime,
+            lastSuccessfulSource,
+        };
+        fs.writeFileSync(CACHE_FILE, JSON.stringify(payload, null, 2), "utf8");
+        console.log(`[GoldPrice] 💾 Cache saved to ${CACHE_FILE}`);
+    } catch (err) {
+        console.warn("[GoldPrice] ⚠️ Failed to save cache:", err);
+    }
+}
+
+/** Tạo dữ liệu sparkline 24h */
 function buildHistory(around: number): number[] {
     const arr: number[] = [];
     for (let i = 23; i >= 0; i--) {
@@ -50,7 +83,7 @@ function buildHistory(around: number): number[] {
     return arr;
 }
 
-/** ⏳ Timeout wrapper */
+/** Timeout wrapper */
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
     return Promise.race([
         p,
@@ -58,52 +91,46 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
     ]);
 }
 
-/** 🎯 Tự động phát hiện field giá từ JSON */
+/** Lấy giá từ JSON */
 function pickPrice(json: any): number | null {
     if (!json) return null;
-
-    // Gold-API, GoldAPI.io
-    const direct = [
-        json?.price,
-        json?.ask,
-        json?.value,
-        json?.rate,
-        json?.data?.price,
-    ];
+    const direct = [json?.price, json?.ask, json?.value, json?.rate, json?.data?.price];
     for (const v of direct) {
         const n = Number(v);
         if (Number.isFinite(n) && n > 0) return n;
     }
-
-    // MetalpriceAPI: cần nghịch đảo
     if (Number.isFinite(json?.rates?.XAU)) {
         const rate = Number(json.rates.XAU);
         if (rate > 0) return Math.round((1 / rate) * 100) / 100;
     }
-
-    // Một số trường hợp đặc biệt
     const alt = [json?.data?.value, json?.gold?.price, json?.result?.price];
     for (const v of alt) {
         const n = Number(v);
         if (Number.isFinite(n) && n > 0) return n;
     }
-
     return null;
 }
 
-/** 🚀 Lấy giá spot từ nhiều nguồn, có retry và exponential backoff */
+/** Lấy giá spot từ upstreams */
 async function fetchSpotUSDPerOunce(): Promise<number> {
-    for (const [idx, src] of UPSTREAMS.entries()) {
+    const sources = lastSuccessfulSource
+        ? [
+            UPSTREAMS.find((s) => s.name === lastSuccessfulSource)!,
+            ...UPSTREAMS.filter((s) => s.name !== lastSuccessfulSource),
+        ]
+        : UPSTREAMS;
+
+    for (const [idx, src] of sources.entries()) {
         try {
             const res = await withTimeout(fetch(src.url, { cache: "no-store" }), 6000);
             if (!(res as Response).ok) {
                 console.warn(`[GoldPrice] ${src.name} HTTP ${(res as Response).status}`);
                 continue;
             }
-
             const json = await (res as Response).json().catch(() => ({}));
             const price = pickPrice(json);
             if (price && price > 0) {
+                lastSuccessfulSource = src.name;
                 console.log(`[GoldPrice] ✅ ${src.name}: $${price}`);
                 return price;
             }
@@ -112,12 +139,10 @@ async function fetchSpotUSDPerOunce(): Promise<number> {
                 `[GoldPrice] ❌ ${src.name} failed:`,
                 err instanceof Error ? err.message : String(err)
             );
-            // ⏳ Exponential backoff 1s, 2s, ...
             await new Promise((res) => setTimeout(res, (idx + 1) * 1000));
         }
     }
 
-    // Fallback cuối cùng
     const base = 2050;
     const jitter = (Math.random() - 0.5) * 50;
     const mock = Math.round((base + jitter) * 100) / 100;
@@ -125,12 +150,13 @@ async function fetchSpotUSDPerOunce(): Promise<number> {
     return mock;
 }
 
-/** 🧮 Tính toán thay đổi, phần trăm, lịch sử */
+/** Tính toán thay đổi, phần trăm, lịch sử */
 async function getGoldPrice(): Promise<GoldPriceData> {
     const spot = await fetchSpotUSDPerOunce();
 
     let change = 0;
     let changePercent = 0;
+
     if (cachedData?.price) {
         change = Math.round((spot - cachedData.price) * 100) / 100;
         changePercent = Math.round((change / cachedData.price) * 10000) / 100;
@@ -152,12 +178,12 @@ async function getGoldPrice(): Promise<GoldPriceData> {
 
 /** 🧠 Main API route */
 export async function GET() {
+    loadCacheFromFile(); // ✅ load cache khi API được gọi lần đầu
     const now = Date.now();
 
     try {
-        // Dùng cache nếu còn hạn
         if (cachedData && now - lastFetchTime < CACHE_DURATION_MS) {
-            console.log("[GoldPrice] 🟢 Cache hit");
+            console.log(`[GoldPrice] 🟢 Cache hit (source=${lastSuccessfulSource})`);
             return NextResponse.json(cachedData);
         }
 
@@ -166,11 +192,12 @@ export async function GET() {
         cachedData = fresh;
         lastFetchTime = now;
 
+        saveCacheToFile(); // ✅ lưu cache mới
+
         return NextResponse.json(fresh);
     } catch (err) {
         console.error("[/api/gold-price] Error:", err);
 
-        // Fallback: cache cũ hoặc mock
         const fallback =
             cachedData ||
             ({
