@@ -144,12 +144,22 @@
       "title": "Giá Vàng",
       "subtitle": "Dữ liệu thị trường trực tiếp",
       "perOunce": "mỗi ounce troy",
+      "perGram": "mỗi gram",
       "chart": "Xu hướng 24h",
       "last24h": "24 giờ qua",
       "lastUpdated": "Cập nhật lần cuối",
       "refresh": "Làm mới",
       "error": "Không thể tải dữ liệu",
-      "retry": "Thử lại"
+      "retry": "Thử lại",
+      "currencyLabel": "Tiền tệ",
+      "unitOz": "oz",
+      "unitGram": "g",
+      "unitSelector": "Bộ chọn đơn vị",
+      "high24h": "24h Cao nhất",
+      "low24h": "24h Thấp nhất",
+      "cacheNote": "bộ nhớ đệm ~10h",
+      "fxRateMissing": "Tỷ giá chưa tải được – hiển thị quy đổi ước tính.",
+      "sourceNote": "* Dữ liệu thời gian thực từ Gold Price API (miễn phí, không cần key); lịch sử có thể bị giới hạn. Tỷ giá từ exchangerate.host."
     }
   }
 }

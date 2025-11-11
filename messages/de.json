@@ -144,12 +144,22 @@
       "title": "Goldpreis",
       "subtitle": "Live-Marktdaten",
       "perOunce": "pro Feinunze",
+      "perGram": "pro Gramm",
       "chart": "24h Trend",
       "last24h": "Letzte 24 Stunden",
       "lastUpdated": "Zuletzt aktualisiert",
       "refresh": "Aktualisieren",
       "error": "Daten konnten nicht geladen werden",
-      "retry": "Erneut versuchen"
+      "retry": "Erneut versuchen",
+      "currencyLabel": "Währung",
+      "unitOz": "oz",
+      "unitGram": "g",
+      "unitSelector": "Einheit",
+      "high24h": "24h Hoch",
+      "low24h": "24h Tief",
+      "cacheNote": "Cache ~10h",
+      "fxRateMissing": "Wechselkurs nicht geladen – ungefähre Umrechnung wird angezeigt.",
+      "sourceNote": "* Echtzeitdaten von Gold Price API (kostenlos, kein Key); Verlauf kann begrenzt sein. Wechselkurs von exchangerate.host."
     }
   }
 }

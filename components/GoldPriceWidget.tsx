@@ -36,7 +36,12 @@ export default function GoldPriceWidget() {
         try {
             setLoading(true);
             const res = await fetch("/api/gold-price", { cache: "no-store" });
-            if (!res.ok) throw new Error("Failed to fetch gold price");
+            if (!res.ok) {
+                // API returned non-2xx — set error and exit gracefully
+                setErr(t("priceWidget.error"));
+                setLoading(false);
+                return;
+            }
             const json: GoldPriceData = await res.json();
             setGold(json);
             setErr(null);
@@ -162,7 +167,6 @@ export default function GoldPriceWidget() {
     const isUp = (gold.change ?? 0) >= 0;
     const high24h = history.length ? Math.max(...history) : perOunceUSD;
     const low24h  = history.length ? Math.min(...history) : perOunceUSD;
-    const labelPer = unit === "ounce" ? (t("priceWidget.perOunce") || "per ounce") : "per gram";
 
     return (
         <div className="bg-white rounded-xl shadow-lg p-6" aria-labelledby="gold-widget-title">
@@ -181,16 +185,16 @@ export default function GoldPriceWidget() {
 
                 <div className="flex items-center gap-3">
                     <label className="flex items-center gap-2 text-sm text-gray-600">
-                        <span className="sr-only">Currency</span>
-                        <select aria-label="Currency" value={currency} onChange={(e) => setCurrency(e.target.value as Currency)} className="rounded-md border-gray-200 text-sm px-2 py-1">
+                        <span className="sr-only">{t("priceWidget.currencyLabel")}</span>
+                        <select aria-label={t("priceWidget.currencyLabel")} value={currency} onChange={(e) => setCurrency(e.target.value as Currency)} className="rounded-md border-gray-200 text-sm px-2 py-1">
                             <option value="USD">USD</option>
                             <option value="VND">VND</option>
                         </select>
                     </label>
 
-                    <div className="inline-flex rounded-md bg-gray-100 p-1" role="group" aria-label="Unit selector">
-                        <button onClick={() => setUnit("ounce")} aria-pressed={unit === "ounce"} className={`px-3 py-1 text-sm font-medium ${unit === "ounce" ? "bg-white shadow rounded" : "text-gray-600"}`}>oz</button>
-                        <button onClick={() => setUnit("gram")}  aria-pressed={unit === "gram"}  className={`px-3 py-1 text-sm font-medium ${unit === "gram"  ? "bg-white shadow rounded" : "text-gray-600"}`}>g</button>
+                    <div className="inline-flex rounded-md bg-gray-100 p-1" role="group" aria-label={t("priceWidget.unitSelector") || "Unit selector"}>
+                        <button onClick={() => setUnit("ounce")} aria-pressed={unit === "ounce"} className={`px-3 py-1 text-sm font-medium ${unit === "ounce" ? "bg-white shadow rounded" : "text-gray-600"}`}>{t("priceWidget.unitOz")}</button>
+                        <button onClick={() => setUnit("gram")}  aria-pressed={unit === "gram"}  className={`px-3 py-1 text-sm font-medium ${unit === "gram"  ? "bg-white shadow rounded" : "text-gray-600"}`}>{t("priceWidget.unitGram")}</button>
                     </div>
 
                     <button onClick={reload} title={t("priceWidget.refresh")} className="p-2 text-gray-400 hover:text-gray-600" aria-label={t("priceWidget.refresh")}>
@@ -214,7 +218,7 @@ export default function GoldPriceWidget() {
             </span>
                     </div>
 
-                    <div className="text-sm text-gray-500 mt-1">{unit === "ounce" ? (t("priceWidget.perOunce") || "per ounce") : "per gram"}</div>
+                    <div className="text-sm text-gray-500 mt-1">{unit === "ounce" ? (t("priceWidget.perOunce") || "per ounce") : t("priceWidget.perGram")}</div>
 
                     <div className={`inline-block mt-3 px-3 py-1 rounded-full text-sm font-medium ${isUp ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
                         {formatChange(gold.change, gold.changePercent)}
@@ -222,13 +226,13 @@ export default function GoldPriceWidget() {
 
                     <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
                         <div className="p-2 rounded bg-gray-50">
-                            <div className="text-gray-500">24h High</div>
+                            <div className="text-gray-500">{t("priceWidget.high24h")}</div>
                             <div className="font-semibold text-gray-900">
                                 {formatMoney(unit === "ounce" ? high24h : high24h / OUNCE_TO_GRAM, currency)}
                             </div>
                         </div>
                         <div className="p-2 rounded bg-gray-50">
-                            <div className="text-gray-500">24h Low</div>
+                            <div className="text-gray-500">{t("priceWidget.low24h")}</div>
                             <div className="font-semibold text-gray-900">
                                 {formatMoney(unit === "ounce" ? low24h : low24h / OUNCE_TO_GRAM, currency)}
                             </div>
@@ -236,7 +240,7 @@ export default function GoldPriceWidget() {
                     </div>
 
                     <div className="text-xs text-gray-400 mt-2">
-                        {t("priceWidget.lastUpdated")}: {new Date(gold.lastUpdated).toLocaleString()} • cache ~10h
+                        {t("priceWidget.lastUpdated")} : {new Date(gold.lastUpdated).toLocaleString()} • {t("priceWidget.cacheNote")}
                     </div>
                 </div>
 
@@ -244,13 +248,13 @@ export default function GoldPriceWidget() {
                     <div className="mb-2 w-full flex justify-center"><Sparkline points={history} /></div>
                     <div className="text-xs text-gray-500">{t("priceWidget.chart")} • {t("priceWidget.last24h")}</div>
                     {!fxRate && currency === "VND" && (
-                        <div className="mt-2 text-[11px] text-amber-600">Tỷ giá chưa tải được – tạm hiển thị quy đổi giả định.</div>
+                        <div className="mt-2 text-[11px] text-amber-600">{t("priceWidget.fxRateMissing")}</div>
                     )}
                 </div>
             </div>
 
             <div className="mt-4 border-t pt-3 text-[11px] text-gray-500 leading-relaxed">
-                * Real-time từ Gold Price API (free, no key – realtime không rate limit); history có thể giới hạn. Tỷ giá từ exchangerate.host.  [oai_citation:1‡gold-api.com](https://gold-api.com/docs)
+                {t("priceWidget.sourceNote")} <a className="underline" href="https://gold-api.com/docs" target="_blank" rel="noopener noreferrer">gold-api.com</a>
             </div>
         </div>
     );

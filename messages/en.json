@@ -144,12 +144,22 @@
       "title": "Gold Price",
       "subtitle": "Live market data",
       "perOunce": "per troy ounce",
+      "perGram": "per gram",
       "chart": "24h Trend",
       "last24h": "Last 24 hours",
       "lastUpdated": "Last updated",
       "refresh": "Refresh",
       "error": "Unable to load data",
-      "retry": "Try again"
+      "retry": "Try again",
+      "currencyLabel": "Currency",
+      "unitOz": "oz",
+      "unitGram": "g",
+      "unitSelector": "Unit selector",
+      "high24h": "24h High",
+      "low24h": "24h Low",
+      "cacheNote": "cache ~10h",
+      "fxRateMissing": "Exchange rate not loaded — showing approximate conversion.",
+      "sourceNote": "* Real-time from Gold Price API (free, no key); history may be limited. Exchange rate from exchangerate.host."
     }
   }
 }
