@@ -181,6 +181,19 @@
       "projectedPriceLabel": "Projected Price",
       "gainLoss": "Gain/Loss",
       "warningNote": "⚠️ This calculator is for informational purposes only. Actual results may vary. Consult a financial advisor before investing."
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1_title": "Why invest in gold?",
+      "q1_body": "Gold is a hedge against inflation, currency devaluation, and economic uncertainty. It has maintained value across centuries and provides portfolio diversification.",
+      "q2_title": "What factors affect gold prices?",
+      "q2_body": "Interest rates, inflation, geopolitical tensions, currency strength, and central bank policies all influence gold prices significantly.",
+      "q3_title": "How to buy gold safely?",
+      "q3_body": "Buy from reputable dealers, verify purity and weight, consider storage options (vault, home safe), and maintain proper insurance coverage.",
+      "q4_title": "What are tax implications?",
+      "q4_body": "Gold investments may be subject to capital gains tax. Consult with tax professionals to optimize your strategy based on local regulations.",
+      "disclaimer_title": "⚠️ Important Disclaimer",
+      "disclaimer_body": "Gold investments carry risks including market volatility, liquidity constraints, storage costs, and currency fluctuations. Past performance does not guarantee future results. Please consult with a qualified financial advisor before making investment decisions. This information is for educational purposes only and not financial advice."
     }
   }
 }

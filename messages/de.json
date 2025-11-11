@@ -181,6 +181,19 @@
       "projectedPriceLabel": "Prognostizierter Preis",
       "gainLoss": "Gewinn/Verlust",
       "warningNote": "⚠️ Dieser Rechner dient nur zu Informationszwecken. Tatsächliche Ergebnisse können abweichen. Konsultieren Sie einen Finanzberater vor Investitionen."
+    },
+    "faq": {
+      "title": "Häufig gestellte Fragen",
+      "q1_title": "Warum in Gold investieren?",
+      "q1_body": "Gold ist ein Schutz gegen Inflation, Währungsabwertung und wirtschaftliche Unsicherheit. Es hat seinen Wert über Jahrhunderte gehalten und bietet Diversifikation im Portfolio.",
+      "q2_title": "Welche Faktoren beeinflussen den Goldpreis?",
+      "q2_body": "Zinssätze, Inflation, geopolitische Spannungen, Währungsstärke und Zentralbankpolitik beeinflussen die Goldpreise erheblich.",
+      "q3_title": "Wie kauft man Gold sicher?",
+      "q3_body": "Kaufen Sie bei seriösen Händlern, überprüfen Sie Reinheit und Gewicht, prüfen Sie Aufbewahrungsmöglichkeiten (Tresor, Lager) und sorgen Sie für geeignete Versicherung.",
+      "q4_title": "Welche steuerlichen Auswirkungen gibt es?",
+      "q4_body": "Goldinvestitionen können der Kapitalertragssteuer unterliegen. Konsultieren Sie Steuerexperten, um Ihre Strategie entsprechend den lokalen Vorschriften zu optimieren.",
+      "disclaimer_title": "⚠️ Wichtiger Hinweis",
+      "disclaimer_body": "Goldinvestitionen bergen Risiken wie Marktvolatilität, Liquiditätsbeschränkungen, Lagerkosten und Währungsschwankungen. Vergangene Leistungen sind keine Garantie für zukünftige Ergebnisse. Bitte konsultieren Sie einen qualifizierten Finanzberater vor Investitionsentscheidungen. Diese Informationen dienen nur zu Informationszwecken und sind keine Finanzberatung."
     }
   }
 }

@@ -181,6 +181,19 @@
       "projectedPriceLabel": "Giá dự kiến",
       "gainLoss": "Lãi/Lỗ",
       "warningNote": "⚠️ Máy tính chỉ mang tính tham khảo. Kết quả thực tế có thể khác. Hãy tham khảo tư vấn tài chính trước khi đầu tư."
+    },
+    "faq": {
+      "title": "Câu hỏi thường gặp",
+      "q1_title": "Tại sao nên đầu tư vào vàng?",
+      "q1_body": "Vàng là công cụ phòng ngừa lạm phát, mất giá tiền tệ và bất ổn kinh tế. Nó duy trì giá trị qua nhiều thế kỷ và giúp đa dạng hóa danh mục đầu tư.",
+      "q2_title": "Những yếu tố nào ảnh hưởng đến giá vàng?",
+      "q2_body": "Lãi suất, lạm phát, căng thẳng địa chính trị, sức mạnh tiền tệ và chính sách ngân hàng trung ương đều ảnh hưởng lớn đến giá vàng.",
+      "q3_title": "Làm thế nào để mua vàng an toàn?",
+      "q3_body": "Mua từ nhà cung cấp uy tín, xác minh độ tinh khiết và trọng lượng, cân nhắc phương án lưu trữ (kho, két sắt tại nhà) và duy trì bảo hiểm phù hợp.",
+      "q4_title": "Hệ quả thuế là gì?",
+      "q4_body": "Đầu tư vàng có thể chịu thuế lợi tức vốn. Hãy tham khảo chuyên gia thuế để tối ưu chiến lược dựa theo quy định địa phương.",
+      "disclaimer_title": "⚠️ Tuyên bố quan trọng",
+      "disclaimer_body": "Đầu tư vàng có rủi ro bao gồm biến động thị trường, hạn chế thanh khoản, chi phí lưu trữ và biến động tiền tệ. Hiệu suất quá khứ không đảm bảo kết quả tương lai. Hãy tham khảo tư vấn tài chính trước khi quyết định. Thông tin này chỉ mang tính giáo dục và không phải lời khuyên đầu tư."
     }
   }
 }

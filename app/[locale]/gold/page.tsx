@@ -136,78 +136,29 @@ export default function GoldConsultingPage() {
           {/* FAQ Section */}
           <div className="mb-16">
             <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
-              Frequently Asked Questions
+              {t('faq.title')}
             </h2>
             <div className="grid md:grid-cols-2 gap-6">
-              {/* FAQ 1 */}
-              <details className="bg-white rounded-lg shadow p-6 cursor-pointer group">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  Why invest in gold?
-                  <span className="transform group-open:rotate-180 transition-transform">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                  </span>
-                </summary>
-                <p className="text-gray-600 mt-4">
-                  Gold is a hedge against inflation, currency devaluation, and economic uncertainty. It has maintained value across centuries and provides portfolio diversification.
-                </p>
-              </details>
-
-              {/* FAQ 2 */}
-              <details className="bg-white rounded-lg shadow p-6 cursor-pointer group">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  What factors affect gold prices?
-                  <span className="transform group-open:rotate-180 transition-transform">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                  </span>
-                </summary>
-                <p className="text-gray-600 mt-4">
-                  Interest rates, inflation, geopolitical tensions, currency strength, and central bank policies all influence gold prices significantly.
-                </p>
-              </details>
-
-              {/* FAQ 3 */}
-              <details className="bg-white rounded-lg shadow p-6 cursor-pointer group">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  How to buy gold safely?
-                  <span className="transform group-open:rotate-180 transition-transform">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                  </span>
-                </summary>
-                <p className="text-gray-600 mt-4">
-                  Buy from reputable dealers, verify purity and weight, consider storage options (vault, home safe), and maintain proper insurance coverage.
-                </p>
-              </details>
-
-              {/* FAQ 4 */}
-              <details className="bg-white rounded-lg shadow p-6 cursor-pointer group">
-                <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                  What are tax implications?
-                  <span className="transform group-open:rotate-180 transition-transform">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                  </span>
-                </summary>
-                <p className="text-gray-600 mt-4">
-                  Gold investments may be subject to capital gains tax. Consult with tax professionals to optimize your strategy based on local regulations.
-                </p>
-              </details>
+              {[1,2,3,4].map((i) => (
+                <details key={i} className="bg-white rounded-lg shadow p-6 cursor-pointer group">
+                  <summary className="font-semibold text-gray-900 flex items-center justify-between">
+                    {t(`faq.q${i}_title`)}
+                    <span className="transform group-open:rotate-180 transition-transform">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                      </svg>
+                    </span>
+                  </summary>
+                  <p className="text-gray-600 mt-4">{t(`faq.q${i}_body`)}</p>
+                </details>
+              ))}
             </div>
           </div>
 
           {/* Risk Disclaimer */}
           <div className="bg-blue-50 border-l-4 border-blue-600 rounded-lg p-6 mb-16">
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">⚠️ Important Disclaimer</h3>
-            <p className="text-blue-800">
-              Gold investments carry risks including market volatility, liquidity constraints, storage costs, and currency fluctuations. Past performance does not guarantee future results.
-              Please consult with a qualified financial advisor before making investment decisions. This information is for educational purposes only and not financial advice.
-            </p>
+            <h3 className="text-lg font-semibold text-blue-900 mb-2">{t('faq.disclaimer_title')}</h3>
+            <p className="text-blue-800">{t('faq.disclaimer_body')}</p>
           </div>
 
           {/* CTA Section */}
