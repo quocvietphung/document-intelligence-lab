@@ -18,8 +18,20 @@ interface GoldPriceData {
     history: number[];
 }
 
-/** Đường dẫn file cache (Vercel/Node cho phép /tmp) */
-const CACHE_FILE = path.join("/tmp", "gold_cache.json");
+/** Đường dẫn file cache (lưu trong project root: .cache/gold_cache.json) */
+const CACHE_DIR = path.join(process.cwd(), ".cache");
+const CACHE_FILE = path.join(CACHE_DIR, "gold_cache.json");
+
+/** Tạo thư mục .cache nếu chưa có */
+function ensureCacheDir() {
+    try {
+        if (!fs.existsSync(CACHE_DIR)) {
+            fs.mkdirSync(CACHE_DIR, { recursive: true });
+        }
+    } catch (err) {
+        console.warn("[GoldPrice] ⚠️ Failed to create cache dir:", err);
+    }
+}
 
 /** Biến cache trong bộ nhớ */
 let cachedData: GoldPriceData | null = null;
@@ -44,6 +56,7 @@ const UPSTREAMS = [
 /** 📂 Load cache từ JSON (nếu có) */
 function loadCacheFromFile() {
     try {
+        ensureCacheDir(); // Tạo thư mục nếu chưa có
         if (fs.existsSync(CACHE_FILE)) {
             const content = JSON.parse(fs.readFileSync(CACHE_FILE, "utf8"));
             cachedData = content.cachedData ?? null;

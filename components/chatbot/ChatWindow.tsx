@@ -21,6 +21,11 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
   const [showWelcomeTyping, setShowWelcomeTyping] = useState(true);
   const [welcomeComplete, setWelcomeComplete] = useState(false);
 
+  // State để quản lý typing effect cho chat responses
+  const [typingMessageId, setTypingMessageId] = useState<string | null>(null);
+  const [displayedContent, setDisplayedContent] = useState<Record<string, string>>({});
+  const typingSpeedRef = useRef(30); // ms per character
+
   const welcomeText = t("welcome") + ". Ask me anything about ERGO insurance and tax consulting";
 
   const scrollToBottom = () => {
@@ -29,7 +34,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, displayedContent]);
 
   // Typing effect for welcome message
   useEffect(() => {
@@ -37,7 +42,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
       if (displayedWelcome.length < welcomeText.length) {
         const timer = setTimeout(() => {
           setDisplayedWelcome(welcomeText.slice(0, displayedWelcome.length + 1));
-        }, 30); // Tốc độ gõ
+        }, 30);
         return () => clearTimeout(timer);
       } else {
         setShowWelcomeTyping(false);
@@ -51,10 +56,35 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
     if (welcomeComplete && messages.length === 0) {
       const lang = detectLanguage(t("welcome") as string);
       const welcome = getWelcomeMessage(lang, true);
-      // Ensure we don't add duplicate
       addMessage({ role: "assistant", content: welcome, isWelcome: true });
     }
   }, [welcomeComplete, messages.length, addMessage, t]);
+
+  // Typing effect cho các assistant messages
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+
+    if (lastMessage && lastMessage.role === "assistant" && !(lastMessage as any).isWelcome && !isLoading) {
+      const messageId = lastMessage.id;
+      const fullContent = lastMessage.content;
+      const currentDisplayed = displayedContent[messageId] || "";
+
+      // Nếu chưa hiển thị hết nội dung, tiếp tục typing
+      if (currentDisplayed.length < fullContent.length) {
+        const timer = setTimeout(() => {
+          setDisplayedContent(prev => ({
+            ...prev,
+            [messageId]: fullContent.slice(0, currentDisplayed.length + 1)
+          }));
+          setTypingMessageId(messageId);
+        }, typingSpeedRef.current);
+
+        return () => clearTimeout(timer);
+      } else if (currentDisplayed.length === fullContent.length) {
+        setTypingMessageId(null);
+      }
+    }
+  }, [messages, displayedContent, isLoading]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -197,6 +227,13 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
           {messages.length > 0 && (
             messages.map((message) => {
               const isUser = message.role === "user";
+              const isWelcome = (message as any).isWelcome;
+
+              // Lấy nội dung hiển thị (typing effect) hoặc full content
+              let displayContent = message.content;
+              if (!isUser && !isWelcome && displayedContent[message.id]) {
+                displayContent = displayedContent[message.id];
+              }
 
               return (
                 <div
@@ -211,7 +248,8 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                     }`}
                   >
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                      {message.content}
+                      {displayContent}
+                      {typingMessageId === message.id && <span className="animate-pulse">|</span>}
                     </p>
                     <span className={`text-xs mt-2 block ${isUser ? "text-blue-100" : "text-gray-400"}`}>
                       {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
