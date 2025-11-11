@@ -322,7 +322,7 @@ export function stripMarkdown(text: string): string {
     result = result.replace(/_(.+?)_/g, "$1");
 
     // Remove [link text](url)
-    result = result.replace(/\[(.+?)\]\(.+?\)/g, "$1");
+    result = result.replace(/\[(.+?)\]\((.+?)\)/g, "$1");
 
     // Remove code blocks (```) and inline code (`)
     result = result.replace(/```[\s\S]*?```/g, "");
@@ -335,10 +335,10 @@ export function stripMarkdown(text: string): string {
     result = result.replace(/^>\s+/gm, "");
 
     // Remove horizontal rules (---, ***, ___)
-    result = result.replace(/^(\-{3,}|\*{3,}|_{3,})$/gm, "");
+    result = result.replace(/^(-{3,}|\*{3,}|_{3,})$/gm, "");
 
     // Remove list markers (-, *, +) from line start
-    result = result.replace(/^[\-\*\+]\s+/gm, "");
+    result = result.replace(/^[-*+]\s+/gm, "");
 
     // Remove numbered list markers (1., 2., etc.) from line start
     result = result.replace(/^\d+\.\s+/gm, "");
@@ -358,4 +358,46 @@ export function stripMarkdown(text: string): string {
     result = result.trim();
 
     return result;
+}
+
+/**
+ * Generate a brief summary of conversation history for context
+ * Condenses multiple messages into 1-2 sentences to preserve context without extra tokens
+ */
+export function summarizeConversationHistory(messages: Array<{role: string; content: string}>): string {
+    if (!messages || messages.length === 0) return "";
+
+    // Filter out system messages, keep only user + assistant
+    const userAssistantMessages = messages.filter((m) => m.role === "user" || m.role === "assistant");
+
+    if (userAssistantMessages.length === 0) return "";
+
+    // Group into Q&A pairs
+    const topics: string[] = [];
+    for (let i = 0; i < userAssistantMessages.length; i += 2) {
+        const userMsg = userAssistantMessages[i];
+        if (userMsg && userMsg.role === "user") {
+            // Extract first 100 chars of user question as topic
+            const topic = userMsg.content.substring(0, 80).replace(/\n/g, " ");
+            topics.push(topic);
+        }
+    }
+
+    if (topics.length === 0) return "";
+
+    // Create summary: "Cuộc trò chuyện trước đó về: [topic1], [topic2], ..."
+    const language = detectLanguage(userAssistantMessages[0]?.content || "en");
+    let prefix: string;
+
+    if (language === "vi") {
+        prefix = "Cuộc trò chuyện trước đó về:";
+    } else if (language === "de") {
+        prefix = "Vorherige Konversation über:";
+    } else {
+        prefix = "Previous conversation about:";
+    }
+
+    // Limit to last 3 topics to keep summary short
+    const recentTopics = topics.slice(-3);
+    return `${prefix} ${recentTopics.join(", ")}`;
 }
