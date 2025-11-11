@@ -50,7 +50,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
   useEffect(() => {
     if (welcomeComplete && messages.length === 0) {
       const lang = detectLanguage(t("welcome") as string);
-      const welcome = getWelcomeMessage(lang, true, false);
+      const welcome = getWelcomeMessage(lang, true);
       // Ensure we don't add duplicate
       addMessage({ role: "assistant", content: welcome, isWelcome: true });
     }
