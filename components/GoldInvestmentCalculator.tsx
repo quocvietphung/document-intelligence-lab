@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
 import React, { useState, useMemo } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface CalculatorResult {
   currentValue: number;
@@ -11,17 +12,20 @@ interface CalculatorResult {
 }
 
 export default function GoldInvestmentCalculator() {
+  const t = useTranslations('gold');
+  const locale = useLocale();
+
   const [amount, setAmount] = useState<number>(1000);
   const [unitPrice, setUnitPrice] = useState<number>(2050);
   const [futurePrice, setFuturePrice] = useState<number>(2200);
   const [years, setYears] = useState<number>(1);
 
-  const result: CalculatorResult = useMemo(() => {
+  const result: CalculatorResult & { ouncesBought: number } = useMemo(() => {
     const currentValue = amount;
-    const ouncesBought = amount / unitPrice;
+    const ouncesBought = unitPrice > 0 ? amount / unitPrice : 0;
     const projectedValue = ouncesBought * futurePrice;
     const gain = projectedValue - currentValue;
-    const gainPercent = (gain / currentValue) * 100;
+    const gainPercent = currentValue > 0 ? (gain / currentValue) * 100 : 0;
 
     return {
       currentValue,
@@ -29,24 +33,23 @@ export default function GoldInvestmentCalculator() {
       futureValue: projectedValue,
       gain,
       gainPercent,
+      ouncesBought,
     };
   }, [amount, unitPrice, futurePrice]);
 
+  const fmtCurrency = (v: number) => new Intl.NumberFormat(locale || 'en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(v);
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-8">
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">
-        💰 Gold Investment Calculator
-      </h2>
-      <p className="text-gray-600 mb-6">
-        Estimate your potential returns based on price projections
-      </p>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('calculator.title')}</h2>
+      <p className="text-gray-600 mb-6">{t('calculator.description')}</p>
 
       <div className="grid md:grid-cols-2 gap-8">
         {/* Inputs */}
         <div className="space-y-6">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Investment Amount (USD)
+              {t('calculator.investmentAmount')}
             </label>
             <div className="flex items-center gap-2">
               <span className="text-gray-600">$</span>
@@ -69,14 +72,14 @@ export default function GoldInvestmentCalculator() {
               className="w-full mt-2"
             />
             <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>$100</span>
-              <span>$100,000</span>
+              <span>{t('calculator.minAmount')}</span>
+              <span>{t('calculator.maxAmount')}</span>
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Current Gold Price (per oz)
+              {t('calculator.currentPrice')}
             </label>
             <div className="flex items-center gap-2">
               <span className="text-gray-600">$</span>
@@ -93,7 +96,7 @@ export default function GoldInvestmentCalculator() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Projected Price (per oz)
+              {t('calculator.projectedPrice')}
             </label>
             <div className="flex items-center gap-2">
               <span className="text-gray-600">$</span>
@@ -119,7 +122,7 @@ export default function GoldInvestmentCalculator() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Investment Period: {years} year{years !== 1 ? 's' : ''}
+              {t('calculator.investmentPeriod')}: {years} {years !== 1 ? t('calculator.years') : t('calculator.year')}
             </label>
             <input
               type="range"
@@ -139,35 +142,27 @@ export default function GoldInvestmentCalculator() {
 
         {/* Results */}
         <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-lg p-6 space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">Projection Results</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('calculator.projectionResults')}</h3>
 
           <div className="space-y-3">
             <div className="flex justify-between items-center py-2 border-b border-yellow-200">
-              <span className="text-gray-600">Initial Investment</span>
-              <span className="font-semibold text-gray-900">
-                ${result.currentValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}
-              </span>
+              <span className="text-gray-600">{t('calculator.initialInvestment')}</span>
+              <span className="font-semibold text-gray-900">{fmtCurrency(result.currentValue)}</span>
             </div>
 
             <div className="flex justify-between items-center py-2 border-b border-yellow-200">
-              <span className="text-gray-600">Ounces Purchased</span>
-              <span className="font-semibold text-gray-900">
-                {(result.currentValue / result.futurePrice).toFixed(4)} oz
-              </span>
+              <span className="text-gray-600">{t('calculator.ouncesPurchased')}</span>
+              <span className="font-semibold text-gray-900">{result.ouncesBought.toFixed(4)} oz</span>
             </div>
 
             <div className="flex justify-between items-center py-2 border-b border-yellow-200">
-              <span className="text-gray-600">Projected Price</span>
-              <span className="font-semibold text-gray-900">
-                ${result.futurePrice.toLocaleString('en-US', { maximumFractionDigits: 2 })}
-              </span>
+              <span className="text-gray-600">{t('calculator.projectedPriceLabel')}</span>
+              <span className="font-semibold text-gray-900">{fmtCurrency(result.futurePrice)}</span>
             </div>
 
             <div className="flex justify-between items-center py-3 border-b-2 border-yellow-400 bg-white rounded-lg px-3">
-              <span className="text-gray-900 font-semibold">Projected Value</span>
-              <span className="text-2xl font-bold text-yellow-600">
-                ${result.futureValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}
-              </span>
+              <span className="text-gray-900 font-semibold">{t('calculator.projectedValue')}</span>
+              <span className="text-2xl font-bold text-yellow-600">{fmtCurrency(result.futureValue)}</span>
             </div>
 
             <div className={`flex justify-between items-center py-3 rounded-lg px-3 font-semibold ${
@@ -175,7 +170,7 @@ export default function GoldInvestmentCalculator() {
                 ? 'bg-green-50 text-green-700'
                 : 'bg-red-50 text-red-700'
             }`}>
-              <span>Gain/Loss ({years}y)</span>
+              <span>{t('calculator.gainLoss')} ({years}y)</span>
               <div className="text-right">
                 <div className="text-2xl font-bold">
                   {result.gain >= 0 ? '+' : ''}${result.gain.toLocaleString('en-US', { maximumFractionDigits: 2 })}
@@ -187,13 +182,9 @@ export default function GoldInvestmentCalculator() {
             </div>
           </div>
 
-          <p className="text-xs text-gray-500 italic pt-4 border-t border-yellow-200">
-            ⚠️ This calculator is for informational purposes only. Actual results may vary.
-            Consult a financial advisor before investing.
-          </p>
+          <p className="text-xs text-gray-500 italic pt-4 border-t border-yellow-200">{t('calculator.warningNote')}</p>
         </div>
       </div>
     </div>
   );
 }
-

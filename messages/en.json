@@ -160,6 +160,27 @@
       "cacheNote": "cache ~10h",
       "fxRateMissing": "Exchange rate not loaded — showing approximate conversion.",
       "sourceNote": "* Real-time from Gold Price API (free, no key); history may be limited. Exchange rate from exchangerate.host."
+    },
+    "calculator": {
+      "title": "💰 Gold Investment Calculator",
+      "description": "Estimate your potential returns based on price projections",
+      "investmentAmount": "Investment Amount (USD)",
+      "currentPrice": "Current Gold Price (per oz)",
+      "projectedPrice": "Projected Price (per oz)",
+      "investmentPeriod": "Investment Period",
+      "year": "year",
+      "years": "years",
+      "minAmount": "$100",
+      "maxAmount": "$100,000",
+      "minYears": "1 year",
+      "maxYears": "10 years",
+      "projectionResults": "Projection Results",
+      "initialInvestment": "Initial Investment",
+      "ouncesPurchased": "Ounces Purchased",
+      "projectedValue": "Projected Value",
+      "projectedPriceLabel": "Projected Price",
+      "gainLoss": "Gain/Loss",
+      "warningNote": "⚠️ This calculator is for informational purposes only. Actual results may vary. Consult a financial advisor before investing."
     }
   }
 }

@@ -160,6 +160,27 @@
       "cacheNote": "Cache ~10h",
       "fxRateMissing": "Wechselkurs nicht geladen – ungefähre Umrechnung wird angezeigt.",
       "sourceNote": "* Echtzeitdaten von Gold Price API (kostenlos, kein Key); Verlauf kann begrenzt sein. Wechselkurs von exchangerate.host."
+    },
+    "calculator": {
+      "title": "💰 Gold-Investitionsrechner",
+      "description": "Schätzen Sie Ihre potenziellen Renditen basierend auf Preisprojektionen",
+      "investmentAmount": "Anlagebetrag (USD)",
+      "currentPrice": "Aktueller Goldpreis (pro oz)",
+      "projectedPrice": "Prognostizierter Preis (pro oz)",
+      "investmentPeriod": "Anlagezeitraum",
+      "year": "Jahr",
+      "years": "Jahre",
+      "minAmount": "$100",
+      "maxAmount": "$100.000",
+      "minYears": "1 Jahr",
+      "maxYears": "10 Jahre",
+      "projectionResults": "Prognoseergebnisse",
+      "initialInvestment": "Startkapital",
+      "ouncesPurchased": "Gekaufte Unzen",
+      "projectedValue": "Prognostizierter Wert",
+      "projectedPriceLabel": "Prognostizierter Preis",
+      "gainLoss": "Gewinn/Verlust",
+      "warningNote": "⚠️ Dieser Rechner dient nur zu Informationszwecken. Tatsächliche Ergebnisse können abweichen. Konsultieren Sie einen Finanzberater vor Investitionen."
     }
   }
 }

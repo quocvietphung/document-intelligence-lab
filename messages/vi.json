@@ -160,6 +160,27 @@
       "cacheNote": "bộ nhớ đệm ~10h",
       "fxRateMissing": "Tỷ giá chưa tải được – hiển thị quy đổi ước tính.",
       "sourceNote": "* Dữ liệu thời gian thực từ Gold Price API (miễn phí, không cần key); lịch sử có thể bị giới hạn. Tỷ giá từ exchangerate.host."
+    },
+    "calculator": {
+      "title": "💰 Máy tính Đầu tư Vàng",
+      "description": "Ước tính lợi nhuận tiềm năng dựa trên dự báo giá",
+      "investmentAmount": "Số tiền đầu tư (USD)",
+      "currentPrice": "Giá vàng hiện tại (theo oz)",
+      "projectedPrice": "Giá dự kiến (theo oz)",
+      "investmentPeriod": "Thời gian đầu tư",
+      "year": "năm",
+      "years": "năm",
+      "minAmount": "$100",
+      "maxAmount": "$100,000",
+      "minYears": "1 năm",
+      "maxYears": "10 năm",
+      "projectionResults": "Kết quả dự báo",
+      "initialInvestment": "Số tiền ban đầu",
+      "ouncesPurchased": "Số ounce mua",
+      "projectedValue": "Giá trị dự kiến",
+      "projectedPriceLabel": "Giá dự kiến",
+      "gainLoss": "Lãi/Lỗ",
+      "warningNote": "⚠️ Máy tính chỉ mang tính tham khảo. Kết quả thực tế có thể khác. Hãy tham khảo tư vấn tài chính trước khi đầu tư."
     }
   }
 }
