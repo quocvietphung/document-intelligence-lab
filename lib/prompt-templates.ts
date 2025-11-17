@@ -420,7 +420,7 @@ export function stripMarkdown(text: string): string {
 
 /**
  * Generate a brief summary of conversation history for context
- * Condenses multiple messages into 1-2 sentences to preserve context without extra tokens
+ * Preserves important details like numbers, percentages, product names, and key information
  */
 export function summarizeConversationHistory(messages: Array<{role: string; content: string; [key: string]: any}>): string {
     if (!messages || messages.length === 0) return "";
@@ -433,34 +433,79 @@ export function summarizeConversationHistory(messages: Array<{role: string; cont
 
     if (filteredMessages.length === 0) return "";
 
-    // Group into Q&A pairs
-    const topics: string[] = [];
-    for (let i = 0; i < filteredMessages.length; i += 2) {
-        const userMsg = filteredMessages[i];
-        if (userMsg && userMsg.role === "user") {
-            // Extract first 100 chars of user question as topic
-            const topic = userMsg.content.substring(0, 80).replace(/\n/g, " ");
-            topics.push(topic);
+    // Build context including recent Q&A pairs
+    const contextParts: string[] = [];
+
+    // Extract last user question
+    const lastUserMsg = [...filteredMessages].reverse().find(m => m.role === "user");
+    if (lastUserMsg && lastUserMsg.content.length < 200) {
+        contextParts.push(`[Recent Question]: ${lastUserMsg.content.substring(0, 100)}`);
+    }
+
+    // Extract key information from all messages
+    const keyInfo: string[] = [];
+
+    for (const msg of filteredMessages) {
+        const text = msg.content;
+
+        // Extract numbers, percentages, and important terms
+        const percentMatches = text.match(/\d+\s*%/g);
+        const priceMatches = text.match(/\d+[.,]\d+\s*€|€\s*\d+[.,]\d+/g);
+        const productMatches = text.match(/ERGO\s+[A-Z][a-zA-Z\s-]*/g);
+
+        // Collect extracted information
+        if (percentMatches) keyInfo.push(...percentMatches);
+        if (priceMatches) keyInfo.push(...priceMatches);
+        if (productMatches) {
+            const uniqueProducts = [...new Set(productMatches)];
+            keyInfo.push(...uniqueProducts.slice(0, 2));
+        }
+
+        // Extract key terms
+        if (msg.role === "user" && msg.content.length < 150) {
+            const cleanText = msg.content
+                .replace(/[^\w\s%€\-]/g, " ")
+                .trim()
+                .split(/\s+/)
+                .filter(word => word.length > 3)
+                .slice(0, 4)
+                .join(" ");
+            if (cleanText.length > 0) keyInfo.push(cleanText);
         }
     }
 
-    if (topics.length === 0) return "";
+    // Remove duplicates and get unique key info
+    const uniqueInfo = [...new Set(keyInfo)].slice(0, 6);
 
-    // Create summary: "Cuộc trò chuyện trước đó về: [topic1], [topic2], ..."
-    const language = detectLanguage(filteredMessages[0]?.content || "en");
-    let prefix: string;
-
-    if (language === "vi") {
-        prefix = "Cuộc trò chuyện trước đó về:";
-    } else if (language === "de") {
-        prefix = "Vorherige Konversation über:";
-    } else {
-        prefix = "Previous conversation about:";
+    if (uniqueInfo.length === 0 && contextParts.length === 0) {
+        return "";
     }
 
-    // Limit to last 3 topics to keep summary short
-    const recentTopics = topics.slice(-3);
-    return `${prefix} ${recentTopics.join(", ")}`;
+    // Create context-aware summary
+    const language = detectLanguage(filteredMessages[0]?.content || "en");
+    let contextText: string;
+
+    if (language === "vi") {
+        if (uniqueInfo.length > 0) {
+            contextText = `${contextParts.join(" ")} [Thông tin liên quan]: ${uniqueInfo.join(", ")}`;
+        } else {
+            contextText = contextParts.join(" ");
+        }
+    } else if (language === "de") {
+        if (uniqueInfo.length > 0) {
+            contextText = `${contextParts.join(" ")} [Relevante Informationen]: ${uniqueInfo.join(", ")}`;
+        } else {
+            contextText = contextParts.join(" ");
+        }
+    } else {
+        if (uniqueInfo.length > 0) {
+            contextText = `${contextParts.join(" ")} [Related Info]: ${uniqueInfo.join(", ")}`;
+        } else {
+            contextText = contextParts.join(" ");
+        }
+    }
+
+    return contextText.trim();
 }
 
 /**
