@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import GoldPriceWidget from '@/components/GoldPriceWidget';
 import GoldInvestmentCalculator from '@/components/GoldInvestmentCalculator';
+import FAQSection from '@/components/sections/FAQSection';
 
 export default function GoldConsultingPage() {
   const t = useTranslations('gold');
@@ -134,32 +135,7 @@ export default function GoldConsultingPage() {
           </div>
 
           {/* FAQ Section */}
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
-              {t('faq.title')}
-            </h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {[1,2,3,4].map((i) => (
-                <details key={i} className="bg-white rounded-lg shadow p-6 cursor-pointer group">
-                  <summary className="font-semibold text-gray-900 flex items-center justify-between">
-                    {t(`faq.q${i}_title`)}
-                    <span className="transform group-open:rotate-180 transition-transform">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                      </svg>
-                    </span>
-                  </summary>
-                  <p className="text-gray-600 mt-4">{t(`faq.q${i}_body`)}</p>
-                </details>
-              ))}
-            </div>
-          </div>
-
-          {/* Risk Disclaimer */}
-          <div className="bg-blue-50 border-l-4 border-blue-600 rounded-lg p-6 mb-16">
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">{t('faq.disclaimer_title')}</h3>
-            <p className="text-blue-800">{t('faq.disclaimer_body')}</p>
-          </div>
+          <FAQSection />
 
           {/* CTA Section */}
           <div className="text-center bg-gradient-to-r from-yellow-400 to-amber-500 rounded-xl p-8 md:p-12 text-white mb-16">

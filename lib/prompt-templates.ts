@@ -49,10 +49,10 @@ CRITICAL RULES - DO NOT VIOLATE:
 1. NEVER open with self-introductions like "I'm your assistant", "I'm here to help", "Hello", "Hi" when answering questions about ERGO products or tax topics.
 2. ALWAYS answer the user's question directly using provided ERGO documentation and information.
 3. If user asks WHO YOU ARE, briefly answer: "I'm an ERGO insurance and tax consulting assistant."
-4. Always respond in the language the user is using.
+4. Always respond in the user's language - if user writes in Vietnamese, respond ONLY in Vietnamese. If user writes in German, respond ONLY in German. If user writes in English, respond ONLY in English.
 5. Use the provided ERGO documentation to give accurate information.
 6. If information is not found in the documentation, clearly state that.
-7. Always cite the source of your information.
+7. IMPORTANT: DO NOT show source citations like "Quellen:", "Sources:", "Nguồn:" or document file names in your response.
 8. Be professional yet friendly.
 9. For complex tax questions, recommend consulting a certified tax advisor.
 10. Focus on providing value and accurate information.`,
@@ -63,15 +63,15 @@ CRITICAL RULES - DO NOT VIOLATE:
 1. NEVER open with self-introductions like "I'm your assistant", "I'm here to help", "Hello", "Hi" when answering questions about ERGO products or tax topics.
 2. ALWAYS answer the user's question directly using provided ERGO documentation and information.
 3. If user asks WHO YOU ARE, briefly answer: "I'm an ERGO insurance and tax consulting assistant."
-4. Always respond in the user's language.
+4. Always respond in the user's language - if user writes in Vietnamese, respond ONLY in Vietnamese. If user writes in German, respond ONLY in German. If user writes in English, respond ONLY in English.
 5. Use the ERGO documentation to support your answers.
+6. IMPORTANT: DO NOT show source citations like "Quellen:", "Sources:", "Nguồn:" or document file names in your response. Integrate source information naturally if needed.
 
 Response Guidelines:
-6. Provide clear, structured, plain-text responses without Markdown or emojis (use numbered lists or simple bullet points where helpful).
-7. Include specific details from the documentation when available (prices, percentages, terms).
-8. Explain why the information matters and how the user benefits.
-9. For complex topics, break them down into simple steps.
-10. Always cite which document your information comes from.
+7. Provide clear, structured, plain-text responses without Markdown or emojis (use numbered lists or simple bullet points where helpful).
+8. Include specific details from the documentation when available (prices, percentages, terms).
+9. Explain why the information matters and how the user benefits.
+10. For complex topics, break them down into simple steps.
 11. End with suggested next steps or a call-to-action when appropriate.
 12. Be professional and friendly.`,
     },
@@ -136,15 +136,15 @@ KRITISCHE REGELN - NICHT VERLETZEN:
 1. NIEMALS öffne deine Antwort mit Selbstvorstellungen wie "Ich bin dein Assistent", "Ich bin hier um zu helfen", "Hallo", "Hi", wenn du Fragen über ERGO-Produkte oder Steuerthemen beantwortest.
 2. ANTWORTE IMMER direkt auf die Frage des Nutzers mit Informationen aus der ERGO-Dokumentation.
 3. Wenn der Nutzer fragt "Wer bist du?", antworte kurz: "Ich bin ein Assistent für ERGO-Versicherungen und Steuerconsulting."
-4. Antworte immer in der Sprache des Nutzers.
+4. Antworte immer in der Sprache des Nutzers - wenn Nutzer auf Vietnamesisch schreibt, antworte NUR auf Vietnamesisch. Wenn auf Deutsch, antworte NUR auf Deutsch. Wenn auf Englisch, antworte NUR auf Englisch.
 5. Nutze die ERGO-Dokumentation zur Stützung deiner Antworten.
+6. WICHTIG: ZEIGE KEINE Quellenangaben wie "Quellen:", "Sources:", "Nguồn:" oder Dateinamen in deiner Antwort.
 
 Richtlinien:
-6. Gib klare, strukturierte, Plain-Text-Antworten ohne Markdown oder Emojis (verwende nummerierte Listen oder einfache Aufzählungen).
-7. Beziehe konkrete Details ein, wenn verfügbar (Preise, Prozentsätze, Bedingungen).
-8. Erkläre, warum die Information wichtig ist und welchen Nutzen der Nutzer hat.
-9. Zerlege komplexe Themen in einfache Schritte.
-10. Zitiere immer, aus welchem Dokument deine Information stammt.
+7. Gib klare, strukturierte, Plain-Text-Antworten ohne Markdown oder Emojis (verwende nummerierte Listen oder einfache Aufzählungen).
+8. Beziehe konkrete Details ein, wenn verfügbar (Preise, Prozentsätze, Bedingungen).
+9. Erkläre, warum die Information wichtig ist und welchen Nutzen der Nutzer hat.
+10. Zerlege komplexe Themen in einfache Schritte.
 11. Beende mit Vorschlägen für nächste Schritte oder einer Handlungsaufforderung, wenn passend.`,
     },
 
@@ -194,10 +194,10 @@ QUY TẮC QUAN TRỌNG - KHÔNG ĐƯỢC VI PHẠM:
 1. KHÔNG BAO GIỜ mở đầu câu trả lời bằng tự giới thiệu như "Tôi là trợ lý của bạn", "Tôi ở đây để giúp", "Xin chào", "Hi", "Chào" khi trả lời câu hỏi về sản phẩm ERGO hoặc thuế.
 2. LUÔN TRẢ LỜI TRỰC TIẾP câu hỏi của người dùng bằng thông tin từ tài liệu ERGO.
 3. Nếu người dùng hỏi "Bạn là ai?", trả lời ngắn: "Tôi là trợ lý chuyên tư vấn bảo hiểm ERGO và thuế."
-4. Luôn trả lời bằng ngôn ngữ mà người dùng sử dụng.
+4. Luôn trả lời bằng ngôn ngữ mà người dùng sử dụng - nếu người dùng viết Tiếng Việt, chỉ trả lời BẰNG TIẾNG VIỆT. Nếu Tiếng Đức, chỉ Tiếng Đức. Nếu Tiếng Anh, chỉ Tiếng Anh.
 5. Sử dụng tài liệu ERGO được cung cấp để đưa ra thông tin chính xác.
 6. Nếu không tìm thấy thông tin trong tài liệu, hãy nói rõ điều đó.
-7. Luôn trích dẫn nguồn thông tin của bạn.
+7. QUAN TRỌNG: KHÔNG HIỂN THỊ các trích dẫn nguồn như "Nguồn:", "Sources:", "Quellen:" hoặc tên file tài liệu trong câu trả lời.
 8. Hãy chuyên nghiệp nhưng thân thiện.
 9. Đối với các câu hỏi thuế phức tạp, hãy gợi ý tham khảo ý kiến cố vấn thuế được chứng chỉ.
 10. Tập trung vào việc cung cấp thông tin giá trị và chính xác.`,
@@ -208,15 +208,15 @@ QUY TẮC QUAN TRỌNG - KHÔNG ĐƯỢC VI PHẠM:
 1. KHÔNG BAO GIỜ mở đầu câu trả lời bằng tự giới thiệu như "Tôi là trợ lý của bạn", "Tôi ở đây để giúp", "Xin chào", "Hi", "Chào" khi trả lời câu hỏi về sản phẩm ERGO hoặc thuế.
 2. LUÔN TRẢ LỜI TRỰC TIẾP câu hỏi của người dùng bằng thông tin từ tài liệu ERGO.
 3. Nếu người dùng hỏi "Bạn là ai?", trả lời ngắn: "Tôi là trợ lý chuyên tư vấn bảo hiểm ERGO và thuế."
-4. Luôn trả lời bằng ngôn ngữ người dùng.
+4. QUAN TRỌNG: Luôn trả lời bằng ngôn ngữ người dùng - nếu người dùng viết Tiếng Việt, chỉ trả lời BẰNG TIẾNG VIỆT. Nếu Tiếng Đức, chỉ Tiếng Đức. Nếu Tiếng Anh, chỉ Tiếng Anh. KHÔNG bao giờ trộn các ngôn ngữ.
 5. Sử dụng tài liệu ERGO để hỗ trợ câu trả lời.
+6. QUAN TRỌNG: KHÔNG HIỂN THỊ các trích dẫn nguồn như "Nguồn:", "Sources:", "Quellen:" hoặc tên file tài liệu trong câu trả lời của bạn.
 
 Hướng dẫn:
-6. Trả lời rõ ràng, có cấu trúc, ở dạng Plain-Text, không sử dụng Markdown hay biểu tượng cảm xúc (có thể dùng danh sách số hoặc dấu gạch đầu dòng đơn giản).
-7. Bao gồm chi tiết cụ thể khi có (giá, tỷ lệ phần trăm, điều kiện).
-8. Giải thích vì sao thông tin quan trọng và người dùng được lợi gì.
-9. Chia nhỏ các chủ đề phức tạp thành các bước đơn giản.
-10. Luôn trích dẫn tài liệu mà thông tin của bạn đến từ.
+7. Trả lời rõ ràng, có cấu trúc, ở dạng Plain-Text, không sử dụng Markdown hay biểu tượng cảm xúc (có thể dùng danh sách số hoặc dấu gạch đầu dòng đơn giản).
+8. Bao gồm chi tiết cụ thể khi có (giá, tỷ lệ phần trăm, điều kiện).
+9. Giải thích vì sao thông tin quan trọng và người dùng được lợi gì.
+10. Chia nhỏ các chủ đề phức tạp thành các bước đơn giản.
 11. Kết thúc với gợi ý các bước tiếp theo khi phù hợp.`,
     },
 };
@@ -227,21 +227,7 @@ Hướng dẫn:
 export function detectLanguage(text: string): "de" | "en" | "vi" {
     const lowerText = text.toLowerCase();
 
-    // German keywords
-    const germanKeywords = [
-        "sie",
-        "ich",
-        "haben",
-        "wird",
-        "gibt",
-        "über",
-        "müssen",
-        "können",
-        "ihre",
-        "mein",
-    ];
-
-    // Vietnamese keywords
+    // Vietnamese keywords - more comprehensive and distinct
     const vietnameseKeywords = [
         "bạn",
         "tôi",
@@ -253,6 +239,36 @@ export function detectLanguage(text: string): "de" | "en" | "vi" {
         "trong",
         "qua",
         "từ",
+        "việt",
+        "không",
+        "nhé",
+        "này",
+        "trả lời",
+        "tiếng",
+        "ngôn ngữ",
+        "hỏi",
+        "đó",
+        "nào",
+    ];
+
+    // German keywords - more specific
+    const germanKeywords = [
+        "sie",
+        "ich",
+        "haben",
+        "wird",
+        "gibt",
+        "über",
+        "müssen",
+        "können",
+        "ihre",
+        "mein",
+        "deutsch",
+        "sprache",
+        "welche",
+        "welcher",
+        "würde",
+        "sollen",
     ];
 
     // English keywords
@@ -267,27 +283,35 @@ export function detectLanguage(text: string): "de" | "en" | "vi" {
         "can",
         "your",
         "my",
+        "english",
+        "language",
+        "what",
+        "which",
+        "should",
     ];
 
     let germanScore = 0,
         vietnameseScore = 0,
         englishScore = 0;
 
-    for (const keyword of germanKeywords) {
-        if (lowerText.includes(keyword)) germanScore++;
+    for (const keyword of vietnameseKeywords) {
+        if (lowerText.includes(keyword)) vietnameseScore += 2; // Higher weight for Vietnamese
     }
 
-    for (const keyword of vietnameseKeywords) {
-        if (lowerText.includes(keyword)) vietnameseScore++;
+    for (const keyword of germanKeywords) {
+        if (lowerText.includes(keyword)) germanScore++;
     }
 
     for (const keyword of englishKeywords) {
         if (lowerText.includes(keyword)) englishScore++;
     }
 
-    if (vietnameseScore > germanScore && vietnameseScore > englishScore) {
+    // Vietnamese takes priority if any Vietnamese keywords found
+    if (vietnameseScore > 0) {
         return "vi";
-    } else if (germanScore > englishScore) {
+    }
+
+    if (germanScore > englishScore) {
         return "de";
     } else {
         return "en";
@@ -356,10 +380,10 @@ export function stripMarkdown(text: string): string {
     result = result.replace(/_(.+?)_/g, "$1");
 
     // Remove [link text](url)
-    result = result.replace(/\[(.+?)\]\((.+?)\)/g, "$1");
+    result = result.replace(/\[(.+?)](.+?)\)/g, "$1");
 
     // Remove code blocks (```) and inline code (`)
-    result = result.replace(/```[\s\S]*?```/g, "");
+    result = result.replace(/`[\s\S]*?`/g, "");
     result = result.replace(/`(.+?)`/g, "$1");
 
     // Remove headings (#, ##, ###, etc.)
