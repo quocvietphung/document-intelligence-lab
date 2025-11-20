@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
@@ -12,17 +12,19 @@ type Service = {
   iconBg: string;
   href?: string;
   badge?: string;
+  details?: string;
 };
 
 export default function ServicesSection() {
   const t = useTranslations("services");
+  const [hoveredService, setHoveredService] = useState<string | null>(null);
 
   const services: Service[] = [
     {
       id: "tax-declaration",
       title: t("tax_declaration.title"),
       description: t("tax_declaration.description"),
-      href: "/services/tax-declaration",
+      href: "/contact",
       badge: "Individuelle Lösungen",
       iconBg: "bg-gradient-to-br from-blue-50 to-blue-100",
       icon: (
@@ -37,7 +39,7 @@ export default function ServicesSection() {
       id: "tax-optimization",
       title: t("tax_optimization.title"),
       description: t("tax_optimization.description"),
-      href: "/services/tax-optimization",
+      href: "/contact",
       badge: "Kostenersparnis",
       iconBg: "bg-gradient-to-br from-amber-50 to-yellow-100",
       icon: (
@@ -52,7 +54,7 @@ export default function ServicesSection() {
       id: "real-estate",
       title: t("real_estate.title"),
       description: t("real_estate.description"),
-      href: "/services/real-estate",
+      href: "/contact",
       badge: "Vermögensschutz",
       iconBg: "bg-gradient-to-br from-green-50 to-emerald-100",
       icon: (
@@ -66,7 +68,7 @@ export default function ServicesSection() {
       id: "it-consulting",
       title: t("it_consulting.title"),
       description: t("it_consulting.description"),
-      href: "/services/it-consulting",
+      href: "/contact",
       badge: "Innovation",
       iconBg: "bg-gradient-to-br from-indigo-50 to-indigo-100",
       icon: (
@@ -80,7 +82,7 @@ export default function ServicesSection() {
       id: "accounting",
       title: t("accounting.title"),
       description: t("accounting.description"),
-      href: "/services/accounting",
+      href: "/contact",
       badge: "Transparenz",
       iconBg: "bg-gradient-to-br from-rose-50 to-pink-100",
       icon: (
@@ -100,95 +102,131 @@ export default function ServicesSection() {
       <div className="absolute top-20 right-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob -z-10" />
       <div className="absolute bottom-20 left-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000 -z-10" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-block mb-4 px-4 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full">
-            <span className="text-sm font-semibold text-blue-700">EXPERTISE & VERTRAUEN</span>
+        <div className="text-center mb-20">
+          <div className="inline-block mb-4 px-4 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full border border-blue-200 hover:shadow-lg transition-shadow">
+            <span className="text-sm font-bold text-blue-700 tracking-wide uppercase">{t("subtitle")}</span>
           </div>
-          <h2 id="services-heading" className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight mb-4">
+          <h2 id="services-heading" className="text-5xl md:text-6xl font-bold text-gray-900 tracking-tight mb-6 leading-tight">
             {t("title")}
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t("subtitle")}</p>
+          <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
+            Umfassende Lösungen für Ihre Steuern und Geschäfte
+          </p>
         </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-6 mb-16">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">500+</div>
-            <div className="text-gray-600 mt-1">Zufriedene Kunden</div>
+        {/* Stats Row with enhanced styling */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+          <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-lg transition-shadow">
+            <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
+              500+
+            </div>
+            <div className="text-gray-700 font-medium">Zufriedene Kunden</div>
           </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-emerald-600">15+</div>
-            <div className="text-gray-600 mt-1">Jahre Erfahrung</div>
+          <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 hover:shadow-lg transition-shadow">
+            <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent mb-2">
+              15+
+            </div>
+            <div className="text-gray-700 font-medium">Jahre Erfahrung</div>
           </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-rose-600">€2M+</div>
-            <div className="text-gray-600 mt-1">Ersparnisse für Kunden</div>
+          <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-rose-50 to-rose-100 hover:shadow-lg transition-shadow">
+            <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-rose-600 to-rose-700 bg-clip-text text-transparent mb-2">
+              €2M+
+            </div>
+            <div className="text-gray-700 font-medium">Ersparnisse für Kunden</div>
           </div>
         </div>
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-16">
           {services.map((service) => (
-            <Link
+            <div
               key={service.id}
-              href={service.href ?? "/contact"}
-              className="group relative bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+              onMouseEnter={() => setHoveredService(service.id)}
+              onMouseLeave={() => setHoveredService(null)}
+              className="h-full"
             >
-              {/* Badge */}
-              {service.badge && (
-                <div className="inline-block mb-4">
-                  <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-1 rounded-full">
-                    {service.badge}
-                  </span>
+              <Link
+                href={service.href ?? "/contact"}
+                className="group relative h-full bg-white rounded-2xl p-6 shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-400 hover:-translate-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 flex flex-col"
+              >
+                {/* Badge with animation */}
+                {service.badge && (
+                  <div className="inline-block mb-4 self-start">
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full transition-all duration-300 ${
+                      hoveredService === service.id 
+                        ? "bg-blue-600 text-white scale-105" 
+                        : "bg-blue-50 text-blue-700"
+                    }`}>
+                      {service.badge}
+                    </span>
+                  </div>
+                )}
+
+                {/* Icon Container with enhanced animation */}
+                <div className={`${service.iconBg} w-16 h-16 rounded-xl flex items-center justify-center mb-4 group-hover:scale-125 group-hover:shadow-lg transition-all duration-300`}>
+                  {service.icon}
                 </div>
-              )}
 
-              {/* Icon Container */}
-              <div className={`${service.iconBg} w-14 h-14 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                {service.icon}
-              </div>
-
-              {/* Content */}
-              <h3 className="text-lg font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
-                {service.title}
-              </h3>
-              <p className="text-sm text-gray-600 leading-relaxed mb-4">{service.description}</p>
-
-              {/* Info Row */}
-              <div className="text-xs text-gray-500 space-y-1">
-                <div className="flex justify-between">
-                  <span className="font-medium">{t("deliverables")}:</span>
-                  <span>{t("deliverables_short")}</span>
+                {/* Content with flex-grow */}
+                <div className="flex-grow">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-300">
+                    {service.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                    {service.description}
+                  </p>
                 </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">{t("turnaround")}:</span>
-                  <span>{t("turnaround_short")}</span>
-                </div>
-              </div>
 
-              {/* Arrow indicator */}
-              <div className="mt-4 flex items-center text-blue-600 font-medium text-sm group-hover:translate-x-1 transition-transform">
-                {t("learn_more")}
-                <span className="ml-2">→</span>
-              </div>
-            </Link>
+                {/* Info Row */}
+                <div className={`text-xs text-gray-500 space-y-1 mb-4 transition-all duration-300 ${
+                  hoveredService === service.id ? "opacity-75" : "opacity-60"
+                }`}>
+                  <div className="flex justify-between">
+                    <span className="font-medium">{t("deliverables")}:</span>
+                    <span>{t("deliverables_short")}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">{t("turnaround")}:</span>
+                    <span>{t("turnaround_short")}</span>
+                  </div>
+                </div>
+
+                {/* Arrow indicator with enhanced animation */}
+                <div className="mt-2 flex items-center text-blue-600 font-medium text-sm group-hover:text-blue-700 group-hover:translate-x-2 transition-all duration-300">
+                  {t("learn_more")}
+                  <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
+                </div>
+              </Link>
+            </div>
           ))}
         </div>
 
-        {/* CTA Section */}
-        <div className="relative bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-12 text-center text-white overflow-hidden">
+        {/* CTA Section - Premium Design */}
+        <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 rounded-3xl p-16 text-center text-white overflow-hidden shadow-2xl">
+          {/* Animated background elements */}
           <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width=%2260%27%20height=%2760%27%20viewBox=%270%200%2060%2060%27%20xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cg%20fill=%27none%27%20fill-rule=%27evenodd%27%3E%3Cg%20fill=%27%23ffffff%27%20fill-opacity=%270.1%27%3E%3Cpath%20d=%27M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%27/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" />
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width=%2760%27%20height=%2760%27%20viewBox=%270%200%2060%2060%27%20xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cg%20fill=%27none%27%20fill-rule=%27evenodd%27%3E%3Cg%20fill=%27%23ffffff%27%20fill-opacity=%270.1%27%3E%3Cpath%20d=%27M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%27/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" />
           </div>
+
+          {/* Floating orbs */}
+          <div className="absolute top-10 right-10 w-32 h-32 bg-white opacity-5 rounded-full blur-3xl" />
+          <div className="absolute bottom-10 left-10 w-40 h-40 bg-white opacity-5 rounded-full blur-3xl" />
+
           <div className="relative z-10">
-            <p className="text-lg mb-4">{t("cta_subtext")}</p>
+            <h3 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+              Bereit für professionelle Unterstützung?
+            </h3>
+            <p className="text-lg md:text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
+              Lassen Sie uns Ihnen helfen, Ihre Steuern zu optimieren und Ihr Geschäft zu wachsen.
+            </p>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center rounded-lg bg-white text-blue-600 px-8 py-4 font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white"
+              className="inline-flex items-center justify-center rounded-xl bg-white text-blue-700 px-10 py-4 font-bold shadow-2xl hover:shadow-3xl hover:scale-110 active:scale-95 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white gap-2"
             >
-              {t("cta_button")}
+              <span>Kostenlose Beratung anfordern</span>
+              <span className="text-xl">→</span>
             </Link>
           </div>
         </div>
