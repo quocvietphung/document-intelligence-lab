@@ -1,6 +1,6 @@
 import React from "react";
 import Link from 'next/link';
-import type { BlogPost } from "../data/blogPosts";
+import type { BlogPost } from "@/data/blogPosts";
 
 type Props = {
   post: BlogPost;
@@ -39,7 +39,7 @@ export function BlogPostLayout({ post, title, content, locale }: Props) {
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-semibold text-gray-700">
-                      {authorName.split(" ").map((n) => n[0]).slice(0,2).join("")}
+                      {authorName.split(" ").map((n: string) => n[0]).slice(0,2).join("")}
                     </div>
                     <div>
                       <div className="text-sm font-semibold text-gray-800">{authorName}</div>
@@ -70,7 +70,7 @@ export function BlogPostLayout({ post, title, content, locale }: Props) {
 
             {/* Tags */}
             <div className="mb-6">
-              {post.tags && post.tags.map((tag) => (
+              {post.tags && post.tags.map((tag: string) => (
                 <span key={tag} className="inline-block mr-2 mb-2 px-3 py-1 rounded-full bg-gray-100 text-xs text-gray-700">#{tag}</span>
               ))}
             </div>
