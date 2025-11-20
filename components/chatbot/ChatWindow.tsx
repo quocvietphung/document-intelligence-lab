@@ -90,7 +90,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.style.height = "auto";
-      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 120) + "px";
+      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 180) + "px";
     }
   }, [input]);
 
@@ -301,10 +301,10 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={t("placeholder")}
-                className="flex-1 px-5 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm resize-none bg-gray-50 hover:bg-white transition-colors max-h-[120px]"
+                className="flex-1 px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none bg-gray-50 hover:bg-white transition-all max-h-[180px] shadow-sm hover:shadow-md focus:shadow-md font-medium"
                 disabled={isLoading}
                 autoFocus
-                rows={1}
+                rows={2}
               />
               <button
                 type="submit"
