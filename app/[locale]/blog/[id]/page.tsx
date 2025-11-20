@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import blogPosts from "@/data/blogPosts";
 import { routing } from "@/routing";
-import BlogPostLayout from "@/components/BlogPostLayout";
+import BlogPostLayout from "@/components/layout/BlogPostLayout";
 
 export async function generateStaticParams() {
   // generate params for all locales and posts

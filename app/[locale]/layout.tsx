@@ -2,8 +2,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/routing";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import Navigation from "@/components/ui/Navigation";
+import Footer from "@/components/ui/Footer";
 import ChatBot from "@/components/chatbot/ChatBot";
 
 export function generateStaticParams() {

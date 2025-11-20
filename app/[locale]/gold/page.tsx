@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
-import GoldPriceWidget from '@/components/GoldPriceWidget';
-import GoldInvestmentCalculator from '@/components/GoldInvestmentCalculator';
+import GoldPriceWidget from '@/components/gold/GoldPriceWidget';
+import GoldInvestmentCalculator from '@/components/gold/GoldInvestmentCalculator';
 import FAQSection from '@/components/sections/FAQSection';
 
 export default function GoldConsultingPage() {
