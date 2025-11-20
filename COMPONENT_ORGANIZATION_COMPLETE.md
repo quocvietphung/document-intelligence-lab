@@ -54,8 +54,6 @@ import { Navigation, Footer, GoldPriceWidget } from '@/components';
 # Validate component structure
 npm run validate:components
 
-# Update imports to use barrel exports
-npm run organize:imports
 
 # Run dev server
 npm run dev

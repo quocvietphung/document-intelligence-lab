@@ -84,8 +84,6 @@ import { Navigation, Footer, ChatBot, HeroSection } from '@/components';
 # Validate structure is correct
 npm run validate:components
 
-# Update imports across project
-npm run organize:imports
 
 # Development
 npm run dev

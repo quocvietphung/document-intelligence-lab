@@ -54,9 +54,7 @@
 ## 🛠️ Tools & Scripts
 
 - [x] scripts/validate-components.js - Validates structure
-- [x] scripts/update-component-imports.js - Updates imports
 - [x] package.json - Added validate:components script
-- [x] package.json - Added organize:imports script
 
 ## 📊 Statistics
 
@@ -65,7 +63,7 @@
 - **Future-Ready Folders**: 3 (common, form, inputs)
 - **Barrel Export Files**: 6
 - **Documentation Files**: 4
-- **Utility Scripts**: 2
+- **Utility Scripts**: 1
 
 ## 🚀 Ready to Use Commands
 
@@ -73,8 +71,6 @@
 # Validate component structure integrity
 npm run validate:components
 
-# Update all imports to use barrel exports
-npm run organize:imports
 
 # Start development
 npm run dev
