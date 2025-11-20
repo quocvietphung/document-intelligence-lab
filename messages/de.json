@@ -13,26 +13,34 @@
   },
   "services": {
     "title": "Unsere Leistungen",
-    "subtitle": "Umfassende Steuerberatungslösungen",
+    "subtitle": "Maßgeschneiderte Steuerberatung für Ihren Erfolg",
+    "learn_more": "Mehr erfahren",
+    "contact_us": "Kontaktieren Sie uns",
+    "deliverables": "Leistungen",
+    "deliverables_short": "Umfassende Beratung",
+    "turnaround": "Bearbeitungszeit",
+    "turnaround_short": "1–2 Wochen",
+    "cta_subtext": "Bereit, Ihre Steuersituation zu optimieren?",
+    "cta_button": "Jetzt Beratung vereinbaren",
     "tax_declaration": {
       "title": "Steuererklärung",
-      "description": "Professionelle Erstellung Ihrer Jahressteuererklärung"
+      "description": "Professionelle und sichere Erstellung Ihrer Jahressteuererklärung (Einkommensteuer, Körperschaftsteuer, Umsatzsteuer) mit vollständiger Dokumentation und optimalen Abzügen."
     },
     "tax_optimization": {
       "title": "Steueroptimierung",
-      "description": "Strategische Beratung zur Reduzierung Ihrer Steuerlast und zur optimalen Nutzung von Abzugsmöglichkeiten"
+      "description": "Strategische Beratung zur Minimierung Ihrer Steuerlast durch legale Gestaltungen, Betriebsstättenverwaltung und intelligente Finanzplanung."
     },
     "real_estate": {
       "title": "Immobilienberatung",
-      "description": "Beratung zu Investitionen, Besteuerung und Verwaltung von Immobilien in Deutschland"
+      "description": "Umfassende Beratung bei Kauf, Verkauf, Vermietung und steuerlicher Optimierung von Immobilien in Deutschland und international."
     },
     "it_consulting": {
-      "title": "IT-Beratung",
-      "description": "Digitale Lösungen und Automatisierung für moderne Steuer- und Finanzprozesse"
+      "title": "Digitale Transformation",
+      "description": "Modernisierung Ihrer Finanzprozesse durch Cloud-Lösungen, automatisierte Buchführung und sichere digitale Dokumentenverwaltung."
     },
     "accounting": {
-      "title": "Buchhaltung",
-      "description": "Vollständige Buchführung und Finanzbuchhaltung für Unternehmen und Selbständige"
+      "title": "Buchhaltung & Bilanzierung",
+      "description": "Vollständige Buchführung, Finanzbuchhaltung, Jahresabschluss und GuV-Erstellung für Unternehmen aller Größen und Rechtsformen."
     }
   },
   "process": {

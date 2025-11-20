@@ -13,26 +13,34 @@
   },
   "services": {
     "title": "Dịch vụ của chúng tôi",
-    "subtitle": "Giải pháp tư vấn thuế toàn diện",
+    "subtitle": "Giải pháp tư vấn thuế được cá nhân hóa cho thành công của bạn",
+    "learn_more": "Tìm hiểu thêm",
+    "contact_us": "Liên hệ với chúng tôi",
+    "deliverables": "Dịch vụ",
+    "deliverables_short": "Tư vấn toàn diện",
+    "turnaround": "Thời gian xử lý",
+    "turnaround_short": "1–2 tuần",
+    "cta_subtext": "Sẵn sàng tối ưu hóa tình hình thuế của bạn?",
+    "cta_button": "Đặt lịch tư vấn ngay",
     "tax_declaration": {
       "title": "Khai báo Thuế",
-      "description": "Chuẩn bị chuyên nghiệp tờ khai thuế hàng năm của bạn"
+      "description": "Chuẩn bị chuyên nghiệp và an toàn tờ khai thuế hàng năm (thuế thu nhập, thuế doanh nghiệp, thuế giá trị gia tăng) với tài liệu hoàn chỉnh và khấu trừ tối ưu."
     },
     "tax_optimization": {
       "title": "Tối ưu Thuế",
-      "description": "Tư vấn chiến lược để giảm gánh nặng thuế và tận dụng các khoản khấu trừ"
+      "description": "Tư vấn chiến lược để giảm thiểu gánh nặng thuế thông qua cơ cấu pháp lý, quản lý chi nhánh, và lập kế hoạch tài chính thông minh."
     },
     "real_estate": {
       "title": "Tư vấn Bất động sản",
-      "description": "Tư vấn về đầu tư, thuế và quản lý bất động sản tại Đức"
+      "description": "Hướng dẫn toàn diện về mua, bán, cho thuê, và tối ưu hóa thuế bất động sản tại Đức và quốc tế."
     },
     "it_consulting": {
-      "title": "Tư vấn CNTT",
-      "description": "Giải pháp kỹ thuật số và tự động hóa cho quy trình thuế và tài chính hiện đại"
+      "title": "Chuyển đổi Số",
+      "description": "Hiện đại hóa quy trình tài chính của bạn với giải pháp đám mây, kế toán tự động, và quản lý tài liệu kỹ thuật số an toàn."
     },
     "accounting": {
-      "title": "Dịch vụ Kế toán",
-      "description": "Kế toán và tài chính hoàn chỉnh"
+      "title": "Kế toán & Báo cáo",
+      "description": "Kế toán đầy đủ, kế toán tài chính, bảng cân đối thử nghiệm, và báo cáo P&L cho doanh nghiệp mọi quy mô và hình thức pháp lý."
     }
   },
   "process": {

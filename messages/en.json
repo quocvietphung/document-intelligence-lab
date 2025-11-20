@@ -13,26 +13,34 @@
   },
   "services": {
     "title": "Our Services",
-    "subtitle": "Comprehensive tax consulting solutions",
+    "subtitle": "Tailored tax consulting for your success",
+    "learn_more": "Learn More",
+    "contact_us": "Contact Us",
+    "deliverables": "Deliverables",
+    "deliverables_short": "Comprehensive advisory",
+    "turnaround": "Turnaround Time",
+    "turnaround_short": "1–2 weeks",
+    "cta_subtext": "Ready to optimize your tax situation?",
+    "cta_button": "Schedule Consultation Now",
     "tax_declaration": {
       "title": "Tax Declaration",
-      "description": "Professional preparation of your annual tax returns"
+      "description": "Professional and secure preparation of your annual tax returns (income tax, corporate tax, VAT) with complete documentation and optimal deductions."
     },
     "tax_optimization": {
       "title": "Tax Optimization",
-      "description": "Strategic advice to reduce your tax burden and make the most of deductions"
+      "description": "Strategic advisory to minimize your tax burden through legal structuring, establishment management, and intelligent financial planning."
     },
     "real_estate": {
       "title": "Real Estate Consulting",
-      "description": "Advice on investments, taxation and management of real estate in Germany"
+      "description": "Comprehensive guidance on purchasing, selling, leasing, and tax optimization of real estate in Germany and internationally."
     },
     "it_consulting": {
-      "title": "IT Consulting",
-      "description": "Digital solutions and automation for modern tax and financial processes"
+      "title": "Digital Transformation",
+      "description": "Modernize your financial processes with cloud solutions, automated accounting, and secure digital document management."
     },
     "accounting": {
-      "title": "Accounting Services",
-      "description": "Complete bookkeeping and financial accounting"
+      "title": "Accounting & Reporting",
+      "description": "Complete bookkeeping, financial accounting, annual statements, and P&L reporting for businesses of all sizes and legal structures."
     }
   },
   "process": {
