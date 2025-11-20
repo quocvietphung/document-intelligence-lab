@@ -29,18 +29,26 @@ export function calculateAdvancedRelevance(
     let termFrequency = 0;
 
     for (const term of queryTerms) {
-        // Count exact word matches
-        const wordRegex = new RegExp(`\\b${term}\\b`, "gi");
-        const exactMatches = textStr.match(wordRegex);
-        if (exactMatches) {
-            keywordMatches += exactMatches.length;
-        }
+        try {
+            // Escape special regex characters
+            const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-        // Count partial matches (important for German compound words)
-        const partialRegex = new RegExp(`\\b${term}\\w*\\b`, "gi");
-        const partialMatches = textStr.match(partialRegex);
-        if (partialMatches) {
-            termFrequency += partialMatches.length;
+            // Count exact word matches
+            const wordRegex = new RegExp(`\\b${escapedTerm}\\b`, "gi");
+            const exactMatches = textStr.match(wordRegex);
+            if (exactMatches) {
+                keywordMatches += exactMatches.length;
+            }
+
+            // Count partial matches (important for German compound words)
+            const partialRegex = new RegExp(`\\b${escapedTerm}\\w*\\b`, "gi");
+            const partialMatches = textStr.match(partialRegex);
+            if (partialMatches) {
+                termFrequency += partialMatches.length;
+            }
+        } catch (error) {
+            // Skip this term if regex fails
+            console.warn(`[rag-utils] Regex error for term: ${term}`, error);
         }
     }
 

@@ -103,63 +103,68 @@ export async function retrieveErgoDocuments(
     query: string,
     topK: number = 3
 ): Promise<ErgoBundleItem[]> {
-    const ergoDocs = await loadErgoDocs();
-    const results: ErgoBundleItem[] = [];
+    try {
+        const ergoDocs = await loadErgoDocs();
+        const results: ErgoBundleItem[] = [];
 
-    // Check if query is related to ERGO products
-    if (!isErgoRelated(query)) {
-        // Return empty results if query is not ERGO-related
-        return results;
-    }
-
-    let chunkIndex = 0;
-    for (const [fileId, chunks] of Object.entries(ergoDocs)) {
-
-        // Ensure chunks is an array
-        const chunkArray = Array.isArray(chunks) ? chunks : [];
-
-        for (let i = 0; i < chunkArray.length; i++) {
-            const chunk = chunkArray[i];
-
-            // Ensure chunk is converted to string safely
-            const chunkText = typeof chunk === "string" ? chunk : String(chunk || "").trim();
-
-            // Skip empty chunks
-            if (!chunkText || chunkText.length === 0) {
-                chunkIndex++;
-                continue;
-            }
-
-            const relevance = calculateRelevance(query, chunkText);
-
-            if (relevance > 0) {
-                const filePath = getFilePathFromId(fileId);
-                const fileName =
-                    filePath.split("/").pop() || fileId.split("::")[0] || "Unknown";
-
-                results.push({
-                    id: `${fileId}::${i}`,
-                    file: fileName,
-                    chunkIndex: i,
-                    text: chunkText,
-                });
-            }
-            chunkIndex++;
+        // Check if query is related to ERGO products
+        if (!isErgoRelated(query)) {
+            // Return empty results if query is not ERGO-related
+            return results;
         }
-    }
 
-    // Sort by relevance score descending
-    results.sort((a, b) => {
-        const scoreA = calculateRelevance(query, a.text);
-        const scoreB = calculateRelevance(query, b.text);
-        return scoreB - scoreA;
-    });
+        let chunkIndex = 0;
+        for (const [fileId, chunks] of Object.entries(ergoDocs)) {
+
+            // Ensure chunks is an array
+            const chunkArray = Array.isArray(chunks) ? chunks : [];
+
+            for (let i = 0; i < chunkArray.length; i++) {
+                const chunk = chunkArray[i];
+
+                // Ensure chunk is converted to string safely
+                const chunkText = typeof chunk === "string" ? chunk : String(chunk || "").trim();
+
+                // Skip empty chunks
+                if (!chunkText || chunkText.length === 0) {
+                    chunkIndex++;
+                    continue;
+                }
+
+                const relevance = calculateRelevance(query, chunkText);
+
+                if (relevance > 0) {
+                    const filePath = getFilePathFromId(fileId);
+                    const fileName =
+                        filePath.split("/").pop() || fileId.split("::")[0] || "Unknown";
+
+                    results.push({
+                        id: `${fileId}::${i}`,
+                        file: fileName,
+                        chunkIndex: i,
+                        text: chunkText,
+                    });
+                }
+                chunkIndex++;
+            }
+        }
+
+        // Sort by relevance score descending
+        results.sort((a, b) => {
+            const scoreA = calculateRelevance(query, a.text);
+            const scoreB = calculateRelevance(query, b.text);
+            return scoreB - scoreA;
+        });
 
         console.log(
             `[ergo-retriever] ✅ Retrieved ${results.length} relevant chunks, returning top ${topK}`
         );
 
-    return results.slice(0, topK);
+        return results.slice(0, topK);
+    } catch (error) {
+        console.error("[ergo-retriever] Error retrieving documents:", error);
+        return [];
+    }
 }
 
 /**
