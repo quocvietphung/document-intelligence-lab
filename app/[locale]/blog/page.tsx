@@ -248,10 +248,10 @@ export default async function BlogPage({
 							</div>
 
 							<Link
-								href={`/${locale}#contact`}
+								href={`/${locale}/contact`}
 								className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md font-medium shadow hover:opacity-95"
 							>
-								Book consultation
+								{t("book_consultation")}
 							</Link>
 						</div>
 					</div>

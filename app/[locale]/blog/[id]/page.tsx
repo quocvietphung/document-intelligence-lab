@@ -25,6 +25,7 @@ export default async function PostPage({ params }: { params: Promise<{ locale: s
   let content = post.content.en;
   if (locale === "de") content = post.content.de;
   else if (locale === "vi") content = post.content.vi;
+  const localizedContent = content.replaceAll("/__LOCALE__/", `/${locale}`);
 
-  return <BlogPostLayout post={post} title={title} content={content} locale={locale} />;
+  return <BlogPostLayout post={post} title={title} content={localizedContent} locale={locale} />;
 }

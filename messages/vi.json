@@ -85,9 +85,10 @@
     "copyright": "© 2024 Tư vấn Thuế. Bảo lưu mọi quyền."
   },
   "blog": {
-    "title": "Mẹo thuế & Tin tức",
-    "subtitle": "Cập nhật các quy định về thuế",
+    "title": "Mẹo & tin tức thuế",
+    "subtitle": "Cập nhật quy định thuế",
     "read_more": "Đọc thêm",
+    "book_consultation": "Đặt lịch tư vấn",
     "not_found": "Không tìm thấy bài viết."
   },
   "chatbot": {

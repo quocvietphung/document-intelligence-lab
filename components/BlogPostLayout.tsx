@@ -83,7 +83,7 @@ export function BlogPostLayout({ post, title, content, locale }: Props) {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div className="text-sm text-gray-700">Enjoyed this article?</div>
-                  <Link href="/#contact" className="inline-block mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">Book a consultation</Link>
+                  <Link href={`/${locale}/contact`} className="inline-block mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">Book a consultation</Link>
                 </div>
                 <div className="mt-4 sm:mt-0 text-sm text-gray-500">© {new Date().getFullYear()} {authorName}</div>
               </div>

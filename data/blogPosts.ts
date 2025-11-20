@@ -46,7 +46,7 @@ export const blogPosts: BlogPost[] = [
             <li>When in doubt, consult a tax professional — small classification changes can matter.</li>
           </ol>
 
-          <p><strong>Need help?</strong> If you want a personalized review of your deductible expenses and how to document them correctly, <a href="/#contact" class="text-blue-600 underline">book a consultation</a> or call our hotline: +49 30 1234 5678.</p>
+          <p><strong>Need help?</strong> If you want a personalized review of your deductible expenses and how to document them correctly, <a href="/__LOCALE__/contact" class="text-blue-600 underline">book a consultation</a> or call our hotline: +49 30 1234 5678.</p>
         </article>
       `,
       de: `
@@ -71,7 +71,7 @@ export const blogPosts: BlogPost[] = [
             <li>Bei Unsicherheiten steuerliche Beratung hinzuziehen — kleine Zuordnungsunterschiede können viel ausmachen.</li>
           </ol>
 
-          <p><strong>Brauchen Sie Unterstützung?</strong> Für eine individuelle Prüfung Ihrer Abzugsfähigkeit und Dokumentation <a href="/#contact" class="text-blue-600 underline">vereinbaren Sie einen Termin</a> oder rufen Sie unsere Hotline an: +49 30 1234 5678.</p>
+          <p><strong>Brauchen Sie Unterstützung?</strong> Für eine individuelle Prüfung Ihrer Abzugsfähigkeit und Dokumentation <a href="/__LOCALE__/contact" class="text-blue-600 underline">vereinbaren Sie einen Termin</a> oder rufen Sie unsere Hotline an: +49 30 1234 5678.</p>
         </article>
       `,
       vi: `
@@ -96,7 +96,7 @@ export const blogPosts: BlogPost[] = [
             <li>Nếu băn khoăn, nên hỏi chuyên gia thuế — việc phân loại chính xác có thể ảnh hưởng lớn.</li>
           </ol>
 
-          <p><strong>Cần trợ giúp?</strong> Nếu muốn kiểm tra cá nhân các khoản được khấu trừ và cách lưu chứng từ chính xác, <a href="/#contact" class="text-blue-600 underline">đặt lịch tư vấn</a> hoặc gọi hotline: +49 30 1234 5678.</p>
+          <p><strong>Cần trợ giúp?</strong> Nếu muốn kiểm tra cá nhân các khoản được khấu trừ và cách lưu chứng từ chính xác, <a href="/__LOCALE__/contact" class="text-blue-600 underline">đặt lịch tư vấn</a> hoặc gọi hotline: +49 30 1234 5678.</p>
         </article>
       `,
     },
@@ -131,7 +131,7 @@ export const blogPosts: BlogPost[] = [
             <li>Consider insurance, payroll setup and local permits.</li>
           </ul>
 
-          <p>We offer a hands-on onboarding package for non-German founders — from paperwork to tax registration. <a href="/#contact" class="text-blue-600 underline">Book an appointment</a> to get a tailored checklist for your business.</p>
+          <p>We offer a hands-on onboarding package for non-German founders — from paperwork to tax registration. <a href="/__LOCALE__/contact" class="text-blue-600 underline">Book an appointment</a> to get a tailored checklist for your business.</p>
         </article>
       `,
       de: `
@@ -147,7 +147,7 @@ export const blogPosts: BlogPost[] = [
             <li>Versicherungen, Gehaltsabrechnung und lokale Genehmigungen prüfen.</li>
           </ul>
 
-          <p>Wir bieten ein Onboarding-Paket für ausländische Gründer — von behördlichen Schritten bis zur Steuerregistrierung. <a href="/#contact" class="text-blue-600 underline">Vereinbaren Sie einen Termin</a> für eine individuelle Checkliste.</p>
+          <p>Wir bieten ein Onboarding-Paket für ausländische Gründer — von behördlichen Schritten bis zur Steuerregistrierung. <a href="/__LOCALE__/contact" class="text-blue-600 underline">Vereinbaren Sie einen Termin</a> für eine individuelle Checkliste.</p>
         </article>
       `,
       vi: `
@@ -163,7 +163,7 @@ export const blogPosts: BlogPost[] = [
             <li>Xem xét bảo hiểm, tiền lương và giấy phép địa phương.</li>
           </ul>
 
-          <p>Chúng tôi cung cấp gói hỗ trợ cho nhà sáng lập nước ngoài — từ thủ tục đến đăng ký thuế. <a href="/#contact" class="text-blue-600 underline">Đặt lịch</a> để nhận checklist phù hợp cho doanh nghiệp của bạn.</p>
+          <p>Chúng tôi cung cấp gói hỗ trợ cho nhà sáng lập nước ngoài — từ thủ tục đến đăng ký thuế. <a href="/__LOCALE__/contact" class="text-blue-600 underline">Đặt lịch</a> để nhận checklist phù hợp cho doanh nghiệp của bạn.</p>
         </article>
       `,
     },
@@ -197,7 +197,7 @@ export const blogPosts: BlogPost[] = [
             <li>Consider pension and health insurance options early.</li>
           </ul>
 
-          <p>For a tailored review of your bookkeeping and tax plan, <a href="/#contact" class="text-blue-600 underline">book a consultation</a> or call our hotline: +49 30 1234 5678.</p>
+          <p>For a tailored review of your bookkeeping and tax plan, <a href="/__LOCALE__/contact" class="text-blue-600 underline">book a consultation</a> or call our hotline: +49 30 1234 5678.</p>
         </article>
       `,
       de: `
@@ -212,7 +212,7 @@ export const blogPosts: BlogPost[] = [
             <li>Frühzeitig Renten- und Krankenversorgungsoptionen prüfen.</li>
           </ul>
 
-          <p>Für eine individuelle Prüfung Ihrer Buchführung và Steuerplanung <a href="/#contact" class="text-blue-600 underline">vereinbaren Sie eine Beratung</a> oder rufen Sie unsere Hotline an: +49 30 1234 5678.</p>
+          <p>Für eine individuelle Prüfung Ihrer Buchführung và Steuerplanung <a href="/__LOCALE__/contact" class="text-blue-600 underline">vereinbaren Sie eine Beratung</a> oder rufen Sie unsere Hotline an: +49 30 1234 5678.</p>
         </article>
       `,
       vi: `
@@ -227,7 +227,7 @@ export const blogPosts: BlogPost[] = [
             <li>Xem xét phương án bảo hiểm hưu trí và y tế sớm.</li>
           </ul>
 
-          <p>Để được tư vấn chi tiết về kế toán và kế hoạch thuế, <a href="/#contact" class="text-blue-600 underline">đặt lịch tư vấn</a> hoặc gọi hotline: +49 30 1234 5678.</p>
+          <p>Để được tư vấn chi tiết về kế toán và kế hoạch thuế, <a href="/__LOCALE__/contact" class="text-blue-600 underline">đặt lịch tư vấn</a> hoặc gọi hotline: +49 30 1234 5678.</p>
         </article>
       `,
     },

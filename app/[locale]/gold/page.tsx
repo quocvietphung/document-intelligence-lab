@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import GoldPriceWidget from '@/components/GoldPriceWidget';
 import GoldInvestmentCalculator from '@/components/GoldInvestmentCalculator';
@@ -7,6 +7,7 @@ import FAQSection from '@/components/sections/FAQSection';
 
 export default function GoldConsultingPage() {
   const t = useTranslations('gold');
+  const locale = useLocale();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-amber-50">
@@ -147,7 +148,7 @@ export default function GoldConsultingPage() {
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               <Link
-                href="/#contact"
+                href={`/${locale}/contact`}
                 className="inline-block bg-white text-yellow-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
               >
                 {t('cta.button')}

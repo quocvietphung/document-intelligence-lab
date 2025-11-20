@@ -16,7 +16,7 @@ export default function HeroSection() {
             {t("subtitle")}
           </p>
           <Link
-            href={`/${locale}#contact`}
+            href={`/${locale}/contact`}
             className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
           >
             {t("cta")}
