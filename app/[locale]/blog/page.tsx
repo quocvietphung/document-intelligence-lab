@@ -1,6 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Link from "next/link";
-import blogPosts from "../../../data/blogPosts";
+import blogPosts from "@/data/blogPosts";
 import { Fragment } from "react";
 
 function stripHtml(html: string) {

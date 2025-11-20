@@ -21,6 +21,7 @@ export default async function HomePage({
       <ProcessSection />
       <TestimonialsSection />
       <ReviewsSection />
+      <ContactSection />
     </>
   );
 }
