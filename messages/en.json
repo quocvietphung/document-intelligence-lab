@@ -66,7 +66,8 @@
   },
   "testimonials": {
     "title": "What Our Clients Say",
-    "subtitle": "Trusted by hundreds of clients"
+    "subtitle": "Trusted by hundreds of clients",
+    "label": "Client Testimonials"
   },
   "contact": {
     "title": "Book a Consultation",
@@ -132,12 +133,14 @@
     "error": "Sorry, an error occurred. Please try again."
   },
   "reviews": {
-    "title": "What People Say",
-    "subtitle": "Verified reviews and testimonials",
+    "title": "What People Say About Us",
+    "subtitle": "Verified reviews from real customers on leading platforms",
+    "label": "Verified Reviews",
     "placeholder_quote": "This reviewer has provided valuable feedback.",
     "verified": "Verified",
     "unverified": "Unverified",
-    "note_html": "Reviews are sourced from public platforms; please verify directly on the original site for full context."
+    "trust_label": "100% Verified Reviews",
+    "trust_desc": "From real customers on leading platforms"
   },
   "gold": {
     "title": "Gold Investment Consulting",

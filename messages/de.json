@@ -1,226 +1,234 @@
 {
   "nav": {
-    "home": "Startseite",
-    "services": "Leistungen",
+    "home": "Home",
+    "services": "Services",
     "gold": "Gold",
     "blog": "Blog",
-    "contact": "Kontakt"
+    "contact": "Contact"
   },
   "hero": {
-    "title": "Professionelle Steuerberatung in Deutschland",
-    "subtitle": "Expertenhilfe für Privatpersonen und Unternehmen",
-    "cta": "Beratung buchen"
+    "title": "Professional Tax Consulting in Germany",
+    "subtitle": "Expert advice for individuals and businesses",
+    "cta": "Book Consultation",
+    "badge": "Professional Solutions",
+    "learn_more": "Learn More",
+    "stat1": "Happy Clients",
+    "stat2": "Years Experience",
+    "stat3": "Savings Achieved"
   },
   "services": {
-    "title": "Unsere Leistungen",
-    "subtitle": "Maßgeschneiderte Steuerberatung für Ihren Erfolg",
-    "learn_more": "Mehr erfahren",
-    "contact_us": "Kontaktieren Sie uns",
-    "deliverables": "Leistungen",
-    "deliverables_short": "Umfassende Beratung",
-    "turnaround": "Bearbeitungszeit",
-    "turnaround_short": "1–2 Wochen",
-    "cta_subtext": "Bereit, Ihre Steuersituation zu optimieren?",
-    "cta_button": "Jetzt Beratung vereinbaren",
+    "title": "Our Services",
+    "subtitle": "Tailored tax consulting for your success",
+    "learn_more": "Learn More",
+    "contact_us": "Contact Us",
+    "deliverables": "Deliverables",
+    "deliverables_short": "Comprehensive advisory",
+    "turnaround": "Turnaround Time",
+    "turnaround_short": "1–2 weeks",
+    "cta_subtext": "Ready to optimize your tax situation?",
+    "cta_button": "Schedule Consultation Now",
     "tax_declaration": {
-      "title": "Steuererklärung",
-      "description": "Professionelle und sichere Erstellung Ihrer Jahressteuererklärung (Einkommensteuer, Körperschaftsteuer, Umsatzsteuer) mit vollständiger Dokumentation und optimalen Abzügen."
+      "title": "Tax Declaration",
+      "description": "Professional and secure preparation of your annual tax returns (income tax, corporate tax, VAT) with complete documentation and optimal deductions."
     },
     "tax_optimization": {
-      "title": "Steueroptimierung",
-      "description": "Strategische Beratung zur Minimierung Ihrer Steuerlast durch legale Gestaltungen, Betriebsstättenverwaltung und intelligente Finanzplanung."
+      "title": "Tax Optimization",
+      "description": "Strategic advisory to minimize your tax burden through legal structuring, establishment management, and intelligent financial planning."
     },
     "real_estate": {
-      "title": "Immobilienberatung",
-      "description": "Umfassende Beratung bei Kauf, Verkauf, Vermietung und steuerlicher Optimierung von Immobilien in Deutschland und international."
+      "title": "Real Estate Consulting",
+      "description": "Comprehensive guidance on purchasing, selling, leasing, and tax optimization of real estate in Germany and internationally."
     },
     "it_consulting": {
-      "title": "Digitale Transformation",
-      "description": "Modernisierung Ihrer Finanzprozesse durch Cloud-Lösungen, automatisierte Buchführung und sichere digitale Dokumentenverwaltung."
+      "title": "Digital Transformation",
+      "description": "Modernize your financial processes with cloud solutions, automated accounting, and secure digital document management."
     },
     "accounting": {
-      "title": "Buchhaltung & Bilanzierung",
-      "description": "Vollständige Buchführung, Finanzbuchhaltung, Jahresabschluss und GuV-Erstellung für Unternehmen aller Größen und Rechtsformen."
+      "title": "Accounting & Reporting",
+      "description": "Complete bookkeeping, financial accounting, annual statements, and P&L reporting for businesses of all sizes and legal structures."
     }
   },
   "process": {
-    "title": "Unser Prozess",
-    "subtitle": "Einfach und transparent",
+    "title": "Our Process",
+    "subtitle": "Simple and transparent",
     "step1": {
-      "title": "Erstberatung",
-      "description": "Kostenlose Beratung zum Verständnis Ihrer Bedürfnisse"
+      "title": "Initial Consultation",
+      "description": "Free consultation to understand your needs"
     },
     "step2": {
-      "title": "Analyse & Planung",
-      "description": "Wir analysieren Ihre Situation und erstellen einen maßgeschneiderten Plan"
+      "title": "Analysis & Planning",
+      "description": "We analyze your situation and create a tailored plan"
     },
     "step3": {
-      "title": "Umsetzung",
-      "description": "Wir kümmern uns um alles und halten Sie auf dem Laufenden"
+      "title": "Implementation",
+      "description": "We handle everything while keeping you informed"
     }
   },
   "testimonials": {
-    "title": "Was unsere Kunden sagen",
-    "subtitle": "Vertrauen von Hunderten von Kunden"
+    "title": "What Our Clients Say",
+    "subtitle": "Trusted by hundreds of clients",
+    "label": "Client Testimonials"
   },
   "contact": {
-    "title": "Beratung buchen",
-    "subtitle": "Kontaktieren Sie uns noch heute",
-    "description": "Erreichen Sie uns, um Ihre Beratung zu vereinbaren oder mehr über unsere Dienstleistungen zu erfahren",
+    "title": "Book a Consultation",
+    "subtitle": "Get in Touch",
+    "description": "Reach out to schedule your consultation or learn more about our services",
     "name": "Name",
-    "name_placeholder": "Ihr Name",
-    "email": "E-Mail",
-    "email_placeholder": "ihre@email.de",
-    "email_label": "E-Mail",
-    "phone": "Telefon",
-    "phone_label": "Telefon",
-    "message": "Nachricht",
-    "message_placeholder": "Erzählen Sie uns von Ihren Anforderungen...",
-    "message_title": "Schreiben Sie uns eine Nachricht",
-    "message_subtitle": "Wir melden uns schnellstmöglich bei Ihnen",
-    "submit": "Nachricht senden",
-    "sending": "Sendet...",
-    "success": "Vielen Dank! Wir werden uns bald bei Ihnen melden.",
-    "error": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
-    "booking_title": "Termin vereinbaren",
-    "booking_subtitle": "Wählen Sie Service, Datum und Uhrzeit für Ihre Beratung",
-    "verified_reviews": "Verifizierte Bewertungen",
-    "service_label": "Dienstleistung",
-    "date_label": "Datum",
-    "time_label": "Uhrzeit",
-    "quick_slots": "Oder wählen Sie schnelle Zeiten",
-    "book_now": "Jetzt buchen",
-    "booking": "Buchung...",
-    "hotline_label": "Oder rufen Sie uns direkt an",
-    "hotline_note": "Erreichbar Mo–Fr 9:00–17:00",
-    "fast_response": "Schnelle Antwort",
-    "fast_response_desc": "Wir antworten innerhalb von 24 Stunden",
-    "secure_data": "Sicher & Vertraulich",
-    "secure_data_desc": "Ihre Daten sind vollständig geschützt",
-    "expert_team": "Expertenteam",
-    "expert_team_desc": "15+ Jahre Erfahrung"
+    "name_placeholder": "Your name",
+    "email": "Email",
+    "email_placeholder": "your@email.com",
+    "email_label": "Email",
+    "phone": "Phone",
+    "phone_label": "Phone",
+    "message": "Message",
+    "message_placeholder": "Tell us about your needs...",
+    "message_title": "Send us a Message",
+    "message_subtitle": "We'll get back to you as soon as possible",
+    "submit": "Send Message",
+    "sending": "Sending...",
+    "success": "Thank you! We'll contact you soon.",
+    "error": "Something went wrong. Please try again.",
+    "booking_title": "Book an Appointment",
+    "booking_subtitle": "Select service, date, and time for your consultation",
+    "verified_reviews": "Verified reviews",
+    "service_label": "Service",
+    "date_label": "Date",
+    "time_label": "Time",
+    "quick_slots": "Or choose quick times",
+    "book_now": "Book Now",
+    "booking": "Booking...",
+    "hotline_label": "Or call us directly",
+    "hotline_note": "Available Mon–Fri 9:00–17:00",
+    "fast_response": "Fast Response",
+    "fast_response_desc": "We respond within 24 hours",
+    "secure_data": "Secure & Confidential",
+    "secure_data_desc": "Your data is fully protected",
+    "expert_team": "Expert Team",
+    "expert_team_desc": "15+ years of experience"
   },
   "footer": {
-    "about": "Über uns",
-    "about_text": "Professionelle Steuerberatung und digitale Finanzlösungen in Deutschland",
-    "quick_links": "Schnelllinks",
-    "legal": "Rechtliches",
+    "about": "About Us",
+    "about_text": "Professional tax consulting and digital financial solutions in Germany",
+    "quick_links": "Quick Links",
+    "legal": "Legal",
     "impressum": "Impressum",
-    "datenschutz": "Datenschutzerklärung",
-    "terms_of_service": "Nutzungsbedingungen",
-    "copyright": "© 2024 Steuerberatung. Alle Rechte vorbehalten."
+    "datenschutz": "Privacy Policy",
+    "terms_of_service": "Terms of Service",
+    "copyright": "© 2024 Tax Consulting. All rights reserved."
   },
   "blog": {
-    "title": "Steuertipps & Neuigkeiten",
-    "subtitle": "Bleiben Sie über Steuervorschriften informiert",
-    "read_more": "Weiterlesen",
-    "book_consultation": "Beratung buchen",
-    "not_found": "Beitrag nicht gefunden."
+    "title": "Tax Tips & News",
+    "subtitle": "Stay informed about tax regulations",
+    "read_more": "Read more",
+    "book_consultation": "Book consultation",
+    "not_found": "Post not found."
   },
   "chatbot": {
-    "title": "Beratungsassistent",
-    "placeholder": "Fragen Sie nach Steuern, Karriereberatung oder Unternehmensregistrierung...",
-    "button_label": "Mit uns chatten",
-    "welcome": "Hallo! Wie kann ich Ihnen bei Steuerberatung, Steueroptimierung, Immobilienberatung oder IT-Beratung in Vietnam und Deutschland helfen?",
-    "send": "Senden",
-    "close": "Schließen",
-    "error": "Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+    "title": "Consulting Assistant",
+    "placeholder": "Ask about taxes, career guidance, or business registration...",
+    "button_label": "Chat with us",
+    "welcome": "Hello! How can I help you with tax consulting, tax optimization, real estate consulting or IT consulting in Vietnam and Germany?",
+    "send": "Send",
+    "close": "Close",
+    "error": "Sorry, an error occurred. Please try again."
   },
   "reviews": {
-    "title": "Was die Leute sagen",
-    "subtitle": "Verifizierte Bewertungen und Erfahrungsberichte",
-    "placeholder_quote": "Dieser Rezensent hat wertvolles Feedback gegeben.",
-    "verified": "Verifiziert",
-    "unverified": "Nicht verifiziert",
-    "note_html": "Bewertungen stammen aus öffentlichen Plattformen; bitte überprüfen Sie die Originalquelle für den vollständigen Kontext."
+    "title": "What People Say About Us",
+    "subtitle": "Verified reviews from real customers on leading platforms",
+    "label": "Verified Reviews",
+    "placeholder_quote": "This reviewer has provided valuable feedback.",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "trust_label": "100% Verified Reviews",
+    "trust_desc": "From real customers on leading platforms"
   },
   "gold": {
-    "title": "Gold-Investment-Beratung",
-    "subtitle": "Expertenberatung für Goldinvestitionen und Marktanalyse",
+    "title": "Gold Investment Consulting",
+    "subtitle": "Expert guidance for gold investments and market analysis",
     "services": {
-      "priceAnalysis": "Preisanalyse",
-      "priceAnalysisDesc": "Echtzeit-Überwachung der Goldpreise und Trendanalyse",
-      "investmentAdvice": "Investment-Beratung",
-      "investmentAdviceDesc": "Strategische Investment-Empfehlungen für Goldportfolios",
-      "taxOptimization": "Steueroptimierung",
-      "taxOptimizationDesc": "Steueroptimierte Strategien für Goldinvestitionen"
+      "priceAnalysis": "Price Analysis",
+      "priceAnalysisDesc": "Real-time gold price monitoring and trend analysis",
+      "investmentAdvice": "Investment Advice",
+      "investmentAdviceDesc": "Strategic investment recommendations for gold portfolios",
+      "taxOptimization": "Tax Optimization",
+      "taxOptimizationDesc": "Tax-efficient strategies for gold investments"
     },
     "marketInsights": {
-      "title": "Markteinsichten",
+      "title": "Market Insights",
       "factors": {
-        "title": "Wichtige Marktfaktoren",
-        "economic": "Wirtschaftliche Indikatoren und BIP-Wachstum",
-        "inflation": "Inflationsraten und Kaufkraft",
-        "geopolitical": "Geopolitische Ereignisse und Marktstabilität",
-        "currency": "Währungsschwankungen und Wechselkurse"
+        "title": "Key Market Factors",
+        "economic": "Economic indicators and GDP growth",
+        "inflation": "Inflation rates and purchasing power",
+        "geopolitical": "Geopolitical events and market stability",
+        "currency": "Currency fluctuations and exchange rates"
       },
       "tips": {
-        "title": "Investment-Tipps",
-        "diversify": "Diversifizieren Sie über verschiedene Goldprodukte",
-        "longTerm": "Fokus auf langfristige Haltestrategien",
-        "monitor": "Überwachen Sie Marktnews und Wirtschaftsdaten",
-        "consult": "Beraten Sie regelmäßig mit Finanzexperten"
+        "title": "Investment Tips",
+        "diversify": "Diversify across different gold products",
+        "longTerm": "Focus on long-term holding strategies",
+        "monitor": "Monitor market news and economic data",
+        "consult": "Consult with financial experts regularly"
       }
     },
     "cta": {
-      "title": "Bereit für Gold-Investitionen?",
-      "subtitle": "Erhalten Sie personalisierte Beratung für Ihre Gold-Investment-Strategie",
-      "button": "Beratung buchen"
+      "title": "Ready to Invest in Gold?",
+      "subtitle": "Get personalized advice for your gold investment strategy",
+      "button": "Book Consultation"
     },
     "priceWidget": {
-      "title": "Goldpreis",
-      "subtitle": "Live-Marktdaten",
-      "perOunce": "pro Feinunze",
-      "perGram": "pro Gramm",
+      "title": "Gold Price",
+      "subtitle": "Live market data",
+      "perOunce": "per troy ounce",
+      "perGram": "per gram",
       "chart": "24h Trend",
-      "last24h": "Letzte 24 Stunden",
-      "lastUpdated": "Zuletzt aktualisiert",
-      "refresh": "Aktualisieren",
-      "error": "Daten konnten nicht geladen werden",
-      "retry": "Erneut versuchen",
-      "currencyLabel": "Währung",
+      "last24h": "Last 24 hours",
+      "lastUpdated": "Last updated",
+      "refresh": "Refresh",
+      "error": "Unable to load data",
+      "retry": "Try again",
+      "currencyLabel": "Currency",
       "unitOz": "oz",
       "unitGram": "g",
-      "unitSelector": "Einheit",
-      "high24h": "24h Hoch",
-      "low24h": "24h Tief",
-      "cacheNote": "Cache ~10h",
-      "fxRateMissing": "Wechselkurs nicht geladen – ungefähre Umrechnung wird angezeigt.",
-      "sourceNote": "* Echtzeitdaten von Gold Price API (kostenlos, kein Key); Verlauf kann begrenzt sein. Wechselkurs von exchangerate.host."
+      "unitSelector": "Unit selector",
+      "high24h": "24h High",
+      "low24h": "24h Low",
+      "cacheNote": "cache ~10h",
+      "fxRateMissing": "Exchange rate not loaded — showing approximate conversion.",
+      "sourceNote": "* Real-time from Gold Price API (free, no key); history may be limited. Exchange rate from exchangerate.host."
     },
     "calculator": {
-      "title": "💰 Gold-Investitionsrechner",
-      "description": "Schätzen Sie Ihre potenziellen Renditen basierend auf Preisprojektionen",
-      "investmentAmount": "Anlagebetrag (USD)",
-      "currentPrice": "Aktueller Goldpreis (pro oz)",
-      "projectedPrice": "Prognostizierter Preis (pro oz)",
-      "investmentPeriod": "Anlagezeitraum",
-      "year": "Jahr",
-      "years": "Jahre",
+      "title": "💰 Gold Investment Calculator",
+      "description": "Estimate your potential returns based on price projections",
+      "investmentAmount": "Investment Amount (USD)",
+      "currentPrice": "Current Gold Price (per oz)",
+      "projectedPrice": "Projected Price (per oz)",
+      "investmentPeriod": "Investment Period",
+      "year": "year",
+      "years": "years",
       "minAmount": "$100",
-      "maxAmount": "$100.000",
-      "minYears": "1 Jahr",
-      "maxYears": "10 Jahre",
-      "projectionResults": "Prognoseergebnisse",
-      "initialInvestment": "Startkapital",
-      "ouncesPurchased": "Gekaufte Unzen",
-      "projectedValue": "Prognostizierter Wert",
-      "projectedPriceLabel": "Prognostizierter Preis",
-      "gainLoss": "Gewinn/Verlust",
-      "warningNote": "⚠️ Dieser Rechner dient nur zu Informationszwecken. Tatsächliche Ergebnisse können abweichen. Konsultieren Sie einen Finanzberater vor Investitionen."
+      "maxAmount": "$100,000",
+      "minYears": "1 year",
+      "maxYears": "10 years",
+      "projectionResults": "Projection Results",
+      "initialInvestment": "Initial Investment",
+      "ouncesPurchased": "Ounces Purchased",
+      "projectedValue": "Projected Value",
+      "projectedPriceLabel": "Projected Price",
+      "gainLoss": "Gain/Loss",
+      "warningNote": "⚠️ This calculator is for informational purposes only. Actual results may vary. Consult a financial advisor before investing."
     },
     "faq": {
-      "title": "Häufig gestellte Fragen",
-      "q1_title": "Warum in Gold investieren?",
-      "q1_body": "Gold ist ein Schutz gegen Inflation, Währungsabwertung und wirtschaftliche Unsicherheit. Es hat seinen Wert über Jahrhunderte gehalten und bietet Diversifikation im Portfolio.",
-      "q2_title": "Welche Faktoren beeinflussen den Goldpreis?",
-      "q2_body": "Zinssätze, Inflation, geopolitische Spannungen, Währungsstärke und Zentralbankpolitik beeinflussen die Goldpreise erheblich.",
-      "q3_title": "Wie kauft man Gold sicher?",
-      "q3_body": "Kaufen Sie bei seriösen Händlern, überprüfen Sie Reinheit und Gewicht, prüfen Sie Aufbewahrungsmöglichkeiten (Tresor, Lager) und sorgen Sie für geeignete Versicherung.",
-      "q4_title": "Welche steuerlichen Auswirkungen gibt es?",
-      "q4_body": "Goldinvestitionen können der Kapitalertragssteuer unterliegen. Konsultieren Sie Steuerexperten, um Ihre Strategie entsprechend den lokalen Vorschriften zu optimieren.",
-      "disclaimer_title": "⚠️ Wichtiger Hinweis",
-      "disclaimer_body": "Goldinvestitionen bergen Risiken wie Marktvolatilität, Liquiditätsbeschränkungen, Lagerkosten und Währungsschwankungen. Vergangene Leistungen sind keine Garantie für zukünftige Ergebnisse. Bitte konsultieren Sie einen qualifizierten Finanzberater vor Investitionsentscheidungen. Diese Informationen dienen nur zu Informationszwecken und sind keine Finanzberatung."
+      "title": "Frequently Asked Questions",
+      "q1_title": "Why invest in gold?",
+      "q1_body": "Gold is a hedge against inflation, currency devaluation, and economic uncertainty. It has maintained value across centuries and provides portfolio diversification.",
+      "q2_title": "What factors affect gold prices?",
+      "q2_body": "Interest rates, inflation, geopolitical tensions, currency strength, and central bank policies all influence gold prices significantly.",
+      "q3_title": "How to buy gold safely?",
+      "q3_body": "Buy from reputable dealers, verify purity and weight, consider storage options (vault, home safe), and maintain proper insurance coverage.",
+      "q4_title": "What are tax implications?",
+      "q4_body": "Gold investments may be subject to capital gains tax. Consult with tax professionals to optimize your strategy based on local regulations.",
+      "disclaimer_title": "⚠️ Important Disclaimer",
+      "disclaimer_body": "Gold investments carry risks including market volatility, liquidity constraints, storage costs, and currency fluctuations. Past performance does not guarantee future results. Please consult with a qualified financial advisor before making investment decisions. This information is for educational purposes only and not financial advice."
     }
   }
 }

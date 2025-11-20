@@ -66,7 +66,8 @@
   },
   "testimonials": {
     "title": "Khách hàng nói gì về chúng tôi",
-    "subtitle": "Được tin tưởng bởi hàng trăm khách hàng"
+    "subtitle": "Được tin tưởng bởi hàng trăm khách hàng",
+    "label": "Bình luận khách hàng"
   },
   "contact": {
     "title": "Đặt Lịch Tư Vấn",
@@ -132,12 +133,14 @@
     "error": "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại."
   },
   "reviews": {
-    "title": "Mọi người nói gì",
-    "subtitle": "Những đánh giá và phản hồi đã được xác thực",
+    "title": "Mọi người nói gì về chúng tôi",
+    "subtitle": "Những đánh giá được xác thực từ khách hàng thực trên các nền tảng hàng đầu",
+    "label": "Đánh giá Được xác thực",
     "placeholder_quote": "Người đánh giá này đã cung cấp phản hồi hữu ích.",
     "verified": "Đã xác thực",
     "unverified": "Chưa xác thực",
-    "note_html": "Các đánh giá lấy từ các nền tảng công khai; vui lòng kiểm tra trực tiếp trên trang gốc để biết bối cảnh đầy đủ."
+    "trust_label": "100% Đánh giá Được xác thực",
+    "trust_desc": "Từ khách hàng thực trên các nền tảng hàng đầu"
   },
   "gold": {
     "title": "Tư vấn Đầu tư Vàng",
