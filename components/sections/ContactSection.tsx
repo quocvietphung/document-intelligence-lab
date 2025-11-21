@@ -11,7 +11,7 @@ export default function ContactSection() {
     email: "",
     phone: "",
     message: "",
-    service: "tax_declaration",
+    service: "finance_declaration",
     date: "",
     time: "",
   });
@@ -32,7 +32,7 @@ export default function ContactSection() {
 
       if (response.ok) {
         setStatus("success");
-        setFormData({ name: "", email: "", phone: "", message: "", service: "tax_declaration", date: "", time: "" });
+        setFormData({ name: "", email: "", phone: "", message: "", service: "finance_declaration", date: "", time: "" });
         setTimeout(() => setStatus("idle"), 5000);
       } else {
         setStatus("error");
@@ -110,8 +110,8 @@ export default function ContactSection() {
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition-all duration-300 hover:border-gray-300"
                   >
-                    <option value="tax_declaration">{s("tax_declaration.title")}</option>
-                    <option value="tax_optimization">{s("tax_optimization.title")}</option>
+                    <option value="finance_declaration">{s("finance_declaration.title")}</option>
+                    <option value="finance_optimization">{s("finance_optimization.title")}</option>
                     <option value="real_estate">{s("real_estate.title")}</option>
                     <option value="it_consulting">{s("it_consulting.title")}</option>
                     <option value="accounting">{s("accounting.title")}</option>
@@ -202,13 +202,13 @@ export default function ContactSection() {
                     </div>
                   </a>
                   <a
-                    href="mailto:info@taxconsulting.example"
+                    href="mailto:info@finance-consulting.de"
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group"
                   >
                     <span className="text-2xl">✉️</span>
                     <div>
                       <div className="text-sm text-gray-500">{t("email_label")}</div>
-                      <div className="font-bold text-blue-600 group-hover:text-blue-700">info@taxconsulting.example</div>
+                      <div className="font-bold text-blue-600 group-hover:text-blue-700">info@finance-consulting.de</div>
                     </div>
                   </a>
                 </div>

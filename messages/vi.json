@@ -25,19 +25,19 @@
     "deliverables_short": "Tư vấn toàn diện",
     "turnaround": "Thời gian xử lý",
     "turnaround_short": "1–2 tuần",
-    "cta_subtext": "Sẵn sàng tối ưu hóa tình hình thuế của bạn?",
+    "cta_subtext": "Sẵn sàng tối ưu hóa tình hình tài chính của bạn?",
     "cta_button": "Đặt lịch tư vấn ngay",
-    "tax_declaration": {
-      "title": "Khai báo Thuế",
-      "description": "Chuẩn bị chuyên nghiệp và an toàn tờ khai thuế hàng năm (thuế thu nhập, thuế doanh nghiệp, thuế giá trị gia tăng) với tài liệu hoàn chỉnh và khấu trừ tối ưu."
+    "finance_declaration": {
+      "title": "Khai báo Tài chính",
+      "description": "Chuẩn bị chuyên nghiệp và an toàn tờ khai tài chính hàng năm (thu nhập, tài chính doanh nghiệp, giá trị gia tăng) với tài liệu hoàn chỉnh và khấu trừ tối ưu."
     },
-    "tax_optimization": {
-      "title": "Tối ưu Thuế",
-      "description": "Tư vấn chiến lược để giảm thiểu gánh nặng thuế thông qua cơ cấu pháp lý, quản lý chi nhánh, và lập kế hoạch tài chính thông minh."
+    "finance_optimization": {
+      "title": "Tối ưu Tài chính",
+      "description": "Tư vấn chiến lược để giảm thiểu gánh nặng tài chính thông qua cơ cấu pháp lý, quản lý chi nhánh, và lập kế hoạch tài chính thông minh."
     },
     "real_estate": {
       "title": "Tư vấn Bất động sản",
-      "description": "Hướng dẫn toàn diện về mua, bán, cho thuê, và tối ưu hóa thuế bất động sản tại Đức và quốc tế."
+      "description": "Hướng dẫn toàn diện về mua, bán, cho thuê, và tối ưu hóa tài chính bất động sản tại Đức và quốc tế."
     },
     "it_consulting": {
       "title": "Chuyển đổi Số",

@@ -25,27 +25,27 @@ export default function ServicesSection() {
 
   const services: Service[] = [
     {
-      id: "tax-declaration",
-      title: t("tax_declaration.title"),
-      description: t("tax_declaration.description"),
+      id: "finance-declaration",
+      title: t("finance_declaration.title"),
+      description: t("finance_declaration.description"),
       href: "/contact",
       badge: "Individuelle Lösungen",
       iconBg: "bg-gradient-to-br from-blue-50 to-blue-100",
-      details: "Unsere Steuererklärungsservice deckt alle Aspekte Ihrer jährlichen Steuerpflichten ab. Wir kümmern uns um die Komplexität und stellen sicher, dass Sie maximale Abzüge erhalten.",
+      details: "Unsere Finanzerklärungs-Service deckt alle Aspekte Ihrer jährlichen Finanzpflichten ab. Wir kümmern uns um die Komplexität und stellen sicher, dass Sie maximale Abzüge erhalten.",
       features: [
-        "Vollständige Steuerererklärung für Privatpersonen und Unternehmen",
+        "Vollständige Finanzerklärung für Privatpersonen und Unternehmen",
         "Optimierung von Abzügen und Freibeträgen",
-        "Unterstützung bei Einkommensteuern, Körperschaftsteuern und Umsatzsteuern",
+        "Unterstützung bei Einkommen, Körperschaft und Umsatzsteuern",
         "Umgang mit Rückerstattungen und Nachzahlungen"
       ],
       benefits: [
-        "✓ Maximale Steuerrückerstattung",
-        "✓ Vollständige Compliance mit Steuerbehörden",
+        "✓ Maximale Finanzbückerstattung",
+        "✓ Vollständige Compliance mit Behörden",
         "✓ Zeitersparnis und weniger Stress",
         "✓ Professionelle Dokumentation und Unterstützung"
       ],
       deliverables: [
-        "Vollständige Steuererklärung",
+        "Vollständige Finanzerklärung",
         "Detaillierter Bericht",
         "Beratung zur zukünftigen Planung"
       ],
@@ -58,9 +58,9 @@ export default function ServicesSection() {
       ),
     },
     {
-      id: "tax-optimization",
-      title: t("tax_optimization.title"),
-      description: t("tax_optimization.description"),
+      id: "finance-optimization",
+      title: t("finance_optimization.title"),
+      description: t("finance_optimization.description"),
       href: "/contact",
       badge: "Kostenersparnis",
       iconBg: "bg-gradient-to-br from-amber-50 to-yellow-100",
@@ -74,7 +74,7 @@ export default function ServicesSection() {
       benefits: [
         "✓ Bis zu 30% Steuereinsparungen",
         "✓ Legale und sichere Strategien",
-        "✓ Langfristige Finanzplanung",
+        "✓ Langfristige Steuerplanung",
         "✓ Transparente Dokumentation"
       ],
       deliverables: [
@@ -206,7 +206,7 @@ export default function ServicesSection() {
             {t("title")}
           </h2>
           <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
-            Umfassende Lösungen für Ihre Steuern und Geschäfte
+            Umfassende Lösungen für Ihre Finanzen und Geschäfte
           </p>
         </div>
 

@@ -51,10 +51,10 @@ export const blogPosts: BlogPost[] = [
       `,
       de: `
         <article>
-          <p><strong>Übersicht</strong> — Das deutsche Steuerrecht bietet weiterhin praxisnahe Abzugsmöglichkeiten für Arbeitnehmer, Freiberufler und Kleinunternehmer. Eine korrekte Zuordnung und Dokumentation kann Ihre Steuerlast deutlich senken.</p>
+          <p><strong>Übersicht</strong> — Das deutsche Finanzrecht bietet weiterhin praxisnahe Abzugsmöglichkeiten für Arbeitnehmer, Freiberufler und Kleinunternehmer. Eine korrekte Zuordnung und Dokumentation kann Ihre Finanzlast deutlich senken.</p>
 
           <h3>Worauf Sie zuerst achten sollten</h3>
-          <p>Sammeln Sie Belege für das gesamte Steuerjahr und ordnen Sie diese in Werbungskosten, Sonderausgaben und Betriebsausgaben ein.</p>
+          <p>Sammeln Sie Belege für das gesamte Finanzyahr und ordnen Sie diese in Werbungskosten, Sonderausgaben und Betriebsausgaben ein.</p>
 
           <h4>Wichtige Abzugsbereiche</h4>
           <ul>
@@ -68,7 +68,7 @@ export const blogPosts: BlogPost[] = [
           <ol>
             <li>Digitale Kopien (PDF/Foto) mit Datum und Kategorie ablegen.</li>
             <li>Monatliche Übersicht in einer Tabelle oder Buchhaltungs-App führen.</li>
-            <li>Bei Unsicherheiten steuerliche Beratung hinzuziehen — kleine Zuordnungsunterschiede können viel ausmachen.</li>
+            <li>Bei Unsicherheiten finanzielle Beratung hinzuziehen — kleine Zuordnungsunterschiede können viel ausmachen.</li>
           </ol>
 
           <p><strong>Brauchen Sie Unterstützung?</strong> Für eine individuelle Prüfung Ihrer Abzugsfähigkeit und Dokumentation <a href="/__LOCALE__/contact" class="text-blue-600 underline">vereinbaren Sie einen Termin</a> oder rufen Sie unsere Hotline an: +49 30 1234 5678.</p>
@@ -147,7 +147,7 @@ export const blogPosts: BlogPost[] = [
             <li>Versicherungen, Gehaltsabrechnung und lokale Genehmigungen prüfen.</li>
           </ul>
 
-          <p>Wir bieten ein Onboarding-Paket für ausländische Gründer — von behördlichen Schritten bis zur Steuerregistrierung. <a href="/__LOCALE__/contact" class="text-blue-600 underline">Vereinbaren Sie einen Termin</a> für eine individuelle Checkliste.</p>
+          <p>Wir bieten ein Onboarding-Paket für ausländische Gründer — von behördlichen Schritten bis zur Finanzregistrierung. <a href="/__LOCALE__/contact" class="text-blue-600 underline">Vereinbaren Sie einen Termin</a> für eine individuelle Checkliste.</p>
         </article>
       `,
       vi: `
@@ -202,17 +202,17 @@ export const blogPosts: BlogPost[] = [
       `,
       de: `
         <article>
-          <p>Freiberufler profitieren von sauberer Buchführung, zeitnahen Rechnungen und sinnvollen Steuer-Rücklagen. Kleine Änderungen in der täglichen Buchhaltung können erhebliche Einsparungen bringen.</p>
+          <p>Freiberufler profitieren von sauberer Buchführung, zeitnahen Rechnungen und sinnvollen Finanz-Rücklagen. Kleine Änderungen in der täglichen Buchhaltung können erhebliche Einsparungen bringen.</p>
 
           <h4>Schnelle Maßnahmen</h4>
           <ul>
             <li>Monatlich alle Betriebsausgaben erfassen und Belege sammeln.</li>
             <li>Rechnungen mit klaren Zahlungsbedingungen und USt-Angaben erstellen.</li>
-            <li>Vierteljährliche Steuer-Vorauszahlungen berücksichtigen và Rücklagen bilden.</li>
+            <li>Vierteljährliche Finanz-Vorauszahlungen berücksichtigen và Rücklagen bilden.</li>
             <li>Frühzeitig Renten- und Krankenversorgungsoptionen prüfen.</li>
           </ul>
 
-          <p>Für eine individuelle Prüfung Ihrer Buchführung và Steuerplanung <a href="/__LOCALE__/contact" class="text-blue-600 underline">vereinbaren Sie eine Beratung</a> oder rufen Sie unsere Hotline an: +49 30 1234 5678.</p>
+          <p>Für eine individuelle Prüfung Ihrer Buchführung và Finanzplanung <a href="/__LOCALE__/contact" class="text-blue-600 underline">vereinbaren Sie eine Beratung</a> oder rufen Sie unsere Hotline an: +49 30 1234 5678.</p>
         </article>
       `,
       vi: `

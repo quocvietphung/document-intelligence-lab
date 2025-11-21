@@ -25,15 +25,15 @@
     "deliverables_short": "Comprehensive advisory",
     "turnaround": "Turnaround Time",
     "turnaround_short": "1–2 weeks",
-    "cta_subtext": "Ready to optimize your tax situation?",
+    "cta_subtext": "Ready to optimize your finance situation?",
     "cta_button": "Schedule Consultation Now",
-    "tax_declaration": {
-      "title": "Tax Declaration",
-      "description": "Professional and secure preparation of your annual tax returns (income tax, corporate tax, VAT) with complete documentation and optimal deductions."
+    "finance_declaration": {
+      "title": "Finance Declaration",
+      "description": "Professional and secure preparation of your annual financial returns (income, corporate finance, VAT) with complete documentation and optimal deductions."
     },
-    "tax_optimization": {
-      "title": "Tax Optimization",
-      "description": "Strategic advisory to minimize your tax burden through legal structuring, establishment management, and intelligent financial planning."
+    "finance_optimization": {
+      "title": "Finance Optimization",
+      "description": "Strategic advisory to minimize your financial burden through legal structuring, establishment management, and intelligent financial planning."
     },
     "real_estate": {
       "title": "Real Estate Consulting",
@@ -117,8 +117,8 @@
     "copyright": "© 2024 Finance Consulting. All rights reserved."
   },
   "blog": {
-    "title": "Tax Tips & News",
-    "subtitle": "Stay informed about tax regulations",
+    "title": "Finance Tips & News",
+    "subtitle": "Stay informed about finance regulations",
     "read_more": "Read more",
     "book_consultation": "Book consultation",
     "not_found": "Post not found."

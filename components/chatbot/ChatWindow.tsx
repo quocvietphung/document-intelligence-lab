@@ -26,7 +26,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
   const [displayedContent, setDisplayedContent] = useState<Record<string, string>>({});
   const typingSpeedRef = useRef(30); // ms per character
 
-  const welcomeText = t("welcome") + ". Ask me anything about ERGO insurance and tax consulting";
+  const welcomeText = t("welcome") + ". Ask me anything about ERGO insurance and finance consulting";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

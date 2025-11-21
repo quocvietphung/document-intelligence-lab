@@ -49,7 +49,7 @@
 ## 📁 Project Structure
 
 ```
-tax-consulting/
+finance-consulting/
 ├── app/
 │   ├── [locale]/
 │   │   ├── page.tsx          # Homepage
@@ -177,7 +177,7 @@ Display with sources ✅
 | Category | PDFs | Chunks | Content |
 |----------|------|--------|---------|
 | **Health** | 1 | 2,073 | Health insurance products |
-| **Pension** | 6 | 1,754 | Life insurance, pensions, tax info |
+| **Pension** | 6 | 1,754 | Life insurance, pensions, finance info |
 | **Property** | 3 | 1,249 | Property & casualty insurance |
 | **Other** | 2 | 0 | Supporting materials |
 | **Total** | 12 | 5,076 | 20.4 MB corpus |
