@@ -27,13 +27,13 @@
     "turnaround_short": "1–2 tuần",
     "cta_subtext": "Sẵn sàng tối ưu hóa tình hình tài chính của bạn?",
     "cta_button": "Đặt lịch tư vấn ngay",
-    "finance_declaration": {
-      "title": "Khai báo Tài chính",
-      "description": "Chuẩn bị chuyên nghiệp và an toàn tờ khai tài chính hàng năm (thu nhập, tài chính doanh nghiệp, giá trị gia tăng) với tài liệu hoàn chỉnh và khấu trừ tối ưu."
+    "steuererklaerung": {
+      "title": "Khai báo Thuế",
+      "description": "Chuẩn bị chuyên nghiệp và an toàn tờ khai thuế hàng năm (thu nhập, thuế doanh nghiệp, thuế giá trị gia tăng) với tài liệu hoàn chỉnh và khấu trừ tối ưu."
     },
-    "finance_optimization": {
-      "title": "Tối ưu Tài chính",
-      "description": "Tư vấn chiến lược để giảm thiểu gánh nặng tài chính thông qua cơ cấu pháp lý, quản lý chi nhánh, và lập kế hoạch tài chính thông minh."
+    "steueroptimierung": {
+      "title": "Tối ưu Thuế",
+      "description": "Tư vấn chiến lược để giảm thiểu gánh nặng thuế thông qua cơ cấu pháp lý, quản lý chi nhánh, và lập kế hoạch thuế thông minh."
     },
     "real_estate": {
       "title": "Tư vấn Bất động sản",

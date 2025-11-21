@@ -25,27 +25,27 @@ export default function ServicesSection() {
 
   const services: Service[] = [
     {
-      id: "finance-declaration",
-      title: t("finance_declaration.title"),
-      description: t("finance_declaration.description"),
+      id: "steuererklaerung",
+      title: t("steuererklaerung.title"),
+      description: t("steuererklaerung.description"),
       href: "/contact",
       badge: "Individuelle Lösungen",
       iconBg: "bg-gradient-to-br from-blue-50 to-blue-100",
-      details: "Unsere Finanzerklärungs-Service deckt alle Aspekte Ihrer jährlichen Finanzpflichten ab. Wir kümmern uns um die Komplexität und stellen sicher, dass Sie maximale Abzüge erhalten.",
+      details: "Unsere Steuererklärungs-Service deckt alle Aspekte Ihrer jährlichen Steuerpflichten ab. Wir kümmern uns um die Komplexität und stellen sicher, dass Sie maximale Abzüge erhalten.",
       features: [
-        "Vollständige Finanzerklärung für Privatpersonen und Unternehmen",
+        "Vollständige Steuererklärung für Privatpersonen und Unternehmen",
         "Optimierung von Abzügen und Freibeträgen",
         "Unterstützung bei Einkommen, Körperschaft und Umsatzsteuern",
         "Umgang mit Rückerstattungen und Nachzahlungen"
       ],
       benefits: [
-        "✓ Maximale Finanzbückerstattung",
+        "✓ Maximale Steuerbückerstattung",
         "✓ Vollständige Compliance mit Behörden",
         "✓ Zeitersparnis und weniger Stress",
         "✓ Professionelle Dokumentation und Unterstützung"
       ],
       deliverables: [
-        "Vollständige Finanzerklärung",
+        "Vollständige Steuererklärung",
         "Detaillierter Bericht",
         "Beratung zur zukünftigen Planung"
       ],
@@ -58,9 +58,9 @@ export default function ServicesSection() {
       ),
     },
     {
-      id: "finance-optimization",
-      title: t("finance_optimization.title"),
-      description: t("finance_optimization.description"),
+      id: "steueroptimierung",
+      title: t("steueroptimierung.title"),
+      description: t("steueroptimierung.description"),
       href: "/contact",
       badge: "Kostenersparnis",
       iconBg: "bg-gradient-to-br from-amber-50 to-yellow-100",
@@ -129,9 +129,9 @@ export default function ServicesSection() {
       href: "/contact",
       badge: "Innovation",
       iconBg: "bg-gradient-to-br from-indigo-50 to-indigo-100",
-      details: "Modernisierung Ihrer Finanzprozesse durch cloudbasierte Lösungen und automatisierte Systeme.",
+      details: "Modernisierung Ihrer Steuerprozesse durch cloudbasierte Lösungen und automatisierte Systeme.",
       features: [
-        "Cloud-Migration für Finanzsysteme",
+        "Cloud-Migration für Steuersysteme",
         "Automatisierte Buchführung und Fakturierung",
         "Sichere digitale Dokumentenverwaltung",
         "Integration mit bestehenden Systemen"
@@ -139,7 +139,7 @@ export default function ServicesSection() {
       benefits: [
         "✓ 50% Zeit- und Kostenersparnis",
         "✓ Verbesserte Datensicherheit",
-        "✓ Echtzeit-Finanzübersicht",
+        "✓ Echtzeit-Steuerübersicht",
         "✓ Skalierbare Lösungen"
       ],
       deliverables: [
@@ -163,21 +163,21 @@ export default function ServicesSection() {
       iconBg: "bg-gradient-to-br from-rose-50 to-pink-100",
       details: "Vollständige Buchhaltungs- und Bilanzierungslösungen für Unternehmen aller Größen.",
       features: [
-        "Laufende Buchhaltung und Finanzbuchhaltung",
+        "Laufende Buchhaltung und Steuerbuchhaltung",
         "Monatliche und jährliche Abschlüsse",
         "Gewinn- und Verlustrechnung",
         "Bilanz- und Berichterstattung"
       ],
       benefits: [
-        "✓ Vollständige finanzielle Transparenz",
+        "✓ Vollständige steuerliche Transparenz",
         "✓ Compliance mit Rechnungslegungsstandards",
-        "✓ Zeitnahe Finanzberichte",
+        "✓ Zeitnahe Steuerberichte",
         "✓ Datengestützte Geschäftsentscheidungen"
       ],
       deliverables: [
         "Monatliche Abschlüsse",
         "Jahresabschluss",
-        "Finanzberichte und Analyse"
+        "Steuerberichte und Analyse"
       ],
       icon: (
         <svg className="w-8 h-8 text-rose-600" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -206,7 +206,7 @@ export default function ServicesSection() {
             {t("title")}
           </h2>
           <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
-            Umfassende Lösungen für Ihre Finanzen und Geschäfte
+            Umfassende Lösungen für Ihre Steuern und Geschäfte
           </p>
         </div>
 
@@ -294,7 +294,7 @@ export default function ServicesSection() {
         {/* CTA Section */}
         <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 rounded-3xl p-16 text-center text-white overflow-hidden shadow-2xl">
           <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width=%2760%27%20height=%2760%27%20viewBox=%270%200%2060%2060%27%20xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cg%20fill=%27none%27%20fill-rule=%27evenodd%27%3E%3Cg%20fill=%27%23ffffff%27%20fill-opacity=%270.1%27%3E%3Cpath%20d=%27M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%27/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" />
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width=%2760%27%20height=%2760%27%20viewBox=%270%200%2060%2060%27%20xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cg%20fill=%27none%27%20fill-rule=%27evenodd%27%3E%3Cg%20fill=%27%23ffffff%27%20fill-opacity=%270.1%27%3E%3Cpath%20d=%27M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM36%204V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%27/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" />
           </div>
           <div className="absolute top-10 right-10 w-32 h-32 bg-white opacity-5 rounded-full blur-3xl" />
           <div className="absolute bottom-10 left-10 w-40 h-40 bg-white opacity-5 rounded-full blur-3xl" />

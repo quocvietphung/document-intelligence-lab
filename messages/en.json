@@ -27,13 +27,13 @@
     "turnaround_short": "1–2 weeks",
     "cta_subtext": "Ready to optimize your finance situation?",
     "cta_button": "Schedule Consultation Now",
-    "finance_declaration": {
-      "title": "Finance Declaration",
-      "description": "Professional and secure preparation of your annual financial returns (income, corporate finance, VAT) with complete documentation and optimal deductions."
+    "steuererklaerung": {
+      "title": "Tax Declaration",
+      "description": "Professional and secure preparation of your annual tax returns (income, corporate tax, VAT) with complete documentation and optimal deductions."
     },
-    "finance_optimization": {
-      "title": "Finance Optimization",
-      "description": "Strategic advisory to minimize your financial burden through legal structuring, establishment management, and intelligent financial planning."
+    "steueroptimierung": {
+      "title": "Tax Optimization",
+      "description": "Strategic advisory to minimize your tax burden through legal structuring, establishment management, and intelligent tax planning."
     },
     "real_estate": {
       "title": "Real Estate Consulting",

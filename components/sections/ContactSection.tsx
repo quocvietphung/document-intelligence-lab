@@ -11,7 +11,7 @@ export default function ContactSection() {
     email: "",
     phone: "",
     message: "",
-    service: "finance_declaration",
+    service: "steuererklaerung",
     date: "",
     time: "",
   });
@@ -32,7 +32,7 @@ export default function ContactSection() {
 
       if (response.ok) {
         setStatus("success");
-        setFormData({ name: "", email: "", phone: "", message: "", service: "finance_declaration", date: "", time: "" });
+        setFormData({ name: "", email: "", phone: "", message: "", service: "steuererklaerung", date: "", time: "" });
         setTimeout(() => setStatus("idle"), 5000);
       } else {
         setStatus("error");
@@ -110,8 +110,8 @@ export default function ContactSection() {
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition-all duration-300 hover:border-gray-300"
                   >
-                    <option value="finance_declaration">{s("finance_declaration.title")}</option>
-                    <option value="finance_optimization">{s("finance_optimization.title")}</option>
+                    <option value="steuererklaerung">{s("steuererklaerung.title")}</option>
+                    <option value="steueroptimierung">{s("steueroptimierung.title")}</option>
                     <option value="real_estate">{s("real_estate.title")}</option>
                     <option value="it_consulting">{s("it_consulting.title")}</option>
                     <option value="accounting">{s("accounting.title")}</option>
