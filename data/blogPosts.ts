@@ -11,7 +11,7 @@ export type BlogPost = {
 
 export const blogPosts: BlogPost[] = [
   {
-    id: "tax-deductions-2025",
+    id: "finance-deductions-2025",
     date: "2025-01-10",
     title: {
       en: "Top Tax Deductions for 2025 in Germany",
@@ -43,7 +43,7 @@ export const blogPosts: BlogPost[] = [
           <ol>
             <li>Keep digital copies (PDF/photo) named by date and category.</li>
             <li>Use a simple spreadsheet or bookkeeping app to track totals monthly.</li>
-            <li>When in doubt, consult a tax professional — small classification changes can matter.</li>
+            <li>When in doubt, consult a finance professional — small classification changes can matter.</li>
           </ol>
 
           <p><strong>Need help?</strong> If you want a personalized review of your deductible expenses and how to document them correctly, <a href="/__LOCALE__/contact" class="text-blue-600 underline">book a consultation</a> or call our hotline: +49 30 1234 5678.</p>
@@ -102,7 +102,7 @@ export const blogPosts: BlogPost[] = [
     },
     coverImage: "https://images.unsplash.com/photo-1523289333742-bea4c7c0a2e6?auto=format&fit=crop&w=1400&q=80",
     tags: ["Taxes", "Freelancer", "Deductions"],
-    author: { name: "Tax Consulting" },
+    author: { name: "Finance Consulting" },
   },
   {
     id: "company-setup-germany",
@@ -120,18 +120,18 @@ export const blogPosts: BlogPost[] = [
     content: {
       en: `
         <article>
-          <p>Founding a company in Germany is straightforward if you follow the main steps: choose a legal form, register your trade, register with the tax office and handle VAT if applicable.</p>
+          <p>Founding a company in Germany is straightforward if you follow the main steps: choose a legal form, register your trade, register with the finance office and handle VAT if applicable.</p>
 
           <h4>Step-by-step checklist</h4>
           <ul>
             <li>Choose legal form: GmbH, UG, GbR, or sole proprietorship; consider liability and capital requirements.</li>
             <li>Register at the Gewerbeamt (trade office).</li>
-            <li>Register with the Finanzamt to receive a tax ID and VAT registration where necessary.</li>
+            <li>Register with the Finanzamt to receive a finance ID and VAT registration where necessary.</li>
             <li>Set up bookkeeping and open a business bank account.</li>
             <li>Consider insurance, payroll setup and local permits.</li>
           </ul>
 
-          <p>We offer a hands-on onboarding package for non-German founders — from paperwork to tax registration. <a href="/__LOCALE__/contact" class="text-blue-600 underline">Book an appointment</a> to get a tailored checklist for your business.</p>
+          <p>We offer a hands-on onboarding package for non-German founders — from paperwork to finance registration. <a href="/__LOCALE__/contact" class="text-blue-600 underline">Book an appointment</a> to get a tailored checklist for your business.</p>
         </article>
       `,
       de: `
@@ -169,35 +169,35 @@ export const blogPosts: BlogPost[] = [
     },
     coverImage: "https://images.unsplash.com/photo-1498079022511-d15614cb1c02?auto=format&fit=crop&w=1400&q=80",
     tags: ["Business", "Startups", "Registration"],
-    author: { name: "Tax Consulting" },
+    author: { name: "Finance Consulting" },
   },
   {
-    id: "freelancer-tax-tips",
-    date: "2025-03-02",
+    id: "freelancer-finance-tips",
+    date: "2025-02-15",
     title: {
-      en: "Tax Tips for Freelancers in Germany",
-      de: "Steuertipps für Freiberufler in Deutschland",
-      vi: "Mẹo thuế cho Freelancer tại Đức",
+      en: "Freelancer Finance Tips: Organize, Plan & Save",
+      de: "Tipps zur Freelancer-Finanzplanung: Organisieren, Planen & Sparen",
+      vi: "Hướng dẫn Tài chính Freelancer: Tổ chức, Lập kế hoạch & Tiết kiệm",
     },
     excerpt: {
-      en: "Organize expenses, invoicing and tax planning to legally reduce taxable income — practical tips and tools.",
-      de: "Ausgaben, Rechnungsstellung und Steuerplanung organisieren, um legal Steuern zu sparen — praktische Tipps und Tools.",
-      vi: "Tổ chức chi phí, lập hoá đơn và lập kế hoạch thuế để giảm thu nhập chịu thuế một cách hợp pháp — mẹo thực tế và công cụ.",
+      en: "Organize expenses, invoicing and finance planning to legally reduce taxable income — practical tips and tools.",
+      de: "Ausgaben, Rechnungsstellung und Finanzplanung organisieren, um steuerpflichtiges Einkommen legal zu senken — praktische Tipps und Tools.",
+      vi: "Tổ chức chi phí, hóa đơn và lập kế hoạch tài chính để giảm thu nhập chịu thuế hợp pháp — hướng dẫn thực tế và công cụ.",
     },
     content: {
       en: `
         <article>
-          <p>Freelancers benefit from strict bookkeeping, timely invoices and sensible tax provisions. Small changes in routine accounting can yield substantial yearly savings.</p>
+          <p>Freelancers benefit from strict bookkeeping, timely invoices and sensible finance provisions. Small changes in routine accounting can yield substantial yearly savings.</p>
 
           <h4>Quick wins</h4>
           <ul>
             <li>Track all business expenses monthly and keep receipts.</li>
             <li>Invoice with clear payment terms and VAT details where required.</li>
-            <li>Make quarterly tax prepayments and set aside a tax reserve.</li>
+            <li>Make quarterly finance prepayments and set aside a finance reserve.</li>
             <li>Consider pension and health insurance options early.</li>
           </ul>
 
-          <p>For a tailored review of your bookkeeping and tax plan, <a href="/__LOCALE__/contact" class="text-blue-600 underline">book a consultation</a> or call our hotline: +49 30 1234 5678.</p>
+          <p>For a tailored review of your bookkeeping and finance plan, <a href="/__LOCALE__/contact" class="text-blue-600 underline">book a consultation</a> or call our hotline: +49 30 1234 5678.</p>
         </article>
       `,
       de: `
@@ -233,7 +233,7 @@ export const blogPosts: BlogPost[] = [
     },
     coverImage: "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1400&q=80",
     tags: ["Freelancer", "Bookkeeping", "Tips"],
-    author: { name: "Tax Consulting" },
+    author: { name: "Finance Consulting" },
   },
 ];
 

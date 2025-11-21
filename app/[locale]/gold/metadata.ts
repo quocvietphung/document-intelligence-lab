@@ -5,7 +5,7 @@ export async function generateMetadata({ params }: { params: { locale: string } 
   const t = await getTranslations({ locale: params.locale, namespace: 'gold' });
 
   return {
-    title: `${t('title')} | TaxConsult`,
+    title: `${t('title')} | Finance Consulting`,
     description: t('subtitle'),
     keywords: ['gold price', 'gold investment', 'gold consulting', 'precious metals', 'investment advice'],
     openGraph: {

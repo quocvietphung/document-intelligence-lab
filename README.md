@@ -1,13 +1,13 @@
-# 🚀 Tax Consulting & ERGO RAG Chatbot Platform
+# 🚀 Finance Consulting & ERGO RAG Chatbot Platform
 
-> Professional tax consulting website with AI-powered chatbot, gold investment tracking, and multilingual support (German/English/Vietnamese)
+> Professional finance consulting website with AI-powered chatbot, gold investment tracking, and multilingual support (German/English/Vietnamese)
 
 ---
 
 ## ⭐ Key Features
 
-### 💼 **Tax Consulting Services**
-- ✅ Tax declaration & optimization
+### 💼 **Finance Consulting Services**
+- ✅ Finance declaration & optimization
 - ✅ Real estate consulting
 - ✅ IT consulting & automation
 - ✅ Accounting services
@@ -389,8 +389,8 @@ MIT License - See LICENSE file for details
 
 ## 📞 Support & Contact
 
-- **Website**: https://tax-consulting.example.com
-- **Email**: info@tax-consulting.de
+- **Website**: https://finance-consulting.example.com
+- **Email**: info@finance-consulting.de
 - **Phone**: +49-XXX-XXXXXX
 - **Support Hours**: Mon-Fri 9:00-17:00 CET
 

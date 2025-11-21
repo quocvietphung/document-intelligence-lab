@@ -42,7 +42,7 @@ export default function Navigation() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link href={`/${locale}`} className="text-2xl font-bold text-blue-600">
-              TaxConsult
+              Finance Consulting
             </Link>
           </div>
 

@@ -89,7 +89,7 @@ export default function HeroSection() {
                       <path d="M12 2v20M2 12h20M12 2a10 10 0 0 1 10 10M2 12a10 10 0 0 1 10-10" />
                     </svg>
                   </div>
-                  <p className="text-white font-semibold">Professional Tax Services</p>
+                  <p className="text-white font-semibold">Professional Finance Services</p>
                   <p className="text-blue-200/70 text-sm">Optimized for your success</p>
                 </div>
               </div>

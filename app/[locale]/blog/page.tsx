@@ -30,7 +30,7 @@ export default async function BlogPage({
 	const others = postsSorted.slice(1);
 
 	const siteAuthor = {
-		name: "Tax Consulting",
+		name: "Finance Consulting",
 		avatar: "",
 	};
 

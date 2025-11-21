@@ -18,7 +18,7 @@ function estimateReadTime(text: string) {
 
 export function BlogPostLayout({ post, title, content, locale }: Props) {
   const cover = post.coverImage || "/default-cover.jpg";
-  const authorName = (post.author && post.author.name) || "Tax Consulting";
+  const authorName = (post.author && post.author.name) || "Finance Consulting";
   const dateStr = new Date(post.date).toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" });
   const readTime = estimateReadTime(content);
 
