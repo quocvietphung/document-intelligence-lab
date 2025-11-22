@@ -7,194 +7,194 @@
     "contact": "Liên hệ"
   },
   "hero": {
-    "title": "Tư vấn Tài Chính Chuyên nghiệp tại Việt Nam và Đức",
-    "subtitle": "Tư vấn chuyên gia cho cá nhân và doanh nghiệp",
+    "title": "Tư vấn Tài chính Chuyên nghiệp tại Đức và Việt Nam",
+    "subtitle": "Giải pháp tài chính toàn diện cho cá nhân và doanh nghiệp",
     "cta": "Đặt lịch tư vấn",
-    "badge": "Giải pháp Chuyên nghiệp",
+    "badge": "Giải pháp chuyên nghiệp",
     "learn_more": "Tìm hiểu thêm",
-    "stat1": "Khách hàng Hài lòng",
-    "stat2": "Năm Kinh Nghiệm",
-    "stat3": "Tiết Kiệm Đạt Được"
+    "stat1": "Khách hàng hài lòng",
+    "stat2": "Năm kinh nghiệm",
+    "stat3": "Giá trị tiết kiệm"
   },
   "services": {
     "title": "Dịch vụ của chúng tôi",
-    "subtitle": "Giải pháp tư vấn tài chính được cá nhân hóa cho thành công của bạn",
+    "subtitle": "Giải pháp tư vấn tài chính được cá nhân hóa cho nhu cầu của bạn",
     "learn_more": "Tìm hiểu thêm",
-    "contact_us": "Liên hệ với chúng tôi",
+    "contact_us": "Liên hệ",
     "deliverables": "Dịch vụ",
     "deliverables_short": "Tư vấn toàn diện",
     "turnaround": "Thời gian xử lý",
     "turnaround_short": "1–2 tuần",
-    "cta_subtext": "Sẵn sàng tối ưu hóa tình hình tài chính của bạn?",
+    "cta_subtext": "Bạn đã sẵn sàng tối ưu hóa tài chính của mình?",
     "cta_button": "Đặt lịch tư vấn ngay",
     "steuererklaerung": {
       "title": "Khai báo Thuế",
-      "description": "Chuẩn bị chuyên nghiệp và an toàn tờ khai thuế hàng năm (thu nhập, thuế doanh nghiệp, thuế giá trị gia tăng) với tài liệu hoàn chỉnh và khấu trừ tối ưu."
+      "description": "Chuẩn bị và nộp tờ khai thuế chuyên nghiệp (thuế thu nhập, thuế doanh nghiệp, thuế VAT) với tài liệu đầy đủ và các khoản khấu trừ tối ưu."
     },
     "steueroptimierung": {
       "title": "Tối ưu Thuế",
-      "description": "Tư vấn chiến lược để giảm thiểu gánh nặng thuế thông qua cơ cấu pháp lý, quản lý chi nhánh, và lập kế hoạch thuế thông minh."
+      "description": "Tư vấn chiến lược nhằm giảm gánh nặng thuế thông qua cấu trúc pháp lý phù hợp và kế hoạch thuế thông minh."
     },
     "real_estate": {
       "title": "Tư vấn Bất động sản",
-      "description": "Hướng dẫn toàn diện về mua, bán, cho thuê, và tối ưu hóa tài chính bất động sản tại Đức và quốc tế."
+      "description": "Hỗ trợ mua bán, cho thuê, định giá và tối ưu hóa tài chính bất động sản tại Đức và quốc tế."
     },
     "it_consulting": {
       "title": "Chuyển đổi Số",
-      "description": "Hiện đại hóa quy trình tài chính của bạn với giải pháp đám mây, kế toán tự động, và quản lý tài liệu kỹ thuật số an toàn."
+      "description": "Nâng cấp quy trình tài chính với giải pháp đám mây, kế toán tự động và quản lý tài liệu số an toàn."
     },
     "accounting": {
       "title": "Kế toán & Báo cáo",
-      "description": "Kế toán đầy đủ, kế toán tài chính, bảng cân đối thử nghiệm, và báo cáo P&L cho doanh nghiệp mọi quy mô và hình thức pháp lý."
+      "description": "Dịch vụ kế toán đầy đủ, báo cáo tài chính, bảng cân đối và báo cáo lợi nhuận dành cho mọi loại hình doanh nghiệp."
     }
   },
   "process": {
-    "title": "Quy trình của chúng tôi",
-    "subtitle": "Đơn giản và minh bạch",
+    "title": "Quy trình làm việc",
+    "subtitle": "Đơn giản – rõ ràng – minh bạch",
     "step1": {
       "title": "Tư vấn ban đầu",
-      "description": "Tư vấn miễn phí để hiểu nhu cầu của bạn"
+      "description": "Trao đổi miễn phí để hiểu nhu cầu của bạn"
     },
     "step2": {
       "title": "Phân tích & Lập kế hoạch",
-      "description": "Chúng tôi phân tích tình hình của bạn và tạo kế hoạch phù hợp"
+      "description": "Chúng tôi đánh giá tình hình và xây dựng giải pháp phù hợp"
     },
     "step3": {
-      "title": "Thực hiện",
-      "description": "Chúng tôi xử lý mọi thứ và giữ liên lạc với bạn"
+      "title": "Triển khai",
+      "description": "Thực hiện trọn gói và cập nhật liên tục cho bạn"
     }
   },
   "testimonials": {
-    "title": "Khách hàng nói gì về chúng tôi",
+    "title": "Khách hàng nói gì",
     "subtitle": "Được tin tưởng bởi hàng trăm khách hàng",
-    "label": "Bình luận khách hàng"
+    "label": "Đánh giá khách hàng"
   },
   "contact": {
-    "title": "Đặt Lịch Tư Vấn",
-    "subtitle": "Liên Hệ Với Chúng Tôi",
-    "description": "Hãy liên hệ để đặt lịch tư vấn hoặc tìm hiểu thêm về các dịch vụ của chúng tôi",
-    "name": "Tên",
+    "title": "Đặt lịch tư vấn",
+    "subtitle": "Liên hệ với chúng tôi",
+    "description": "Chúng tôi sẵn sàng giải đáp mọi câu hỏi về dịch vụ và hỗ trợ bạn đặt lịch tư vấn.",
+    "name": "Họ tên",
     "name_placeholder": "Tên của bạn",
     "email": "Email",
-    "email_placeholder": "email@của_bạn.com",
+    "email_placeholder": "email@cuaban.com",
     "email_label": "Email",
-    "phone": "Điện thoại",
+    "phone": "Số điện thoại",
     "phone_label": "Điện thoại",
     "message": "Tin nhắn",
-    "message_placeholder": "Kể cho chúng tôi về nhu cầu của bạn...",
-    "message_title": "Gửi Tin Nhắn Cho Chúng Tôi",
-    "message_subtitle": "Chúng tôi sẽ trả lời bạn sớm nhất",
-    "submit": "Gửi Tin Nhắn",
+    "message_placeholder": "Chia sẻ nhu cầu của bạn...",
+    "message_title": "Gửi tin nhắn",
+    "message_subtitle": "Chúng tôi sẽ phản hồi trong thời gian sớm nhất",
+    "submit": "Gửi",
     "sending": "Đang gửi...",
-    "success": "Cảm ơn! Chúng tôi sẽ liên hệ với bạn sớm.",
-    "error": "Có lỗi xảy ra. Vui lòng thử lại.",
-    "booking_title": "Đặt Lịch Hẹn",
-    "booking_subtitle": "Chọn dịch vụ, ngày và giờ cho cuộc tư vấn của bạn",
-    "verified_reviews": "Đánh giá được xác minh",
+    "success": "Cảm ơn bạn! Chúng tôi sẽ liên hệ trong thời gian sớm nhất.",
+    "error": "Đã xảy ra lỗi. Vui lòng thử lại.",
+    "booking_title": "Đặt lịch hẹn",
+    "booking_subtitle": "Chọn dịch vụ, ngày và giờ phù hợp với bạn",
+    "verified_reviews": "Đánh giá đã xác minh",
     "service_label": "Dịch vụ",
     "date_label": "Ngày",
     "time_label": "Giờ",
     "quick_slots": "Hoặc chọn thời gian nhanh",
-    "book_now": "Đặt Ngay",
+    "book_now": "Đặt ngay",
     "booking": "Đang đặt...",
-    "hotline_label": "Hoặc gọi cho chúng tôi",
-    "hotline_note": "Có sẵn Thứ Hai–Thứ Sáu 9:00–17:00",
-    "fast_response": "Phản Hồi Nhanh",
-    "fast_response_desc": "Chúng tôi phản hồi trong vòng 24 giờ",
-    "secure_data": "Bảo Mật & Bí Mật",
-    "secure_data_desc": "Dữ liệu của bạn được bảo vệ hoàn toàn",
-    "expert_team": "Đội Chuyên Gia",
-    "expert_team_desc": "15+ năm kinh nghiệm"
+    "hotline_label": "Hoặc gọi trực tiếp",
+    "hotline_note": "Làm việc Thứ Hai – Thứ Sáu, 9:00–17:00",
+    "fast_response": "Phản hồi nhanh",
+    "fast_response_desc": "Trả lời trong vòng 24 giờ",
+    "secure_data": "Bảo mật & Riêng tư",
+    "secure_data_desc": "Dữ liệu của bạn được bảo vệ tuyệt đối",
+    "expert_team": "Đội ngũ chuyên gia",
+    "expert_team_desc": "Hơn 15 năm kinh nghiệm"
   },
   "footer": {
     "about": "Về chúng tôi",
-    "about_text": "Dịch vụ tư vấn tài chính chuyên nghiệp và giải pháp tài chính số tại Đức",
+    "about_text": "Tư vấn tài chính chuyên nghiệp và giải pháp tài chính số tại Đức.",
     "quick_links": "Liên kết nhanh",
     "legal": "Pháp lý",
     "impressum": "Impressum",
     "datenschutz": "Chính sách bảo mật",
     "terms_of_service": "Điều khoản dịch vụ",
-    "copyright": "© 2024 Tư vấn tài chính. Bảo lưu mọi quyền."
+    "copyright": "© 2024 Tư vấn Tài chính. Bảo lưu mọi quyền."
   },
   "blog": {
-    "title": "Mẹo & tin tức thuế",
-    "subtitle": "Cập nhật quy định thuế",
+    "title": "Mẹo & Tin tức Thuế",
+    "subtitle": "Cập nhật quy định thuế mới nhất",
     "read_more": "Đọc thêm",
     "book_consultation": "Đặt lịch tư vấn",
     "not_found": "Không tìm thấy bài viết."
   },
   "chatbot": {
-    "title": "Trợ lý tư vấn",
-    "placeholder": "Đặt câu hỏi về thuế, nghề nghiệp, hoặc đăng ký kinh doanh...",
-    "button_label": "Chat với chúng tôi",
-    "welcome": "Xin chào! Tôi có thể giúp gì cho bạn về tư vấn tài chính, tối ưu khai thuế, tư vấn bất động sản hoặc tư vấn CNTT tại Việt Nam và Đức?",
+    "title": "Trợ lý Tư vấn",
+    "placeholder": "Hỏi về thuế, nghề nghiệp hoặc đăng ký kinh doanh...",
+    "button_label": "Chat ngay",
+    "welcome": "Xin chào! Bạn muốn được tư vấn về thuế, bất động sản, đầu tư, hay công nghệ tại Đức và Việt Nam?",
     "send": "Gửi",
     "close": "Đóng",
-    "error": "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại."
+    "error": "Đã xảy ra lỗi. Vui lòng thử lại."
   },
   "reviews": {
-    "title": "Mọi người nói gì về chúng tôi",
-    "subtitle": "Những đánh giá được xác thực từ khách hàng thực trên các nền tảng hàng đầu",
-    "label": "Đánh giá Được xác thực",
-    "placeholder_quote": "Người đánh giá này đã cung cấp phản hồi hữu ích.",
-    "verified": "Đã xác thực",
-    "unverified": "Chưa xác thực",
-    "trust_label": "100% Đánh giá Được xác thực",
-    "trust_desc": "Từ khách hàng thực trên các nền tảng hàng đầu"
+    "title": "Khách hàng đánh giá",
+    "subtitle": "Đánh giá xác thực từ khách hàng thật",
+    "label": "Đánh giá đã xác minh",
+    "placeholder_quote": "Người đánh giá này đã gửi phản hồi hữu ích.",
+    "verified": "Đã xác minh",
+    "unverified": "Chưa xác minh",
+    "trust_label": "100% đánh giá xác thực",
+    "trust_desc": "Từ khách hàng thật trên các nền tảng uy tín"
   },
   "gold": {
     "title": "Tư vấn Đầu tư Vàng",
-    "subtitle": "Hướng dẫn chuyên nghiệp cho đầu tư vàng và phân tích thị trường",
+    "subtitle": "Phân tích thị trường và chiến lược đầu tư vàng chuyên sâu",
     "services": {
-      "priceAnalysis": "Phân tích Giá",
-      "priceAnalysisDesc": "Theo dõi giá vàng thời gian thực và phân tích xu hướng",
-      "investmentAdvice": "Tư vấn Đầu tư",
-      "investmentAdviceDesc": "Khuyến nghị chiến lược đầu tư cho danh mục vàng",
-      "taxOptimization": "Tối ưu Thuế",
-      "taxOptimizationDesc": "Chiến lược tối ưu thuế cho đầu tư vàng"
+      "priceAnalysis": "Phân tích giá",
+      "priceAnalysisDesc": "Theo dõi giá vàng theo thời gian thực và đánh giá xu hướng",
+      "investmentAdvice": "Tư vấn đầu tư",
+      "investmentAdviceDesc": "Khuyến nghị chiến lược tối ưu cho danh mục vàng",
+      "taxOptimization": "Tối ưu thuế",
+      "taxOptimizationDesc": "Tư vấn thuế cho hoạt động đầu tư vàng"
     },
     "marketInsights": {
-      "title": "Thông tin Thị trường",
+      "title": "Thông tin thị trường",
       "factors": {
-        "title": "Các Yếu tố Thị trường Chính",
+        "title": "Các yếu tố ảnh hưởng chính",
         "economic": "Chỉ số kinh tế và tăng trưởng GDP",
-        "inflation": "Tỷ lệ lạm phát và sức mua",
-        "geopolitical": "Sự kiện địa chính trị và ổn định thị trường",
-        "currency": "Biến động tiền tệ và tỷ giá hối đoái"
+        "inflation": "Lạm phát và sức mua",
+        "geopolitical": "Sự kiện địa chính trị và mức độ ổn định",
+        "currency": "Biến động tiền tệ và tỷ giá"
       },
       "tips": {
-        "title": "Lời khuyên Đầu tư",
-        "diversify": "Đa dạng hóa qua các sản phẩm vàng khác nhau",
-        "longTerm": "Tập trung vào chiến lược nắm giữ dài hạn",
-        "monitor": "Theo dõi tin tức thị trường và dữ liệu kinh tế",
-        "consult": "Thường xuyên tham khảo ý kiến chuyên gia tài chính"
+        "title": "Lời khuyên đầu tư",
+        "diversify": "Đa dạng hóa danh mục vàng",
+        "longTerm": "Ưu tiên chiến lược dài hạn",
+        "monitor": "Theo dõi tin tức thị trường",
+        "consult": "Trao đổi thường xuyên với chuyên gia tài chính"
       }
     },
     "cta": {
-      "title": "Sẵn sàng Đầu tư Vàng?",
-      "subtitle": "Nhận tư vấn cá nhân hóa cho chiến lược đầu tư vàng của bạn",
-      "button": "Đặt lịch Tư vấn"
+      "title": "Sẵn sàng đầu tư vàng?",
+      "subtitle": "Nhận tư vấn chiến lược đầu tư vàng cá nhân hóa",
+      "button": "Đặt lịch tư vấn"
     },
     "priceWidget": {
-      "title": "Giá Vàng",
+      "title": "Giá vàng",
       "subtitle": "Dữ liệu thị trường trực tiếp",
       "perOunce": "mỗi ounce troy",
       "perGram": "mỗi gram",
-      "chart": "Xu hướng 24h",
+      "chart": "Biểu đồ 24h",
       "last24h": "24 giờ qua",
-      "lastUpdated": "Cập nhật lần cuối",
+      "lastUpdated": "Cập nhật cuối",
       "refresh": "Làm mới",
       "error": "Không thể tải dữ liệu",
       "retry": "Thử lại",
       "currencyLabel": "Tiền tệ",
       "unitOz": "oz",
       "unitGram": "g",
-      "unitSelector": "Bộ chọn đơn vị",
-      "high24h": "24h Cao nhất",
-      "low24h": "24h Thấp nhất",
+      "unitSelector": "Chọn đơn vị",
+      "high24h": "Cao nhất 24h",
+      "low24h": "Thấp nhất 24h",
       "cacheNote": "bộ nhớ đệm ~10h",
-      "fxRateMissing": "Tỷ giá chưa tải được – hiển thị quy đổi ước tính.",
-      "sourceNote": "* Dữ liệu thời gian thực từ Gold Price API (miễn phí, không cần key); lịch sử có thể bị giới hạn. Tỷ giá từ exchangerate.host."
+      "fxRateMissing": "Chưa tải được tỷ giá – hiển thị ước tính.",
+      "sourceNote": "* Dữ liệu từ Gold Price API (miễn phí); lịch sử có thể giới hạn. Tỷ giá từ exchangerate.host."
     },
     "calculator": {
       "title": "💰 Máy tính Đầu tư Vàng",
@@ -205,30 +205,30 @@
       "investmentPeriod": "Thời gian đầu tư",
       "year": "năm",
       "years": "năm",
-      "minAmount": "$100",
-      "maxAmount": "$100,000",
-      "minYears": "1 năm",
-      "maxYears": "10 năm",
-      "projectionResults": "Kết quả dự báo",
+      "minAmount": "Tối thiểu $100",
+      "maxAmount": "Tối đa $100.000",
+      "minYears": "Tối thiểu 1 năm",
+      "maxYears": "Tối đa 10 năm",
+      "projectionResults": "Kết quả ước tính",
       "initialInvestment": "Số tiền ban đầu",
-      "ouncesPurchased": "Số ounce mua",
+      "ouncesPurchased": "Số ounce mua được",
       "projectedValue": "Giá trị dự kiến",
       "projectedPriceLabel": "Giá dự kiến",
       "gainLoss": "Lãi/Lỗ",
-      "warningNote": "⚠️ Máy tính chỉ mang tính tham khảo. Kết quả thực tế có thể khác. Hãy tham khảo tư vấn tài chính trước khi đầu tư."
+      "warningNote": "⚠️ Đây chỉ là ước tính tham khảo. Kết quả thực tế có thể thay đổi. Hãy tham khảo chuyên gia tài chính trước khi đầu tư."
     },
     "faq": {
       "title": "Câu hỏi thường gặp",
-      "q1_title": "Tại sao nên đầu tư vào vàng?",
-      "q1_body": "Vàng là công cụ phòng ngừa lạm phát, mất giá tiền tệ và bất ổn kinh tế. Nó duy trì giá trị qua nhiều thế kỷ và giúp đa dạng hóa danh mục đầu tư.",
+      "q1_title": "Vì sao nên đầu tư vào vàng?",
+      "q1_body": "Vàng giúp phòng ngừa rủi ro lạm phát, giảm giá tiền tệ và biến động kinh tế, đồng thời giữ giá trị bền vững trong dài hạn.",
       "q2_title": "Những yếu tố nào ảnh hưởng đến giá vàng?",
-      "q2_body": "Lãi suất, lạm phát, căng thẳng địa chính trị, sức mạnh tiền tệ và chính sách ngân hàng trung ương đều ảnh hưởng lớn đến giá vàng.",
-      "q3_title": "Làm thế nào để mua vàng an toàn?",
-      "q3_body": "Mua từ nhà cung cấp uy tín, xác minh độ tinh khiết và trọng lượng, cân nhắc phương án lưu trữ (kho, két sắt tại nhà) và duy trì bảo hiểm phù hợp.",
-      "q4_title": "Hệ quả thuế là gì?",
-      "q4_body": "Đầu tư vàng có thể chịu thuế lợi tức vốn. Hãy tham khảo chuyên gia thuế để tối ưu chiến lược dựa theo quy định địa phương.",
-      "disclaimer_title": "⚠️ Tuyên bố quan trọng",
-      "disclaimer_body": "Đầu tư vàng có rủi ro bao gồm biến động thị trường, hạn chế thanh khoản, chi phí lưu trữ và biến động tiền tệ. Hiệu suất quá khứ không đảm bảo kết quả tương lai. Hãy tham khảo tư vấn tài chính trước khi quyết định. Thông tin này chỉ mang tính giáo dục và không phải lời khuyên đầu tư."
+      "q2_body": "Lãi suất, lạm phát, biến động tiền tệ, chính sách ngân hàng trung ương và tình hình địa chính trị đều tác động mạnh đến giá vàng.",
+      "q3_title": "Làm sao mua vàng an toàn?",
+      "q3_body": "Chọn đơn vị uy tín, kiểm tra độ tinh khiết, cân nhắc phương án lưu trữ và đảm bảo bảo hiểm tài sản phù hợp.",
+      "q4_title": "Thuế khi đầu tư vàng?",
+      "q4_body": "Lợi nhuận từ vàng có thể chịu thuế tùy theo quy định địa phương. Hãy tham khảo chuyên gia thuế để tối ưu.",
+      "disclaimer_title": "⚠️ Lưu ý quan trọng",
+      "disclaimer_body": "Đầu tư vàng có rủi ro do biến động thị trường, chi phí lưu trữ và thanh khoản. Đây không phải lời khuyên tài chính. Hãy tham khảo chuyên gia trước khi quyết định."
     }
   }
 }

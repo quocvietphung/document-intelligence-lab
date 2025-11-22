@@ -551,16 +551,16 @@ export function getWelcomeMessage(
     // Short welcome messages aligned with the system prompt tone
     const messages: Record<string, { plain: string; rich: string }> = {
         en: {
-            plain: "Hello — I'm your ERGO & finance consulting assistant. I can help with ERGO insurance products, finance guidance, and documentation. Ask your question and I'll use the available ERGO documents to provide an accurate answer.",
-            rich: "Hello — I'm your ERGO & finance consulting assistant. I can help with ERGO insurance products, finance guidance, and documentation. Ask your question and I'll use the available ERGO documents to provide an accurate answer.",
+            plain: "Hello — I'm your ERGO & finance consulting assistant. I can help you with ERGO insurance products, financial guidance, and documentation. Please ask your question and I'll use the available ERGO documents to provide an accurate answer.",
+            rich: "Hello — I'm your ERGO & finance consulting assistant. I can help you with ERGO insurance products, financial guidance, and documentation. Please ask your question and I'll use the available ERGO documents to provide an accurate answer.",
         },
         de: {
-            plain: "Hallo — ich bin dein Assistent für ERGO & Steuerberatung. Ich kann bei ERGO-Versicherungsprodukten, steuerlichen Fragen und mit Dokumentationen helfen. Stell deine Frage und ich nutze die verfügbaren ERGO-Dokumente, um genau zu antworten.",
-            rich: "Hallo — ich bin dein Assistent für ERGO & Steuerberatung. Ich kann bei ERGO-Versicherungsprodukten, steuerlichen Fragen und mit Dokumentationen helfen. Stell deine Frage und ich nutze die verfügbaren ERGO-Dokumente, um genau zu antworten.",
+            plain: "Hallo — ich bin dein Assistent für ERGO & Finanzberatung. Ich kann dir bei ERGO-Versicherungsprodukten, Finanzfragen und der Dokumentation helfen. Bitte stelle deine Frage und ich werde die verfügbaren ERGO-Dokumente nutzen, um dir eine genaue Antwort zu geben.",
+            rich: "Hallo — ich bin dein Assistent für ERGO & Finanzberatung. Ich kann dir bei ERGO-Versicherungsprodukten, Finanzfragen und der Dokumentation helfen. Bitte stelle deine Frage und ich werde die verfügbaren ERGO-Dokumente nutzen, um dir eine genaue Antwort zu geben.",
         },
         vi: {
-            plain: "Xin chào — tôi là trợ lý tư vấn thuế và sản phẩm bảo hiểm ERGO. Tôi có thể giúp về sản phẩm ERGO, câu hỏi thuế và tài liệu liên quan. Hãy đặt câu hỏi, tôi sẽ sử dụng tài liệu ERGO để trả lời chính xác.",
-            rich: "Xin chào — tôi là trợ lý tư vấn thuế và sản phẩm bảo hiểm ERGO. Tôi có thể giúp về sản phẩm ERGO, câu hỏi thuế và tài liệu liên quan. Hãy đặt câu hỏi, tôi sẽ sử dụng tài liệu ERGO để trả lời chính xác.",
+            plain: "Xin chào — tôi là trợ lý tư vấn tài chính và sản phẩm bảo hiểm ERGO. Tôi có thể giúp bạn với các sản phẩm bảo hiểm ERGO, tư vấn tài chính, và cung cấp tài liệu hỗ trợ. Vui lòng đặt câu hỏi và tôi sẽ sử dụng các tài liệu ERGO có sẵn để cung cấp câu trả lời chính xác.",
+            rich: "Xin chào — tôi là trợ lý tư vấn tài chính và sản phẩm bảo hiểm ERGO. Tôi có thể giúp bạn với các sản phẩm bảo hiểm ERGO, tư vấn tài chính, và cung cấp tài liệu hỗ trợ. Vui lòng đặt câu hỏi và tôi sẽ sử dụng các tài liệu ERGO có sẵn để cung cấp câu trả lời chính xác.",
         },
     };
 
