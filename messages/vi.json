@@ -7,7 +7,7 @@
     "contact": "Liên hệ"
   },
   "hero": {
-    "title": "Tư vấn Thuế Chuyên nghiệp tại Việt Nam và Đức",
+    "title": "Tư vấn Tài Chính Chuyên nghiệp tại Việt Nam và Đức",
     "subtitle": "Tư vấn chuyên gia cho cá nhân và doanh nghiệp",
     "cta": "Đặt lịch tư vấn",
     "badge": "Giải pháp Chuyên nghiệp",
@@ -18,7 +18,7 @@
   },
   "services": {
     "title": "Dịch vụ của chúng tôi",
-    "subtitle": "Giải pháp tư vấn thuế được cá nhân hóa cho thành công của bạn",
+    "subtitle": "Giải pháp tư vấn tài chính được cá nhân hóa cho thành công của bạn",
     "learn_more": "Tìm hiểu thêm",
     "contact_us": "Liên hệ với chúng tôi",
     "deliverables": "Dịch vụ",
@@ -108,13 +108,13 @@
   },
   "footer": {
     "about": "Về chúng tôi",
-    "about_text": "Dịch vụ tư vấn thuế chuyên nghiệp và giải pháp tài chính số tại Đức",
+    "about_text": "Dịch vụ tư vấn tài chính chuyên nghiệp và giải pháp tài chính số tại Đức",
     "quick_links": "Liên kết nhanh",
     "legal": "Pháp lý",
     "impressum": "Impressum",
     "datenschutz": "Chính sách bảo mật",
     "terms_of_service": "Điều khoản dịch vụ",
-    "copyright": "© 2024 Tư vấn Thuế. Bảo lưu mọi quyền."
+    "copyright": "© 2024 Tư vấn tài chính. Bảo lưu mọi quyền."
   },
   "blog": {
     "title": "Mẹo & tin tức thuế",
@@ -127,7 +127,7 @@
     "title": "Trợ lý tư vấn",
     "placeholder": "Đặt câu hỏi về thuế, nghề nghiệp, hoặc đăng ký kinh doanh...",
     "button_label": "Chat với chúng tôi",
-    "welcome": "Xin chào! Tôi có thể giúp gì cho bạn về tư vấn thuế, tối ưu thuế, tư vấn bất động sản hoặc tư vấn CNTT tại Việt Nam và Đức?",
+    "welcome": "Xin chào! Tôi có thể giúp gì cho bạn về tư vấn tài chính, tối ưu khai thuế, tư vấn bất động sản hoặc tư vấn CNTT tại Việt Nam và Đức?",
     "send": "Gửi",
     "close": "Đóng",
     "error": "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại."
