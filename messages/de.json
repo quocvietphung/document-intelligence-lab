@@ -146,12 +146,22 @@
   },
   "chatbot": {
     "title": "Beratungsassistent",
+    "status_ready": "Bereit zu helfen",
     "placeholder": "Fragen zu Steuern, Immobilien, Investitionen oder Selbstständigkeit?",
     "button_label": "Jetzt chatten",
     "welcome": "Hallo! Wie kann ich Sie bei Themen wie Steuern, Immobilien, Investitionen oder IT-Beratung in Deutschland und Vietnam unterstützen?",
     "send": "Senden",
     "close": "Schließen",
-    "error": "Ein Fehler ist aufgetreten. Bitte erneut versuchen."
+    "error": "Ein Fehler ist aufgetreten. Bitte erneut versuchen.",
+    "minimize_tooltip": "Minimieren",
+    "expand_tooltip": "Maximieren",
+    "restore_tooltip": "Wiederherstellen",
+    "open_chat": "Chat öffnen",
+    "typing_indicator": "Tippt...",
+    "message_sent": "Nachricht gesendet",
+    "connection_error": "Verbindungsfehler",
+    "retry": "Erneut versuchen",
+    "helper_text": "um neue Zeile hinzuzufügen"
   },
   "reviews": {
     "title": "Kundenbewertungen",

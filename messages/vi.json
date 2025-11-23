@@ -146,12 +146,22 @@
   },
   "chatbot": {
     "title": "Trợ lý Tư vấn",
-    "placeholder": "Hỏi về thuế, nghề nghiệp hoặc đăng ký kinh doanh...",
+    "status_ready": "Sẵn sàng hỗ trợ",
+    "placeholder": "Hỏi về thuế, bất động sản, kinh doanh hoặc tư vấn công nghệ...",
     "button_label": "Chat ngay",
-    "welcome": "Xin chào! Bạn muốn được tư vấn về thuế, bất động sản, đầu tư, hay công nghệ tại Đức và Việt Nam?",
+    "welcome": "Xin chào! Tôi có thể giúp bạn với các vấn đề về thuế, bất động sản, đầu tư hoặc giải pháp công nghệ tại Đức và Việt Nam. Bạn muốn biết gì?",
     "send": "Gửi",
     "close": "Đóng",
-    "error": "Đã xảy ra lỗi. Vui lòng thử lại."
+    "error": "Đã xảy ra lỗi. Vui lòng thử lại.",
+    "minimize_tooltip": "Thu nhỏ",
+    "expand_tooltip": "Mở rộng",
+    "restore_tooltip": "Phục hồi",
+    "open_chat": "Mở Chat",
+    "typing_indicator": "Đang gõ...",
+    "message_sent": "Tin nhắn đã gửi",
+    "connection_error": "Lỗi kết nối",
+    "retry": "Thử lại",
+    "helper_text": "để xuống dòng"
   },
   "reviews": {
     "title": "Khách hàng đánh giá",

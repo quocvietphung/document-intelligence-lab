@@ -110,7 +110,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                 <button
                     onClick={onToggleMinimize}
                     className="bg-gradient-to-br from-blue-600 via-blue-700 to-purple-700 hover:from-blue-700 hover:via-blue-800 hover:to-purple-800 text-white rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center group relative"
-                    aria-label="Mở chat"
+                    aria-label={t("open_chat")}
                 >
                     {/* Animated background glow */}
                     <div className="absolute inset-0 rounded-full bg-blue-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity"></div>
@@ -170,7 +170,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
                         <div className="min-w-0">
                             <h3 className="font-semibold text-sm leading-tight truncate">{t("title")}</h3>
-                            <p className="text-blue-100 text-xs font-medium">Sẵn sàng hỗ trợ</p>
+                            <p className="text-blue-100 text-xs font-medium">{t("status_ready")}</p>
                         </div>
                     </div>
 
@@ -180,7 +180,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                         <button
                             onClick={() => setIsExpanded(!isExpanded)}
                             className="text-white/90 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200 flex items-center justify-center group"
-                            title={isExpanded ? "Nhỏ lại" : "Mở rộng"}
+                            title={isExpanded ? t("restore_tooltip") : t("expand_tooltip")}
                             aria-label={isExpanded ? "Restore" : "Maximize"}
                         >
                             <svg
@@ -212,7 +212,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                         <button
                             onClick={onToggleMinimize}
                             className="text-white/90 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200 flex items-center justify-center group"
-                            title="Thu nhỏ"
+                            title={t("minimize_tooltip")}
                             aria-label="Minimize"
                         >
                             <svg
@@ -361,7 +361,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
                         {/* Helper Text */}
                         <p className="text-xs text-slate-500 px-1">
-                            💡 <span className="bg-slate-200 px-1.5 py-0.5 rounded">Shift + Enter</span> để xuống dòng
+                            💡 <span className="bg-slate-200 px-1.5 py-0.5 rounded">Shift + Enter</span> {t("helper_text")}
                         </p>
                     </form>
                 </div>

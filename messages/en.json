@@ -146,12 +146,22 @@
   },
   "chatbot": {
     "title": "Consulting Assistant",
+    "status_ready": "Ready to help",
     "placeholder": "Ask about taxes, real estate, business, or IT consulting...",
     "button_label": "Chat Now",
     "welcome": "Hello! How can I support you with tax consulting, real estate, investment, or IT solutions in Germany and Vietnam?",
     "send": "Send",
     "close": "Close",
-    "error": "An error occurred. Please try again."
+    "error": "An error occurred. Please try again.",
+    "minimize_tooltip": "Minimize",
+    "expand_tooltip": "Maximize",
+    "restore_tooltip": "Restore",
+    "open_chat": "Open Chat",
+    "typing_indicator": "Typing...",
+    "message_sent": "Message sent",
+    "connection_error": "Connection error",
+    "retry": "Retry",
+    "helper_text": "for new line"
   },
   "reviews": {
     "title": "Customer Feedback",
