@@ -165,30 +165,46 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-all"
-              title={isExpanded ? "Minimize" : "Expand"}
+              className="text-white hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-lg transition-all flex items-center space-x-1.5 text-sm"
+              title={isExpanded ? "Restore window" : "Maximize window"}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"
-                fill="currentColor"
+                fill="none"
                 viewBox="0 0 24 24"
+                stroke="currentColor"
               >
                 {isExpanded ? (
-                  <path d="M6 14l6-6 6 6" stroke="currentColor" fill="none" strokeWidth="2" />
+                  // Restore/minimize icon
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 9V5m0 0H5m4 0L5 9m10 0v4m0 0h4m-4 0l4-4m-6 6h6m-12 0h12"
+                  />
                 ) : (
-                  <path d="M6 10l6 6 6-6" stroke="currentColor" fill="none" strokeWidth="2" />
+                  // Fullscreen/expand icon
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6m4 0L6 10m8-4h4m-4 0l4 4M6 18h4m-4 0l4-4m8 4h-4m4 0l-4-4"
+                  />
                 )}
               </svg>
+              <span className="hidden sm:inline text-xs font-medium">
+                {isExpanded ? "Restore" : "Expand"}
+              </span>
             </button>
 
             <button
               onClick={onToggleMinimize}
-              className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-all"
-              title="Minimize"
+              className="text-white hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-lg transition-all flex items-center space-x-1.5 text-sm"
+              title="Minimize chat"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -204,6 +220,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                   d="M20 12H4"
                 />
               </svg>
+              <span className="hidden sm:inline text-xs font-medium">Minimize</span>
             </button>
           </div>
         </div>
