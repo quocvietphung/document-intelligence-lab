@@ -151,6 +151,38 @@ export default function ServicesSection() {
           </div>
         </div>
 
+        {/* Rentenrechner Card */}
+        <div className="mb-20 p-8 md:p-12 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-3xl border-2 border-emerald-200 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex-grow">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-4xl">💰</span>
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  {locale === 'en' ? 'Retirement Planning Calculator' :
+                   locale === 'vi' ? 'Tính toán Hưu trí' :
+                   'Rentenrechner'}
+                </h3>
+              </div>
+              <p className="text-gray-700 leading-relaxed max-w-2xl">
+                {locale === 'en' ? 'Calculate your future retirement income with our interactive ERGO Retirement Calculator. Plan your financial future and ensure a secure retirement.' :
+                 locale === 'vi' ? 'Tính toán thu nhập hưu trí của bạn trong tương lai bằng Máy tính Hưu trí ERGO tương tác của chúng tôi. Lập kế hoạch tương lai tài chính của bạn và đảm bảo hưu trí an toàn.' :
+                 'Berechnen Sie Ihre zukünftige Rente mit unserem interaktiven ERGO Rentenrechner. Planen Sie Ihre finanzielle Zukunft und sichern Sie sich einen sorgenfreien Ruhestand.'}
+              </p>
+            </div>
+            <Link
+              href={`/${locale}/rentenrechner`}
+              className="flex-shrink-0 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-400 whitespace-nowrap"
+            >
+              <span>
+                {locale === 'en' ? 'Open Calculator' :
+                 locale === 'vi' ? 'Mở Máy tính' :
+                 'Zum Rechner'}
+              </span>
+              <span className="text-xl">→</span>
+            </Link>
+          </div>
+        </div>
+
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-16">
           {services.map((service) => (
@@ -214,31 +246,6 @@ export default function ServicesSection() {
               </button>
             </div>
           ))}
-        </div>
-
-        {/* CTA Section */}
-        <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 rounded-3xl p-16 text-center text-white overflow-hidden shadow-2xl">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width=%2760%27%20height=%2760%27%20viewBox=%270%200%2060%2060%27%20xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cg%20fill=%27none%27%20fill-rule=%27evenodd%27%3E%3Cg%20fill=%27%23ffffff%27%20fill-opacity=%270.1%27%3E%3Cpath%20d=%27M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM36%204V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%27/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" />
-          </div>
-          <div className="absolute top-10 right-10 w-32 h-32 bg-white opacity-5 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 left-10 w-40 h-40 bg-white opacity-5 rounded-full blur-3xl" />
-
-          <div className="relative z-10">
-            <h3 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-              Bereit für professionelle Unterstützung?
-            </h3>
-            <p className="text-lg md:text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
-              Lassen Sie uns Ihnen helfen, Ihre Steuern zu optimieren und Ihr Geschäft zu wachsen.
-            </p>
-            <Link
-              href={`/${locale}/contact`}
-              className="inline-flex items-center justify-center rounded-xl bg-white text-blue-700 px-10 py-4 font-bold shadow-2xl hover:shadow-3xl hover:scale-110 active:scale-95 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white gap-2"
-            >
-              <span>Kostenlose Beratung anfordern</span>
-              <span className="text-xl">→</span>
-            </Link>
-          </div>
         </div>
       </div>
 

@@ -3,6 +3,7 @@
     "home": "Home",
     "services": "Services",
     "gold": "Gold",
+    "rentenrechner": "Retirement Calculator",
     "blog": "Blog",
     "contact": "Contact"
   },
@@ -250,5 +251,11 @@
       "disclaimer_title": "⚠️ Important Disclaimer",
       "disclaimer_body": "Gold investments carry risks including price volatility, storage costs, and liquidity limits. This is not financial advice. Always consult a qualified professional."
     }
+  },
+  "rentenrechner": {
+    "title": "Retirement Calculator - Plan Your Future",
+    "description": "Calculate your future retirement income and plan your retirement with our interactive tool",
+    "info_title": "About the Retirement Calculator",
+    "info_description": "The ERGO Retirement Calculator helps you calculate your future retirement income and make informed financial plans for your retirement. Simply enter your information and receive personalized insights into your retirement provision."
   }
 }

@@ -3,6 +3,7 @@
     "home": "Startseite",
     "services": "Leistungen",
     "gold": "Gold",
+    "rentenrechner": "Rentenrechner",
     "blog": "Blog",
     "contact": "Kontakt"
   },
@@ -250,5 +251,11 @@
       "disclaimer_title": "⚠️ Wichtiger Hinweis",
       "disclaimer_body": "Goldinvestitionen bergen Risiken wie Preisvolatilität, Lagerkosten und begrenzte Liquidität. Dies ist keine Finanzberatung. Ziehen Sie vor Entscheidungen eine*n Expert*in hinzu."
     }
+  },
+  "rentenrechner": {
+    "title": "Rentenrechner - Altersvorsorge planen",
+    "description": "Berechnen Sie Ihre zukünftige Rente und planen Sie Ihre Altersvorsorge mit unserem interaktiven Tool",
+    "info_title": "Über den Rentenrechner",
+    "info_description": "Der ERGO Rentenrechner hilft Ihnen dabei, Ihre zukünftige Rente zu berechnen und eine fundierte Finanzplanung für den Ruhestand zu treffen. Geben Sie einfach Ihre Daten ein und erhalten Sie personalisierte Einblicke in Ihre Altersversorgung."
   }
 }

@@ -56,6 +56,13 @@ export default function HeroSection() {
                 <span>{t("learn_more") || "Learn More"}</span>
                 <span className="group-hover:translate-x-1 transition-transform">↓</span>
               </Link>
+              <Link
+                href={`/${locale}/rentenrechner`}
+                className="inline-flex items-center justify-center gap-2 border-2 border-emerald-400/50 text-emerald-200 px-8 py-4 rounded-lg font-bold hover:border-emerald-400 hover:text-white hover:bg-emerald-500/10 transition-all duration-300 backdrop-blur-sm"
+              >
+                <span>💰 Rentenrechner</span>
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </Link>
             </div>
 
             {/* Stats Row */}

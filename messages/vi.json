@@ -3,6 +3,7 @@
     "home": "Trang chủ",
     "services": "Dịch vụ",
     "gold": "Vàng",
+    "rentenrechner": "Tính toán Hưu trí",
     "blog": "Blog",
     "contact": "Liên hệ"
   },
@@ -250,5 +251,11 @@
       "disclaimer_title": "⚠️ Lưu ý quan trọng",
       "disclaimer_body": "Đầu tư vàng có rủi ro do biến động thị trường, chi phí lưu trữ và thanh khoản. Đây không phải lời khuyên tài chính. Hãy tham khảo chuyên gia trước khi quyết định."
     }
+  },
+  "rentenrechner": {
+    "title": "Tính toán Hưu trí - Lập kế hoạch Tương lai",
+    "description": "Tính toán thu nhập hưu trí của bạn trong tương lai và lập kế hoạch hưu trí với công cụ tương tác của chúng tôi",
+    "info_title": "Về Máy tính Hưu trí",
+    "info_description": "Máy tính Hưu trí ERGO giúp bạn tính toán thu nhập hưu trí trong tương lai và lập kế hoạch tài chính sáng suốt cho thời gian nghỉ hưu. Chỉ cần nhập thông tin của bạn và nhận được những hiểu biết được cá nhân hóa về khoản dự phòng hưu trí của bạn."
   }
 }

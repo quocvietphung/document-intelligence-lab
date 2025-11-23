@@ -24,7 +24,9 @@ export default function Navigation() {
 
   const navItems = [
     { label: t("home"), href: `/${locale}` },
+    { label: t("services"), href: `/${locale}/#services` },
     { label: t("gold"), href: `/${locale}/gold` },
+    { label: t("rentenrechner"), href: `/${locale}/rentenrechner` },
     { label: t("blog"), href: `/${locale}/blog` },
     { label: t("contact"), href: `/${locale}/contact` },
   ];
