@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 interface CalculatorResult {
   currentValue: number;
@@ -13,11 +13,10 @@ interface CalculatorResult {
 
 export default function GoldInvestmentCalculator() {
   const t = useTranslations('gold');
-  const locale = useLocale();
 
   const [amount, setAmount] = useState<number>(1000);
-  const [unitPrice, setUnitPrice] = useState<number>(2050);
-  const [futurePrice, setFuturePrice] = useState<number>(2200);
+  const [unitPrice, setUnitPrice] = useState<number>(1890);
+  const [futurePrice, setFuturePrice] = useState<number>(2100);
   const [years, setYears] = useState<number>(1);
 
   const result: CalculatorResult & { ouncesBought: number } = useMemo(() => {
@@ -37,7 +36,7 @@ export default function GoldInvestmentCalculator() {
     };
   }, [amount, unitPrice, futurePrice]);
 
-  const fmtCurrency = (v: number) => new Intl.NumberFormat(locale || 'en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(v);
+  const fmtCurrency = (v: number) => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }).format(v);
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-8">
@@ -52,7 +51,7 @@ export default function GoldInvestmentCalculator() {
               {t('calculator.investmentAmount')}
             </label>
             <div className="flex items-center gap-2">
-              <span className="text-gray-600">$</span>
+              <span className="text-gray-600">€</span>
               <input
                 type="number"
                 min="100"
@@ -82,7 +81,7 @@ export default function GoldInvestmentCalculator() {
               {t('calculator.currentPrice')}
             </label>
             <div className="flex items-center gap-2">
-              <span className="text-gray-600">$</span>
+              <span className="text-gray-600">€</span>
               <input
                 type="number"
                 min="100"
@@ -99,7 +98,7 @@ export default function GoldInvestmentCalculator() {
               {t('calculator.projectedPrice')}
             </label>
             <div className="flex items-center gap-2">
-              <span className="text-gray-600">$</span>
+              <span className="text-gray-600">€</span>
               <input
                 type="number"
                 min="100"
@@ -173,7 +172,7 @@ export default function GoldInvestmentCalculator() {
               <span>{t('calculator.gainLoss')} ({years}y)</span>
               <div className="text-right">
                 <div className="text-2xl font-bold">
-                  {result.gain >= 0 ? '+' : ''}${result.gain.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                  {result.gain >= 0 ? '+' : ''}€{result.gain.toLocaleString('de-DE', { maximumFractionDigits: 2 })}
                 </div>
                 <div className="text-sm">
                   ({result.gainPercent >= 0 ? '+' : ''}{result.gainPercent.toFixed(2)}%)

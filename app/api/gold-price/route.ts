@@ -5,6 +5,7 @@ import path from "path";
 /**
  * 💰 GOLD PRICE API (FREE, JSON CACHE 10h)
  * Multi-source + auto fallback + retry + JSON persistence across restarts
+ * Now in EUR instead of USD!
  */
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ interface GoldPriceData {
     change: number;
     changePercent: number;
     lastUpdated: string;
-    currency: "USD";
+    currency: "EUR";
     history: number[];
 }
 
@@ -37,8 +38,11 @@ function ensureCacheDir() {
 let cachedData: GoldPriceData | null = null;
 let lastFetchTime = 0;
 let lastSuccessfulSource: string | null = null;
+let usdToEurRate: number | null = null;
+let lastFXUpdateTime = 0;
 
 const CACHE_DURATION_MS = 10 * 60 * 60 * 1000; // 10 giờ
+const FX_CACHE_DURATION_MS = 60 * 60 * 1000; // 1 giờ
 
 /** Các nguồn upstream (GoldAPI + MetalpriceAPI) */
 const UPSTREAMS = [
@@ -62,6 +66,8 @@ function loadCacheFromFile() {
             cachedData = content.cachedData ?? null;
             lastFetchTime = content.lastFetchTime ?? 0;
             lastSuccessfulSource = content.lastSuccessfulSource ?? null;
+            usdToEurRate = content.usdToEurRate ?? null;
+            lastFXUpdateTime = content.lastFXUpdateTime ?? 0;
             console.log(`[GoldPrice] 📂 Loaded cache from ${CACHE_FILE}`);
         }
     } catch (err) {
@@ -76,12 +82,52 @@ function saveCacheToFile() {
             cachedData,
             lastFetchTime,
             lastSuccessfulSource,
+            usdToEurRate,
+            lastFXUpdateTime,
         };
         fs.writeFileSync(CACHE_FILE, JSON.stringify(payload, null, 2), "utf8");
         console.log(`[GoldPrice] 💾 Cache saved to ${CACHE_FILE}`);
     } catch (err) {
         console.warn("[GoldPrice] ⚠️ Failed to save cache:", err);
     }
+}
+
+/** Fetch USD/EUR conversion rate */
+async function getUSDToEURRate(): Promise<number> {
+    const now = Date.now();
+
+    // Use cached rate if still valid
+    if (usdToEurRate && now - lastFXUpdateTime < FX_CACHE_DURATION_MS) {
+        console.log(`[GoldPrice] 💱 Using cached FX rate: 1 USD = ${usdToEurRate} EUR`);
+        return usdToEurRate;
+    }
+
+    try {
+        const res = await fetch(
+            "https://api.exchangerate.host/latest?base=USD&symbols=EUR",
+            { cache: "no-store" }
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const json = await res.json();
+        const rate = Number(json?.rates?.EUR);
+
+        if (Number.isFinite(rate) && rate > 0) {
+            usdToEurRate = rate;
+            lastFXUpdateTime = now;
+            console.log(`[GoldPrice] ✅ USD/EUR rate: ${rate}`);
+            return rate;
+        }
+    } catch (err) {
+        console.warn("[GoldPrice] ⚠️ Failed to fetch USD/EUR rate:", err);
+    }
+
+    // Fallback to approximate rate if fetch fails
+    const fallbackRate = 0.92;
+    if (!usdToEurRate) {
+        usdToEurRate = fallbackRate;
+    }
+    return usdToEurRate;
 }
 
 /** Tạo dữ liệu sparkline 24h */
@@ -124,7 +170,7 @@ function pickPrice(json: any): number | null {
     return null;
 }
 
-/** Lấy giá spot từ upstreams */
+/** Lấy giá spot từ upstreams (in USD) */
 async function fetchSpotUSDPerOunce(): Promise<number> {
     const sources = lastSuccessfulSource
         ? [
@@ -144,7 +190,7 @@ async function fetchSpotUSDPerOunce(): Promise<number> {
             const price = pickPrice(json);
             if (price && price > 0) {
                 lastSuccessfulSource = src.name;
-                console.log(`[GoldPrice] ✅ ${src.name}: $${price}`);
+                console.log(`[GoldPrice] ✅ ${src.name}: $${price} USD/oz`);
                 return price;
             }
         } catch (err) {
@@ -159,13 +205,15 @@ async function fetchSpotUSDPerOunce(): Promise<number> {
     const base = 2050;
     const jitter = (Math.random() - 0.5) * 50;
     const mock = Math.round((base + jitter) * 100) / 100;
-    console.warn(`[GoldPrice] ⚠️ Using mock price: ${mock}`);
+    console.warn(`[GoldPrice] ⚠️ Using mock price: ${mock} USD`);
     return mock;
 }
 
-/** Tính toán thay đổi, phần trăm, lịch sử */
+/** Tính toán thay đổi, phần trăm, lịch sử (in EUR) */
 async function getGoldPrice(): Promise<GoldPriceData> {
-    const spot = await fetchSpotUSDPerOunce();
+    const spotUSD = await fetchSpotUSDPerOunce();
+    const fxRate = await getUSDToEURRate();
+    const spot = Math.round(spotUSD * fxRate * 100) / 100; // Convert to EUR
 
     let change = 0;
     let changePercent = 0;
@@ -185,7 +233,7 @@ async function getGoldPrice(): Promise<GoldPriceData> {
         changePercent,
         history,
         lastUpdated: new Date().toISOString(),
-        currency: "USD",
+        currency: "EUR",
     };
 }
 
@@ -214,12 +262,12 @@ export async function GET() {
         const fallback =
             cachedData ||
             ({
-                price: 2050.5,
+                price: 1890.0,
                 change: 0,
                 changePercent: 0,
                 lastUpdated: new Date().toISOString(),
-                currency: "USD",
-                history: buildHistory(2050.5),
+                currency: "EUR",
+                history: buildHistory(1890.0),
             } satisfies GoldPriceData);
 
         return NextResponse.json(

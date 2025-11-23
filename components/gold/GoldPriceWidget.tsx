@@ -1,16 +1,16 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 
-type Currency = "USD" | "VND";
+type Currency = "EUR" | "VND";
 type Unit = "ounce" | "gram";
 
 interface GoldPriceData {
-    price: number;          // USD / ounce
+    price: number;          // EUR / ounce
     change: number;         // thay đổi theo ounce
     changePercent: number;  // %
     lastUpdated: string;    // ISO
-    currency: "USD";
+    currency: "EUR";
     history?: number[];     // 24 điểm sparkline
 }
 
@@ -21,18 +21,11 @@ export default function GoldPriceWidget() {
     const [gold, setGold] = useState<GoldPriceData | null>(null);
     const [loading, setLoading] = useState(true);
     const [err, setErr] = useState<string | null>(null);
-    const [currency, setCurrency] = useState<Currency>("USD");
+    const [currency, setCurrency] = useState<Currency>("EUR");
     const [unit, setUnit] = useState<Unit>("ounce");
-    const [fxRate, setFxRate] = useState<number | null>(null); // USD→VND
+    const [fxRate, setFxRate] = useState<number | null>(null); // EUR→VND
 
-    useEffect(() => {
-        void reload();
-        void loadFxRate();
-        const fxTimer = setInterval(loadFxRate, 60 * 60 * 1000);
-        return () => clearInterval(fxTimer);
-    }, []);
-
-    async function reload() {
+    const reload = useCallback(async () => {
         try {
             setLoading(true);
             const res = await fetch("/api/gold-price", { cache: "no-store" });
@@ -51,13 +44,13 @@ export default function GoldPriceWidget() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [t]);
 
-    async function loadFxRate() {
+    const loadFxRate = useCallback(async () => {
         try {
-            // Public, không cần API key
+            // Public, không cần API key - EUR→VND
             const resp = await fetch(
-                "https://api.exchangerate.host/latest?base=USD&symbols=VND",
+                "https://api.exchangerate.host/latest?base=EUR&symbols=VND",
                 { next: { revalidate: 3600 } }
             );
             if (!resp.ok) return;
@@ -67,14 +60,21 @@ export default function GoldPriceWidget() {
         } catch {
             // giữ nguyên
         }
-    }
+    }, []);
+
+    useEffect(() => {
+        void reload();
+        void loadFxRate();
+        const fxTimer = setInterval(loadFxRate, 60 * 60 * 1000);
+        return () => clearInterval(fxTimer);
+    }, [reload, loadFxRate]);
 
     function formatMoney(num: number, curr: Currency) {
-        return new Intl.NumberFormat(curr === "USD" ? "en-US" : "vi-VN", {
+        return new Intl.NumberFormat(curr === "EUR" ? "de-DE" : "vi-VN", {
             style: "currency",
             currency: curr,
-            minimumFractionDigits: curr === "USD" ? 2 : 0,
-            maximumFractionDigits: curr === "USD" ? 2 : 0,
+            minimumFractionDigits: curr === "EUR" ? 2 : 0,
+            maximumFractionDigits: curr === "EUR" ? 2 : 0,
         }).format(num);
     }
 
@@ -120,13 +120,13 @@ export default function GoldPriceWidget() {
     }
 
     function formatChange(change?: number | null, pct?: number | null) {
-        const raw = Number(change ?? 0); // USD/oz
-        const perUnitUSD = unit === "ounce" ? raw : raw / OUNCE_TO_GRAM;
-        const val = currency === "VND" && fxRate ? perUnitUSD * fxRate : perUnitUSD;
+        const raw = Number(change ?? 0); // EUR/oz
+        const perUnitEUR = unit === "ounce" ? raw : raw / OUNCE_TO_GRAM;
+        const val = currency === "VND" && fxRate ? perUnitEUR * fxRate : perUnitEUR;
         const amount =
             currency === "VND"
                 ? formatMoney(val, "VND")
-                : `${val >= 0 ? "+" : ""}${val.toFixed(2)} USD`;
+                : `${val >= 0 ? "+" : ""}${val.toFixed(2)} EUR`;
         const sign = raw >= 0 ? "+" : "";
         return `${amount} (${sign}${Number(pct ?? 0).toFixed(2)}%)`;
     }
@@ -161,12 +161,12 @@ export default function GoldPriceWidget() {
         );
     }
 
-    const perOunceUSD = gold.price || 0;
-    const perUnitUSD = unit === "ounce" ? perOunceUSD : perOunceUSD / OUNCE_TO_GRAM;
-    const shown = currency === "USD" ? perUnitUSD : (fxRate ? perUnitUSD * fxRate : perUnitUSD);
+    const perOunceEUR = gold.price || 0;
+    const perUnitEUR = unit === "ounce" ? perOunceEUR : perOunceEUR / OUNCE_TO_GRAM;
+    const shown = currency === "EUR" ? perUnitEUR : (fxRate ? perUnitEUR * fxRate : perUnitEUR);
     const isUp = (gold.change ?? 0) >= 0;
-    const high24h = history.length ? Math.max(...history) : perOunceUSD;
-    const low24h  = history.length ? Math.min(...history) : perOunceUSD;
+    const high24h = history.length ? Math.max(...history) : perOunceEUR;
+    const low24h  = history.length ? Math.min(...history) : perOunceEUR;
 
     return (
         <div className="bg-white rounded-xl shadow-lg p-6" aria-labelledby="gold-widget-title">
@@ -187,8 +187,8 @@ export default function GoldPriceWidget() {
                     <label className="flex items-center gap-2 text-sm text-gray-600">
                         <span className="sr-only">{t("priceWidget.currencyLabel")}</span>
                         <select aria-label={t("priceWidget.currencyLabel")} value={currency} onChange={(e) => setCurrency(e.target.value as Currency)} className="rounded-md border-gray-200 text-sm px-2 py-1">
-                            <option value="USD">USD</option>
-                            <option value="VND">VND</option>
+                            <option value="EUR">EUR €</option>
+                            <option value="VND">VND ₫</option>
                         </select>
                     </label>
 
@@ -259,3 +259,4 @@ export default function GoldPriceWidget() {
         </div>
     );
 }
+
