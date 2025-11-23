@@ -253,9 +253,34 @@
     }
   },
   "rentenrechner": {
-    "title": "Rentenrechner - Altersvorsorge planen",
-    "description": "Berechnen Sie Ihre zukünftige Rente und planen Sie Ihre Altersvorsorge mit unserem interaktiven Tool",
-    "info_title": "Über den Rentenrechner",
-    "info_description": "Der ERGO Rentenrechner hilft Ihnen dabei, Ihre zukünftige Rente zu berechnen und eine fundierte Finanzplanung für den Ruhestand zu treffen. Geben Sie einfach Ihre Daten ein und erhalten Sie personalisierte Einblicke in Ihre Altersversorgung."
+    "title": "Rentenrechner",
+    "subtitle": "Berechnen Sie Ihre Altersvorsorge mit unserem interaktiven Tool",
+    "step1": "Ihre Wunschrente",
+    "step2": "Ihre Vorsorgelücke",
+    "step3": "Ihr Ergebnis",
+    "back": "← Zurück",
+    "next": "Weiter →",
+    "rentSituation": "Ihre Rentensituation",
+    "desiredRetirement": "Wunschrente",
+    "netIncome": "Nettoeinkommen",
+    "statutoryPension": "Gesetzliche Rente (netto)",
+    "yourInformation": "Ihre Angaben",
+    "yearOfBirth": "Jahrgang",
+    "age": "Alter",
+    "privateSavings": "Angesparte private Rente",
+    "gapAnalysis": "Ihre Vorsorgelücke",
+    "gap": "Lücke",
+    "savingRecommendation": "💡 Sie sollten monatlich €",
+    "savingRecommendationEnd": "sparen, um Ihre Vorsorgelücke zu schließen.",
+    "results": "Ihr Ergebnis",
+    "yearOfBirthLabel": "Geburtsjahr",
+    "retirementAge": "Renteneintrittsalter",
+    "privateSavingsLabel": "Private Ersparnisse",
+    "totalRetirement": "✓ Ihre Altersvorsorge",
+    "statutoryPensionLabel": "Gesetzliche Rente",
+    "privatePensionLabel": "Private Rente",
+    "totalPension": "Gesamte Rente",
+    "disclaimer": "Dieser Rentenrechner ist ein Planungstool und dient nur zu Informationszwecken. Für personalisierte Beratung konsultieren Sie bitte einen Rentenberater.",
+    "loading": "Lädt..."
   }
 }

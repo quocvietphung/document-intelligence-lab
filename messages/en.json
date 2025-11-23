@@ -253,9 +253,34 @@
     }
   },
   "rentenrechner": {
-    "title": "Retirement Calculator - Plan Your Future",
-    "description": "Calculate your future retirement income and plan your retirement with our interactive tool",
-    "info_title": "About the Retirement Calculator",
-    "info_description": "The ERGO Retirement Calculator helps you calculate your future retirement income and make informed financial plans for your retirement. Simply enter your information and receive personalized insights into your retirement provision."
+    "title": "Retirement Calculator",
+    "subtitle": "Calculate your retirement with our interactive tool",
+    "step1": "Your Desired Retirement",
+    "step2": "Your Retirement Gap",
+    "step3": "Your Results",
+    "back": "← Back",
+    "next": "Next →",
+    "rentSituation": "Your Retirement Situation",
+    "desiredRetirement": "Desired Retirement",
+    "netIncome": "Net Income",
+    "statutoryPension": "Statutory Pension (net)",
+    "yourInformation": "Your Information",
+    "yearOfBirth": "Year of Birth",
+    "age": "Age",
+    "privateSavings": "Private Savings",
+    "gapAnalysis": "Your Retirement Gap",
+    "gap": "Gap",
+    "savingRecommendation": "💡 You should save €",
+    "savingRecommendationEnd": "monthly to close your retirement gap.",
+    "results": "Your Results",
+    "yearOfBirthLabel": "Year of Birth",
+    "retirementAge": "Retirement Age",
+    "privateSavingsLabel": "Private Savings",
+    "totalRetirement": "✓ Your Retirement Plan",
+    "statutoryPensionLabel": "Statutory Pension",
+    "privatePensionLabel": "Private Pension",
+    "totalPension": "Total Retirement",
+    "disclaimer": "This retirement calculator is a planning tool for informational purposes only. For personalized advice, please consult a retirement advisor.",
+    "loading": "Loading..."
   }
 }
