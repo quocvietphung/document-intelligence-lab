@@ -66,7 +66,6 @@ export default function ProcessSection() {
   const t = useTranslations("process");
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
-  const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -227,31 +226,6 @@ export default function ProcessSection() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* Bottom CTA section */}
-        <div className="mt-20 pt-16 border-t border-gray-200/50">
-          <div className="text-center">
-            <p className="text-lg text-gray-600 mb-6 font-light">
-              Bereit, Ihre finanzielle Zukunft zu gestalten?
-            </p>
-            <button className="inline-flex items-center justify-center px-8 py-4 rounded-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 group/btn">
-              <span>Kostenlose Beratung buchen</span>
-              <svg
-                className="w-5 h-5 ml-2 group-hover/btn:translate-x-1 transition-transform"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
-            </button>
           </div>
         </div>
       </div>
