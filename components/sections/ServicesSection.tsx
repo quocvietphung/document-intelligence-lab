@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 type Service = {
   id: string;
@@ -10,7 +10,6 @@ type Service = {
   description: string;
   icon: React.ReactNode;
   iconBg: string;
-  href?: string;
   badge?: string;
   details?: string;
   features?: string[];
@@ -20,6 +19,7 @@ type Service = {
 
 export default function ServicesSection() {
   const t = useTranslations("services");
+  const locale = useLocale();
   const [hoveredService, setHoveredService] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
 
@@ -28,7 +28,6 @@ export default function ServicesSection() {
       id: "steuererklaerung",
       title: t("steuererklaerung.title"),
       description: t("steuererklaerung.description"),
-      href: "/contact",
       badge: "Individuelle Lösungen",
       iconBg: "bg-gradient-to-br from-blue-50 to-blue-100",
       details: "Unsere Steuererklärungs-Service deckt alle Aspekte Ihrer jährlichen Steuerpflichten ab. Wir kümmern uns um die Komplexität und stellen sicher, dass Sie maximale Abzüge erhalten.",
@@ -61,7 +60,6 @@ export default function ServicesSection() {
       id: "steueroptimierung",
       title: t("steueroptimierung.title"),
       description: t("steueroptimierung.description"),
-      href: "/contact",
       badge: "Kostenersparnis",
       iconBg: "bg-gradient-to-br from-amber-50 to-yellow-100",
       details: "Strategische Steuerplanung zur Minimierung Ihrer Steuerlast. Wir identifizieren legale Möglichkeiten, Ihre Steuern zu reduzieren.",
@@ -94,7 +92,6 @@ export default function ServicesSection() {
       id: "real-estate",
       title: t("real_estate.title"),
       description: t("real_estate.description"),
-      href: "/contact",
       badge: "Vermögensschutz",
       iconBg: "bg-gradient-to-br from-green-50 to-emerald-100",
       details: "Umfassende Beratung für Immobilieninvestitionen mit steuerlicher Optimierung und Vermögensschutz.",
@@ -126,7 +123,6 @@ export default function ServicesSection() {
       id: "it-consulting",
       title: t("it_consulting.title"),
       description: t("it_consulting.description"),
-      href: "/contact",
       badge: "Innovation",
       iconBg: "bg-gradient-to-br from-indigo-50 to-indigo-100",
       details: "Modernisierung Ihrer Steuerprozesse durch cloudbasierte Lösungen und automatisierte Systeme.",
@@ -158,7 +154,6 @@ export default function ServicesSection() {
       id: "accounting",
       title: t("accounting.title"),
       description: t("accounting.description"),
-      href: "/contact",
       badge: "Transparenz",
       iconBg: "bg-gradient-to-br from-rose-50 to-pink-100",
       details: "Vollständige Buchhaltungs- und Bilanzierungslösungen für Unternehmen aller Größen.",
@@ -307,7 +302,7 @@ export default function ServicesSection() {
               Lassen Sie uns Ihnen helfen, Ihre Steuern zu optimieren und Ihr Geschäft zu wachsen.
             </p>
             <Link
-              href="/contact"
+              href={`/${locale}/contact`}
               className="inline-flex items-center justify-center rounded-xl bg-white text-blue-700 px-10 py-4 font-bold shadow-2xl hover:shadow-3xl hover:scale-110 active:scale-95 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white gap-2"
             >
               <span>Kostenlose Beratung anfordern</span>
@@ -398,7 +393,7 @@ export default function ServicesSection() {
 
               <div className="pt-6 border-t border-gray-200">
                 <Link
-                  href="/contact"
+                  href={`/${locale}/contact`}
                   className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   <span>Jetzt kontaktieren</span>
