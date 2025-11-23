@@ -22,41 +22,45 @@ export default function Navigation() {
     vi: "🇻🇳 VI"
   };
 
+  const navItems = [
+    { label: t("home"), href: `/${locale}` },
+    { label: t("gold"), href: `/${locale}/gold` },
+    { label: t("rentenrechner"), href: `/${locale}/rentenrechner` },
+    { label: t("blog"), href: `/${locale}/blog` },
+    { label: t("contact"), href: `/${locale}/contact` },
+  ];
+
+  const isActive = (href: string) => {
+    if (href === `/${locale}`) {
+      return pathname === `/${locale}`;
+    }
+    return pathname.startsWith(href);
+  };
+
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link href={`/${locale}`} className="text-2xl font-bold text-blue-600">
-              TaxConsult
+              Finance Consulting
             </Link>
           </div>
-          
+
           <div className="hidden md:flex space-x-8">
-            <Link
-              href={`/${locale}`}
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
-            >
-              {t("home")}
-            </Link>
-            <Link
-              href={`/${locale}#services`}
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
-            >
-              {t("services")}
-            </Link>
-            <Link
-              href={`/${locale}/blog`}
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
-            >
-              {t("blog")}
-            </Link>
-            <Link
-              href={`/${locale}#contact`}
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
-            >
-              {t("contact")}
-            </Link>
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`px-3 py-2 text-sm font-medium ${
+                  isActive(item.href)
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-700 hover:text-blue-600"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
 
           <div className="flex items-center space-x-4 relative">

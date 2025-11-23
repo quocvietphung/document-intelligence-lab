@@ -2,83 +2,295 @@
   "nav": {
     "home": "Home",
     "services": "Services",
+    "gold": "Gold",
+    "rentenrechner": "Retirement Calculator",
     "blog": "Blog",
     "contact": "Contact"
   },
   "hero": {
-    "title": "Professional Tax Consulting in Germany",
-    "subtitle": "Expert advice for individuals and businesses",
-    "cta": "Book Consultation"
+    "title": "Professional Financial Consulting in Germany and Vietnam",
+    "subtitle": "Comprehensive financial solutions for individuals and businesses",
+    "cta": "Book Consultation",
+    "badge": "Professional Solutions",
+    "learn_more": "Learn More",
+    "stat1": "Satisfied Clients",
+    "stat2": "Years of Experience",
+    "stat3": "Savings Achieved"
   },
   "services": {
     "title": "Our Services",
-    "subtitle": "Comprehensive tax consulting solutions",
-    "tax_declaration": {
+    "subtitle": "Personalized financial advisory tailored to your goals",
+    "learn_more": "Learn More",
+    "contact_us": "Contact Us",
+    "deliverables": "Services",
+    "deliverables_short": "Comprehensive Advisory",
+    "turnaround": "Turnaround Time",
+    "turnaround_short": "1–2 weeks",
+    "cta_subtext": "Ready to optimize your financial situation?",
+    "cta_button": "Schedule Your Consultation",
+    "steuererklaerung": {
       "title": "Tax Declaration",
-      "description": "Professional preparation of your annual tax returns"
+      "description": "Professional preparation and submission of annual tax returns (income tax, corporate tax, VAT) with complete documentation and optimized deductions.",
+      "details": "Our tax declaration service covers all aspects of your annual tax obligations. We handle the complexity and ensure you receive maximum deductions.",
+      "features": ["Complete tax return filing for individuals and businesses", "Optimization of deductions and allowances", "Support with income, corporate, and VAT taxes", "Management of refunds and additional payments"],
+      "benefits": ["✓ Maximum tax refunds", "✓ Complete regulatory compliance", "✓ Time savings and reduced stress", "✓ Professional documentation and support"],
+      "deliverables": ["Complete tax return", "Detailed report", "Future planning consultation"]
     },
-    "business_consulting": {
-      "title": "Business Consulting",
-      "description": "Expert advice for businesses and entrepreneurs"
+    "steueroptimierung": {
+      "title": "Tax Optimization",
+      "description": "Strategic consulting aimed at reducing your tax burden through optimized legal structures and intelligent tax planning.",
+      "details": "Strategic tax planning to minimize your tax liability. We identify legal opportunities to reduce your taxes.",
+      "features": ["Analysis of your current tax situation", "Identification of savings potential", "Strategic business structuring", "Investment optimization and asset protection"],
+      "benefits": ["✓ Up to 30% tax savings", "✓ Legal and secure strategies", "✓ Long-term tax planning", "✓ Transparent documentation"],
+      "deliverables": ["Tax savings plan", "Implementation consulting", "Ongoing monitoring"]
+    },
+    "real_estate": {
+      "title": "Real Estate Consulting",
+      "description": "Support with purchasing, selling, leasing, valuation, and financial optimization of real estate in Germany and internationally.",
+      "details": "Comprehensive consulting for real estate investments with tax optimization and asset protection.",
+      "features": ["Tax optimization for real estate purchases and sales", "Rental strategies and income maximization", "Depreciation optimization", "International real estate value creation"],
+      "benefits": ["✓ Maximum returns on real estate investments", "✓ Tax-efficient asset structuring", "✓ Legal security in transactions", "✓ Long-term wealth planning"],
+      "deliverables": ["Investment analysis", "Tax plans", "Contract review and consulting"]
+    },
+    "it_consulting": {
+      "title": "Digital Transformation",
+      "description": "Modernize your financial operations with cloud-based solutions, automated accounting, and secure digital document management.",
+      "details": "Modernization of your tax processes through cloud-based solutions and automated systems.",
+      "features": ["Cloud migration for tax systems", "Automated bookkeeping and invoicing", "Secure digital document management", "Integration with existing systems"],
+      "benefits": ["✓ 50% time and cost savings", "✓ Improved data security", "✓ Real-time tax overview", "✓ Scalable solutions"],
+      "deliverables": ["System implementation", "Training and support", "Ongoing maintenance"]
     },
     "accounting": {
-      "title": "Accounting Services",
-      "description": "Complete bookkeeping and financial accounting"
+      "title": "Accounting & Reporting",
+      "description": "Full-service bookkeeping, financial accounting, annual statements, and P&L reporting for businesses of all sizes.",
+      "details": "Comprehensive accounting and financial reporting solutions for businesses of all sizes.",
+      "features": ["Ongoing bookkeeping and tax accounting", "Monthly and annual financial statements", "Profit and loss statements", "Balance sheet and reporting"],
+      "benefits": ["✓ Complete financial transparency", "✓ Compliance with accounting standards", "✓ Timely tax reports", "✓ Data-driven business decisions"],
+      "deliverables": ["Monthly statements", "Annual statements", "Tax reports and analysis"]
     }
   },
   "process": {
     "title": "Our Process",
-    "subtitle": "Simple and transparent",
+    "subtitle": "Simple – Transparent – Efficient",
     "step1": {
       "title": "Initial Consultation",
-      "description": "Free consultation to understand your needs"
+      "description": "A free conversation to understand your needs"
     },
     "step2": {
       "title": "Analysis & Planning",
-      "description": "We analyze your situation and create a tailored plan"
+      "description": "We evaluate your situation and develop a tailored plan"
     },
     "step3": {
       "title": "Implementation",
-      "description": "We handle everything while keeping you informed"
+      "description": "We execute the solution end-to-end and keep you updated"
     }
   },
   "testimonials": {
-    "title": "What Our Clients Say",
-    "subtitle": "Trusted by hundreds of clients"
+    "title": "What Clients Say",
+    "subtitle": "Trusted by hundreds of individuals and businesses",
+    "label": "Customer Reviews"
   },
   "contact": {
     "title": "Book a Consultation",
-    "subtitle": "Get in touch with us today",
-    "name": "Name",
+    "subtitle": "Get in Touch",
+    "description": "We're here to answer your questions and help you schedule a consultation.",
+    "name": "Full Name",
+    "name_placeholder": "Your name",
     "email": "Email",
-    "phone": "Phone",
+    "email_placeholder": "your@email.com",
+    "email_label": "Email",
+    "phone": "Phone Number",
+    "phone_label": "Phone",
     "message": "Message",
-    "submit": "Send Message",
-    "success": "Thank you! We'll contact you soon.",
-    "error": "Something went wrong. Please try again."
+    "message_placeholder": "Tell us about your request...",
+    "message_title": "Send a Message",
+    "message_subtitle": "We will get back to you as soon as possible",
+    "submit": "Send",
+    "sending": "Sending...",
+    "success": "Thank you! We will contact you shortly.",
+    "error": "Something went wrong. Please try again.",
+    "booking_title": "Book an Appointment",
+    "booking_subtitle": "Select your preferred service, date, and time",
+    "verified_reviews": "Verified Reviews",
+    "service_label": "Service",
+    "date_label": "Date",
+    "time_label": "Time",
+    "quick_slots": "Or choose a quick time slot",
+    "book_now": "Book Now",
+    "booking": "Booking...",
+    "hotline_label": "Or call us directly",
+    "hotline_note": "Available Monday–Friday, 9:00–17:00",
+    "fast_response": "Fast Response",
+    "fast_response_desc": "We respond within 24 hours",
+    "secure_data": "Secure & Confidential",
+    "secure_data_desc": "Your data is fully protected",
+    "expert_team": "Expert Team",
+    "expert_team_desc": "15+ years of experience"
   },
   "footer": {
     "about": "About Us",
-    "about_text": "Professional tax consulting services in Germany",
+    "about_text": "Professional financial consulting and digital finance solutions in Germany.",
     "quick_links": "Quick Links",
     "legal": "Legal",
     "impressum": "Impressum",
     "datenschutz": "Privacy Policy",
     "terms_of_service": "Terms of Service",
-    "copyright": "© 2024 Tax Consulting. All rights reserved."
+    "copyright": "© 2024 Financial Consulting. All rights reserved."
   },
   "blog": {
-    "title": "Tax Tips & News",
-    "subtitle": "Stay informed about tax regulations",
-    "read_more": "Read more"
+    "title": "Tax Tips & Financial News",
+    "subtitle": "Stay updated with the latest regulations",
+    "read_more": "Read More",
+    "book_consultation": "Book Consultation",
+    "not_found": "Post not found."
   },
   "chatbot": {
     "title": "Consulting Assistant",
-    "placeholder": "Ask about taxes, career guidance, or business registration...",
-    "button_label": "Chat with us",
-    "welcome": "Hello! How can I help you with tax consulting, career guidance, or business registration in Vietnam and Germany?",
+    "status_ready": "Ready to help",
+    "placeholder": "Ask about taxes, real estate, business, or IT consulting...",
+    "button_label": "Chat Now",
+    "welcome": "Hello! How can I support you with tax consulting, real estate, investment, or IT solutions in Germany and Vietnam?",
     "send": "Send",
     "close": "Close",
-    "error": "Sorry, an error occurred. Please try again."
+    "error": "An error occurred. Please try again.",
+    "minimize_tooltip": "Minimize",
+    "expand_tooltip": "Maximize",
+    "restore_tooltip": "Restore",
+    "open_chat": "Open Chat",
+    "typing_indicator": "Typing...",
+    "message_sent": "Message sent",
+    "connection_error": "Connection error",
+    "retry": "Retry",
+    "helper_text": "for new line"
+  },
+  "reviews": {
+    "title": "Customer Feedback",
+    "subtitle": "Verified reviews from real clients",
+    "label": "Verified Reviews",
+    "placeholder_quote": "This reviewer provided meaningful feedback.",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "trust_label": "100% Verified Reviews",
+    "trust_desc": "Collected from real clients on trusted platforms"
+  },
+  "gold": {
+    "title": "Gold Investment Advisory",
+    "subtitle": "Market analysis and strategic gold investment guidance",
+    "services": {
+      "priceAnalysis": "Price Analysis",
+      "priceAnalysisDesc": "Real-time gold price monitoring and trend analysis",
+      "investmentAdvice": "Investment Advice",
+      "investmentAdviceDesc": "Strategic recommendations for building and optimizing your gold portfolio",
+      "taxOptimization": "Tax Optimization",
+      "taxOptimizationDesc": "Tax-efficient strategies for gold investments"
+    },
+    "marketInsights": {
+      "title": "Market Insights",
+      "factors": {
+        "title": "Key Market Factors",
+        "economic": "Economic indicators and GDP growth",
+        "inflation": "Inflation rates and purchasing power",
+        "geopolitical": "Geopolitical events and market stability",
+        "currency": "Currency fluctuations and exchange rates"
+      },
+      "tips": {
+        "title": "Investment Tips",
+        "diversify": "Diversify your gold holdings",
+        "longTerm": "Prioritize long-term strategies",
+        "monitor": "Stay updated with economic and market news",
+        "consult": "Regularly consult with financial experts"
+      }
+    },
+    "cta": {
+      "title": "Ready to Invest in Gold?",
+      "subtitle": "Receive personalized advice for your gold investment strategy",
+      "button": "Book Consultation"
+    },
+    "priceWidget": {
+      "title": "Gold Price",
+      "subtitle": "Live market data",
+      "perOunce": "per troy ounce",
+      "perGram": "per gram",
+      "chart": "24h Chart",
+      "last24h": "Last 24 hours",
+      "lastUpdated": "Last updated",
+      "refresh": "Refresh",
+      "error": "Unable to load data",
+      "retry": "Try again",
+      "currencyLabel": "Currency",
+      "unitOz": "oz",
+      "unitGram": "g",
+      "unitSelector": "Unit Selector",
+      "high24h": "24h High",
+      "low24h": "24h Low",
+      "cacheNote": "cache ~10h",
+      "fxRateMissing": "Exchange rate unavailable — showing estimated conversion.",
+      "sourceNote": "* Real-time data from Gold Price API (free); historical data may be limited. Exchange rates from exchangerate.host."
+    },
+    "calculator": {
+      "title": "💰 Gold Investment Calculator",
+      "description": "Estimate potential returns based on projected prices",
+      "investmentAmount": "Investment Amount (USD)",
+      "currentPrice": "Current Gold Price (per oz)",
+      "projectedPrice": "Projected Price (per oz)",
+      "investmentPeriod": "Investment Period",
+      "year": "year",
+      "years": "years",
+      "minAmount": "Minimum $100",
+      "maxAmount": "Maximum $100,000",
+      "minYears": "Minimum 1 year",
+      "maxYears": "Maximum 10 years",
+      "projectionResults": "Projection Results",
+      "initialInvestment": "Initial Investment",
+      "ouncesPurchased": "Ounces Purchased",
+      "projectedValue": "Projected Value",
+      "projectedPriceLabel": "Projected Price",
+      "gainLoss": "Gain/Loss",
+      "warningNote": "⚠️ This calculator provides estimates only. Actual results may vary. Consult a financial advisor before investing."
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1_title": "Why invest in gold?",
+      "q1_body": "Gold helps hedge against inflation, currency depreciation, and economic volatility while maintaining long-term value.",
+      "q2_title": "What affects gold prices?",
+      "q2_body": "Interest rates, inflation, currency fluctuations, central bank policies, and geopolitical events all influence gold prices.",
+      "q3_title": "How to buy gold safely?",
+      "q3_body": "Choose reputable dealers, verify purity, consider storage options, and maintain proper insurance.",
+      "q4_title": "What about taxes?",
+      "q4_body": "Gold gains may be subject to local tax regulations. Consult a tax expert for optimized planning.",
+      "disclaimer_title": "⚠️ Important Disclaimer",
+      "disclaimer_body": "Gold investments carry risks including price volatility, storage costs, and liquidity limits. This is not financial advice. Always consult a qualified professional."
+    }
+  },
+  "rentenrechner": {
+    "title": "Retirement Calculator",
+    "subtitle": "Calculate your retirement with our interactive tool",
+    "step1": "Your Desired Retirement",
+    "step2": "Your Retirement Gap",
+    "step3": "Your Results",
+    "back": "← Back",
+    "next": "Next →",
+    "rentSituation": "Your Retirement Situation",
+    "desiredRetirement": "Desired Retirement",
+    "netIncome": "Net Income",
+    "statutoryPension": "Statutory Pension (net)",
+    "yourInformation": "Your Information",
+    "yearOfBirth": "Year of Birth",
+    "age": "Age",
+    "privateSavings": "Private Savings",
+    "gapAnalysis": "Your Retirement Gap",
+    "gap": "Gap",
+    "savingRecommendation": "💡 You should save €",
+    "savingRecommendationEnd": "monthly to close your retirement gap.",
+    "results": "Your Results",
+    "yearOfBirthLabel": "Year of Birth",
+    "retirementAge": "Retirement Age",
+    "privateSavingsLabel": "Private Savings",
+    "totalRetirement": "✓ Your Retirement Plan",
+    "statutoryPensionLabel": "Statutory Pension",
+    "privatePensionLabel": "Private Pension",
+    "totalPension": "Total Retirement",
+    "disclaimer": "This retirement calculator is a planning tool for informational purposes only. For personalized advice, please consult a retirement advisor.",
+    "loading": "Loading..."
   }
 }
