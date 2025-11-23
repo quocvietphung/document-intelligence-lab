@@ -29,23 +29,43 @@
     "cta_button": "Jetzt Termin vereinbaren",
     "steuererklaerung": {
       "title": "Steuererklärung",
-      "description": "Professionelle Erstellung und Einreichung Ihrer jährlichen Steuererklärungen (Einkommensteuer, Körperschaftsteuer, Umsatzsteuer) mit vollständiger Dokumentation und optimalen Abzugsmöglichkeiten."
+      "description": "Professionelle Erstellung und Einreichung Ihrer jährlichen Steuererklärungen (Einkommensteuer, Körperschaftsteuer, Umsatzsteuer) mit vollständiger Dokumentation und optimalen Abzugsmöglichkeiten.",
+      "details": "Unsere Steuererklärungs-Service deckt alle Aspekte Ihrer jährlichen Steuerpflichten ab. Wir kümmern uns um die Komplexität und stellen sicher, dass Sie maximale Abzüge erhalten.",
+      "features": ["Vollständige Steuererklärung für Privatpersonen und Unternehmen", "Optimierung von Abzügen und Freibeträgen", "Unterstützung bei Einkommen, Körperschaft und Umsatzsteuern", "Umgang mit Rückerstattungen und Nachzahlungen"],
+      "benefits": ["✓ Maximale Steuerbückerstattung", "✓ Vollständige Compliance mit Behörden", "✓ Zeitersparnis und weniger Stress", "✓ Professionelle Dokumentation und Unterstützung"],
+      "deliverables": ["Vollständige Steuererklärung", "Detaillierter Bericht", "Beratung zur zukünftigen Planung"]
     },
     "steueroptimierung": {
       "title": "Steueroptimierung",
-      "description": "Strategische Beratung zur Reduzierung Ihrer steuerlichen Belastung durch effiziente rechtliche Gestaltung und intelligente Steuerplanung."
+      "description": "Strategische Beratung zur Reduzierung Ihrer steuerlichen Belastung durch effiziente rechtliche Gestaltung und intelligente Steuerplanung.",
+      "details": "Strategische Steuerplanung zur Minimierung Ihrer Steuerlast. Wir identifizieren legale Möglichkeiten, Ihre Steuern zu reduzieren.",
+      "features": ["Analyse Ihrer aktuellen Steuersituation", "Identifikation von Sparpotentialen", "Strategische Geschäftsstrukturierung", "Investitionsoptimierung und Vermögensschutz"],
+      "benefits": ["✓ Bis zu 30% Steuereinsparungen", "✓ Legale und sichere Strategien", "✓ Langfristige Steuerplanung", "✓ Transparente Dokumentation"],
+      "deliverables": ["Steuersparplan", "Implementierungsberatung", "Laufende Überwachung"]
     },
     "real_estate": {
       "title": "Immobilienberatung",
-      "description": "Begleitung beim Kauf, Verkauf, der Vermietung und Bewertung von Immobilien – national und international – inklusive finanzieller Optimierung."
+      "description": "Begleitung beim Kauf, Verkauf, der Vermietung und Bewertung von Immobilien – national und international – inklusive finanzieller Optimierung.",
+      "details": "Umfassende Beratung für Immobilieninvestitionen mit steuerlicher Optimierung und Vermögensschutz.",
+      "features": ["Steueroptimierung bei Immobilienkäufen und -verkäufen", "Vermietungsstrategien und Einnahmemaximierung", "Abschreibungsoptimierung", "Internationale Immobilienwertschöpfung"],
+      "benefits": ["✓ Maximale Renditen auf Immobilieninvestitionen", "✓ Steuereffiziente Vermögensstrukturierung", "✓ Rechtssicherheit bei Transaktionen", "✓ Langfristige Vermögensplanung"],
+      "deliverables": ["Investitionsanalyse", "Steuerpläne", "Vertragsprüfung und -beratung"]
     },
     "it_consulting": {
       "title": "Digitale Transformation",
-      "description": "Modernisierung Ihrer Finanzprozesse mit Cloud-Lösungen, automatisierter Buchhaltung und sicherem digitalen Dokumentenmanagement."
+      "description": "Modernisierung Ihrer Finanzprozesse mit Cloud-Lösungen, automatisierter Buchhaltung und sicherem digitalen Dokumentenmanagement.",
+      "details": "Modernisierung Ihrer Steuerprozesse durch cloudbasierte Lösungen und automatisierte Systeme.",
+      "features": ["Cloud-Migration für Steuersysteme", "Automatisierte Buchführung und Fakturierung", "Sichere digitale Dokumentenverwaltung", "Integration mit bestehenden Systemen"],
+      "benefits": ["✓ 50% Zeit- und Kostenersparnis", "✓ Verbesserte Datensicherheit", "✓ Echtzeit-Steuerübersicht", "✓ Skalierbare Lösungen"],
+      "deliverables": ["Systemimplementierung", "Schulung und Support", "Laufende Wartung"]
     },
     "accounting": {
       "title": "Buchhaltung & Reporting",
-      "description": "Vollständige Finanzbuchhaltung, Jahresabschlüsse und Gewinn- und Verlustrechnungen für Unternehmen jeder Größe."
+      "description": "Vollständige Finanzbuchhaltung, Jahresabschlüsse und Gewinn- und Verlustrechnungen für Unternehmen jeder Größe.",
+      "details": "Vollständige Buchhaltungs- und Bilanzierungslösungen für Unternehmen aller Größen.",
+      "features": ["Laufende Buchhaltung und Steuerbuchhaltung", "Monatliche und jährliche Abschlüsse", "Gewinn- und Verlustrechnung", "Bilanz- und Berichterstattung"],
+      "benefits": ["✓ Vollständige steuerliche Transparenz", "✓ Compliance mit Rechnungslegungsstandards", "✓ Zeitnahe Steuerberichte", "✓ Datengestützte Geschäftsentscheidungen"],
+      "deliverables": ["Monatliche Abschlüsse", "Jahresabschluss", "Steuerberichte und Analyse"]
     }
   },
   "process": {

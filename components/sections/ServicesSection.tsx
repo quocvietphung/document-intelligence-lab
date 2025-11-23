@@ -30,24 +30,10 @@ export default function ServicesSection() {
       description: t("steuererklaerung.description"),
       badge: "Individuelle Lösungen",
       iconBg: "bg-gradient-to-br from-blue-50 to-blue-100",
-      details: "Unsere Steuererklärungs-Service deckt alle Aspekte Ihrer jährlichen Steuerpflichten ab. Wir kümmern uns um die Komplexität und stellen sicher, dass Sie maximale Abzüge erhalten.",
-      features: [
-        "Vollständige Steuererklärung für Privatpersonen und Unternehmen",
-        "Optimierung von Abzügen und Freibeträgen",
-        "Unterstützung bei Einkommen, Körperschaft und Umsatzsteuern",
-        "Umgang mit Rückerstattungen und Nachzahlungen"
-      ],
-      benefits: [
-        "✓ Maximale Steuerbückerstattung",
-        "✓ Vollständige Compliance mit Behörden",
-        "✓ Zeitersparnis und weniger Stress",
-        "✓ Professionelle Dokumentation und Unterstützung"
-      ],
-      deliverables: [
-        "Vollständige Steuererklärung",
-        "Detaillierter Bericht",
-        "Beratung zur zukünftigen Planung"
-      ],
+      details: t("steuererklaerung.details"),
+      features: t.raw("steuererklaerung.features"),
+      benefits: t.raw("steuererklaerung.benefits"),
+      deliverables: t.raw("steuererklaerung.deliverables"),
       icon: (
         <svg className="w-8 h-8 text-blue-600" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -62,24 +48,10 @@ export default function ServicesSection() {
       description: t("steueroptimierung.description"),
       badge: "Kostenersparnis",
       iconBg: "bg-gradient-to-br from-amber-50 to-yellow-100",
-      details: "Strategische Steuerplanung zur Minimierung Ihrer Steuerlast. Wir identifizieren legale Möglichkeiten, Ihre Steuern zu reduzieren.",
-      features: [
-        "Analyse Ihrer aktuellen Steuersituation",
-        "Identifikation von Sparpotentialen",
-        "Strategische Geschäftsstrukturierung",
-        "Investitionsoptimierung und Vermögensschutz"
-      ],
-      benefits: [
-        "✓ Bis zu 30% Steuereinsparungen",
-        "✓ Legale und sichere Strategien",
-        "✓ Langfristige Steuerplanung",
-        "✓ Transparente Dokumentation"
-      ],
-      deliverables: [
-        "Steuersparplan",
-        "Implementierungsberatung",
-        "Laufende Überwachung"
-      ],
+      details: t("steueroptimierung.details"),
+      features: t.raw("steueroptimierung.features"),
+      benefits: t.raw("steueroptimierung.benefits"),
+      deliverables: t.raw("steueroptimierung.deliverables"),
       icon: (
         <svg className="w-8 h-8 text-amber-600" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path d="M9 18h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -94,24 +66,10 @@ export default function ServicesSection() {
       description: t("real_estate.description"),
       badge: "Vermögensschutz",
       iconBg: "bg-gradient-to-br from-green-50 to-emerald-100",
-      details: "Umfassende Beratung für Immobilieninvestitionen mit steuerlicher Optimierung und Vermögensschutz.",
-      features: [
-        "Steueroptimierung bei Immobilienkäufen und -verkäufen",
-        "Vermietungsstrategien und Einnahmemaximierung",
-        "Abschreibungsoptimierung",
-        "Internationale Immobilienwertschöpfung"
-      ],
-      benefits: [
-        "✓ Maximale Renditen auf Immobilieninvestitionen",
-        "✓ Steuereffiziente Vermögensstrukturierung",
-        "✓ Rechtssicherheit bei Transaktionen",
-        "✓ Langfristige Vermögensplanung"
-      ],
-      deliverables: [
-        "Investitionsanalyse",
-        "Steuerpläne",
-        "Vertragsprüfung und -beratung"
-      ],
+      details: t("real_estate.details"),
+      features: t.raw("real_estate.features"),
+      benefits: t.raw("real_estate.benefits"),
+      deliverables: t.raw("real_estate.deliverables"),
       icon: (
         <svg className="w-8 h-8 text-green-600" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path d="M3 11.5L12 4l9 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -125,24 +83,10 @@ export default function ServicesSection() {
       description: t("it_consulting.description"),
       badge: "Innovation",
       iconBg: "bg-gradient-to-br from-indigo-50 to-indigo-100",
-      details: "Modernisierung Ihrer Steuerprozesse durch cloudbasierte Lösungen und automatisierte Systeme.",
-      features: [
-        "Cloud-Migration für Steuersysteme",
-        "Automatisierte Buchführung und Fakturierung",
-        "Sichere digitale Dokumentenverwaltung",
-        "Integration mit bestehenden Systemen"
-      ],
-      benefits: [
-        "✓ 50% Zeit- und Kostenersparnis",
-        "✓ Verbesserte Datensicherheit",
-        "✓ Echtzeit-Steuerübersicht",
-        "✓ Skalierbare Lösungen"
-      ],
-      deliverables: [
-        "Systemimplementierung",
-        "Schulung und Support",
-        "Laufende Wartung"
-      ],
+      details: t("it_consulting.details"),
+      features: t.raw("it_consulting.features"),
+      benefits: t.raw("it_consulting.benefits"),
+      deliverables: t.raw("it_consulting.deliverables"),
       icon: (
         <svg className="w-8 h-8 text-indigo-600" viewBox="0 0 24 24" fill="none" aria-hidden>
           <rect x="3" y="5" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -156,24 +100,10 @@ export default function ServicesSection() {
       description: t("accounting.description"),
       badge: "Transparenz",
       iconBg: "bg-gradient-to-br from-rose-50 to-pink-100",
-      details: "Vollständige Buchhaltungs- und Bilanzierungslösungen für Unternehmen aller Größen.",
-      features: [
-        "Laufende Buchhaltung und Steuerbuchhaltung",
-        "Monatliche und jährliche Abschlüsse",
-        "Gewinn- und Verlustrechnung",
-        "Bilanz- und Berichterstattung"
-      ],
-      benefits: [
-        "✓ Vollständige steuerliche Transparenz",
-        "✓ Compliance mit Rechnungslegungsstandards",
-        "✓ Zeitnahe Steuerberichte",
-        "✓ Datengestützte Geschäftsentscheidungen"
-      ],
-      deliverables: [
-        "Monatliche Abschlüsse",
-        "Jahresabschluss",
-        "Steuerberichte und Analyse"
-      ],
+      details: t("accounting.details"),
+      features: t.raw("accounting.features"),
+      benefits: t.raw("accounting.benefits"),
+      deliverables: t.raw("accounting.deliverables"),
       icon: (
         <svg className="w-8 h-8 text-rose-600" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path d="M12 20v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -345,14 +275,22 @@ export default function ServicesSection() {
             <div className="p-8 space-y-8">
               {selectedService.details && (
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Übersicht</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">{
+                    locale === 'en' ? 'Overview' :
+                    locale === 'vi' ? 'Tổng quan' :
+                    'Übersicht'
+                  }</h3>
                   <p className="text-gray-700 leading-relaxed">{selectedService.details}</p>
                 </div>
               )}
 
               {selectedService.features && (
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Leistungsmerkmale</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">{
+                    locale === 'en' ? 'Key Features' :
+                    locale === 'vi' ? 'Các tính năng chính' :
+                    'Leistungsmerkmale'
+                  }</h3>
                   <ul className="space-y-2">
                     {selectedService.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-3 text-gray-700">
@@ -366,7 +304,11 @@ export default function ServicesSection() {
 
               {selectedService.benefits && (
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Vorteile</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">{
+                    locale === 'en' ? 'Benefits' :
+                    locale === 'vi' ? 'Lợi ích' :
+                    'Vorteile'
+                  }</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {selectedService.benefits.map((benefit, idx) => (
                       <div key={idx} className="bg-blue-50 p-4 rounded-lg text-gray-700 font-medium">
@@ -379,7 +321,11 @@ export default function ServicesSection() {
 
               {selectedService.deliverables && (
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Leistungen</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">{
+                    locale === 'en' ? 'Deliverables' :
+                    locale === 'vi' ? 'Kết quả giao' :
+                    'Leistungen'
+                  }</h3>
                   <div className="space-y-2">
                     {selectedService.deliverables.map((deliverable, idx) => (
                       <div key={idx} className="flex items-center gap-3 text-gray-700">

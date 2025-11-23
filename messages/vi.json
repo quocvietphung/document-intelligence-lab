@@ -29,23 +29,43 @@
     "cta_button": "Đặt lịch tư vấn ngay",
     "steuererklaerung": {
       "title": "Khai báo Thuế",
-      "description": "Chuẩn bị và nộp tờ khai thuế chuyên nghiệp (thuế thu nhập, thuế doanh nghiệp, thuế VAT) với tài liệu đầy đủ và các khoản khấu trừ tối ưu."
+      "description": "Chuẩn bị và nộp tờ khai thuế chuyên nghiệp (thuế thu nhập, thuế doanh nghiệp, thuế VAT) với tài liệu đầy đủ và các khoản khấu trừ tối ưu.",
+      "details": "Dịch vụ khai báo thuế của chúng tôi bao gồm tất cả các khía cạnh của nghĩa vụ thuế hàng năm của bạn. Chúng tôi xử lý độ phức tạp và đảm bảo bạn nhận được các khoản khấu trừ tối đa.",
+      "features": ["Khai báo thuế hoàn chỉnh cho cá nhân và doanh nghiệp", "Tối ưu hóa các khoản khấu trừ và miễn trừ", "Hỗ trợ thuế thu nhập, doanh nghiệp và VAT", "Quản lý hoàn thuế và thanh toán bổ sung"],
+      "benefits": ["✓ Hoàn thuế tối đa", "✓ Tuân thủ quy định hoàn toàn", "✓ Tiết kiệm thời gian và giảm căng thẳng", "✓ Hỗ trợ tài liệu chuyên nghiệp"],
+      "deliverables": ["Khai báo thuế hoàn chỉnh", "Báo cáo chi tiết", "Tư vấn lập kế hoạch tương lai"]
     },
     "steueroptimierung": {
       "title": "Tối ưu Thuế",
-      "description": "Tư vấn chiến lược nhằm giảm gánh nặng thuế thông qua cấu trúc pháp lý phù hợp và kế hoạch thuế thông minh."
+      "description": "Tư vấn chiến lược nhằm giảm gánh nặng thuế thông qua cấu trúc pháp lý phù hợp và kế hoạch thuế thông minh.",
+      "details": "Lập kế hoạch thuế chiến lược để giảm thiểu trách nhiệm thuế của bạn. Chúng tôi xác định các cơ hội pháp lý để giảm thuế.",
+      "features": ["Phân tích tình hình thuế hiện tại của bạn", "Xác định tiềm năng tiết kiệm", "Cấu trúc hóa kinh doanh chiến lược", "Tối ưu hóa đầu tư và bảo vệ tài sản"],
+      "benefits": ["✓ Tiết kiệm thuế lên đến 30%", "✓ Các chiến lược pháp lý và an toàn", "✓ Lập kế hoạch thuế dài hạn", "✓ Tài liệu minh bạch"],
+      "deliverables": ["Kế hoạch tiết kiệm thuế", "Tư vấn triển khai", "Giám sát liên tục"]
     },
     "real_estate": {
       "title": "Tư vấn Bất động sản",
-      "description": "Hỗ trợ mua bán, cho thuê, định giá và tối ưu hóa tài chính bất động sản tại Đức và quốc tế."
+      "description": "Hỗ trợ mua bán, cho thuê, định giá và tối ưu hóa tài chính bất động sản tại Đức và quốc tế.",
+      "details": "Tư vấn toàn diện cho các khoản đầu tư bất động sản với tối ưu hóa thuế và bảo vệ tài sản.",
+      "features": ["Tối ưu hóa thuế cho mua bán bất động sản", "Chiến lược cho thuê và tối đa hóa thu nhập", "Tối ưu hóa khấu hao", "Tạo giá trị bất động sản quốc tế"],
+      "benefits": ["✓ Lợi suất tối đa trên các khoản đầu tư bất động sản", "✓ Cấu trúc tài sản hiệu quả về mặt thuế", "✓ Bảo mật pháp lý trong các giao dịch", "✓ Lập kế hoạch tài sản dài hạn"],
+      "deliverables": ["Phân tích đầu tư", "Kế hoạch thuế", "Kiểm tra và tư vấn hợp đồng"]
     },
     "it_consulting": {
       "title": "Chuyển đổi Số",
-      "description": "Nâng cấp quy trình tài chính với giải pháp đám mây, kế toán tự động và quản lý tài liệu số an toàn."
+      "description": "Nâng cấp quy trình tài chính với giải pháp đám mây, kế toán tự động và quản lý tài liệu số an toàn.",
+      "details": "Hiện đại hóa các quy trình thuế của bạn thông qua các giải pháp dựa trên đám mây và hệ thống tự động.",
+      "features": ["Di chuyển đám mây cho các hệ thống thuế", "Sổ cái tự động và hóa đơn", "Quản lý tài liệu kỹ thuật số an toàn", "Tích hợp với các hệ thống hiện có"],
+      "benefits": ["✓ Tiết kiệm thời gian và chi phí 50%", "✓ Bảo mật dữ liệu được cải thiện", "✓ Tổng quan thuế thời gian thực", "✓ Giải pháp có thể mở rộng"],
+      "deliverables": ["Triển khai hệ thống", "Đào tạo và hỗ trợ", "Bảo trì liên tục"]
     },
     "accounting": {
       "title": "Kế toán & Báo cáo",
-      "description": "Dịch vụ kế toán đầy đủ, báo cáo tài chính, bảng cân đối và báo cáo lợi nhuận dành cho mọi loại hình doanh nghiệp."
+      "description": "Dịch vụ kế toán đầy đủ, báo cáo tài chính, bảng cân đối và báo cáo lợi nhuận dành cho mọi loại hình doanh nghiệp.",
+      "details": "Giải pháp kế toán và báo cáo tài chính toàn diện cho các doanh nghiệp mọi quy mô.",
+      "features": ["Sổ cái liên tục và kế toán thuế", "Báo cáo tài chính hàng tháng và hàng năm", "Báo cáo lợi nhuận và lỗ", "Bảng cân đối kế toán và báo cáo"],
+      "benefits": ["✓ Minh bạch tài chính hoàn toàn", "✓ Tuân thủ các tiêu chuẩn kế toán", "✓ Báo cáo thuế kịp thời", "✓ Quyết định kinh doanh dựa trên dữ liệu"],
+      "deliverables": ["Báo cáo hàng tháng", "Báo cáo hàng năm", "Báo cáo thuế và phân tích"]
     }
   },
   "process": {

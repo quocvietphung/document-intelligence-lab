@@ -29,23 +29,43 @@
     "cta_button": "Schedule Your Consultation",
     "steuererklaerung": {
       "title": "Tax Declaration",
-      "description": "Professional preparation and submission of annual tax returns (income tax, corporate tax, VAT) with complete documentation and optimized deductions."
+      "description": "Professional preparation and submission of annual tax returns (income tax, corporate tax, VAT) with complete documentation and optimized deductions.",
+      "details": "Our tax declaration service covers all aspects of your annual tax obligations. We handle the complexity and ensure you receive maximum deductions.",
+      "features": ["Complete tax return filing for individuals and businesses", "Optimization of deductions and allowances", "Support with income, corporate, and VAT taxes", "Management of refunds and additional payments"],
+      "benefits": ["✓ Maximum tax refunds", "✓ Complete regulatory compliance", "✓ Time savings and reduced stress", "✓ Professional documentation and support"],
+      "deliverables": ["Complete tax return", "Detailed report", "Future planning consultation"]
     },
     "steueroptimierung": {
       "title": "Tax Optimization",
-      "description": "Strategic consulting aimed at reducing your tax burden through optimized legal structures and intelligent tax planning."
+      "description": "Strategic consulting aimed at reducing your tax burden through optimized legal structures and intelligent tax planning.",
+      "details": "Strategic tax planning to minimize your tax liability. We identify legal opportunities to reduce your taxes.",
+      "features": ["Analysis of your current tax situation", "Identification of savings potential", "Strategic business structuring", "Investment optimization and asset protection"],
+      "benefits": ["✓ Up to 30% tax savings", "✓ Legal and secure strategies", "✓ Long-term tax planning", "✓ Transparent documentation"],
+      "deliverables": ["Tax savings plan", "Implementation consulting", "Ongoing monitoring"]
     },
     "real_estate": {
       "title": "Real Estate Consulting",
-      "description": "Support with purchasing, selling, leasing, valuation, and financial optimization of real estate in Germany and internationally."
+      "description": "Support with purchasing, selling, leasing, valuation, and financial optimization of real estate in Germany and internationally.",
+      "details": "Comprehensive consulting for real estate investments with tax optimization and asset protection.",
+      "features": ["Tax optimization for real estate purchases and sales", "Rental strategies and income maximization", "Depreciation optimization", "International real estate value creation"],
+      "benefits": ["✓ Maximum returns on real estate investments", "✓ Tax-efficient asset structuring", "✓ Legal security in transactions", "✓ Long-term wealth planning"],
+      "deliverables": ["Investment analysis", "Tax plans", "Contract review and consulting"]
     },
     "it_consulting": {
       "title": "Digital Transformation",
-      "description": "Modernize your financial operations with cloud-based solutions, automated accounting, and secure digital document management."
+      "description": "Modernize your financial operations with cloud-based solutions, automated accounting, and secure digital document management.",
+      "details": "Modernization of your tax processes through cloud-based solutions and automated systems.",
+      "features": ["Cloud migration for tax systems", "Automated bookkeeping and invoicing", "Secure digital document management", "Integration with existing systems"],
+      "benefits": ["✓ 50% time and cost savings", "✓ Improved data security", "✓ Real-time tax overview", "✓ Scalable solutions"],
+      "deliverables": ["System implementation", "Training and support", "Ongoing maintenance"]
     },
     "accounting": {
       "title": "Accounting & Reporting",
-      "description": "Full-service bookkeeping, financial accounting, annual statements, and P&L reporting for businesses of all sizes."
+      "description": "Full-service bookkeeping, financial accounting, annual statements, and P&L reporting for businesses of all sizes.",
+      "details": "Comprehensive accounting and financial reporting solutions for businesses of all sizes.",
+      "features": ["Ongoing bookkeeping and tax accounting", "Monthly and annual financial statements", "Profit and loss statements", "Balance sheet and reporting"],
+      "benefits": ["✓ Complete financial transparency", "✓ Compliance with accounting standards", "✓ Timely tax reports", "✓ Data-driven business decisions"],
+      "deliverables": ["Monthly statements", "Annual statements", "Tax reports and analysis"]
     }
   },
   "process": {
