@@ -11,7 +11,6 @@ export {
   ProcessSection,
   FAQSection,
   ReviewsSection,
-  TestimonialsSection,
   ContactSection
 } from './sections';
 
