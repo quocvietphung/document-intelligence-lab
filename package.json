@@ -1,12 +1,13 @@
 {
-  "name": "tax-consulting",
+  "name": "finance-consulting",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:ergo-json": "node scripts/build-ergo-json.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.53",
@@ -16,7 +17,9 @@
     "next-intl": "^3.0.0",
     "openai": "^6.6.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "pdf-parse": "^1.1.1",
+    "natural": "^6.2.0"
   },
   "devDependencies": {
     "@types/node": "^20",

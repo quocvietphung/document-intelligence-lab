@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, phone, message } = body;
+    const { name, email, phone, message, service, date, time } = body;
 
     // Validate required fields
     if (!name || !email || !message) {
@@ -13,15 +13,28 @@ export async function POST(request: Request) {
       );
     }
 
+    // Basic validation for optional booking fields
+    const bookingInfo = {
+      service: service || null,
+      date: date || null,
+      time: time || null,
+    };
+
     // Here you would typically:
-    // 1. Send an email notification
+    // 1. Send an email notification with booking details
     // 2. Store the booking in a database
     // 3. Send confirmation email to the user
-    
-    // For now, we'll just log it and return success
-    console.log("New booking request:", { name, email, phone, message });
 
-    // Simulate email sending delay
+    // For now, we'll just log it and return success
+    console.log("New booking request:", {
+      name,
+      email,
+      phone,
+      message,
+      bookingInfo,
+    });
+
+    // Simulate email sending / processing delay
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     return NextResponse.json(
