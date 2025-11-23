@@ -1,417 +1,470 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
+// ==================== Step Navigation Component ====================
+function StepNav({
+  currentStep,
+  onBack,
+  onNext,
+  canGoNext,
+}: {
+  currentStep: number;
+  onBack: () => void;
+  onNext: () => void;
+  canGoNext: boolean;
+}) {
+  const steps = [
+    { number: 1, title: "Ihre Wunschrente" },
+    { number: 2, title: "Ihre Vorsorgelücke" },
+    { number: 3, title: "Ihr Ergebnis" },
+  ];
 
-export default function RentenrechnerPage() {
-  const [locale, setLocale] = useState("en");
-  const [mounted, setMounted] = useState(false);
+  return (
+    <div className="bg-white border-b border-gray-200 py-6">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Step Indicators */}
+        <div className="flex items-center justify-between mb-8">
+          {steps.map((step, idx) => (
+            <div key={step.number} className="flex items-center flex-1">
+              <div
+                className={`flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm transition-all ${
+                  currentStep >= step.number
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-600"
+                }`}
+              >
+                {step.number}
+              </div>
+              <div className="ml-3 flex-1">
+                <p
+                  className={`text-sm font-semibold ${
+                    currentStep >= step.number ? "text-gray-900" : "text-gray-500"
+                  }`}
+                >
+                  {step.title}
+                </p>
+              </div>
+              {idx < steps.length - 1 && (
+                <div
+                  className={`flex-1 h-0.5 mx-4 ${
+                    currentStep > step.number ? "bg-blue-600" : "bg-gray-200"
+                  }`}
+                />
+              )}
+            </div>
+          ))}
+        </div>
 
-  useEffect(() => {
-    const pathParts = typeof window !== "undefined" ? window.location.pathname.split("/") : [];
-    const detectedLocale = pathParts[1] || "en";
-    setLocale(detectedLocale);
-    setMounted(true);
-  }, []);
+        {/* Navigation Buttons */}
+        <div className="flex justify-between items-center">
+          <button
+            onClick={onBack}
+            disabled={currentStep === 1}
+            className="px-6 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            ← Zurück
+          </button>
+          <button
+            onClick={onNext}
+            disabled={!canGoNext || currentStep === 3}
+            className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            Weiter →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-  const translations = {
-    de: {
-      title: "Deutsche Rentenversicherung Rechner",
-      subtitle: "Berechnen Sie Ihre gesetzliche Altersrente basierend auf der deutschen Rentenformel",
-      section1: "Ihre Angaben",
-      section2: "Ergebnis",
-      entgeltpunkte: "Bereits erworbene Entgeltpunkte",
-      incomeRatio: "Einkommen als % des Durchschnittsverdiensten",
-      currentAge: "Aktuelles Alter",
-      plannedRetirementAge: "Geplantes Renteneintrittsalter",
-      yearsContributing: "Beitragsjahre bis Rente",
-      targetPension: "Angestrebte monatliche Rente (€)",
-      rentenwertWest: "Aktueller Rentenwert West (€)",
-      rentenwertOst: "Aktueller Rentenwert Ost (€)",
-      chooseRegion: "Region",
-      west: "West",
-      ost: "Ost",
-      calculate: "Berechnen",
-      reset: "Zurücksetzen",
-      estimatedGrossPension: "Geschätzte monatliche Bruttorente",
-      accessFactor: "Zugangsfaktor",
-      totalEntgeltpunkte: "Geschätzte Gesamtentgeltpunkte",
-      pensionGap: "Versorgungslücke (Zielrente - Geschätzte Rente)",
-      noGap: "Zielrente erreicht ✓",
-      info: "Dieser Rechner basiert auf der deutschen Rentenformel (Entgeltpunkte × Zugangsfaktor × Rentenartfaktor × aktueller Rentenwert). Dies ist eine Approximation. Für personalisierte Beratung konsultieren Sie einen Rentenberater oder die Deutsche Rentenversicherung.",
-      infoAccess: "Der Zugangsfaktor beträgt 100% bei Regelrentenalter (67 Jahre). Für jeden Monat Frührentner wird 0,3% abgezogen, für jeden Monat später hinzugefügt.",
-      placeholder: "Geben Sie einen Wert ein",
-    },
-    en: {
-      title: "German Statutory Pension Calculator",
-      subtitle: "Calculate your state pension based on the German statutory pension formula",
-      section1: "Your Information",
-      section2: "Results",
-      entgeltpunkte: "Entgeltpunkte (earnings points) accumulated so far",
-      incomeRatio: "Expected income as % of average insured earnings",
-      currentAge: "Current Age",
-      plannedRetirementAge: "Planned Retirement Age",
-      yearsContributing: "Contributing years until retirement",
-      targetPension: "Target Monthly Pension (EUR)",
-      rentenwertWest: "Current Rentenwert West (EUR)",
-      rentenwertOst: "Current Rentenwert Ost (EUR)",
-      chooseRegion: "Region",
-      west: "West",
-      ost: "Ost",
-      calculate: "Calculate",
-      reset: "Reset",
-      estimatedGrossPension: "Estimated Monthly Gross Pension",
-      accessFactor: "Access Factor",
-      totalEntgeltpunkte: "Estimated Total Entgeltpunkte",
-      pensionGap: "Pension Gap (Target - Estimated)",
-      noGap: "Target pension reached ✓",
-      info: "This calculator is based on the German pension formula (Entgeltpunkte × Access Factor × Pension Type Factor × Current Pension Value). This is an approximation. For personalized advice, consult a pension advisor or Deutsche Rentenversicherung.",
-      infoAccess: "The access factor is 100% at standard retirement age (67 years). For each month of early retirement -0.3%, for each month later +0.3%.",
-      placeholder: "Enter a value",
-    },
-    vi: {
-      title: "Máy Tính Hưu Trí Đức",
-      subtitle: "Tính toán lương hưu của bạn dựa trên công thức hưu trí theo luật Đức",
-      section1: "Thông tin của bạn",
-      section2: "Kết quả",
-      entgeltpunkte: "Điểm lương (Entgeltpunkte) đã tích lũy",
-      incomeRatio: "Doanh thu dự kiến là % của thu nhập bảo hiểm trung bình",
-      currentAge: "Tuổi hiện tại",
-      plannedRetirementAge: "Tuổi hưu trí dự kiến",
-      yearsContributing: "Năm đóng góp đến khi hưu trí",
-      targetPension: "Lương hưu mục tiêu hàng tháng (EUR)",
-      rentenwertWest: "Giá trị lương hưu West hiện tại (EUR)",
-      rentenwertOst: "Giá trị lương hưu Ost hiện tại (EUR)",
-      chooseRegion: "Khu vực",
-      west: "West",
-      ost: "Ost",
-      calculate: "Tính toán",
-      reset: "Đặt lại",
-      estimatedGrossPension: "Lương hưu brutto hàng tháng ước tính",
-      accessFactor: "Hệ số truy cập",
-      totalEntgeltpunkte: "Tổng điểm lương ước tính",
-      pensionGap: "Khoảng trống hưu trí (Mục tiêu - Ước tính)",
-      noGap: "Đạt được lương hưu mục tiêu ✓",
-      info: "Máy tính này dựa trên công thức lương hưu Đức (Điểm lương × Hệ số truy cập × Hệ số loại lương hưu × Giá trị lương hưu hiện tại). Đây là ước tính gần đúng. Để được tư vấn cá nhân hóa, vui lòng liên hệ với cố vấn lương hưu.",
-      infoAccess: "Hệ số truy cập là 100% ở tuổi hưu trí tiêu chuẩn (67 tuổi). Mỗi tháng hưu trí sớm -0,3%, mỗi tháng sau này +0,3%.",
-      placeholder: "Nhập một giá trị",
-    },
+// ==================== Rent Chart Component ====================
+function RentChart({
+  nettoeinkommen,
+  gesetzlicheRente,
+  wunschrente,
+  maxIncome,
+  maxRente,
+  onNettoeinkommenChange,
+  onWunschrenterChange,
+}: {
+  nettoeinkommen: number;
+  gesetzlicheRente: number;
+  wunschrente: number;
+  maxIncome: number;
+  maxRente: number;
+  onNettoeinkommenChange: (value: number) => void;
+  onWunschrenterChange: (value: number) => void;
+}) {
+  const chartRef = useRef<HTMLDivElement>(null);
+  const incomePercentage = (nettoeinkommen / maxIncome) * 100;
+  const gesetzlichePercentage = (gesetzlicheRente / maxRente) * 100;
+  const wunschePercentage = (wunschrente / maxRente) * 100;
+
+  const handleIncomeDrag = (e: React.MouseEvent) => {
+    if (!chartRef.current) return;
+    const rect = chartRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    const value = (percentage / 100) * maxIncome;
+    onNettoeinkommenChange(Math.round(value));
   };
 
-  const t = translations[locale as keyof typeof translations] || translations.en;
+  const handleWunscheDrag = (e: React.MouseEvent) => {
+    if (!chartRef.current) return;
+    const rect = chartRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    const value = (percentage / 100) * maxRente;
+    onWunschrenterChange(Math.round(value));
+  };
 
-  const calculatePension = useCallback(() => {
-    const currentAge = parseFloat((document.getElementById("currentAge") as HTMLInputElement)?.value) || 35;
-    const plannedRetirementAge = parseFloat((document.getElementById("plannedRetirementAge") as HTMLInputElement)?.value) || 67;
-    const entgeltpunkte = parseFloat((document.getElementById("entgeltpunkte") as HTMLInputElement)?.value) || 0;
-    const incomeRatio = parseFloat((document.getElementById("incomeRatio") as HTMLInputElement)?.value) || 100;
-    const targetPension = parseFloat((document.getElementById("targetPension") as HTMLInputElement)?.value) || 0;
-    const rentenwertWest = parseFloat((document.getElementById("rentenwertWest") as HTMLInputElement)?.value) || 38.36;
-    const rentenwertOst = parseFloat((document.getElementById("rentenwertOst") as HTMLInputElement)?.value) || 37.60;
-    const useWest = (document.getElementById("region") as HTMLSelectElement)?.value === "west";
-
-    const currentRentenwert = useWest ? rentenwertWest : rentenwertOst;
-    const yearsToRetirement = Math.max(0, plannedRetirementAge - currentAge);
-
-    // Calculate access factor (Zugangsfaktor)
-    // 100% at 67, -0.3% per month early, +0.3% per month late
-    const monthsDeviation = (plannedRetirementAge - 67) * 12;
-    const accessFactor = 1 + (monthsDeviation * 0.003);
-
-    // Estimate future entgeltpunkte based on income ratio
-    const averageEarningsPoints = incomeRatio / 100; // Simplified: 1 point per year at 100% income
-    const futureEntgeltpunkte = averageEarningsPoints * yearsToRetirement;
-    const totalEntgeltpunkte = entgeltpunkte + futureEntgeltpunkte;
-
-    // German pension formula: Entgeltpunkte × Zugangsfaktor × Rentenartfaktor × aktueller Rentenwert
-    // Rentenartfaktor for old-age pension = 1.0
-    const rentenartfaktor = 1.0;
-    const monthlyGrossPension = totalEntgeltpunkte * accessFactor * rentenartfaktor * currentRentenwert;
-
-    // Calculate pension gap
-    const pensionGap = targetPension - monthlyGrossPension;
-
-    // Update display
-    const formatCurrency = (value: number) => {
-      return new Intl.NumberFormat("de-DE", {
-        style: "currency",
-        currency: "EUR",
-        maximumFractionDigits: 2,
-      }).format(value);
+  const startIncomeDrag = () => {
+    const handleMouseMove = (e: MouseEvent) => handleIncomeDrag(e as any);
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
-
-    const penElement = document.getElementById("estimatedPensionResult");
-    const accessFactorElement = document.getElementById("accessFactorResult");
-    const entgeltpunkteElement = document.getElementById("totalEntgeltpunkteResult");
-    const gapElement = document.getElementById("pensionGapResult");
-    const gapLabelElement = document.getElementById("pensionGapLabel");
-
-    if (penElement) penElement.textContent = formatCurrency(monthlyGrossPension);
-    if (accessFactorElement) accessFactorElement.textContent = accessFactor.toFixed(3);
-    if (entgeltpunkteElement) entgeltpunkteElement.textContent = totalEntgeltpunkte.toFixed(2);
-
-    if (gapElement && gapLabelElement) {
-      if (targetPension > 0) {
-        if (pensionGap <= 0) {
-          gapElement.textContent = t.noGap;
-          gapElement.className = "text-2xl font-bold text-green-600";
-          gapLabelElement.style.display = "none";
-        } else {
-          gapElement.textContent = formatCurrency(pensionGap);
-          gapElement.className = "text-2xl font-bold text-orange-600";
-          gapLabelElement.style.display = "block";
-        }
-      } else {
-        gapElement.textContent = "—";
-        gapLabelElement.style.display = "none";
-      }
-    }
-  }, [t]);
-
-  const handleReset = () => {
-    const form = document.getElementById("calculatorForm") as HTMLFormElement;
-    if (form) {
-      form.reset();
-      setTimeout(() => calculatePension(), 0);
-    }
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
   };
 
+  const startWunschDrag = () => {
+    const handleMouseMove = (e: MouseEvent) => handleWunscheDrag(e as any);
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  return (
+    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+      <h2 className="text-2xl font-bold text-gray-900 mb-8">Ihre Rentensituation</h2>
+
+      {/* Wunschrente Line */}
+      <div className="relative mb-16 h-16">
+        <div className="absolute top-8 w-full h-0.5 bg-gray-200"></div>
+        <div
+          className="absolute top-6 w-1 h-4 bg-red-500 transition-all duration-300"
+          style={{ left: `${wunschePercentage}%`, transform: "translateX(-50%)" }}
+        >
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-bold text-red-600">
+            Wunschrente: €{wunschrente.toLocaleString()}
+          </div>
+        </div>
+        <div
+          onMouseDown={startWunschDrag}
+          className="absolute top-4 w-8 h-8 bg-red-500 rounded-full cursor-grab active:cursor-grabbing shadow-md hover:scale-110 transition-transform"
+          style={{ left: `calc(${wunschePercentage}% - 16px)` }}
+          title="Drag to adjust"
+        />
+      </div>
+
+      {/* Main Chart */}
+      <div
+        ref={chartRef}
+        className="relative h-32 bg-gradient-to-r from-gray-100 to-gray-50 rounded-xl overflow-hidden"
+      >
+        {/* Nettoeinkommen Bar */}
+        <div className="absolute top-0 left-0 h-1/2 w-full bg-gray-200">
+          <div
+            className="h-full bg-gray-400 transition-all duration-300 flex items-center justify-center text-sm font-bold text-white"
+            style={{ width: `${incomePercentage}%` }}
+          >
+            {incomePercentage > 15 && `€${nettoeinkommen.toLocaleString()}`}
+          </div>
+        </div>
+
+        <div
+          className="absolute top-1/2 -translate-y-1/2 w-8 h-8 bg-gray-400 rounded-full cursor-grab active:cursor-grabbing shadow-lg hover:scale-110 transition-transform"
+          style={{ left: `calc(${incomePercentage}% - 16px)` }}
+          onMouseDown={startIncomeDrag}
+          title="Drag to adjust Nettoeinkommen"
+        />
+
+        <div className="absolute top-2 left-4 text-xs font-semibold text-gray-700">
+          Nettoeinkommen
+        </div>
+
+        {/* Gesetzliche Rente Bar */}
+        <div className="absolute bottom-0 left-0 h-1/2 w-full bg-teal-100">
+          <div
+            className="h-full bg-teal-500 transition-all duration-300 flex items-center justify-center text-sm font-bold text-white"
+            style={{ width: `${gesetzlichePercentage}%` }}
+          >
+            {gesetzlichePercentage > 15 && `€${gesetzlicheRente.toLocaleString()}`}
+          </div>
+        </div>
+
+        <div className="absolute bottom-2 left-4 text-xs font-semibold text-teal-700">
+          Gesetzliche Rente (netto)
+        </div>
+      </div>
+
+      {/* Summary */}
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gray-50 rounded-lg p-4">
+          <p className="text-xs text-gray-600 font-semibold mb-1">Nettoeinkommen</p>
+          <p className="text-2xl font-bold text-gray-900">€{nettoeinkommen.toLocaleString()}</p>
+        </div>
+        <div className="bg-teal-50 rounded-lg p-4">
+          <p className="text-xs text-teal-600 font-semibold mb-1">Gesetzliche Rente</p>
+          <p className="text-2xl font-bold text-teal-600">€{gesetzlicheRente.toLocaleString()}</p>
+        </div>
+        <div className="bg-red-50 rounded-lg p-4">
+          <p className="text-xs text-red-600 font-semibold mb-1">Wunschrente</p>
+          <p className="text-2xl font-bold text-red-600">€{wunschrente.toLocaleString()}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==================== Slider Group Component ====================
+function SliderGroup({
+  jahrgang,
+  privatrente,
+  onJahrgangChange,
+  onPrivatrenterChange,
+}: {
+  jahrgang: number;
+  privatrente: number;
+  onJahrgangChange: (value: number) => void;
+  onPrivatrenterChange: (value: number) => void;
+}) {
+  const alter = new Date().getFullYear() - jahrgang;
+
+  return (
+    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+      <h3 className="text-xl font-bold text-gray-900 mb-8">Ihre Angaben</h3>
+
+      {/* Jahrgang Slider */}
+      <div className="mb-10">
+        <div className="flex justify-between items-center mb-3">
+          <label className="text-sm font-semibold text-gray-700">Jahrgang</label>
+          <span className="text-lg font-bold text-gray-900">
+            {jahrgang} (Alter: {alter})
+          </span>
+        </div>
+        <input
+          type="range"
+          min="1940"
+          max="2005"
+          value={jahrgang}
+          onChange={(e) => onJahrgangChange(parseInt(e.target.value))}
+          className="w-full h-3 bg-red-100 rounded-lg appearance-none cursor-pointer"
+          style={{
+            background: `linear-gradient(to right, #ef4444 0%, #ef4444 ${
+              ((jahrgang - 1940) / (2005 - 1940)) * 100
+            }%, #fecaca ${((jahrgang - 1940) / (2005 - 1940)) * 100}%, #fecaca 100%)`,
+          }}
+        />
+      </div>
+
+      {/* Private Rente Slider */}
+      <div>
+        <div className="flex justify-between items-center mb-3">
+          <label className="text-sm font-semibold text-gray-700">
+            Angesparte private Rente
+          </label>
+          <span className="text-lg font-bold text-gray-900">
+            €{privatrente.toLocaleString()}
+          </span>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="10000"
+          step="100"
+          value={privatrente}
+          onChange={(e) => onPrivatrenterChange(parseInt(e.target.value))}
+          className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          style={{
+            background: `linear-gradient(to right, #9ca3af 0%, #9ca3af ${
+              (privatrente / 10000) * 100
+            }%, #e5e7eb ${(privatrente / 10000) * 100}%, #e5e7eb 100%)`,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ==================== Main Page Component ====================
+export default function RentenrechnerPage() {
+  const [mounted, setMounted] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [nettoeinkommen, setNettoeinkommen] = useState(3500);
+  const [gesetzlicheRente, setGesetzlicheRente] = useState(1800);
+  const [wunschrente, setWunschrente] = useState(2500);
+  const [jahrgang, setJahrgang] = useState(1965);
+  const [privatrente, setPrivatrente] = useState(3500);
+
   useEffect(() => {
-    if (mounted) {
-      calculatePension();
-    }
-  }, [mounted, calculatePension]);
+    setMounted(true);
+    // Calculate statutory pension based on age
+    const alter = new Date().getFullYear() - jahrgang;
+    const estimatedRente = Math.max(800, 2500 - (67 - alter) * 50);
+    setGesetzlicheRente(estimatedRente);
+  }, [jahrgang]);
+
+  const handleNext = () => {
+    if (currentStep < 3) setCurrentStep(currentStep + 1);
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
 
   if (!mounted) {
     return (
-      <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-blue-50 py-12 md:py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <p className="text-gray-600">Loading...</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Lädt...</p>
         </div>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-blue-50 py-12 md:py-20">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-            {t.title}
-          </h1>
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
-            {t.subtitle}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <h1 className="text-4xl font-bold text-gray-900">Rentenrechner</h1>
+          <p className="text-gray-600 mt-2">
+            Berechnen Sie Ihre Altersvorsorge mit unserem interaktiven Tool
           </p>
         </div>
+      </div>
 
-        {/* Calculator Container */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          {/* Input Section */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-4 border-b-2 border-blue-500">
-              {t.section1}
-            </h2>
+      {/* Step Navigation */}
+      <StepNav
+        currentStep={currentStep}
+        onBack={handleBack}
+        onNext={handleNext}
+        canGoNext={true}
+      />
 
-            <form className="space-y-6" id="calculatorForm">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {t.entgeltpunkte}
-                </label>
-                <input
-                  type="number"
-                  id="entgeltpunkte"
-                  placeholder={t.placeholder}
-                  defaultValue="25"
-                  step="0.01"
-                  onChange={calculatePension}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {t.incomeRatio}
-                </label>
-                <input
-                  type="number"
-                  id="incomeRatio"
-                  placeholder={t.placeholder}
-                  defaultValue="100"
-                  min="0"
-                  max="300"
-                  step="0.1"
-                  onChange={calculatePension}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {t.currentAge}
-                </label>
-                <input
-                  type="number"
-                  id="currentAge"
-                  placeholder={t.placeholder}
-                  defaultValue="35"
-                  min="0"
-                  max="120"
-                  onChange={calculatePension}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {t.plannedRetirementAge}
-                </label>
-                <input
-                  type="number"
-                  id="plannedRetirementAge"
-                  placeholder={t.placeholder}
-                  defaultValue="67"
-                  min="0"
-                  max="120"
-                  onChange={calculatePension}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {t.targetPension}
-                </label>
-                <input
-                  type="number"
-                  id="targetPension"
-                  placeholder={t.placeholder}
-                  defaultValue="2000"
-                  min="0"
-                  onChange={calculatePension}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    {t.rentenwertWest}
-                  </label>
-                  <input
-                    type="number"
-                    id="rentenwertWest"
-                    placeholder={t.placeholder}
-                    defaultValue="38.36"
-                    step="0.01"
-                    onChange={calculatePension}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    {t.rentenwertOst}
-                  </label>
-                  <input
-                    type="number"
-                    id="rentenwertOst"
-                    placeholder={t.placeholder}
-                    defaultValue="37.60"
-                    step="0.01"
-                    onChange={calculatePension}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {t.chooseRegion}
-                </label>
-                <select
-                  id="region"
-                  defaultValue="west"
-                  onChange={calculatePension}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors bg-white"
-                >
-                  <option value="west">{t.west}</option>
-                  <option value="ost">{t.ost}</option>
-                </select>
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="button"
-                  onClick={calculatePension}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300"
-                  aria-label={t.calculate}
-                >
-                  {t.calculate}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="flex-1 border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-bold hover:border-gray-400 hover:bg-gray-50 transition-all duration-300"
-                  aria-label={t.reset}
-                >
-                  {t.reset}
-                </button>
-              </div>
-            </form>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 py-12">
+        {currentStep === 1 && (
+          <div className="space-y-8 animate-fadeIn">
+            <RentChart
+              nettoeinkommen={nettoeinkommen}
+              gesetzlicheRente={gesetzlicheRente}
+              wunschrente={wunschrente}
+              maxIncome={8000}
+              maxRente={5000}
+              onNettoeinkommenChange={setNettoeinkommen}
+              onWunschrenterChange={setWunschrente}
+            />
+            <SliderGroup
+              jahrgang={jahrgang}
+              privatrente={privatrente}
+              onJahrgangChange={setJahrgang}
+              onPrivatrenterChange={setPrivatrente}
+            />
           </div>
+        )}
 
-          {/* Results Section */}
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 shadow-lg border-2 border-emerald-200">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-4 border-b-2 border-emerald-500">
-              {t.section2}
-            </h2>
-
-            <div className="space-y-6">
-              <div className="bg-white rounded-lg p-6 border-l-4 border-emerald-500">
-                <p className="text-sm text-gray-600 mb-1">{t.estimatedGrossPension}</p>
-                <p className="text-3xl font-bold text-emerald-600" id="estimatedPensionResult">
-                  —
-                </p>
+        {currentStep === 2 && (
+          <div className="bg-white rounded-2xl p-12 shadow-lg border border-gray-100 animate-fadeIn">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Ihre Vorsorgelücke</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <p className="text-gray-600 text-sm font-semibold mb-2">Wunschrente</p>
+                <p className="text-4xl font-bold text-blue-600">€{wunschrente.toLocaleString()}</p>
               </div>
-
-              <div className="bg-white rounded-lg p-6 border-l-4 border-blue-500">
-                <p className="text-sm text-gray-600 mb-1">{t.totalEntgeltpunkte}</p>
-                <p className="text-3xl font-bold text-blue-600" id="totalEntgeltpunkteResult">
-                  —
-                </p>
+              <div className="text-center">
+                <p className="text-gray-600 text-sm font-semibold mb-2">Gesetzliche Rente</p>
+                <p className="text-4xl font-bold text-teal-600">€{gesetzlicheRente.toLocaleString()}</p>
               </div>
-
-              <div className="bg-white rounded-lg p-6 border-l-4 border-purple-500">
-                <p className="text-sm text-gray-600 mb-1">{t.accessFactor}</p>
-                <p className="text-3xl font-bold text-purple-600" id="accessFactorResult">
-                  —
-                </p>
-              </div>
-
-              <div className="bg-white rounded-lg p-6 border-l-4 border-orange-500">
-                <p className="text-sm text-gray-600 mb-1" id="pensionGapLabel">
-                  {t.pensionGap}
-                </p>
-                <p className="text-2xl font-bold text-orange-600" id="pensionGapResult">
-                  —
-                </p>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-8 space-y-3">
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  <strong>ℹ️ {locale === "de" ? "Hinweis:" : "Note:"}</strong> {t.info}
-                </p>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  <strong>{locale === "de" ? "Zugangsfaktor:" : "Access Factor:"}</strong> {t.infoAccess}
+              <div className="text-center">
+                <p className="text-gray-600 text-sm font-semibold mb-2">Lücke</p>
+                <p
+                  className={`text-4xl font-bold ${
+                    wunschrente - gesetzlicheRente > 0 ? "text-red-600" : "text-green-600"
+                  }`}
+                >
+                  €{Math.abs(wunschrente - gesetzlicheRente).toLocaleString()}
                 </p>
               </div>
             </div>
+            {wunschrente > gesetzlicheRente && (
+              <div className="mt-8 p-6 bg-orange-50 border border-orange-200 rounded-lg">
+                <p className="text-orange-900 font-semibold">
+                  💡 Sie sollten monatlich €
+                  {Math.round((wunschrente - gesetzlicheRente) / 20).toLocaleString()} sparen, um Ihre
+                  Vorsorgelücke zu schließen.
+                </p>
+              </div>
+            )}
           </div>
+        )}
+
+        {currentStep === 3 && (
+          <div className="space-y-8 animate-fadeIn">
+            <div className="bg-white rounded-2xl p-12 shadow-lg border border-gray-100">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Ihr Ergebnis</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="bg-blue-50 rounded-xl p-8">
+                  <p className="text-blue-600 text-sm font-semibold mb-2">Geburtsjahr</p>
+                  <p className="text-3xl font-bold text-blue-900">{jahrgang}</p>
+                  <p className="text-sm text-blue-700 mt-2">
+                    Renteneintrittsalter: {67 + Math.max(0, jahrgang - 1960)} Jahre
+                  </p>
+                </div>
+                <div className="bg-teal-50 rounded-xl p-8">
+                  <p className="text-teal-600 text-sm font-semibold mb-2">Private Ersparnisse</p>
+                  <p className="text-3xl font-bold text-teal-900">€{privatrente.toLocaleString()}</p>
+                </div>
+              </div>
+              <div className="mt-8 p-6 bg-green-50 border border-green-200 rounded-lg">
+                <h3 className="font-bold text-green-900 mb-2">✓ Ihre Altersvorsorge</h3>
+                <ul className="space-y-2 text-green-800">
+                  <li>• Gesetzliche Rente: €{gesetzlicheRente.toLocaleString()}</li>
+                  <li>• Private Rente: €{privatrente.toLocaleString()}</li>
+                  <li>
+                    • Gesamte Rente: €{(gesetzlicheRente + privatrente).toLocaleString()}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 mt-12 py-8">
+        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-600">
+          <p>
+            Dieser Rentenrechner ist ein Planungstool und dient nur zu
+            Informationszwecken. Für personalisierte Beratung konsultieren Sie bitte
+            einen Rentenberater.
+          </p>
         </div>
-      </div>
-    </section>
+      </footer>
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-in-out;
+        }
+      `}</style>
+    </div>
   );
 }
 
