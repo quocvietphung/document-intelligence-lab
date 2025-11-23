@@ -22,9 +22,9 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
     const [welcomeComplete, setWelcomeComplete] = useState(false);
     const [typingMessageId, setTypingMessageId] = useState<string | null>(null);
     const [displayedContent, setDisplayedContent] = useState<Record<string, string>>({});
-    const typingSpeedRef = useRef(30);
+    const typingSpeedRef = useRef(25);
 
-    const welcomeText = t("welcome") + ". Ask me anything about ERGO insurance and finance consulting";
+    const welcomeText = t("welcome");
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -109,29 +109,40 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
             <div className="fixed bottom-6 right-6 z-50">
                 <button
                     onClick={onToggleMinimize}
-                    className="bg-gradient-to-br from-blue-600 via-blue-700 to-purple-700 hover:from-blue-700 hover:via-blue-800 hover:to-purple-800 text-white rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center group relative"
+                    className="group relative flex items-center justify-center"
                     aria-label={t("open_chat")}
                 >
-                    {/* Animated background glow */}
-                    <div className="absolute inset-0 rounded-full bg-blue-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity"></div>
+                    {/* Animated background orbs */}
+                    <div className="absolute inset-0 rounded-full">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 animate-pulse"></div>
+                        <div className="absolute inset-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-full blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-500"></div>
+                    </div>
 
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 relative z-10"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                        />
-                    </svg>
+                    {/* Main button */}
+                    <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 via-blue-600 to-blue-700 shadow-2xl hover:shadow-3xl transition-all duration-300 group-hover:scale-110 flex items-center justify-center border border-blue-400/30 backdrop-blur-md">
+                        {/* Inner glow */}
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-t from-blue-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                    {/* Pulse animation */}
-                    <span className="absolute inset-0 rounded-full bg-blue-600 animate-ping opacity-20"></span>
+                        {/* Icon */}
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-7 w-7 text-white relative z-10"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        </svg>
+
+                        {/* Animated badge */}
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-lg"></div>
+                    </div>
+
+                    {/* Tooltip */}
+                    <div className="absolute -top-12 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                        <div className="bg-gray-900 text-white text-xs font-semibold py-2 px-3 rounded-lg whitespace-nowrap">
+                            {t("open_chat")}
+                        </div>
+                    </div>
                 </button>
             </div>
         );
@@ -141,51 +152,59 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
         <div
             className={`fixed z-50 transition-all duration-500 ease-out flex flex-col ${
                 isExpanded
-                    ? "bottom-6 right-6 w-[90vw] h-[90vh] max-w-4xl max-h-[900px]"
-                    : "bottom-6 right-6 w-full sm:w-[420px] h-[600px] sm:h-[700px] mx-4 sm:mx-0 max-w-[calc(100vw-32px)]"
+                    ? "bottom-6 right-6 w-[95vw] h-[95vh] max-w-6xl max-h-[900px] rounded-2xl"
+                    : "bottom-6 right-6 w-full sm:w-[450px] h-[650px] sm:h-[750px] mx-4 sm:mx-0 max-w-[calc(100vw-32px)] rounded-2xl"
             }`}
         >
-            {/* Modern Chat Container */}
-            <div className="bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden h-full border border-slate-100/50">
-                {/* ========== HEADER ========== */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-3.5 flex items-center justify-between border-b border-blue-500/40 relative overflow-hidden group">
-                    {/* Background gradient animation */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/15 to-purple-500/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            {/* Outer glow effect */}
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/20 via-transparent to-purple-500/20 pointer-events-none"></div>
 
-                    <div className="flex items-center gap-3 relative z-10">
-                        {/* Avatar with status indicator */}
-                        <div className="relative flex-shrink-0">
-                            <div className="w-9 h-9 bg-gradient-to-br from-blue-300 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+            {/* Main container with glassmorphism */}
+            <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl flex flex-col overflow-hidden h-full border border-white/40 relative z-10">
+
+                {/* ========== HEADER ========== */}
+                <div className="relative bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 text-white px-6 py-5 flex items-center justify-between border-b border-blue-500/40">
+                    {/* Header background effects */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-400/5 to-purple-500/10"></div>
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-blue-400/10 rounded-full blur-3xl"></div>
+
+                    <div className="flex items-center gap-4 relative z-10">
+                        {/* Premium Avatar */}
+                        <div className="relative">
+                            <div className="w-11 h-11 bg-gradient-to-br from-blue-300 via-blue-400 to-blue-600 rounded-xl shadow-lg flex items-center justify-center border border-blue-300/50">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5 text-white"
+                                    className="h-6 w-6 text-white"
                                     fill="currentColor"
                                     viewBox="0 0 24 24"
                                 >
                                     <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                                 </svg>
                             </div>
-                            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-blue-600 shadow-md"></div>
+                            {/* Status dot */}
+                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-blue-700 shadow-lg animate-pulse"></div>
                         </div>
 
-                        <div className="min-w-0">
-                            <h3 className="font-semibold text-sm leading-tight truncate">{t("title")}</h3>
-                            <p className="text-blue-100 text-xs font-medium">{t("status_ready")}</p>
+                        <div>
+                            <h3 className="font-bold text-base leading-tight">{t("title")}</h3>
+                            <p className="text-blue-100 text-xs font-medium flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                                {t("status_ready")}
+                            </p>
                         </div>
                     </div>
 
-                    {/* Header Action Buttons */}
+                    {/* Header Buttons */}
                     <div className="flex items-center gap-2 relative z-10">
-                        {/* Maximize/Restore Button */}
+                        {/* Expand Button */}
                         <button
                             onClick={() => setIsExpanded(!isExpanded)}
-                            className="text-white/90 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200 flex items-center justify-center group"
+                            className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200 flex items-center justify-center backdrop-blur-md"
                             title={isExpanded ? t("restore_tooltip") : t("expand_tooltip")}
-                            aria-label={isExpanded ? "Restore" : "Maximize"}
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 group-hover:scale-110 transition-transform"
+                                className="h-5 w-5 transition-transform hover:scale-110"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -194,30 +213,29 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                     <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
-                                        strokeWidth={2.5}
-                                        d="M9 4H5a2 2 0 00-2 2v4m0 0a2 2 0 002-2h4m11 0h4a2 2 0 012 2v4m0 0v4a2 2 0 01-2 2h-4m0 0a2 2 0 01-2-2v-4m0-4h4a2 2 0 012 2v4m0 0a2 2 0 01-2 2h-4"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
                                     />
                                 ) : (
                                     <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
-                                        strokeWidth={2.5}
-                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4m-6-2l6 6m0 0l-6-6m6 6V4"
+                                        strokeWidth={2}
+                                        d="M4 8V4m0 0h4m-4 0l5 5m11-5v4m0 0h-4m4 0l-5 5M4 20v-4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5"
                                     />
                                 )}
                             </svg>
                         </button>
 
-                        {/* Close/Minimize Button */}
+                        {/* Minimize Button */}
                         <button
                             onClick={onToggleMinimize}
-                            className="text-white/90 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200 flex items-center justify-center group"
+                            className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200 flex items-center justify-center backdrop-blur-md"
                             title={t("minimize_tooltip")}
-                            aria-label="Minimize"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 group-hover:scale-110 transition-transform"
+                                className="h-5 w-5 transition-transform hover:scale-110"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -225,8 +243,8 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
-                                    strokeWidth={2.5}
-                                    d="M19 9l-7 7-7-7"
+                                    strokeWidth={2}
+                                    d="M20 12H4"
                                 />
                             </svg>
                         </button>
@@ -234,18 +252,18 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                 </div>
 
                 {/* ========== MESSAGES AREA ========== */}
-                <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2.5 bg-white/50 scroll-smooth">
+                <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 bg-gradient-to-b from-slate-50/50 via-white to-slate-50/30 scroll-smooth">
                     {/* Welcome Message */}
                     {messages.length === 0 && displayedWelcome.length > 0 && (
                         <div className="flex justify-start animate-slideInLeft">
-                            <div className="max-w-[85%] bg-slate-100 text-slate-900 rounded-2xl rounded-bl-none px-3.5 py-2.5 shadow-sm border border-slate-200">
-                                <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                            <div className="max-w-xs bg-white rounded-2xl rounded-tl-none px-5 py-4 shadow-md border border-slate-200/50 backdrop-blur-sm">
+                                <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap font-medium">
                                     {displayedWelcome}
-                                    {showWelcomeTyping && <span className="animate-pulse">▌</span>}
+                                    {showWelcomeTyping && <span className="animate-pulse text-blue-600">▌</span>}
                                 </p>
-                                <span className="text-xs mt-1.5 block text-slate-500">
-                  {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </span>
+                                <span className="text-xs mt-3 block text-slate-400 font-medium">
+                                    {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                </span>
                             </div>
                         </div>
                     )}
@@ -267,23 +285,23 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                     className={`flex ${isUser ? "justify-end" : "justify-start"} animate-slideIn`}
                                 >
                                     <div
-                                        className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 shadow-sm transition-all ${
+                                        className={`max-w-xs rounded-2xl px-5 py-3.5 shadow-sm transition-all ${
                                             isUser
-                                                ? "bg-blue-600 text-white rounded-br-none border border-blue-500/60"
-                                                : "bg-slate-100 text-slate-900 rounded-bl-none border border-slate-200"
+                                                ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-none border border-blue-500/30"
+                                                : "bg-white text-slate-700 rounded-tl-none border border-slate-200/50 shadow-md"
                                         }`}
                                     >
-                                        <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                                        <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
                                             {displayContent}
                                             {typingMessageId === message.id && (
-                                                <span className="animate-pulse ml-1">▌</span>
+                                                <span className={`animate-pulse ml-1 ${isUser ? "text-blue-200" : "text-blue-600"}`}>▌</span>
                                             )}
                                         </p>
-                                        <span className={`text-xs mt-1.5 block ${
-                                            isUser ? "text-blue-100" : "text-slate-500"
+                                        <span className={`text-xs mt-2 block font-medium ${
+                                            isUser ? "text-blue-200" : "text-slate-400"
                                         }`}>
-                      {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </span>
+                                            {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                        </span>
                                     </div>
                                 </div>
                             );
@@ -292,16 +310,16 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                     {/* Loading State */}
                     {isLoading && (
                         <div className="flex justify-start animate-slideInLeft">
-                            <div className="bg-slate-100 rounded-2xl rounded-bl-none px-3.5 py-2.5 shadow-sm border border-slate-200">
-                                <div className="flex gap-1.5">
+                            <div className="bg-white rounded-2xl rounded-tl-none px-5 py-4 shadow-md border border-slate-200/50">
+                                <div className="flex gap-2">
                                     <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
                                     <div
                                         className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
-                                        style={{ animationDelay: "0.2s" }}
+                                        style={{ animationDelay: "0.15s" }}
                                     ></div>
                                     <div
                                         className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
-                                        style={{ animationDelay: "0.4s" }}
+                                        style={{ animationDelay: "0.3s" }}
                                     ></div>
                                 </div>
                             </div>
@@ -311,8 +329,8 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                     {/* Error Message */}
                     {error && (
                         <div className="flex justify-center animate-slideIn">
-                            <div className="bg-red-50 text-red-700 rounded-2xl px-4 py-3 text-sm border border-red-200 shadow-sm font-medium">
-                                <div className="flex items-center gap-2">
+                            <div className="bg-red-50/80 text-red-700 rounded-xl px-4 py-3 text-sm border border-red-200/50 shadow-sm font-medium backdrop-blur-sm">
+                                <div className="flex items-center gap-2.5">
                                     <svg className="h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" />
                                     </svg>
@@ -326,9 +344,9 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                 </div>
 
                 {/* ========== INPUT AREA ========== */}
-                <div className="border-t border-slate-200 bg-white p-5">
+                <div className="border-t border-slate-200/50 bg-gradient-to-t from-slate-50/50 to-white/80 backdrop-blur-xl px-6 py-5">
                     <form onSubmit={handleSubmit} className="space-y-3">
-                        <div className="flex gap-2 items-end">
+                        <div className="flex gap-3 items-end">
                             {/* Textarea */}
                             <textarea
                                 ref={inputRef}
@@ -336,7 +354,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 placeholder={t("placeholder")}
-                                className="flex-1 px-4 py-3 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none bg-white hover:bg-slate-50 focus:bg-white transition-all max-h-[200px] shadow-sm placeholder:text-slate-400"
+                                className="flex-1 px-4 py-3 border border-slate-300/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none bg-white hover:bg-slate-50/50 focus:bg-white transition-all max-h-[200px] shadow-sm placeholder:text-slate-400 font-medium"
                                 disabled={isLoading}
                                 autoFocus
                                 rows={3}
@@ -346,11 +364,11 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                             <button
                                 type="submit"
                                 disabled={isLoading || !input.trim()}
-                                className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white px-4 py-3 rounded-full transition-all font-semibold h-auto flex items-center justify-center shadow-lg hover:shadow-xl active:scale-95 duration-200 group disabled:cursor-not-allowed flex-shrink-0"
+                                className="bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-slate-400 disabled:to-slate-500 text-white px-5 py-3 rounded-xl transition-all font-bold h-auto flex items-center justify-center shadow-lg hover:shadow-xl active:scale-95 duration-200 disabled:cursor-not-allowed flex-shrink-0"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5 group-hover:scale-110 transition-transform"
+                                    className="h-5 w-5 transition-transform group-hover:scale-110"
                                     fill="currentColor"
                                     viewBox="0 0 24 24"
                                 >
@@ -360,8 +378,8 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                         </div>
 
                         {/* Helper Text */}
-                        <p className="text-xs text-slate-500 px-1">
-                            💡 <span className="bg-slate-200 px-1.5 py-0.5 rounded">Shift + Enter</span> {t("helper_text")}
+                        <p className="text-xs text-slate-500 px-1 font-medium">
+                            💡 <span className="bg-slate-200/70 px-2 py-0.5 rounded-md font-semibold">Shift + Enter</span> {t("helper_text")}
                         </p>
                     </form>
                 </div>
@@ -369,61 +387,54 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
             {/* ========== ANIMATIONS ========== */}
             <style>{`
-        @keyframes slideInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
+                @keyframes slideInLeft {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-16px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
 
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
+                @keyframes slideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(12px) scale(0.96);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
+                }
 
-        .animate-slideInLeft {
-          animation: slideInLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+                .animate-slideInLeft {
+                    animation: slideInLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+                }
 
-        .animate-slideIn {
-          animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+                .animate-slideIn {
+                    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                }
 
-        /* Custom Scrollbar */
-        div::-webkit-scrollbar {
-          width: 6px;
-        }
+                /* Custom Scrollbar */
+                div::-webkit-scrollbar {
+                    width: 6px;
+                }
 
-        div::-webkit-scrollbar-track {
-          background: transparent;
-        }
+                div::-webkit-scrollbar-track {
+                    background: transparent;
+                }
 
-        div::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #3b82f6, #1e40af);
-          border-radius: 10px;
-        }
+                div::-webkit-scrollbar-thumb {
+                    background: linear-gradient(to bottom, #93c5fd, #3b82f6);
+                    border-radius: 10px;
+                }
 
-        div::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #2563eb, #1e3a8a);
-        }
-
-        /* Smooth transitions */
-        * {
-          transition-property: background-color, border-color, color, fill, stroke;
-          transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-          transition-duration: 200ms;
-        }
-      `}</style>
+                div::-webkit-scrollbar-thumb:hover {
+                    background: linear-gradient(to bottom, #60a5fa, #2563eb);
+                }
+            `}</style>
         </div>
     );
 }
