@@ -15,63 +15,57 @@ function StepNav({
   onBack: () => void;
   onNext: () => void;
   canGoNext: boolean;
-  t: any;
 }) {
   const steps = [
-    { number: 1, title: t.step1 },
-    { number: 2, title: t.step2 },
-    { number: 3, title: t.step3 },
+    { number: 1, title: "Ihre Wunschrente" },
+    { number: 2, title: "Ihre Vorsorgelücke" },
+    { number: 3, title: "Ihr Ergebnis" },
   ];
 
   return (
-    <div className="bg-white border-b border-gray-200 py-6">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
-          {steps.map((step, idx) => (
-            <div key={step.number} className="flex items-center flex-1">
-              <div
-                className={`flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm transition-all ${
-                  currentStep >= step.number
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-600"
-                }`}
-              >
-                {step.number}
-              </div>
-              <div className="ml-3 flex-1">
-                <p
-                  className={`text-sm font-semibold ${
-                    currentStep >= step.number ? "text-gray-900" : "text-gray-500"
-                  }`}
-                >
-                  {step.title}
-                </p>
-              </div>
-              {idx < steps.length - 1 && (
-                <div
-                  className={`flex-1 h-0.5 mx-4 ${
-                    currentStep > step.number ? "bg-blue-600" : "bg-gray-200"
-                  }`}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="flex justify-between items-center">
+    <div className="bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        {/* Tabs */}
+        <div className="flex items-center justify-between">
+          {/* Left: Back button */}
           <button
             onClick={onBack}
             disabled={currentStep === 1}
-            className="px-6 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="text-sm font-medium text-gray-700 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {t.back}
+            ← Zurück
           </button>
+
+          {/* Center: Tabs */}
+          <div className="flex items-center gap-8">
+            {steps.map((step) => (
+              <div key={step.number} className="relative">
+                <button
+                  className={`text-sm font-medium whitespace-nowrap pb-3 ${
+                    currentStep === step.number
+                      ? "text-[#C8102E]"
+                      : "text-gray-500"
+                  }`}
+                >
+                  {step.number}. {step.title}
+                </button>
+                {/* Red underline for active tab */}
+                {currentStep === step.number && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#C8102E]"></div>
+                )}
+                {/* Grey underline for all tabs */}
+                <div className="absolute bottom-0 left-0 right-0 h-px bg-gray-200"></div>
+              </div>
+            ))}
+          </div>
+
+          {/* Right: Next button */}
           <button
             onClick={onNext}
             disabled={!canGoNext || currentStep === 3}
-            className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="text-sm font-medium text-gray-700 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {t.next}
+            Weiter →
           </button>
         </div>
       </div>
@@ -79,25 +73,31 @@ function StepNav({
   );
 }
 
-// ==================== Rent Chart Component ====================
-function RentChart({
+// ==================== Step 1: Wunschrente Component ====================
+function Step1Wunschrente({
   nettoeinkommen,
   gesetzlicheRente,
   wunschrente,
+  jahrgang,
+  privatrente,
   maxIncome,
   maxRente,
   onNettoeinkommenChange,
   onWunschrenterChange,
-  t,
+  onJahrgangChange,
+  onPrivatrenterChange,
 }: {
   nettoeinkommen: number;
   gesetzlicheRente: number;
   wunschrente: number;
+  jahrgang: number;
+  privatrente: number;
   maxIncome: number;
   maxRente: number;
   onNettoeinkommenChange: (value: number) => void;
   onWunschrenterChange: (value: number) => void;
-  t: any;
+  onJahrgangChange: (value: number) => void;
+  onPrivatrenterChange: (value: number) => void;
 }) {
   const chartRef = useRef<HTMLDivElement>(null);
   const incomePercentage = (nettoeinkommen / maxIncome) * 100;
@@ -143,144 +143,141 @@ function RentChart({
   };
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-      <h2 className="text-2xl font-bold text-gray-900 mb-8">{t.rentSituation}</h2>
+    <div className="space-y-8">
+      {/* Title */}
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Schritt 1: Berechnen Sie Ihre monatliche Rente mit den Pfeilen
+        </h2>
+      </div>
 
-      <div className="relative mb-16 h-16">
-        <div className="absolute top-8 w-full h-0.5 bg-gray-200"></div>
+      {/* Income Block */}
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <div className="flex items-center gap-4 mb-6">
+          {/* Minus circle */}
+          <div className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center">
+            <span className="text-gray-600 font-bold">−</span>
+          </div>
+
+          {/* Income info */}
+          <div>
+            <p className="text-sm text-gray-600">Einkommen</p>
+            <p className="text-2xl font-bold text-gray-900">€{nettoeinkommen.toLocaleString()}</p>
+          </div>
+
+          {/* Plus circle */}
+          <div className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center ml-auto">
+            <span className="text-gray-600 font-bold">+</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Bars Section */}
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        {/* Income Bar */}
+        <div className="mb-8">
+          <div className="relative h-12 bg-gray-100 rounded-lg overflow-hidden mb-2">
+            <div
+              className="h-full bg-gray-400 flex items-center pr-4 justify-end text-white text-sm font-bold transition-all duration-300"
+              style={{ width: `${incomePercentage}%` }}
+            >
+              {incomePercentage > 20 && `€${nettoeinkommen}`}
+            </div>
+            {/* Left drag handle */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 w-6 h-8 bg-gray-400 cursor-grab active:cursor-grabbing rounded shadow hover:scale-105 transition-transform"
+              style={{ left: `calc(${incomePercentage}% - 12px)` }}
+              onMouseDown={startIncomeDrag}
+            />
+          </div>
+        </div>
+
+        {/* Wunschrente thin line */}
+        <div className="mb-8">
+          <div className="relative h-1 bg-gray-300 rounded-full overflow-hidden mb-2">
+            <div
+              className="h-full bg-red-600 transition-all duration-300"
+              style={{ width: `${wunschePercentage}%` }}
+            />
+            {/* Right drag handle */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 w-6 h-8 bg-red-600 cursor-grab active:cursor-grabbing rounded shadow hover:scale-105 transition-transform"
+              style={{ left: `calc(${wunschePercentage}% - 12px)` }}
+              onMouseDown={startWunschDrag}
+            />
+          </div>
+          <p className="text-xs text-gray-600 font-semibold">Wunschrente</p>
+        </div>
+
+        {/* Statutory Pension Blue Bar */}
         <div
-          className="absolute top-6 w-1 h-4 bg-red-500 transition-all duration-300"
-          style={{ left: `${wunschePercentage}%`, transform: "translateX(-50%)" }}
+          ref={chartRef}
+          className="relative h-16 bg-blue-100 rounded-lg overflow-hidden flex items-center px-4"
+          style={{ width: `${gesetzlichePercentage}%`, minWidth: `${Math.max(10, gesetzlichePercentage)}%` }}
         >
-          <div className="absolute top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-bold text-red-600">
-            {t.desiredRetirement}: €{wunschrente.toLocaleString()}
+          <div className="bg-blue-500 text-white text-sm font-semibold rounded px-3 py-2">
+            Gesetzliche Rente (netto) {gesetzlicheRente} €
           </div>
         </div>
-        <div
-          onMouseDown={startWunschDrag}
-          className="absolute top-4 w-8 h-8 bg-red-500 rounded-full cursor-grab active:cursor-grabbing shadow-md hover:scale-110 transition-transform"
-          style={{ left: `calc(${wunschePercentage}% - 16px)` }}
-          title="Drag to adjust"
-        />
       </div>
 
-      <div
-        ref={chartRef}
-        className="relative h-32 bg-gradient-to-r from-gray-100 to-gray-50 rounded-xl overflow-hidden"
-      >
-        <div className="absolute top-0 left-0 h-1/2 w-full bg-gray-200">
-          <div
-            className="h-full bg-gray-400 transition-all duration-300 flex items-center justify-center text-sm font-bold text-white"
-            style={{ width: `${incomePercentage}%` }}
-          >
-            {incomePercentage > 15 && `€${nettoeinkommen.toLocaleString()}`}
+      {/* Timeline */}
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">0 € — Heute</span>
+          </div>
+          <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+          <div className="flex items-center gap-2 ml-auto">
+            <span className="text-sm text-gray-600">Rentenbeginn 67 Jahre</span>
           </div>
         </div>
+      </div>
 
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-8 h-8 bg-gray-400 rounded-full cursor-grab active:cursor-grabbing shadow-lg hover:scale-110 transition-transform"
-          style={{ left: `calc(${incomePercentage}% - 16px)` }}
-          onMouseDown={startIncomeDrag}
-          title="Drag to adjust Nettoeinkommen"
-        />
-
-        <div className="absolute top-2 left-4 text-xs font-semibold text-gray-700">
-          {t.netIncome}
-        </div>
-
-        <div className="absolute bottom-0 left-0 h-1/2 w-full bg-teal-100">
-          <div
-            className="h-full bg-teal-500 transition-all duration-300 flex items-center justify-center text-sm font-bold text-white"
-            style={{ width: `${gesetzlichePercentage}%` }}
-          >
-            {gesetzlichePercentage > 15 && `€${gesetzlicheRente.toLocaleString()}`}
+      {/* Sliders Section */}
+      <div className="space-y-6 bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        {/* Jahrgang Slider */}
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <label className="text-sm font-semibold text-gray-700">Jahrgang</label>
+            <span className="text-sm font-bold text-gray-900">{jahrgang}</span>
           </div>
+          <input
+            type="range"
+            min="1940"
+            max="2005"
+            value={jahrgang}
+            onChange={(e) => onJahrgangChange(parseInt(e.target.value))}
+            className="w-full h-2 bg-red-100 rounded-lg appearance-none cursor-pointer"
+            style={{
+              background: `linear-gradient(to right, #C8102E 0%, #C8102E ${
+                ((jahrgang - 1940) / (2005 - 1940)) * 100
+              }%, #fecaca ${((jahrgang - 1940) / (2005 - 1940)) * 100}%, #fecaca 100%)`,
+            }}
+          />
         </div>
 
-        <div className="absolute bottom-2 left-4 text-xs font-semibold text-teal-700">
-          {t.statutoryPension}
+        {/* Angesparte private Rente Slider */}
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <label className="text-sm font-semibold text-gray-700">Angesparte private Rente</label>
+            <span className="text-sm font-bold text-gray-900">€{privatrente.toLocaleString()}</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="10000"
+            step="100"
+            value={privatrente}
+            onChange={(e) => onPrivatrenterChange(parseInt(e.target.value))}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            style={{
+              background: `linear-gradient(to right, #9ca3af 0%, #9ca3af ${
+                (privatrente / 10000) * 100
+              }%, #e5e7eb ${(privatrente / 10000) * 100}%, #e5e7eb 100%)`,
+            }}
+          />
         </div>
-      </div>
-
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gray-50 rounded-lg p-4">
-          <p className="text-xs text-gray-600 font-semibold mb-1">{t.netIncome}</p>
-          <p className="text-2xl font-bold text-gray-900">€{nettoeinkommen.toLocaleString()}</p>
-        </div>
-        <div className="bg-teal-50 rounded-lg p-4">
-          <p className="text-xs text-teal-600 font-semibold mb-1">{t.statutoryPensionLabel}</p>
-          <p className="text-2xl font-bold text-teal-600">€{gesetzlicheRente.toLocaleString()}</p>
-        </div>
-        <div className="bg-red-50 rounded-lg p-4">
-          <p className="text-xs text-red-600 font-semibold mb-1">{t.desiredRetirement}</p>
-          <p className="text-2xl font-bold text-red-600">€{wunschrente.toLocaleString()}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ==================== Slider Group Component ====================
-function SliderGroup({
-  jahrgang,
-  privatrente,
-  onJahrgangChange,
-  onPrivatrenterChange,
-  t,
-}: {
-  jahrgang: number;
-  privatrente: number;
-  onJahrgangChange: (value: number) => void;
-  onPrivatrenterChange: (value: number) => void;
-  t: any;
-}) {
-  const alter = new Date().getFullYear() - jahrgang;
-
-  return (
-    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-      <h3 className="text-xl font-bold text-gray-900 mb-8">{t.yourInformation}</h3>
-
-      <div className="mb-10">
-        <div className="flex justify-between items-center mb-3">
-          <label className="text-sm font-semibold text-gray-700">{t.yearOfBirth}</label>
-          <span className="text-lg font-bold text-gray-900">
-            {jahrgang} ({t.age}: {alter})
-          </span>
-        </div>
-        <input
-          type="range"
-          min="1940"
-          max="2005"
-          value={jahrgang}
-          onChange={(e) => onJahrgangChange(parseInt(e.target.value))}
-          className="w-full h-3 bg-red-100 rounded-lg appearance-none cursor-pointer"
-          style={{
-            background: `linear-gradient(to right, #ef4444 0%, #ef4444 ${
-              ((jahrgang - 1940) / (2005 - 1940)) * 100
-            }%, #fecaca ${((jahrgang - 1940) / (2005 - 1940)) * 100}%, #fecaca 100%)`,
-          }}
-        />
-      </div>
-
-      <div>
-        <div className="flex justify-between items-center mb-3">
-          <label className="text-sm font-semibold text-gray-700">{t.privateSavings}</label>
-          <span className="text-lg font-bold text-gray-900">€{privatrente.toLocaleString()}</span>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="10000"
-          step="100"
-          value={privatrente}
-          onChange={(e) => onPrivatrenterChange(parseInt(e.target.value))}
-          className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-          style={{
-            background: `linear-gradient(to right, #9ca3af 0%, #9ca3af ${
-              (privatrente / 10000) * 100
-            }%, #e5e7eb ${(privatrente / 10000) * 100}%, #e5e7eb 100%)`,
-          }}
-        />
       </div>
     </div>
   );
@@ -381,28 +378,23 @@ export default function RentenrechnerPage() {
         onBack={handleBack}
         onNext={handleNext}
         canGoNext={true}
-        t={t}
       />
 
       <main className="max-w-7xl mx-auto px-4 py-12">
         {currentStep === 1 && (
           <div className="space-y-8 animate-fadeIn">
-            <RentChart
+            <Step1Wunschrente
               nettoeinkommen={nettoeinkommen}
               gesetzlicheRente={gesetzlicheRente}
               wunschrente={wunschrente}
+              jahrgang={jahrgang}
+              privatrente={privatrente}
               maxIncome={8000}
               maxRente={5000}
               onNettoeinkommenChange={setNettoeinkommen}
               onWunschrenterChange={setWunschrente}
-              t={t}
-            />
-            <SliderGroup
-              jahrgang={jahrgang}
-              privatrente={privatrente}
               onJahrgangChange={setJahrgang}
               onPrivatrenterChange={setPrivatrente}
-              t={t}
             />
           </div>
         )}
