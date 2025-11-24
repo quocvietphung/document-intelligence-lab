@@ -4,8 +4,9 @@ import path from "path";
 
 /**
  * 💰 GOLD PRICE API (FREE, JSON CACHE 10h)
- * Multi-source + auto fallback + retry + JSON persistence across restarts
+ * Multi-source + auto fallback + retry + JSON persistence
  * Now in EUR instead of USD!
+ * Cache stored in /tmp (works on Vercel)
  */
 
 export const dynamic = "force-dynamic";
@@ -19,22 +20,11 @@ interface GoldPriceData {
     history: number[];
 }
 
-/** Đường dẫn file cache (lưu trong project root: .cache/gold_cache.json) */
-const CACHE_DIR = path.join(process.cwd(), ".cache");
-const CACHE_FILE = path.join(CACHE_DIR, "gold_cache.json");
 
-/** Tạo thư mục .cache nếu chưa có */
-function ensureCacheDir() {
-    try {
-        if (!fs.existsSync(CACHE_DIR)) {
-            fs.mkdirSync(CACHE_DIR, { recursive: true });
-        }
-    } catch (err) {
-        console.warn("[GoldPrice] ⚠️ Failed to create cache dir:", err);
-    }
-}
+// 📂 Cache file path - use /tmp for Vercel (persistent during lambda execution)
+const CACHE_FILE = path.join("/tmp", "gold_cache.json");
 
-/** Biến cache trong bộ nhớ */
+// Memory cache (fallback if file cache fails)
 let cachedData: GoldPriceData | null = null;
 let lastFetchTime = 0;
 let lastSuccessfulSource: string | null = null;
@@ -57,10 +47,9 @@ const UPSTREAMS = [
     },
 ];
 
-/** 📂 Load cache từ JSON (nếu có) */
+/** 📂 Load cache từ file JSON */
 function loadCacheFromFile() {
     try {
-        ensureCacheDir(); // Tạo thư mục nếu chưa có
         if (fs.existsSync(CACHE_FILE)) {
             const content = JSON.parse(fs.readFileSync(CACHE_FILE, "utf8"));
             cachedData = content.cachedData ?? null;
@@ -75,7 +64,7 @@ function loadCacheFromFile() {
     }
 }
 
-/** 💾 Lưu cache vào JSON */
+/** 💾 Lưu cache vào file JSON */
 function saveCacheToFile() {
     try {
         const payload = {
@@ -107,7 +96,10 @@ async function getUSDToEURRate(): Promise<number> {
             "https://api.exchangerate.host/latest?base=USD&symbols=EUR",
             { cache: "no-store" }
         );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+            console.error(`[GoldPrice] Failed to fetch FX rate: HTTP ${res.status}`);
+            throw new Error(`HTTP ${res.status}`);
+        }
 
         const json = await res.json();
         const rate = Number(json?.rates?.EUR);
@@ -122,7 +114,7 @@ async function getUSDToEURRate(): Promise<number> {
         console.warn("[GoldPrice] ⚠️ Failed to fetch USD/EUR rate:", err);
     }
 
-    // Fallback to approximate rate if fetch fails
+    // Fallback to approximate rate
     const fallbackRate = 0.92;
     if (!usdToEurRate) {
         usdToEurRate = fallbackRate;
@@ -211,6 +203,7 @@ async function fetchSpotUSDPerOunce(): Promise<number> {
 
 /** Tính toán thay đổi, phần trăm, lịch sử (in EUR) */
 async function getGoldPrice(): Promise<GoldPriceData> {
+
     const spotUSD = await fetchSpotUSDPerOunce();
     const fxRate = await getUSDToEURRate();
     const spot = Math.round(spotUSD * fxRate * 100) / 100; // Convert to EUR
