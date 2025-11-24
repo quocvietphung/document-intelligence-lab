@@ -203,52 +203,61 @@ async function fetchSpotUSDPerOunce(): Promise<number> {
 
 /** Tính toán thay đổi, phần trăm, lịch sử (in EUR) */
 async function getGoldPrice(): Promise<GoldPriceData> {
+    // Only fetch if cache doesn't exist or is expired
+    const now = Date.now();
+    const cacheExpired = !cachedData || now - lastFetchTime >= CACHE_DURATION_MS;
 
-    const spotUSD = await fetchSpotUSDPerOunce();
-    const fxRate = await getUSDToEURRate();
-    const spot = Math.round(spotUSD * fxRate * 100) / 100; // Convert to EUR
+    if (cacheExpired) {
+        // Fetch new price only when cache expired
+        const spotUSD = await fetchSpotUSDPerOunce();
+        const fxRate = await getUSDToEURRate();
+        const spot = Math.round(spotUSD * fxRate * 100) / 100;
 
-    let change = 0;
-    let changePercent = 0;
+        let change = 0;
+        let changePercent = 0;
 
-    if (cachedData?.price) {
-        change = Math.round((spot - cachedData.price) * 100) / 100;
-        changePercent = Math.round((change / cachedData.price) * 10000) / 100;
+        if (cachedData?.price) {
+            change = Math.round((spot - cachedData.price) * 100) / 100;
+            changePercent = Math.round((change / cachedData.price) * 10000) / 100;
+        }
+
+        const history = cachedData?.history?.length
+            ? [...cachedData.history.slice(-23), spot]
+            : buildHistory(spot);
+
+        return {
+            price: spot,
+            change,
+            changePercent,
+            history,
+            lastUpdated: new Date().toISOString(),
+            currency: "EUR",
+        };
+    } else {
+        // Return cached data without fetching
+        console.log(`[GoldPrice] 💾 Using cached price: €${cachedData?.price}`);
+        return cachedData!;
     }
-
-    const history = cachedData?.history?.length
-        ? [...cachedData.history.slice(-23), spot]
-        : buildHistory(spot);
-
-    return {
-        price: spot,
-        change,
-        changePercent,
-        history,
-        lastUpdated: new Date().toISOString(),
-        currency: "EUR",
-    };
 }
 
 /** 🧠 Main API route */
 export async function GET() {
-    loadCacheFromFile(); // ✅ load cache khi API được gọi lần đầu
+    loadCacheFromFile(); // Load cache from data/gold_cache.json
     const now = Date.now();
 
     try {
-        if (cachedData && now - lastFetchTime < CACHE_DURATION_MS) {
-            console.log(`[GoldPrice] 🟢 Cache hit (source=${lastSuccessfulSource})`);
-            return NextResponse.json(cachedData);
+        // getGoldPrice() handles cache logic internally
+        const result = await getGoldPrice();
+
+        // Update cache if data changed
+        if (!cachedData || result.price !== cachedData.price) {
+            cachedData = result;
+            lastFetchTime = now;
+            saveCacheToFile(); // Save updated cache
+            console.log(`[GoldPrice] ✅ Cache updated: €${result.price}`);
         }
 
-        console.log("[GoldPrice] 🔄 Fetching new data...");
-        const fresh = await getGoldPrice();
-        cachedData = fresh;
-        lastFetchTime = now;
-
-        saveCacheToFile(); // ✅ lưu cache mới
-
-        return NextResponse.json(fresh);
+        return NextResponse.json(result);
     } catch (err) {
         console.error("[/api/gold-price] Error:", err);
 
