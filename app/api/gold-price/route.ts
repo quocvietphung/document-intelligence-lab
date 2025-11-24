@@ -21,8 +21,8 @@ interface GoldPriceData {
 }
 
 
-// 📂 Cache file path - use /tmp for Vercel (persistent during lambda execution)
-const CACHE_FILE = path.join("/tmp", "gold_cache.json");
+// 📂 Cache file path - Simple, Vercel-friendly
+const CACHE_FILE = path.join(process.cwd(), "data", "gold_cache.json"); // ✅ Committed to git
 
 // Memory cache (fallback if file cache fails)
 let cachedData: GoldPriceData | null = null;
@@ -57,7 +57,7 @@ function loadCacheFromFile() {
             lastSuccessfulSource = content.lastSuccessfulSource ?? null;
             usdToEurRate = content.usdToEurRate ?? null;
             lastFXUpdateTime = content.lastFXUpdateTime ?? 0;
-            console.log(`[GoldPrice] 📂 Loaded cache from ${CACHE_FILE}`);
+            console.log(`[GoldPrice] 📂 Loaded cache from: ${CACHE_FILE}`);
         }
     } catch (err) {
         console.warn("[GoldPrice] ⚠️ Failed to load cache:", err);
