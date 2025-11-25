@@ -1,15 +1,17 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import {
   calcVorsorgeluecke,
   getAge,
+  calculatePension,
   RENT_CONSTANTS,
+  SETTINGS_DEFAULTS,
 } from "@/utils/renteCalculator";
 
 interface Step1WunschrrenteProps {
   nettoeinkommen: number;
-  gesetzlicheRente: number;
+  gesetzlicheRente?: number;
   wunschrente: number;
   jahrgang: number;
   privatrente: number;
@@ -23,18 +25,19 @@ interface Step1WunschrrenteProps {
 
 /**
  * ERGO Rentenrechner - Step 1: "Ihre Wunschrente"
- *
- * ERGO-compliant UI with:
- * - White cards (#F5F5F5 background, 12px rounded corners)
- * - Draggable bars: Income (gray), Wunschrente (red 4px line), gesetzliche Rente (blue capsule)
- * - Interactive plus/minus buttons for income
- * - Red gradient Jahrgang slider
- * - Real-time Vorsorgelücke calculation
- * - Full keyboard accessibility
+ * 
+ * ERGO PIXEL-PERFECT UI:
+ * - 2-Block Chart: Grey income + Green gesetzliche rente
+ * - Red Wunschrente line (draggable)
+ * - Vorsorgelücke label
+ * - Einstellungen panel with inflation, salary growth, bundesland, entgeltpunkte
+ * - Timeline section
+ * - Sliders with gradients
+ * - All ERGO colors, spacing, fonts
  */
 export function Step1Wunschrente({
   nettoeinkommen,
-  gesetzlicheRente,
+  gesetzlicheRente: _,
   wunschrente,
   jahrgang,
   privatrente,
@@ -45,33 +48,40 @@ export function Step1Wunschrente({
   onJahrgangChange,
   onPrivatrenterChange,
 }: Step1WunschrrenteProps) {
-  // Refs for draggable elements
-  const incomeBarRef = useRef<HTMLDivElement>(null);
-  const wunscheBarRef = useRef<HTMLDivElement>(null);
+  // ===== SETTINGS STATE =====
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState({
+    anspruchRente: SETTINGS_DEFAULTS.anspruchRente,
+    inflation: SETTINGS_DEFAULTS.inflation,
+    gehaltssteigerung: SETTINGS_DEFAULTS.gehaltssteigerung,
+    bundesland: SETTINGS_DEFAULTS.bundesland,
+    entgeltpunktHeute: SETTINGS_DEFAULTS.entgeltpunktHeute,
+  });
 
-  // Calculate percentages for bar widths
-  const incomePercentage = Math.max(10, (nettoeinkommen / maxIncome) * 100);
-  const gesetzlichePercentage = Math.max(10, (gesetzlicheRente / maxRente) * 100);
-  const wunschePercentage = (wunschrente / maxRente) * 100;
+  // ===== REFS FOR DRAGGABLE ELEMENTS =====
+  const incomeBlockRef = useRef<HTMLDivElement>(null);
+  const wunschrenterLineRef = useRef<HTMLDivElement>(null);
 
-  // Validate and clamp Wunschrente: cannot be less than gesetzliche Rente
-  const clampedWunschrente = Math.max(gesetzlicheRente, wunschrente);
-
-  // Calculate pension gap (Vorsorgelücke)
-  const vorsorgeluecke = calcVorsorgeluecke(
-    clampedWunschrente,
-    gesetzlicheRente,
-    privatrente
-  );
-
-  // Get current age
+  // ===== CALCULATE VALUES =====
   const age = getAge(jahrgang);
   const yearsUntilRetirement = Math.max(0, RENT_CONSTANTS.RETIREMENT_AGE - age);
 
-  /**
-   * Create a drag handler that calculates values from mouse position
-   * Handles both click-to-position and drag interactions
-   */
+  // Comprehensive calculation with settings
+  const calculation = calculatePension(nettoeinkommen, wunschrente, privatrente, jahrgang, settings);
+  const computedGesetzlicheRente = calculation.nettoRente;
+
+  // Clamp wunschrente
+  const clampedWunschrente = Math.max(computedGesetzlicheRente, wunschrente);
+
+  // Calculate chart percentages
+  const incomePercentage = Math.min(100, (nettoeinkommen / maxIncome) * 100);
+  const gesetzlichePercentage = Math.min(100, (computedGesetzlicheRente / maxRente) * 100);
+  const wunschePercentage = (clampedWunschrente / maxRente) * 100;
+
+  // Vorsorgelücke
+  const vorsorgeluecke = calcVorsorgeluecke(clampedWunschrente, computedGesetzlicheRente, privatrente);
+
+  // ===== DRAG HANDLERS =====
   const createDragHandler = useCallback(
     (
       containerRef: React.RefObject<HTMLDivElement | null>,
@@ -92,10 +102,6 @@ export function Step1Wunschrente({
     []
   );
 
-  /**
-   * Start continuous drag: attaches mousemove listener
-   * Updates values smoothly while dragging
-   */
   const startDrag = useCallback(
     (
       containerRef: React.RefObject<HTMLDivElement | null>,
@@ -124,227 +130,279 @@ export function Step1Wunschrente({
     []
   );
 
-  // Handlers for income bar
-  const handleIncomeBarClick = useCallback(
+  // ===== INCOME BLOCK HANDLERS =====
+  const handleIncomeBlockClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      createDragHandler(incomeBarRef, maxIncome, onNettoeinkommenChange)(e);
+      createDragHandler(incomeBlockRef, maxIncome, onNettoeinkommenChange)(e);
     },
     [createDragHandler, maxIncome, onNettoeinkommenChange]
   );
 
-  const handleIncomeHandleMouseDown = useCallback(() => {
-    startDrag(incomeBarRef, maxIncome, onNettoeinkommenChange);
+  const handleIncomeBlockDragStart = useCallback(() => {
+    startDrag(incomeBlockRef, maxIncome, onNettoeinkommenChange);
   }, [startDrag, maxIncome, onNettoeinkommenChange]);
 
-  // Handlers for wunschrente bar
-  const handleWunscheBarClick = useCallback(
+  // ===== WUNSCHRENTE LINE HANDLERS =====
+  const handleWunschrenterLineClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      // Clamp wunschrente to be at least as high as gesetzliche Rente
-      createDragHandler(wunscheBarRef, maxRente, (value) => {
-        const clamped = Math.max(gesetzlicheRente, value);
+      createDragHandler(wunschrenterLineRef, maxRente, (value) => {
+        const clamped = Math.max(computedGesetzlicheRente, value);
         onWunschrenterChange(clamped);
       })(e);
     },
-    [createDragHandler, maxRente, gesetzlicheRente, onWunschrenterChange]
+    [createDragHandler, maxRente, computedGesetzlicheRente, onWunschrenterChange]
   );
 
-  const handleWunscheHandleMouseDown = useCallback(() => {
-    startDrag(wunscheBarRef, maxRente, (value) => {
-      const clamped = Math.max(gesetzlicheRente, value);
+  const handleWunschrenterLineDragStart = useCallback(() => {
+    startDrag(wunschrenterLineRef, maxRente, (value) => {
+      const clamped = Math.max(computedGesetzlicheRente, value);
       onWunschrenterChange(clamped);
     });
-  }, [startDrag, maxRente, gesetzlicheRente, onWunschrenterChange]);
+  }, [startDrag, maxRente, computedGesetzlicheRente, onWunschrenterChange]);
 
-  // Handler for income +/- buttons
-  const handleIncomeChange = useCallback(
-    (delta: number) => {
-      const newValue = Math.max(0, Math.min(maxIncome, nettoeinkommen + delta));
-      onNettoeinkommenChange(newValue);
+  // ===== SETTINGS HANDLERS =====
+  const handleSettingsChange = useCallback(
+    (key: string, value: any) => {
+      setSettings((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
     },
-    [nettoeinkommen, maxIncome, onNettoeinkommenChange]
+    []
   );
 
+  const handleResetSettings = useCallback(() => {
+    setSettings(SETTINGS_DEFAULTS);
+  }, []);
+
+  // ===== RENDER =====
   return (
     <div className="space-y-8">
       {/* ===== TITLE SECTION ===== */}
       <div className="bg-white rounded-[12px] p-6 shadow-sm border border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900">
-          Schritt 1: Berechnen Sie Ihre monatliche Rente mit den Pfeilen
-        </h2>
-        <p className="text-sm font-medium text-gray-600 mt-2">
-          Alter: <span className="font-semibold text-gray-900">{age}</span> Jahre |
-          Rentenbeginn in{" "}
-          <span className="font-semibold text-gray-900">{yearsUntilRetirement}</span> Jahren
-        </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Schritt 1: Berechnen Sie Ihre monatliche Rente
+            </h2>
+            <p className="text-sm text-gray-600 mt-2">
+              Alter: <span className="font-semibold">{age}</span> Jahre | Rentenbeginn in{" "}
+              <span className="font-semibold">{yearsUntilRetirement}</span> Jahren
+            </p>
+          </div>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            Einstellungen
+          </button>
+        </div>
       </div>
 
-      {/* ===== INCOME BLOCK (BRUTTO) ===== */}
+      {/* ===== SETTINGS PANEL ===== */}
+      {showSettings && (
+        <div className="bg-white rounded-[12px] p-6 shadow-sm border border-gray-200 space-y-4">
+          <h3 className="text-sm font-semibold text-gray-900">Einstellungen</h3>
+
+          {/* Anspruch Rente Toggle */}
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-gray-700">Anspruch gesetzliche Rente</label>
+            <button
+              onClick={() => handleSettingsChange("anspruchRente", !settings.anspruchRente)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                settings.anspruchRente ? "bg-green-500" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  settings.anspruchRente ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Inflation Slider */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-sm font-medium text-gray-700">Inflation (%)</label>
+              <span className="text-sm font-semibold text-gray-900">{settings.inflation.toFixed(1)}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="10"
+              step="0.1"
+              value={settings.inflation}
+              onChange={(e) => handleSettingsChange("inflation", parseFloat(e.target.value))}
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          {/* Gehaltssteigerung Slider */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-sm font-medium text-gray-700">Gehaltssteigerung (%)</label>
+              <span className="text-sm font-semibold text-gray-900">{settings.gehaltssteigerung.toFixed(1)}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="10"
+              step="0.1"
+              value={settings.gehaltssteigerung}
+              onChange={(e) => handleSettingsChange("gehaltssteigerung", parseFloat(e.target.value))}
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          {/* Bundesland Selector */}
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-2">Bundesland</label>
+            <div className="flex gap-4">
+              <button
+                onClick={() => handleSettingsChange("bundesland", "west")}
+                className={`px-4 py-2 text-sm rounded-lg border transition-colors ${
+                  settings.bundesland === "west"
+                    ? "bg-blue-50 border-blue-300 text-blue-900"
+                    : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                West
+              </button>
+              <button
+                onClick={() => handleSettingsChange("bundesland", "east")}
+                className={`px-4 py-2 text-sm rounded-lg border transition-colors ${
+                  settings.bundesland === "east"
+                    ? "bg-blue-50 border-blue-300 text-blue-900"
+                    : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                Ost
+              </button>
+            </div>
+          </div>
+
+          {/* Entgeltpunkte Heute Input */}
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-2">Entgeltpunkte heute</label>
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={settings.entgeltpunktHeute}
+              onChange={(e) => handleSettingsChange("entgeltpunktHeute", parseFloat(e.target.value))}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <button
+            onClick={handleResetSettings}
+            className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            Zurücksetzen
+          </button>
+        </div>
+      )}
+
+      {/* ===== 2-BLOCK CHART (ERGO PIXEL-PERFECT) ===== */}
       <div className="bg-white rounded-[12px] p-6 shadow-sm border border-gray-200">
-        <div className="flex items-center gap-4">
-          {/* Minus Button */}
-          <button
-            className="w-10 h-10 rounded-full border-2 border-gray-400 flex items-center justify-center hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
-            onClick={() => handleIncomeChange(-100)}
-            tabIndex={0}
-            aria-label="Einkommen um 100€ reduzieren"
-          >
-            <span className="text-gray-700 font-bold text-lg">−</span>
-          </button>
-
-          {/* Income Display */}
-          <div className="flex-1">
-            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
-              Monatliches Nettoeinkommen
-            </p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">
-              €{nettoeinkommen.toLocaleString("de-DE")}
-            </p>
+        <div className="space-y-5">
+          {/* Labels Row */}
+          <div className="flex justify-between items-end mb-4">
+            <div>
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
+                Monatliches Nettoeinkommen
+              </p>
+              <p className="text-2xl font-bold text-gray-900">€{nettoeinkommen.toLocaleString("de-DE")}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-semibold text-green-700 uppercase tracking-wide mb-1">
+                Gesetzliche Rente (netto)
+              </p>
+              <p className="text-2xl font-bold text-green-700">
+                €{Math.round(computedGesetzlicheRente).toLocaleString("de-DE")}
+              </p>
+            </div>
           </div>
 
-          {/* Plus Button */}
-          <button
-            className="w-10 h-10 rounded-full border-2 border-gray-400 flex items-center justify-center hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
-            onClick={() => handleIncomeChange(100)}
-            tabIndex={0}
-            aria-label="Einkommen um 100€ erhöhen"
-          >
-            <span className="text-gray-700 font-bold text-lg">+</span>
-          </button>
-        </div>
-      </div>
-
-      {/* ===== INTERACTIVE BARS SECTION ===== */}
-      <div className="bg-white rounded-[12px] p-6 shadow-sm border border-gray-200 space-y-6">
-        {/* ===== INCOME BAR (GREY) ===== */}
-        <div>
-          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide block mb-2">
-            Einkommen (Basis für Rentenberechnung)
-          </label>
-
-          <div
-            ref={incomeBarRef}
-            className="relative h-12 bg-gray-100 rounded-lg overflow-hidden cursor-pointer group"
-            onClick={handleIncomeBarClick}
-            role="slider"
-            aria-label="Einkommen"
-            aria-valuenow={nettoeinkommen}
-            aria-valuemin={0}
-            aria-valuemax={maxIncome}
-          >
-            {/* Grey fill bar */}
+          {/* CHART CONTAINER - 2 BLOCKS */}
+          <div className="relative h-32 bg-gray-50 rounded-lg border border-gray-200 p-4 flex items-center">
+            {/* Income Block (Grey) - LEFT */}
             <div
-              className="h-full bg-gray-400 flex items-center justify-end pr-4 text-white text-sm font-bold transition-all duration-200 ease-out"
-              style={{ width: `${incomePercentage}%` }}
+              ref={incomeBlockRef}
+              className="absolute left-0 top-0 bottom-0 bg-gray-400 rounded-r-lg cursor-grab active:cursor-grabbing hover:bg-gray-500 transition-all flex items-center justify-center overflow-hidden group shadow-sm"
+              style={{
+                width: `${Math.max(incomePercentage, 3)}%`,
+                minWidth: "50px",
+              }}
+              onClick={handleIncomeBlockClick}
             >
-              {incomePercentage > 20 && `€${nettoeinkommen.toLocaleString("de-DE")}`}
+              {/* Black Drag Handle at Right Edge */}
+              <div
+                className="absolute right-0 top-0 bottom-0 w-2 bg-black cursor-grab active:cursor-grabbing hover:bg-gray-800"
+                onMouseDown={handleIncomeBlockDragStart}
+              />
+              {incomePercentage > 12 && (
+                <span className="text-white text-xs font-bold text-center px-2 truncate">
+                  €{nettoeinkommen.toLocaleString("de-DE")}
+                </span>
+              )}
             </div>
 
-            {/* Drag Handle - small rounded rectangle with shadow */}
+            {/* Gesetzliche Rente Block (Green) - RIGHT */}
             <div
-              className="absolute top-1/2 -translate-y-1/2 w-6 h-8 bg-gray-500 rounded shadow-md cursor-grab active:cursor-grabbing hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
-              style={{ left: `calc(${incomePercentage}% - 12px)` }}
-              onMouseDown={handleIncomeHandleMouseDown}
-              tabIndex={0}
-              role="button"
-              aria-label={`Einkommen: €${nettoeinkommen.toLocaleString("de-DE")}`}
-            />
-          </div>
-        </div>
+              className="absolute right-0 top-0 bottom-0 bg-green-500 rounded-l-lg flex items-center justify-center overflow-hidden group shadow-sm"
+              style={{
+                width: `${Math.max(gesetzlichePercentage, 3)}%`,
+                minWidth: "50px",
+              }}
+            >
+              {/* Black Drag Handle at Left Edge (Non-draggable) */}
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-black" />
+              {gesetzlichePercentage > 12 && (
+                <span className="text-white text-xs font-bold text-center px-2 truncate">
+                  €{Math.round(computedGesetzlicheRente).toLocaleString("de-DE")}
+                </span>
+              )}
+            </div>
 
-        {/* ===== WUNSCHRENTE BAR (RED 4px LINE) ===== */}
-        <div>
-          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide block mb-2">
-            Gewünschte monatliche Rentenhöhe
-          </label>
-
-          <div
-            ref={wunscheBarRef}
-            className="relative h-12 bg-gray-100 rounded-lg overflow-hidden cursor-pointer flex items-center"
-            onClick={handleWunscheBarClick}
-            role="slider"
-            aria-label="Gewünschte Rente"
-            aria-valuenow={clampedWunschrente}
-            aria-valuemin={gesetzlicheRente}
-            aria-valuemax={maxRente}
-          >
-            {/* Red 4px line representing wunschrente */}
+            {/* Wunschrente RED LINE (Draggable) */}
             <div
-              className="absolute top-0 bottom-0 w-1 bg-red-600 transition-all duration-200 ease-out"
+              ref={wunschrenterLineRef}
+              className="absolute top-0 bottom-0 w-1 bg-red-600 cursor-grab active:cursor-grabbing hover:w-1.5 transition-all"
               style={{ left: `${wunschePercentage}%` }}
+              onClick={handleWunschrenterLineClick}
+              onMouseDown={handleWunschrenterLineDragStart}
             />
-
-            {/* Drag Handle */}
-            <div
-              className="absolute top-1/2 -translate-y-1/2 w-5 h-8 bg-red-600 rounded shadow-md cursor-grab active:cursor-grabbing hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-300"
-              style={{ left: `calc(${wunschePercentage}% - 10px)` }}
-              onMouseDown={handleWunscheHandleMouseDown}
-              tabIndex={0}
-              role="button"
-              aria-label={`Gewünschte Rente: €${clampedWunschrente.toLocaleString("de-DE")}`}
-            />
-
-            {/* Visual background for context */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-50 to-transparent pointer-events-none" />
           </div>
 
-          <div className="flex justify-between items-center mt-2">
-            <p className="text-xs font-semibold text-red-600">Zielwert</p>
-            <p className="text-sm font-bold text-gray-900">
-              €{clampedWunschrente.toLocaleString("de-DE")}
+          {/* Wunschrente Label - RIGHT ALIGNED */}
+          <div className="text-right">
+            <p className="text-xs font-semibold text-red-600 uppercase tracking-wide mb-1">Wunschrente</p>
+            <p className="text-lg font-bold text-red-600">€{Math.round(clampedWunschrente).toLocaleString("de-DE")}</p>
+          </div>
+
+          {/* Vorsorgelücke Label - BOTTOM */}
+          <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Vorsorgelücke</p>
+            <p className={`text-sm font-bold ${vorsorgeluecke > 0 ? "text-red-600" : "text-green-600"}`}>
+              €{Math.round(vorsorgeluecke).toLocaleString("de-DE")}
             </p>
           </div>
         </div>
-
-        {/* ===== GESETZLICHE RENTE BAR (BLUE CAPSULE) ===== */}
-        <div>
-          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide block mb-2">
-            Gesetzliche Rente (netto)
-          </label>
-
-          <div className="relative h-12 bg-blue-50 rounded-lg overflow-hidden flex items-center px-4">
-            {/* Blue capsule container */}
-            <div
-              className="h-full bg-blue-500 rounded-md flex items-center px-3 py-2 text-white text-sm font-bold whitespace-nowrap transition-all duration-200 ease-out shadow-sm"
-              style={{ width: `${Math.min(100, gesetzlichePercentage)}%`, minWidth: "120px" }}
-            >
-              €{gesetzlicheRente.toLocaleString("de-DE")}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ===== VORSORGELÜCKE CARD (PENSION GAP) ===== */}
-      <div
-        className={`rounded-[12px] p-6 shadow-sm border transition-colors ${
-          vorsorgeluecke > 0
-            ? "bg-red-50 border-red-200"
-            : "bg-green-50 border-green-200"
-        }`}
-      >
-        <h3 className="font-semibold text-gray-900">
-          Versorgungslücke (Vorsorgelücke)
-        </h3>
-        <p
-          className={`text-3xl font-bold mt-2 ${
-            vorsorgeluecke > 0 ? "text-red-600" : "text-green-600"
-          }`}
-        >
-          €{vorsorgeluecke.toLocaleString("de-DE")}
-        </p>
-        <p className="text-sm text-gray-600 mt-2">
-          {vorsorgeluecke > 0
-            ? "Zusätzliche monatliche Altersvorsorge erforderlich"
-            : "Ihre Altersversorgung ist vollständig gesichert"}
-        </p>
       </div>
 
       {/* ===== TIMELINE ===== */}
       <div className="bg-white rounded-[12px] p-6 shadow-sm border border-gray-200">
         <div className="flex items-center justify-between gap-4">
-          <span className="text-xs font-semibold text-gray-600">Heute</span>
-          <div className="flex-1 h-px bg-gray-300" />
+          <span className="text-xs font-semibold text-gray-600">0 € — Heute</span>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 h-px bg-gray-300" />
+            <div className="mx-3 w-3 h-3 rounded-full bg-black" />
+            <div className="flex-1 h-px bg-gray-300" />
+          </div>
           <span className="text-xs font-semibold text-gray-600 text-right">
-            Rentenbeginn mit {RENT_CONSTANTS.RETIREMENT_AGE} Jahren
+            Rentenbeginn {RENT_CONSTANTS.RETIREMENT_AGE} Jahre
           </span>
         </div>
       </div>
@@ -369,22 +427,14 @@ export function Step1Wunschrente({
                 ((jahrgang - 1940) / (2005 - 1940)) * 100
               }%, #fecaca ${((jahrgang - 1940) / (2005 - 1940)) * 100}%, #fecaca 100%)`,
             }}
-            aria-label="Geburtsjahr"
-            aria-valuenow={jahrgang}
-            aria-valuemin={1940}
-            aria-valuemax={2005}
           />
         </div>
 
         {/* Private Rente Slider - Grey Gradient */}
         <div>
           <div className="flex justify-between items-center mb-3">
-            <label className="text-sm font-semibold text-gray-700">
-              Angesparte private Rente (monatlich)
-            </label>
-            <span className="text-sm font-bold text-gray-900">
-              €{privatrente.toLocaleString("de-DE")}
-            </span>
+            <label className="text-sm font-semibold text-gray-700">Angesparte private Rente (monatlich)</label>
+            <span className="text-sm font-bold text-gray-900">€{privatrente.toLocaleString("de-DE")}</span>
           </div>
           <input
             type="range"
@@ -399,10 +449,6 @@ export function Step1Wunschrente({
                 (privatrente / 10000) * 100
               }%, #e5e7eb ${(privatrente / 10000) * 100}%, #e5e7eb 100%)`,
             }}
-            aria-label="Private Altersvorsorge"
-            aria-valuenow={privatrente}
-            aria-valuemin={0}
-            aria-valuemax={10000}
           />
         </div>
       </div>

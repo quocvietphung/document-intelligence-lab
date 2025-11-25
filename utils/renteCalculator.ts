@@ -8,10 +8,19 @@
 export const RENT_CONSTANTS = {
   AVERAGE_INCOME: 45358, // Durchschnittsentgelt 2024
   RENTENWERT_WEST: 37.6, // Current pension value (West)
-  RENTENWERT_OST: 37.6, // Current pension value (East)
+  RENTENWERT_OST: 35.8, // Current pension value (East)
   RETIREMENT_AGE: 67, // Standard retirement age
   TAX_RATE_PENSION: 0.19, // Average tax on pension income (approximate)
   SOCIAL_SECURITY_RATE: 0.08, // Approximate social security contribution
+} as const;
+
+// Settings defaults
+export const SETTINGS_DEFAULTS = {
+  anspruchRente: true,
+  inflation: 2.0,
+  gehaltssteigerung: 2.0,
+  bundesland: "west" as "west" | "east",
+  entgeltpunktHeute: 0,
 } as const;
 
 /**
@@ -103,6 +112,107 @@ export function calcVorsorgeluecke(
 ): number {
   const totalAvailable = gesetzlich + privat;
   return Math.max(0, wunsch - totalAvailable);
+}
+
+/**
+ * Get rentenwert based on federal state
+ */
+export function getRentenwert(bundesland: "west" | "east"): number {
+  return bundesland === "west" ? RENT_CONSTANTS.RENTENWERT_WEST : RENT_CONSTANTS.RENTENWERT_OST;
+}
+
+/**
+ * Calculate future income with salary growth
+ */
+export function calcFutureIncome(
+  currentIncome: number,
+  yearsToRetirement: number,
+  salaryGrowthPercent: number = 2.0
+): number {
+  return currentIncome * Math.pow(1 + salaryGrowthPercent / 100, yearsToRetirement);
+}
+
+/**
+ * Calculate total entgeltpunkte including today's points
+ */
+export function calcTotalEP(
+  epPerYear: number,
+  yearsToRetirement: number,
+  entgeltpunktHeute: number = 0
+): number {
+  return entgeltpunktHeute + epPerYear * yearsToRetirement;
+}
+
+/**
+ * Comprehensive pension calculation with all settings
+ */
+export interface PensionCalculation {
+  epPerYear: number;
+  totalEP: number;
+  grossRente: number;
+  nettoRente: number;
+  vorsorgeluecke: number;
+  futureIncome: number;
+}
+
+export function calculatePension(
+  nettoeinkommen: number,
+  wunschrente: number,
+  privatrente: number,
+  jahrgang: number,
+  settings: {
+    inflation?: number;
+    gehaltssteigerung?: number;
+    bundesland?: "west" | "east";
+    entgeltpunktHeute?: number;
+    anspruchRente?: boolean;
+  } = {}
+): PensionCalculation {
+  const {
+    inflation = 2.0,
+    gehaltssteigerung = 2.0,
+    bundesland = "west",
+    entgeltpunktHeute = 0,
+    anspruchRente = true,
+  } = settings;
+
+  const age = getAge(jahrgang);
+  const yearsToRetirement = Math.max(0, RENT_CONSTANTS.RETIREMENT_AGE - age);
+
+  // Calculate annual income
+  const annualIncome = nettoeinkommen * 12;
+
+  // Calculate future income with salary growth
+  const futureIncome = calcFutureIncome(annualIncome, yearsToRetirement, gehaltssteigerung);
+
+  // Calculate EP per year (future average)
+  const futureAverageIncome = RENT_CONSTANTS.AVERAGE_INCOME * Math.pow(1 + inflation / 100, yearsToRetirement);
+  const epPerYear = futureIncome / futureAverageIncome;
+
+  // Calculate total EP
+  const totalEP = calcTotalEP(epPerYear, yearsToRetirement, entgeltpunktHeute);
+
+  // Get rentenwert based on bundesland
+  const rentenwert = getRentenwert(bundesland);
+
+  // Calculate gross rente
+  const grossRente = totalEP * rentenwert;
+
+  // Calculate net rente (92% of gross for non-anspruch, adjusted for taxes)
+  const adjustedGrossRente = anspruchRente ? grossRente : grossRente * 0.92;
+  const nettoRente = adjustedGrossRente * (1 - RENT_CONSTANTS.TAX_RATE_PENSION - RENT_CONSTANTS.SOCIAL_SECURITY_RATE);
+
+  // Calculate gap
+  const vorsorgeluecke = calcVorsorgeluecke(wunschrente, nettoRente, privatrente);
+
+  return {
+    epPerYear,
+    totalEP,
+    grossRente,
+    nettoRente: Math.max(0, nettoRente),
+    vorsorgeluecke,
+    futureIncome,
+  };
 }
 
 
