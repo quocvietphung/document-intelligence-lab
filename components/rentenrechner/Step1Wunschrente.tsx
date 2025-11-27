@@ -43,8 +43,9 @@ export function Step1Wunschrente({
     const [showInfo, setShowInfo] = useState(true);
 
     // ========= REFS =========
-    const incomeTrackRef = useRef<HTMLDivElement>(null);
-    const wunschTrackRef = useRef<HTMLDivElement>(null);
+    const incomeTrackRef = useRef<HTMLDivElement>(null); // cột xám
+    const wunschTrackRef = useRef<HTMLDivElement>(null); // cột xanh
+    const timelineRef = useRef<HTMLDivElement>(null); // trục dưới với nút ↔
 
     // ========= CALCULATION =========
     const age = getAge(jahrgang);
@@ -63,12 +64,8 @@ export function Step1Wunschrente({
     const computedGesetzlicheRente = calc.nettoRente;
     const clampedWunschrente = Math.max(computedGesetzlicheRente, wunschrente);
 
-    // width theo % so với maxIncome / maxRente (cho block xám)
-    const incomePercentage = Math.min(100, (nettoeinkommen / maxIncome) * 100);
-
-    // tỉ lệ *dọc* bên trong khối Wunschrente (stacked top/bottom)
+    // stack phần private / gesetzlich bên trong khối xanh
     const wunschTotal = clampedWunschrente || 1;
-
     const maxPrivateForStack = Math.max(
         0,
         clampedWunschrente - computedGesetzlicheRente
@@ -79,15 +76,14 @@ export function Step1Wunschrente({
         (computedGesetzlicheRente / wunschTotal) * 100 || 0;
     let privateInnerPct = (privateForStack / wunschTotal) * 100 || 0;
 
-    // giữ tổng <= 100% và tránh block quá mỏng
-    const MIN_SEGMENT = 12;
+    const MIN_SEGMENT = 12; // tránh segment quá mỏng
     if (gesetzInnerPct > 0 && gesetzInnerPct < MIN_SEGMENT)
         gesetzInnerPct = MIN_SEGMENT;
     if (privateInnerPct > 0 && privateInnerPct < MIN_SEGMENT)
         privateInnerPct = MIN_SEGMENT;
-    const sumSeg = gesetzInnerPct + privateInnerPct;
-    if (sumSeg > 100 && sumSeg > 0) {
-        const scale = 100 / sumSeg;
+    const segSum = gesetzInnerPct + privateInnerPct;
+    if (segSum > 100 && segSum > 0) {
+        const scale = 100 / segSum;
         gesetzInnerPct *= scale;
         privateInnerPct *= scale;
     }
@@ -98,18 +94,47 @@ export function Step1Wunschrente({
         privatrente
     );
 
-    // ========= DRAG CORE =========
-    const updateFromClientX = useCallback(
+    // Chung một trục dọc tiền €/tháng cho cả khối xám & xanh
+    const axisMax = Math.max(
+        maxIncome,
+        maxRente,
+        nettoeinkommen,
+        clampedWunschrente,
+        computedGesetzlicheRente + privatrente,
+        1000
+    );
+
+    const incomeHeightPct = Math.min(100, (nettoeinkommen / axisMax) * 100);
+    const wunschHeightPct = Math.min(100, (clampedWunschrente / axisMax) * 100);
+
+    const safeIncomeHeightPct = Math.max(incomeHeightPct, 8);
+    const safeWunschHeightPct = Math.max(wunschHeightPct, 8);
+
+    // mapping Jahrgang ↔ vị trí nút tam giác trái–phải
+    const jahrgangMin = 1940;
+    const jahrgangMax = 2005;
+    const jahrgangRange = jahrgangMax - jahrgangMin;
+    const jahrgangPct = Math.max(
+        0,
+        Math.min(
+            100,
+            ((jahrgang - jahrgangMin) / jahrgangRange) * 100
+        )
+    );
+
+    // ========= DRAG HELPERS =========
+    // dọc (cho 2 mũi ▲)
+    const updateFromClientY = useCallback(
         (
             container: HTMLDivElement | null,
-            clientX: number,
+            clientY: number,
             maxValue: number,
             onValueChange: (v: number) => void
         ) => {
             if (!container) return;
             const rect = container.getBoundingClientRect();
-            const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
-            const percentage = x / rect.width;
+            const y = Math.max(0, Math.min(rect.height, clientY - rect.top));
+            const percentage = 1 - y / rect.height; // 0 ở đáy, 1 ở đỉnh
             const raw = Math.round(percentage * maxValue);
             const value = Math.max(0, Math.min(maxValue, raw));
             onValueChange(value);
@@ -117,7 +142,7 @@ export function Step1Wunschrente({
         []
     );
 
-    const startDrag = useCallback(
+    const startVerticalDrag = useCallback(
         (
             container: HTMLDivElement | null,
             maxValue: number,
@@ -127,7 +152,54 @@ export function Step1Wunschrente({
 
             const handleMove = (e: MouseEvent) => {
                 e.preventDefault();
-                updateFromClientX(container, e.clientX, maxValue, onValueChange);
+                updateFromClientY(container, e.clientY, maxValue, onValueChange);
+            };
+
+            const handleUp = () => {
+                document.removeEventListener("mousemove", handleMove);
+                document.removeEventListener("mouseup", handleUp);
+            };
+
+            document.addEventListener("mousemove", handleMove);
+            document.addEventListener("mouseup", handleUp);
+        },
+        [updateFromClientY]
+    );
+
+    // ngang (cho mũi ↔ Rentenbeginn)
+    const updateFromClientX = useCallback(
+        (
+            container: HTMLDivElement | null,
+            clientX: number,
+            minValue: number,
+            maxValue: number,
+            onValueChange: (v: number) => void
+        ) => {
+            if (!container) return;
+            const rect = container.getBoundingClientRect();
+            const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+            const percentage = x / rect.width;
+            const raw = minValue + percentage * (maxValue - minValue);
+            const value = Math.round(
+                Math.max(minValue, Math.min(maxValue, raw))
+            );
+            onValueChange(value);
+        },
+        []
+    );
+
+    const startHorizontalDrag = useCallback(
+        (
+            container: HTMLDivElement | null,
+            minValue: number,
+            maxValue: number,
+            onValueChange: (v: number) => void
+        ) => {
+            if (!container) return;
+
+            const handleMove = (e: MouseEvent) => {
+                e.preventDefault();
+                updateFromClientX(container, e.clientX, minValue, maxValue, onValueChange);
             };
 
             const handleUp = () => {
@@ -141,40 +213,79 @@ export function Step1Wunschrente({
         [updateFromClientX]
     );
 
-    // ========= HANDLERS =========
+    // ========= HANDLERS (3 mũi tam giác) =========
+    // ▲ khối xám – thay đổi Nettoeinkommen
     const handleIncomeClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
-            updateFromClientX(
+            updateFromClientY(
                 incomeTrackRef.current,
-                e.clientX,
-                maxIncome,
-                onNettoeinkommenChange
+                e.clientY,
+                axisMax,
+                (raw) => {
+                    const clamped = Math.min(raw, maxIncome);
+                    onNettoeinkommenChange(clamped);
+                }
             );
         },
-        [updateFromClientX, maxIncome, onNettoeinkommenChange]
+        [updateFromClientY, axisMax, maxIncome, onNettoeinkommenChange]
     );
 
     const handleIncomeDragStart = useCallback(() => {
-        startDrag(incomeTrackRef.current, maxIncome, onNettoeinkommenChange);
-    }, [startDrag, maxIncome, onNettoeinkommenChange]);
+        startVerticalDrag(incomeTrackRef.current, axisMax, (raw) => {
+            const clamped = Math.min(raw, maxIncome);
+            onNettoeinkommenChange(clamped);
+        });
+    }, [startVerticalDrag, axisMax, maxIncome, onNettoeinkommenChange]);
 
+    // ▲ khối xanh – thay đổi Wunschrente (luôn ≥ gesetzliche)
     const handleWunschClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
-            updateFromClientX(wunschTrackRef.current, e.clientX, maxRente, (val) => {
-                const clamped = Math.max(computedGesetzlicheRente, val);
-                onWunschrenterChange(clamped);
-            });
+            updateFromClientY(
+                wunschTrackRef.current,
+                e.clientY,
+                axisMax,
+                (raw) => {
+                    const capped = Math.min(raw, maxRente);
+                    const clamped = Math.max(computedGesetzlicheRente, capped);
+                    onWunschrenterChange(clamped);
+                }
+            );
         },
-        [updateFromClientX, maxRente, computedGesetzlicheRente, onWunschrenterChange]
+        [updateFromClientY, axisMax, maxRente, computedGesetzlicheRente, onWunschrenterChange]
     );
 
     const handleWunschDragStart = useCallback(() => {
-        startDrag(wunschTrackRef.current, maxRente, (val) => {
-            const clamped = Math.max(computedGesetzlicheRente, val);
+        startVerticalDrag(wunschTrackRef.current, axisMax, (raw) => {
+            const capped = Math.min(raw, maxRente);
+            const clamped = Math.max(computedGesetzlicheRente, capped);
             onWunschrenterChange(clamped);
         });
-    }, [startDrag, maxRente, computedGesetzlicheRente, onWunschrenterChange]);
+    }, [startVerticalDrag, axisMax, maxRente, computedGesetzlicheRente, onWunschrenterChange]);
 
+    // ↔ nút giữa – đổi Jahrgang / Rentenbeginn
+    const handleTimelineClick = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+            updateFromClientX(
+                timelineRef.current,
+                e.clientX,
+                jahrgangMin,
+                jahrgangMax,
+                onJahrgangChange
+            );
+        },
+        [updateFromClientX, onJahrgangChange]
+    );
+
+    const handleTimelineDragStart = useCallback(() => {
+        startHorizontalDrag(
+            timelineRef.current,
+            jahrgangMin,
+            jahrgangMax,
+            onJahrgangChange
+        );
+    }, [startHorizontalDrag, onJahrgangChange]);
+
+    // ========= SETTINGS HANDLERS =========
     const handleSettingsChange = useCallback(
         <K extends keyof PensionSettings>(key: K, value: PensionSettings[K]) => {
             setSettings((prev) => ({ ...prev, [key]: value }));
@@ -187,7 +298,7 @@ export function Step1Wunschrente({
     // ========= UI =========
     return (
         <div className="space-y-8">
-            {/* TIÊU ĐỀ + ICON MŨI TÊN TRÒN */}
+            {/* TIÊU ĐỀ + ICON MŨI TÊN TRÒN (info) */}
             <div className="rounded-xl border border-slate-200 bg-white/90 p-6 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
@@ -211,8 +322,8 @@ export function Step1Wunschrente({
                     </div>
                     <div className="text-right text-xs text-slate-500">
                         <p>
-                            Alter: <span className="font-semibold text-slate-800">{age}</span>{" "}
-                            Jahre
+                            Alter:{" "}
+                            <span className="font-semibold text-slate-800">{age}</span> Jahre
                         </p>
                         <p>
                             Rentenbeginn in{" "}
@@ -234,14 +345,14 @@ export function Step1Wunschrente({
                 )}
             </div>
 
-            {/* BIỂU ĐỒ CHÍNH + TRỤC + SLIDER DƯỚI (Jahrgang, private, Einstellungen) */}
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
-                {/* HÀNG LABEL TRÊN BIỂU ĐỒ: EINKOMMEN & WUNSCHRENTE */}
+            {/* BIỂU ĐỒ CHÍNH + TRỤC + SLIDER DƯỚI */}
+            <div className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                {/* LABEL TRÊN – Einkommen & Wunschrente */}
                 <div className="flex items-end justify-between text-xs text-slate-700">
                     <div>
                         <p className="font-semibold">Einkommen</p>
                         <p className="mt-1 text-xs text-slate-600">
-                            {maxIncome.toLocaleString("de-DE")} €
+                            {axisMax.toLocaleString("de-DE")} € (Skala)
                         </p>
                     </div>
                     <div className="text-right">
@@ -252,68 +363,71 @@ export function Step1Wunschrente({
                     </div>
                 </div>
 
-                {/* HAI KHỐI XÁM / XANH SONG SONG */}
-                <div className="flex flex-col gap-6 md:flex-row md:gap-8">
-                    {/* KHỐI XÁM – EINKOMMEN HEUTE */}
-                    <div className="md:w-1/2 md:pr-4 md:border-r md:border-slate-200">
+                {/* HAI KHỐI XÁM / XANH SÁT NHAU */}
+                <div className="mt-2 flex flex-col gap-4 md:flex-row md:gap-0">
+                    {/* KHỐI XÁM – Einkommen heute */}
+                    <div className="md:w-1/2 md:pr-2">
+                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                            Einkommen heute
+                        </p>
                         <div
                             ref={incomeTrackRef}
-                            className="relative h-32 w-full cursor-pointer rounded-md border border-slate-200 bg-slate-50"
+                            className="relative h-40 w-full cursor-pointer rounded-md bg-slate-50"
                             onClick={handleIncomeClick}
                         >
-                            {/* nút tròn đen (mũi tên) ở mép trên bên trái */}
+                            {/* hình chữ nhật xám – cao theo Nettoeinkommen */}
+                            <div
+                                className="absolute bottom-0 left-0 right-0 mx-6 rounded-md bg-slate-400 shadow-inner"
+                                style={{ height: `${safeIncomeHeightPct}%` }}
+                            >
+                                <div className="flex h-full items-center justify-center px-2">
+                  <span className="text-xs text-slate-50">
+                    Nettoeinkommen{" "}
+                      <span className="font-semibold underline decoration-dotted">
+                      €{nettoeinkommen.toLocaleString("de-DE")}
+                    </span>
+                  </span>
+                                </div>
+                            </div>
+
+                            {/* mũi tam giác ▲ – kéo dọc */}
                             <button
                                 type="button"
                                 onMouseDown={handleIncomeDragStart}
-                                className="absolute -top-4 left-4 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white shadow cursor-grab active:cursor-grabbing"
+                                className="absolute flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white shadow cursor-grab active:cursor-grabbing"
+                                style={{
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    bottom: `calc(${safeIncomeHeightPct}% + 6px)`,
+                                }}
                                 aria-label="Nettoeinkommen verändern"
                             >
-                                ‹
+                                ▲
                             </button>
 
-                            {/* block xám bên trong */}
-                            <div
-                                className="absolute inset-y-6 left-8 flex items-center justify-center rounded-md bg-slate-400 shadow-inner"
-                                style={{
-                                    width: `${Math.max(incomePercentage, 10)}%`,
-                                    minWidth: "80px",
-                                }}
-                            >
-                <span className="text-xs text-slate-50">
-                  Nettoeinkommen{" "}
-                    <span className="font-semibold underline decoration-dotted">
-                    €{nettoeinkommen.toLocaleString("de-DE")}
-                  </span>
-                </span>
-                            </div>
-
-                            {/* nhãn 0 € & Heute dưới chân */}
-                            <div className="absolute bottom-1 left-0 right-0 flex items-center justify-between px-1 text-[11px] text-slate-600">
+                            {/* 0 € & Heute */}
+                            <div className="absolute bottom-1 left-0 right-0 flex items-center justify-between px-2 text-[11px] text-slate-600">
                                 <span>0 €</span>
                                 <span>Heute</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* KHỐI XANH – RENTE AB RENTENBEGINN (STACKED) */}
-                    <div className="md:w-1/2 md:pl-4">
+                    {/* KHỐI XANH – Rente ab Rentenbeginn */}
+                    <div className="md:w-1/2 md:pl-2">
+                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                            Rente ab Rentenbeginn
+                        </p>
                         <div
                             ref={wunschTrackRef}
-                            className="relative h-32 w-full cursor-pointer rounded-md border border-slate-200 bg-slate-50"
+                            className="relative h-40 w-full cursor-pointer rounded-md bg-slate-50"
                             onClick={handleWunschClick}
                         >
-                            {/* nút tròn đen (mũi tên) ở mép trên bên phải */}
-                            <button
-                                type="button"
-                                onMouseDown={handleWunschDragStart}
-                                className="absolute -top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white shadow cursor-grab active:cursor-grabbing"
-                                aria-label="Wunschrente verändern"
+                            {/* khối xanh tổng – Wunschrente (cao theo Wunschrente) */}
+                            <div
+                                className="absolute bottom-0 left-0 right-0 mx-6 rounded-md bg-emerald-500/90 shadow-inner"
+                                style={{ height: `${safeWunschHeightPct}%` }}
                             >
-                                ›
-                            </button>
-
-                            {/* KHỐI XANH TỔNG (WUNSCHRENTE) */}
-                            <div className="absolute inset-x-8 bottom-4 top-6 rounded-md bg-emerald-500/90 shadow-inner">
                                 {/* phần trên – private */}
                                 {privateInnerPct > 0 && (
                                     <div
@@ -347,7 +461,7 @@ export function Step1Wunschrente({
                                     </div>
                                 )}
 
-                                {/* đường kẻ ngang đứt đoạn giữa 2 phần */}
+                                {/* đường kẻ ngang đứt đoạn */}
                                 {privateInnerPct > 0 && gesetzInnerPct > 0 && (
                                     <div
                                         className="absolute left-2 right-2 border-t border-dashed border-white/90"
@@ -356,24 +470,50 @@ export function Step1Wunschrente({
                                 )}
                             </div>
 
-                            {/* nhãn dưới: Rentenbeginn */}
-                            <div className="absolute bottom-1 left-0 right-0 flex items-center justify-center text-[11px] text-slate-600">
-                <span>
-                  Rentenbeginn {RENT_CONSTANTS.RETIREMENT_AGE} Jahre
-                </span>
-                            </div>
+                            {/* mũi ▲ trên khối xanh */}
+                            <button
+                                type="button"
+                                onMouseDown={handleWunschDragStart}
+                                className="absolute flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white shadow cursor-grab active:cursor-grabbing"
+                                style={{
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    bottom: `calc(${safeWunschHeightPct}% + 6px)`,
+                                }}
+                                aria-label="Wunschrente verändern"
+                            >
+                                ▲
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                {/* TRỤC NGANG 0 € — Heute —— Linie —— Rentenbeginn */}
-                <div className="mt-2 flex items-center text-xs text-slate-600">
+                {/* TRỤC NGANG + MŨI ↔ Ở GIỮA */}
+                <div
+                    ref={timelineRef}
+                    className="mt-4 flex items-center text-xs text-slate-600"
+                    onClick={handleTimelineClick}
+                >
                     <span>0 € — Heute</span>
-                    <div className="mx-3 h-px flex-1 bg-slate-300" />
+                    <div className="relative mx-3 flex-1 h-px bg-slate-300">
+                        {/* nút tròn đen với mũi ↔ */}
+                        <button
+                            type="button"
+                            onMouseDown={handleTimelineDragStart}
+                            className="absolute -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white shadow cursor-grab active:cursor-grabbing"
+                            style={{
+                                left: `${jahrgangPct}%`,
+                                transform: "translateX(-50%)",
+                            }}
+                            aria-label="Rentenbeginn verschieben"
+                        >
+                            ↔
+                        </button>
+                    </div>
                     <span>Rentenbeginn {RENT_CONSTANTS.RETIREMENT_AGE} Jahre</span>
                 </div>
 
-                {/* VÙNG NỀN BE: SLIDER + EINSTELLUNGEN */}
+                {/* VÙNG NỀN BE: Jahrgang + private + Einstellungen */}
                 <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50/80 p-4">
                     <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.1fr)_auto]">
                         {/* Slider Jahrgang */}
@@ -386,26 +526,28 @@ export function Step1Wunschrente({
                             </p>
                             <input
                                 type="range"
-                                min={1940}
-                                max={2005}
+                                min={jahrgangMin}
+                                max={jahrgangMax}
                                 value={jahrgang}
-                                onChange={(e) => onJahrgangChange(parseInt(e.target.value, 10))}
+                                onChange={(e) =>
+                                    onJahrgangChange(parseInt(e.target.value, 10))
+                                }
                                 className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200"
                                 style={{
                                     background: `linear-gradient(to right,#0f172a 0%,#0f172a ${
-                                        ((jahrgang - 1940) / (2005 - 1940)) * 100
+                                        ((jahrgang - jahrgangMin) / jahrgangRange) * 100
                                     }%,#e5e7eb ${
-                                        ((jahrgang - 1940) / (2005 - 1940)) * 100
+                                        ((jahrgang - jahrgangMin) / jahrgangRange) * 100
                                     }%,#e5e7eb 100%)`,
                                 }}
                             />
                             <div className="mt-1 flex justify-between text-[11px] text-slate-500">
-                                <span>1940</span>
-                                <span>2005</span>
+                                <span>{jahrgangMin}</span>
+                                <span>{jahrgangMax}</span>
                             </div>
                         </div>
 
-                        {/* Slider Angesparte private Rente */}
+                        {/* Slider private Rente */}
                         <div>
                             <p className="mb-2 text-sm font-semibold text-slate-700">
                                 Angesparte private Rente
@@ -435,7 +577,7 @@ export function Step1Wunschrente({
                             </div>
                         </div>
 
-                        {/* NÚT EINSTELLUNGEN */}
+                        {/* Nút Einstellungen */}
                         <div className="flex justify-end">
                             <button
                                 type="button"
@@ -449,7 +591,7 @@ export function Step1Wunschrente({
                     </div>
                 </div>
 
-                {/* HÀNG TÓM TẮT VORSORGELÜCKE */}
+                {/* Vorsorgelücke summary */}
                 <div className="mt-3 flex items-center justify-between text-sm text-slate-700">
                     <span className="font-semibold">Vorsorgelücke</span>
                     <span
@@ -464,7 +606,7 @@ export function Step1Wunschrente({
 
             {/* PANEL EINSTELLUNGEN CHI TIẾT */}
             {showSettings && (
-                <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
+                <div className="space-y-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                     <h3 className="text-sm font-semibold text-slate-900">
                         Annahmen & Einstellungen
                     </h3>
