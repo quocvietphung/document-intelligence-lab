@@ -20,6 +20,4 @@ export { ChatBot, ChatWindow } from './chatbot';
 // Layout Components
 export { BlogPostLayout } from './layout';
 
-// Rentenrechner Components
-export { Step1Wunschrente, StepNav } from './rentenrechner';
 
