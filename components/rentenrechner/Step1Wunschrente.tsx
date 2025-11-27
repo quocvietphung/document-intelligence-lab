@@ -24,51 +24,37 @@ interface Step1WunschrrenteProps {
     onPrivatrenterChange: (value: number) => void;
 }
 
-/**
- * ERGO Rentenrechner - Step 1: "Ihre Wunschrente"
- *
- * - 2-Block-Chart: grauer Einkommensblock + grüner Rentenblock
- * - rote Wunschrenten-Linie (draggable)
- * - Vorsorgelücke-Anzeige
- * - Einstellungen-Panel (Inflation, Gehaltssteigerung, Bundesland, Entgeltpunkte)
- * - Timeline & Slider (Jahrgang, private Rente)
- */
 export function Step1Wunschrente({
-                                     nettoeinkommen,
-                                     gesetzlicheRente: _,
-                                     wunschrente,
-                                     jahrgang,
-                                     privatrente,
-                                     maxIncome,
-                                     maxRente,
-                                     onNettoeinkommenChange,
-                                     onWunschrenterChange,
-                                     onJahrgangChange,
-                                     onPrivatrenterChange,
-                                 }: Step1WunschrrenteProps) {
+    nettoeinkommen,
+    gesetzlicheRente: _,
+    wunschrente,
+    jahrgang,
+    privatrente,
+    maxIncome,
+    maxRente,
+    onNettoeinkommenChange,
+    onWunschrenterChange,
+    onJahrgangChange,
+    onPrivatrenterChange,
+}: Step1WunschrrenteProps) {
     // ===== SETTINGS STATE =====
-    const [showSettings, setShowSettings] = useState(false);
     const [settings, setSettings] = useState<PensionSettings>(SETTINGS_DEFAULTS);
 
     // ===== REFS =====
-    // chartRef = toàn bộ vùng chart để dùng cho drag (đúng kiểu ERGO)
     const chartRef = useRef<HTMLDivElement>(null);
 
     // ===== CALCULATION =====
     const age = getAge(jahrgang);
     const yearsUntilRetirement = Math.max(0, RENT_CONSTANTS.RETIREMENT_AGE - age);
 
-    // Clamp Wunschrente tối thiểu bằng gesetzliche Rente
     const calculation = calculatePension(nettoeinkommen, wunschrente, privatrente, jahrgang, settings);
     const computedGesetzlicheRente = calculation.nettoRente;
     const clampedWunschrente = Math.max(computedGesetzlicheRente, wunschrente);
 
-    // Chart percentages (clamp 0–100)
     const incomePercentage = Math.min(100, (nettoeinkommen / maxIncome) * 100);
     const gesetzlichePercentage = Math.min(100, (computedGesetzlicheRente / maxRente) * 100);
     const wunschePercentage = Math.min(100, (clampedWunschrente / maxRente) * 100);
 
-    // Vorsorgelücke theo Wunschrente đã clamp
     const vorsorgeluecke = calcVorsorgeluecke(clampedWunschrente, computedGesetzlicheRente, privatrente);
 
     // ===== DRAG CORE =====
@@ -107,7 +93,7 @@ export function Step1Wunschrente({
         [updateFromClientX]
     );
 
-    // ===== INCOME BLOCK HANDLERS =====
+    // ===== HANDLERS =====
     const handleIncomeBlockClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
             updateFromClientX(e.clientX, maxIncome, onNettoeinkommenChange);
@@ -119,7 +105,6 @@ export function Step1Wunschrente({
         startDrag(maxIncome, onNettoeinkommenChange);
     }, [startDrag, maxIncome, onNettoeinkommenChange]);
 
-    // ===== WUNSCHRENTE LINE HANDLERS =====
     const handleWunschrenterLineClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
             updateFromClientX(e.clientX, maxRente, (val) => {
@@ -137,7 +122,6 @@ export function Step1Wunschrente({
         });
     }, [startDrag, maxRente, computedGesetzlicheRente, onWunschrenterChange]);
 
-    // ===== SETTINGS HANDLERS =====
     const handleSettingsChange = useCallback(
         <K extends keyof PensionSettings>(key: K, value: PensionSettings[K]) => {
             setSettings((prev) => ({
@@ -176,140 +160,132 @@ export function Step1Wunschrente({
                             </div>
                         </div>
                     </div>
-                    <button
-                        onClick={() => setShowSettings((prev) => !prev)}
-                        className="px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg border border-blue-400/50"
-                    >
-                        {showSettings ? "✕ Schließen" : "⚙️ Einstellungen"}
-                    </button>
                 </div>
             </div>
 
-            {/* SETTINGS PANEL */}
-            {showSettings && (
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 shadow-lg border border-blue-200">
-                    <h3 className="text-lg font-bold text-slate-900 mb-6">Einstellungen & Parameter</h3>
+            {/* SETTINGS PANEL - Always Visible */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 shadow-lg border border-blue-200">
+                <h3 className="text-lg font-bold text-slate-900 mb-6">Einstellungen & Parameter</h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        {/* Anspruch Rente */}
-                        <div className="bg-white rounded-xl p-5 border border-blue-100 shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-semibold text-slate-700">Gesetzliche Rente</span>
-                                <button
-                                    onClick={() => handleSettingsChange("anspruchRente", !settings.anspruchRente)}
-                                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all ${
-                                        settings.anspruchRente
-                                            ? "bg-gradient-to-r from-green-400 to-green-500"
-                                            : "bg-gray-300"
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {/* Anspruch Rente */}
+                    <div className="bg-white rounded-xl p-5 border border-blue-100 shadow-sm">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-slate-700">Gesetzliche Rente</span>
+                            <button
+                                onClick={() => handleSettingsChange("anspruchRente", !settings.anspruchRente)}
+                                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all ${
+                                    settings.anspruchRente
+                                        ? "bg-gradient-to-r from-green-400 to-green-500"
+                                        : "bg-gray-300"
+                                }`}
+                            >
+                                <span
+                                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                                        settings.anspruchRente ? "translate-x-7" : "translate-x-1"
                                     }`}
-                                >
-                                    <span
-                                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                                            settings.anspruchRente ? "translate-x-7" : "translate-x-1"
-                                        }`}
-                                    />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Bundesland */}
-                        <div className="bg-white rounded-xl p-5 border border-blue-100 shadow-sm">
-                            <span className="text-sm font-semibold text-slate-700 block mb-3">Bundesland</span>
-                            <div className="inline-flex rounded-lg overflow-hidden border border-blue-300 bg-blue-50">
-                                <button
-                                    type="button"
-                                    onClick={() => handleSettingsChange("bundesland", "west")}
-                                    className={`px-5 py-2 text-sm font-semibold transition-all ${
-                                        settings.bundesland === "west"
-                                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
-                                            : "bg-white text-blue-600 hover:bg-blue-50"
-                                    }`}
-                                >
-                                    West
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleSettingsChange("bundesland", "east")}
-                                    className={`px-5 py-2 text-sm font-semibold transition-all border-l ${
-                                        settings.bundesland === "east"
-                                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
-                                            : "bg-white text-blue-600 border-blue-300 hover:bg-blue-50"
-                                    }`}
-                                >
-                                    Ost
-                                </button>
-                            </div>
+                                />
+                            </button>
                         </div>
                     </div>
 
-                    {/* Sliders */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        {/* Inflation */}
-                        <div className="bg-white rounded-xl p-5 border border-blue-100 shadow-sm">
-                            <div className="flex justify-between items-center mb-3">
-                                <span className="text-sm font-semibold text-slate-700">Inflation</span>
-                                <span className="text-lg font-bold text-blue-600">
-                                    {settings.inflation.toFixed(1).replace(".", ",")}%
-                                </span>
-                            </div>
-                            <input
-                                type="range"
-                                min={0}
-                                max={10}
-                                step={0.1}
-                                value={settings.inflation}
-                                onChange={(e) => handleSettingsChange("inflation", parseFloat(e.target.value))}
-                                className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gradient-to-r from-blue-200 to-blue-300"
-                                style={{
-                                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${settings.inflation * 10}%, #dbeafe ${settings.inflation * 10}%, #dbeafe 100%)`,
-                                }}
-                            />
-                        </div>
-
-                        {/* Gehaltssteigerung */}
-                        <div className="bg-white rounded-xl p-5 border border-blue-100 shadow-sm">
-                            <div className="flex justify-between items-center mb-3">
-                                <span className="text-sm font-semibold text-slate-700">Gehaltssteigerung</span>
-                                <span className="text-lg font-bold text-green-600">
-                                    {settings.gehaltssteigerung.toFixed(1).replace(".", ",")}%
-                                </span>
-                            </div>
-                            <input
-                                type="range"
-                                min={0}
-                                max={10}
-                                step={0.1}
-                                value={settings.gehaltssteigerung}
-                                onChange={(e) => handleSettingsChange("gehaltssteigerung", parseFloat(e.target.value))}
-                                className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                                style={{
-                                    background: `linear-gradient(to right, #10b981 0%, #10b981 ${settings.gehaltssteigerung * 10}%, #d1fae5 ${settings.gehaltssteigerung * 10}%, #d1fae5 100%)`,
-                                }}
-                            />
+                    {/* Bundesland */}
+                    <div className="bg-white rounded-xl p-5 border border-blue-100 shadow-sm">
+                        <span className="text-sm font-semibold text-slate-700 block mb-3">Bundesland</span>
+                        <div className="inline-flex rounded-lg overflow-hidden border border-blue-300 bg-blue-50">
+                            <button
+                                type="button"
+                                onClick={() => handleSettingsChange("bundesland", "west")}
+                                className={`px-5 py-2 text-sm font-semibold transition-all ${
+                                    settings.bundesland === "west"
+                                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
+                                        : "bg-white text-blue-600 hover:bg-blue-50"
+                                }`}
+                            >
+                                West
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleSettingsChange("bundesland", "east")}
+                                className={`px-5 py-2 text-sm font-semibold transition-all border-l ${
+                                    settings.bundesland === "east"
+                                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
+                                        : "bg-white text-blue-600 border-blue-300 hover:bg-blue-50"
+                                }`}
+                            >
+                                Ost
+                            </button>
                         </div>
                     </div>
+                </div>
 
-                    {/* Entgeltpunkte */}
-                    <div className="bg-white rounded-xl p-5 border border-blue-100 shadow-sm mb-6">
-                        <span className="text-sm font-semibold text-slate-700 block mb-3">Entgeltpunkte heute</span>
+                {/* Sliders */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {/* Inflation */}
+                    <div className="bg-white rounded-xl p-5 border border-blue-100 shadow-sm">
+                        <div className="flex justify-between items-center mb-3">
+                            <span className="text-sm font-semibold text-slate-700">Inflation</span>
+                            <span className="text-lg font-bold text-blue-600">
+                                {settings.inflation.toFixed(1).replace(".", ",")}%
+                            </span>
+                        </div>
                         <input
-                            type="number"
+                            type="range"
                             min={0}
+                            max={10}
                             step={0.1}
-                            value={settings.entgeltpunktHeute}
-                            onChange={(e) => handleSettingsChange("entgeltpunktHeute", parseFloat(e.target.value) || 0)}
-                            className="w-full px-4 py-2 text-sm border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gradient-to-r from-blue-50 to-indigo-50"
+                            value={settings.inflation}
+                            onChange={(e) => handleSettingsChange("inflation", parseFloat(e.target.value))}
+                            className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gradient-to-r from-blue-200 to-blue-300"
+                            style={{
+                                background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${settings.inflation * 10}%, #dbeafe ${settings.inflation * 10}%, #dbeafe 100%)`,
+                            }}
                         />
                     </div>
 
-                    <button
-                        onClick={handleResetSettings}
-                        className="w-full px-4 py-3 text-sm font-semibold text-blue-600 bg-white border-2 border-blue-300 rounded-xl hover:bg-blue-50 transition-all"
-                    >
-                        ↻ Einstellungen zurücksetzen
-                    </button>
+                    {/* Gehaltssteigerung */}
+                    <div className="bg-white rounded-xl p-5 border border-blue-100 shadow-sm">
+                        <div className="flex justify-between items-center mb-3">
+                            <span className="text-sm font-semibold text-slate-700">Gehaltssteigerung</span>
+                            <span className="text-lg font-bold text-green-600">
+                                {settings.gehaltssteigerung.toFixed(1).replace(".", ",")}%
+                            </span>
+                        </div>
+                        <input
+                            type="range"
+                            min={0}
+                            max={10}
+                            step={0.1}
+                            value={settings.gehaltssteigerung}
+                            onChange={(e) => handleSettingsChange("gehaltssteigerung", parseFloat(e.target.value))}
+                            className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                            style={{
+                                background: `linear-gradient(to right, #10b981 0%, #10b981 ${settings.gehaltssteigerung * 10}%, #d1fae5 ${settings.gehaltssteigerung * 10}%, #d1fae5 100%)`,
+                            }}
+                        />
+                    </div>
                 </div>
-            )}
+
+                {/* Entgeltpunkte */}
+                <div className="bg-white rounded-xl p-5 border border-blue-100 shadow-sm mb-6">
+                    <span className="text-sm font-semibold text-slate-700 block mb-3">Entgeltpunkte heute</span>
+                    <input
+                        type="number"
+                        min={0}
+                        step={0.1}
+                        value={settings.entgeltpunktHeute}
+                        onChange={(e) => handleSettingsChange("entgeltpunktHeute", parseFloat(e.target.value) || 0)}
+                        className="w-full px-4 py-2 text-sm border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gradient-to-r from-blue-50 to-indigo-50"
+                    />
+                </div>
+
+                <button
+                    onClick={handleResetSettings}
+                    className="w-full px-4 py-3 text-sm font-semibold text-blue-600 bg-white border-2 border-blue-300 rounded-xl hover:bg-blue-50 transition-all"
+                >
+                    ↻ Einstellungen zurücksetzen
+                </button>
+            </div>
 
             {/* 2-BLOCK-CHART - Premium Design */}
             <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-8 shadow-lg border border-slate-200">
@@ -351,7 +327,7 @@ export function Step1Wunschrente({
                     ref={chartRef}
                     className="relative h-48 bg-gradient-to-b from-slate-100 to-slate-50 rounded-2xl border-2 border-slate-300 overflow-hidden shadow-inner mb-8"
                 >
-                    {/* Income block (left, slate gradient) */}
+                    {/* Income block */}
                     <div
                         className="absolute left-0 top-0 bottom-0 cursor-grab active:cursor-grabbing shadow-lg flex items-center justify-center rounded-r-2xl transition-all duration-200 hover:shadow-xl chart-block"
                         style={{
@@ -361,7 +337,6 @@ export function Step1Wunschrente({
                         }}
                         onClick={handleIncomeBlockClick}
                     >
-                        {/* Handle */}
                         <div
                             className="absolute right-0 top-0 bottom-0 w-2 bg-slate-900 cursor-grab active:cursor-grabbing rounded-r-2xl hover:w-3 transition-all"
                             onMouseDown={handleIncomeBlockDragStart}
@@ -373,7 +348,7 @@ export function Step1Wunschrente({
                         )}
                     </div>
 
-                    {/* Gesetzliche Rente block (right, emerald gradient) */}
+                    {/* Gesetzliche Rente block */}
                     <div
                         className="absolute right-0 top-0 bottom-0 shadow-lg flex items-center justify-center rounded-l-2xl transition-all duration-200 hover:shadow-xl chart-block"
                         style={{
@@ -382,7 +357,6 @@ export function Step1Wunschrente({
                             background: `linear-gradient(135deg, #10b981 0%, #059669 100%)`,
                         }}
                     >
-                        {/* Decorative left edge */}
                         <div className="absolute left-0 top-0 bottom-0 w-2 bg-emerald-900 rounded-l-2xl" />
                         {gesetzlichePercentage > 10 && (
                             <span className="text-sm font-bold text-white px-3 truncate">
@@ -391,7 +365,7 @@ export function Step1Wunschrente({
                         )}
                     </div>
 
-                    {/* Wunschrente line (red, animated) */}
+                    {/* Wunschrente line */}
                     <div
                         className="absolute top-0 bottom-0 w-1 bg-gradient-to-b from-rose-400 via-rose-500 to-rose-600 cursor-grab active:cursor-grabbing shadow-lg transition-all duration-200 hover:w-2 wunschrente-line"
                         style={{
@@ -402,7 +376,7 @@ export function Step1Wunschrente({
                         onMouseDown={handleWunschrenterLineDragStart}
                     />
 
-                    {/* Grid lines for reference */}
+                    {/* Grid lines */}
                     <div className="absolute inset-0 pointer-events-none opacity-10">
                         {[25, 50, 75].map((percent) => (
                             <div
@@ -462,7 +436,6 @@ export function Step1Wunschrente({
 
                     {/* Timeline line */}
                     <div className="flex-1 relative h-1 bg-gradient-to-r from-blue-400 via-blue-500 to-rose-500 rounded-full shadow-md">
-                        {/* Progress indicator */}
                         <div
                             className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg border-4 border-white"
                             style={{
@@ -553,3 +526,4 @@ export function Step1Wunschrente({
 }
 
 export default Step1Wunschrente;
+
