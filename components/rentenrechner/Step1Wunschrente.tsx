@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
     calcVorsorgeluecke,
     getAge,
@@ -37,15 +37,16 @@ export function Step1Wunschrente({
                                      onJahrgangChange,
                                      onPrivatrenterChange,
                                  }: Step1WunschrrenteProps) {
-    // ===== SETTINGS =====
+    // ========= SETTINGS =========
     const [settings, setSettings] = useState<PensionSettings>(SETTINGS_DEFAULTS);
     const [showSettings, setShowSettings] = useState(false);
+    const [showInfo, setShowInfo] = useState(true);
 
-    // ===== REFS (riêng cho mỗi “biểu đồ”) =====
+    // ========= REFS =========
     const incomeTrackRef = useRef<HTMLDivElement>(null);
     const wunschTrackRef = useRef<HTMLDivElement>(null);
 
-    // ===== CALCULATION =====
+    // ========= CALCULATION =========
     const age = getAge(jahrgang);
     const yearsUntilRetirement = Math.max(
         0,
@@ -62,15 +63,34 @@ export function Step1Wunschrente({
     const computedGesetzlicheRente = calc.nettoRente;
     const clampedWunschrente = Math.max(computedGesetzlicheRente, wunschrente);
 
+    // width theo % so với maxIncome / maxRente (cho block xám)
     const incomePercentage = Math.min(100, (nettoeinkommen / maxIncome) * 100);
-    const gesetzlichePercentage = Math.min(
-        100,
-        (computedGesetzlicheRente / maxRente) * 100
+
+    // tỉ lệ *dọc* bên trong khối Wunschrente (stacked top/bottom)
+    const wunschTotal = clampedWunschrente || 1;
+
+    const maxPrivateForStack = Math.max(
+        0,
+        clampedWunschrente - computedGesetzlicheRente
     );
-    const wunschePercentage = Math.min(
-        100,
-        (clampedWunschrente / maxRente) * 100
-    );
+    const privateForStack = Math.min(Math.max(privatrente, 0), maxPrivateForStack);
+
+    let gesetzInnerPct =
+        (computedGesetzlicheRente / wunschTotal) * 100 || 0;
+    let privateInnerPct = (privateForStack / wunschTotal) * 100 || 0;
+
+    // giữ tổng <= 100% và tránh block quá mỏng
+    const MIN_SEGMENT = 12;
+    if (gesetzInnerPct > 0 && gesetzInnerPct < MIN_SEGMENT)
+        gesetzInnerPct = MIN_SEGMENT;
+    if (privateInnerPct > 0 && privateInnerPct < MIN_SEGMENT)
+        privateInnerPct = MIN_SEGMENT;
+    const sumSeg = gesetzInnerPct + privateInnerPct;
+    if (sumSeg > 100 && sumSeg > 0) {
+        const scale = 100 / sumSeg;
+        gesetzInnerPct *= scale;
+        privateInnerPct *= scale;
+    }
 
     const vorsorgeluecke = calcVorsorgeluecke(
         clampedWunschrente,
@@ -78,18 +98,7 @@ export function Step1Wunschrente({
         privatrente
     );
 
-    // phần trăm bên trong khối Wunschrente (Gesetzliche + private)
-    const wunschScale = clampedWunschrente || 1;
-    const gesetzInnerPct = Math.min(
-        100,
-        (computedGesetzlicheRente / wunschScale) * 100
-    );
-    const privateInnerPct = Math.min(
-        100 - gesetzInnerPct,
-        (privatrente / wunschScale) * 100
-    );
-
-    // ===== DRAG CORE (truyền container riêng) =====
+    // ========= DRAG CORE =========
     const updateFromClientX = useCallback(
         (
             container: HTMLDivElement | null,
@@ -117,8 +126,10 @@ export function Step1Wunschrente({
             if (!container) return;
 
             const handleMove = (e: MouseEvent) => {
+                e.preventDefault();
                 updateFromClientX(container, e.clientX, maxValue, onValueChange);
             };
+
             const handleUp = () => {
                 document.removeEventListener("mousemove", handleMove);
                 document.removeEventListener("mouseup", handleUp);
@@ -130,7 +141,7 @@ export function Step1Wunschrente({
         [updateFromClientX]
     );
 
-    // ===== HANDLERS =====
+    // ========= HANDLERS =========
     const handleIncomeClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
             updateFromClientX(
@@ -173,142 +184,404 @@ export function Step1Wunschrente({
 
     const handleResetSettings = () => setSettings(SETTINGS_DEFAULTS);
 
-    // ===== UI =====
+    // ========= UI =========
     return (
-        <div className="space-y-6">
-            {/* HEADER */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 flex justify-between items-start">
-                <div>
-                    <h2 className="text-xl font-semibold text-gray-900">
-                        Schritt 1: Berechnen Sie Ihre monatliche Rente mit den Pfeilen
-                    </h2>
-                    <p className="text-sm text-gray-600 mt-1">
-                        Alter: <span className="font-semibold">{age}</span> Jahre ·
-                        Rentenbeginn in{" "}
-                        <span className="font-semibold">{yearsUntilRetirement}</span> Jahren
-                    </p>
-                </div>
-                <button
-                    onClick={() => setShowSettings((s) => !s)}
-                    className="px-4 py-2 text-sm font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                    Einstellungen
-                </button>
-            </div>
-
-            {/* SETTINGS PANEL */}
-            {showSettings && (
-                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 space-y-4">
-                    <h3 className="text-sm font-semibold text-gray-900">Einstellungen</h3>
-
-                    {/* Anspruch Rente */}
-                    <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-700">
-              Anspruch auf gesetzliche Rente
-            </span>
+        <div className="space-y-8">
+            {/* TIÊU ĐỀ + ICON MŨI TÊN TRÒN */}
+            <div className="rounded-xl border border-slate-200 bg-white/90 p-6 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-xl font-semibold text-slate-900">
+                            Schritt 1: Berechnen Sie Ihre monatliche Rente mit den Pfeilen
+                        </h2>
                         <button
-                            onClick={() =>
-                                handleSettingsChange("anspruchRente", !settings.anspruchRente)
-                            }
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                settings.anspruchRente ? "bg-green-500" : "bg-gray-300"
-                            }`}
+                            type="button"
+                            onClick={() => setShowInfo((s) => !s)}
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white shadow"
+                            aria-label="Info ein-/ausblenden"
                         >
               <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.anspruchRente ? "translate-x-6" : "translate-x-1"
+                  className={`transition-transform ${
+                      showInfo ? "rotate-90" : ""
                   }`}
-              />
+              >
+                ❯
+              </span>
                         </button>
                     </div>
-
-                    {/* Inflation */}
-                    <div>
-                        <div className="flex justify-between mb-1">
-                            <span className="text-sm text-gray-700">Inflation</span>
-                            <span className="text-sm font-semibold">
-                {settings.inflation.toFixed(1).replace(".", ",")} %
-              </span>
-                        </div>
-                        <input
-                            type="range"
-                            min={0}
-                            max={10}
-                            step={0.1}
-                            value={settings.inflation}
-                            onChange={(e) =>
-                                handleSettingsChange("inflation", parseFloat(e.target.value))
-                            }
-                            className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200"
-                            style={{
-                                background: `linear-gradient(to right, #111827 0%, #111827 ${
-                                    settings.inflation * 10
-                                }%, #e5e7eb ${settings.inflation * 10}%, #e5e7eb 100%)`,
-                            }}
-                        />
+                    <div className="text-right text-xs text-slate-500">
+                        <p>
+                            Alter: <span className="font-semibold text-slate-800">{age}</span>{" "}
+                            Jahre
+                        </p>
+                        <p>
+                            Rentenbeginn in{" "}
+                            <span className="font-semibold text-slate-800">
+                {yearsUntilRetirement}
+              </span>{" "}
+                            Jahren
+                        </p>
                     </div>
+                </div>
 
-                    {/* Gehaltssteigerung */}
+                {showInfo && (
+                    <p className="mt-3 max-w-3xl text-sm text-slate-600">
+                        Nutzen Sie die schwarzen Pfeile, um Ihr aktuelles Einkommen, Ihre
+                        gewünschte Rente und die private Vorsorge zu verändern. Die graue
+                        Fläche zeigt Ihr heutiges Nettoeinkommen, die grüne Fläche Ihre
+                        Rente ab Rentenbeginn.
+                    </p>
+                )}
+            </div>
+
+            {/* BIỂU ĐỒ CHÍNH + TRỤC + SLIDER DƯỚI (Jahrgang, private, Einstellungen) */}
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+                {/* HÀNG LABEL TRÊN BIỂU ĐỒ: EINKOMMEN & WUNSCHRENTE */}
+                <div className="flex items-end justify-between text-xs text-slate-700">
                     <div>
-                        <div className="flex justify-between mb-1">
-                            <span className="text-sm text-gray-700">Gehaltssteigerung</span>
-                            <span className="text-sm font-semibold">
-                {settings.gehaltssteigerung.toFixed(1).replace(".", ",")} %
-              </span>
-                        </div>
-                        <input
-                            type="range"
-                            min={0}
-                            max={10}
-                            step={0.1}
-                            value={settings.gehaltssteigerung}
-                            onChange={(e) =>
-                                handleSettingsChange(
-                                    "gehaltssteigerung",
-                                    parseFloat(e.target.value)
-                                )
-                            }
-                            className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200"
-                            style={{
-                                background: `linear-gradient(to right, #111827 0%, #111827 ${
-                                    settings.gehaltssteigerung * 10
-                                }%, #e5e7eb ${settings.gehaltssteigerung * 10}%, #e5e7eb 100%)`,
-                            }}
-                        />
+                        <p className="font-semibold">Einkommen</p>
+                        <p className="mt-1 text-xs text-slate-600">
+                            {maxIncome.toLocaleString("de-DE")} €
+                        </p>
                     </div>
+                    <div className="text-right">
+                        <p className="font-semibold">Wunschrente</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-900">
+                            €{Math.round(clampedWunschrente).toLocaleString("de-DE")}
+                        </p>
+                    </div>
+                </div>
 
-                    {/* Bundesland */}
-                    <div>
-                        <span className="text-sm text-gray-700 block mb-1">Bundesland</span>
-                        <div className="inline-flex rounded-md border border-gray-300 overflow-hidden">
+                {/* HAI KHỐI XÁM / XANH SONG SONG */}
+                <div className="flex flex-col gap-6 md:flex-row md:gap-8">
+                    {/* KHỐI XÁM – EINKOMMEN HEUTE */}
+                    <div className="md:w-1/2 md:pr-4 md:border-r md:border-slate-200">
+                        <div
+                            ref={incomeTrackRef}
+                            className="relative h-32 w-full cursor-pointer rounded-md border border-slate-200 bg-slate-50"
+                            onClick={handleIncomeClick}
+                        >
+                            {/* nút tròn đen (mũi tên) ở mép trên bên trái */}
                             <button
                                 type="button"
-                                onClick={() => handleSettingsChange("bundesland", "west")}
-                                className={`px-4 py-1 text-sm ${
-                                    settings.bundesland === "west"
-                                        ? "bg-gray-900 text-white"
-                                        : "bg-white text-gray-700"
-                                }`}
+                                onMouseDown={handleIncomeDragStart}
+                                className="absolute -top-4 left-4 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white shadow cursor-grab active:cursor-grabbing"
+                                aria-label="Nettoeinkommen verändern"
                             >
-                                West
+                                ‹
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => handleSettingsChange("bundesland", "east")}
-                                className={`px-4 py-1 text-sm border-l border-gray-300 ${
-                                    settings.bundesland === "east"
-                                        ? "bg-gray-900 text-white"
-                                        : "bg-white text-gray-700"
-                                }`}
+
+                            {/* block xám bên trong */}
+                            <div
+                                className="absolute inset-y-6 left-8 flex items-center justify-center rounded-md bg-slate-400 shadow-inner"
+                                style={{
+                                    width: `${Math.max(incomePercentage, 10)}%`,
+                                    minWidth: "80px",
+                                }}
                             >
-                                Ost
-                            </button>
+                <span className="text-xs text-slate-50">
+                  Nettoeinkommen{" "}
+                    <span className="font-semibold underline decoration-dotted">
+                    €{nettoeinkommen.toLocaleString("de-DE")}
+                  </span>
+                </span>
+                            </div>
+
+                            {/* nhãn 0 € & Heute dưới chân */}
+                            <div className="absolute bottom-1 left-0 right-0 flex items-center justify-between px-1 text-[11px] text-slate-600">
+                                <span>0 €</span>
+                                <span>Heute</span>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Entgeltpunkte heute */}
+                    {/* KHỐI XANH – RENTE AB RENTENBEGINN (STACKED) */}
+                    <div className="md:w-1/2 md:pl-4">
+                        <div
+                            ref={wunschTrackRef}
+                            className="relative h-32 w-full cursor-pointer rounded-md border border-slate-200 bg-slate-50"
+                            onClick={handleWunschClick}
+                        >
+                            {/* nút tròn đen (mũi tên) ở mép trên bên phải */}
+                            <button
+                                type="button"
+                                onMouseDown={handleWunschDragStart}
+                                className="absolute -top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white shadow cursor-grab active:cursor-grabbing"
+                                aria-label="Wunschrente verändern"
+                            >
+                                ›
+                            </button>
+
+                            {/* KHỐI XANH TỔNG (WUNSCHRENTE) */}
+                            <div className="absolute inset-x-8 bottom-4 top-6 rounded-md bg-emerald-500/90 shadow-inner">
+                                {/* phần trên – private */}
+                                {privateInnerPct > 0 && (
+                                    <div
+                                        className="absolute left-0 right-0 rounded-t-md bg-emerald-400"
+                                        style={{ top: 0, height: `${privateInnerPct}%` }}
+                                    >
+                                        {privateInnerPct > 15 && (
+                                            <div className="flex h-full items-center justify-center px-2 text-center text-[11px] font-semibold text-white">
+                                                Angesparte private Rente{" "}
+                                                {privatrente.toLocaleString("de-DE")} €
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* phần dưới – gesetzliche */}
+                                {gesetzInnerPct > 0 && (
+                                    <div
+                                        className="absolute left-0 right-0 rounded-b-md bg-emerald-600"
+                                        style={{ bottom: 0, height: `${gesetzInnerPct}%` }}
+                                    >
+                                        {gesetzInnerPct > 15 && (
+                                            <div className="flex h-full items-center justify-center px-2 text-center text-[11px] font-semibold text-white">
+                                                Gesetzliche Rente (netto){" "}
+                                                {Math.round(
+                                                    computedGesetzlicheRente
+                                                ).toLocaleString("de-DE")}{" "}
+                                                €
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* đường kẻ ngang đứt đoạn giữa 2 phần */}
+                                {privateInnerPct > 0 && gesetzInnerPct > 0 && (
+                                    <div
+                                        className="absolute left-2 right-2 border-t border-dashed border-white/90"
+                                        style={{ bottom: `${gesetzInnerPct}%` }}
+                                    />
+                                )}
+                            </div>
+
+                            {/* nhãn dưới: Rentenbeginn */}
+                            <div className="absolute bottom-1 left-0 right-0 flex items-center justify-center text-[11px] text-slate-600">
+                <span>
+                  Rentenbeginn {RENT_CONSTANTS.RETIREMENT_AGE} Jahre
+                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* TRỤC NGANG 0 € — Heute —— Linie —— Rentenbeginn */}
+                <div className="mt-2 flex items-center text-xs text-slate-600">
+                    <span>0 € — Heute</span>
+                    <div className="mx-3 h-px flex-1 bg-slate-300" />
+                    <span>Rentenbeginn {RENT_CONSTANTS.RETIREMENT_AGE} Jahre</span>
+                </div>
+
+                {/* VÙNG NỀN BE: SLIDER + EINSTELLUNGEN */}
+                <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50/80 p-4">
+                    <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.1fr)_auto]">
+                        {/* Slider Jahrgang */}
+                        <div>
+                            <p className="mb-2 text-sm font-semibold text-slate-700">
+                                Jahrgang
+                            </p>
+                            <p className="mb-1 text-sm font-semibold text-slate-900">
+                                {jahrgang}
+                            </p>
+                            <input
+                                type="range"
+                                min={1940}
+                                max={2005}
+                                value={jahrgang}
+                                onChange={(e) => onJahrgangChange(parseInt(e.target.value, 10))}
+                                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200"
+                                style={{
+                                    background: `linear-gradient(to right,#0f172a 0%,#0f172a ${
+                                        ((jahrgang - 1940) / (2005 - 1940)) * 100
+                                    }%,#e5e7eb ${
+                                        ((jahrgang - 1940) / (2005 - 1940)) * 100
+                                    }%,#e5e7eb 100%)`,
+                                }}
+                            />
+                            <div className="mt-1 flex justify-between text-[11px] text-slate-500">
+                                <span>1940</span>
+                                <span>2005</span>
+                            </div>
+                        </div>
+
+                        {/* Slider Angesparte private Rente */}
+                        <div>
+                            <p className="mb-2 text-sm font-semibold text-slate-700">
+                                Angesparte private Rente
+                            </p>
+                            <p className="mb-1 text-sm font-semibold text-slate-900">
+                                €{privatrente.toLocaleString("de-DE")}
+                            </p>
+                            <input
+                                type="range"
+                                min={0}
+                                max={10000}
+                                step={100}
+                                value={privatrente}
+                                onChange={(e) =>
+                                    onPrivatrenterChange(parseInt(e.target.value, 10))
+                                }
+                                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200"
+                                style={{
+                                    background: `linear-gradient(to right,#334155 0%,#334155 ${
+                                        (privatrente / 10000) * 100
+                                    }%,#e5e7eb ${(privatrente / 10000) * 100}%,#e5e7eb 100%)`,
+                                }}
+                            />
+                            <div className="mt-1 flex justify-between text-[11px] text-slate-500">
+                                <span>0 €</span>
+                                <span>10.000 €</span>
+                            </div>
+                        </div>
+
+                        {/* NÚT EINSTELLUNGEN */}
+                        <div className="flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setShowSettings((s) => !s)}
+                                className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-black"
+                            >
+                                <span className="text-xs">⚙️</span>
+                                Einstellungen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* HÀNG TÓM TẮT VORSORGELÜCKE */}
+                <div className="mt-3 flex items-center justify-between text-sm text-slate-700">
+                    <span className="font-semibold">Vorsorgelücke</span>
+                    <span
+                        className={`text-base font-semibold ${
+                            vorsorgeluecke > 0 ? "text-red-600" : "text-emerald-600"
+                        }`}
+                    >
+            €{Math.round(Math.abs(vorsorgeluecke)).toLocaleString("de-DE")}
+          </span>
+                </div>
+            </div>
+
+            {/* PANEL EINSTELLUNGEN CHI TIẾT */}
+            {showSettings && (
+                <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
+                    <h3 className="text-sm font-semibold text-slate-900">
+                        Annahmen & Einstellungen
+                    </h3>
+
+                    {/* Anspruch + Bundesland */}
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+              <span className="text-sm text-slate-700">
+                Anspruch auf gesetzliche Rente
+              </span>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    handleSettingsChange("anspruchRente", !settings.anspruchRente)
+                                }
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                    settings.anspruchRente ? "bg-emerald-500" : "bg-slate-300"
+                                }`}
+                            >
+                <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                        settings.anspruchRente ? "translate-x-6" : "translate-x-1"
+                    }`}
+                />
+                            </button>
+                        </div>
+
+                        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+              <span className="mb-2 block text-sm text-slate-700">
+                Bundesland
+              </span>
+                            <div className="inline-flex overflow-hidden rounded-md border border-slate-300 bg-white text-sm">
+                                <button
+                                    type="button"
+                                    onClick={() => handleSettingsChange("bundesland", "west")}
+                                    className={`px-4 py-1 ${
+                                        settings.bundesland === "west"
+                                            ? "bg-slate-900 text-white"
+                                            : "text-slate-700 hover:bg-slate-50"
+                                    }`}
+                                >
+                                    West
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleSettingsChange("bundesland", "east")}
+                                    className={`border-l border-slate-300 px-4 py-1 ${
+                                        settings.bundesland === "east"
+                                            ? "bg-slate-900 text-white"
+                                            : "text-slate-700 hover:bg-slate-50"
+                                    }`}
+                                >
+                                    Ost
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Inflation + Gehaltssteigerung */}
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div>
+                            <div className="mb-1 flex justify-between text-sm">
+                                <span className="text-slate-700">Inflation</span>
+                                <span className="font-semibold">
+                  {settings.inflation.toFixed(1).replace(".", ",")} %
+                </span>
+                            </div>
+                            <input
+                                type="range"
+                                min={0}
+                                max={10}
+                                step={0.1}
+                                value={settings.inflation}
+                                onChange={(e) =>
+                                    handleSettingsChange("inflation", parseFloat(e.target.value))
+                                }
+                                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200"
+                                style={{
+                                    background: `linear-gradient(to right,#0f172a 0%,#0f172a ${
+                                        settings.inflation * 10
+                                    }%,#e5e7eb ${settings.inflation * 10}%,#e5e7eb 100%)`,
+                                }}
+                            />
+                        </div>
+
+                        <div>
+                            <div className="mb-1 flex justify-between text-sm">
+                                <span className="text-slate-700">Gehaltssteigerung</span>
+                                <span className="font-semibold">
+                  {settings.gehaltssteigerung.toFixed(1).replace(".", ",")} %
+                </span>
+                            </div>
+                            <input
+                                type="range"
+                                min={0}
+                                max={10}
+                                step={0.1}
+                                value={settings.gehaltssteigerung}
+                                onChange={(e) =>
+                                    handleSettingsChange(
+                                        "gehaltssteigerung",
+                                        parseFloat(e.target.value)
+                                    )
+                                }
+                                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200"
+                                style={{
+                                    background: `linear-gradient(to right,#0f172a 0%,#0f172a ${
+                                        settings.gehaltssteigerung * 10
+                                    }%,#e5e7eb ${settings.gehaltssteigerung * 10}%,#e5e7eb 100%)`,
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Entgeltpunkte */}
                     <div>
-            <span className="text-sm text-gray-700 block mb-1">
+            <span className="mb-1 block text-sm text-slate-700">
               Entgeltpunkte heute
             </span>
                         <input
@@ -322,221 +595,19 @@ export function Step1Wunschrente({
                                     parseFloat(e.target.value) || 0
                                 )
                             }
-                            className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm"
+                            className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
                         />
                     </div>
 
                     <button
                         type="button"
                         onClick={handleResetSettings}
-                        className="text-sm text-gray-700 border border-gray-300 rounded-md px-3 py-1.5 hover:bg-gray-50"
+                        className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
                     >
-                        Eingaben zurücksetzen
+                        ↺ Eingaben zurücksetzen
                     </button>
                 </div>
             )}
-
-            {/* MAIN CHART – 2 KHỐI TÁCH RÕ RÀNG */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 space-y-6">
-                {/* Hàng nhãn tổng quát bên phải */}
-                <div className="grid grid-cols-4 gap-4 text-xs text-gray-600 mb-4">
-                    <div>
-                        <p className="font-semibold text-gray-700">Wunschrente</p>
-                        <p className="text-sm text-red-600 font-semibold">
-                            €{Math.round(clampedWunschrente).toLocaleString("de-DE")}
-                        </p>
-                    </div>
-                    <div>
-                        <p className="font-semibold text-gray-700">Gesetzliche Rente (netto)</p>
-                        <p className="text-sm text-emerald-700 font-semibold">
-                            €{Math.round(computedGesetzlicheRente).toLocaleString("de-DE")}
-                        </p>
-                    </div>
-                    <div>
-                        <p className="font-semibold text-gray-700">
-                            Angesparte private Rente
-                        </p>
-                        <p className="text-sm text-sky-700 font-semibold">
-                            €{privatrente.toLocaleString("de-DE")}
-                        </p>
-                    </div>
-                    <div className="text-right">
-                        <p className="font-semibold text-gray-700">Vorsorgelücke</p>
-                        <p
-                            className={`text-sm font-semibold ${
-                                vorsorgeluecke > 0 ? "text-red-600" : "text-emerald-600"
-                            }`}
-                        >
-                            €{Math.round(Math.abs(vorsorgeluecke)).toLocaleString("de-DE")}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Hai biểu đồ có ngăn cách */}
-                <div className="flex gap-8">
-                    {/* LEFT: Nettoeinkommen */}
-                    <div className="w-1/2 pr-4 border-r border-gray-200">
-                        <p className="text-xs font-semibold text-gray-600 mb-2">
-                            Einkommen heute
-                        </p>
-                        <div
-                            ref={incomeTrackRef}
-                            className="relative h-20 bg-gray-100 border border-gray-200 rounded-md overflow-hidden cursor-pointer"
-                            onClick={handleIncomeClick}
-                        >
-                            {/* block xám bên trong */}
-                            <div
-                                className="absolute inset-y-3 left-0 bg-gray-400 rounded-r-md flex items-center justify-end pr-3"
-                                style={{
-                                    width: `${Math.max(incomePercentage, 8)}%`,
-                                    minWidth: "40px",
-                                }}
-                            >
-                                {incomePercentage > 12 && (
-                                    <span className="text-xs font-semibold text-white truncate">
-                    €{nettoeinkommen.toLocaleString("de-DE")}
-                  </span>
-                                )}
-                            </div>
-                            {/* handle kéo */}
-                            <div
-                                className="absolute inset-y-2"
-                                style={{
-                                    left: `calc(${Math.max(
-                                        incomePercentage,
-                                        8
-                                    )}% - 6px)`,
-                                }}
-                            >
-                                <div
-                                    className="w-3 h-12 bg-gray-800 rounded-full cursor-grab active:cursor-grabbing"
-                                    onMouseDown={handleIncomeDragStart}
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* RIGHT: Wunschrente + Gesetzliche + private */}
-                    <div className="w-1/2 pl-4">
-                        <p className="text-xs font-semibold text-gray-600 mb-2">
-                            Rente ab Rentenbeginn
-                        </p>
-                        <div
-                            ref={wunschTrackRef}
-                            className="relative h-20 bg-gray-100 border border-gray-200 rounded-md overflow-hidden cursor-pointer"
-                            onClick={handleWunschClick}
-                        >
-                            {/* Gesetzliche Rente (xanh lá) */}
-                            {gesetzInnerPct > 0 && (
-                                <div
-                                    className="absolute inset-y-6 left-0 bg-emerald-500 rounded-l-md"
-                                    style={{ width: `${gesetzInnerPct}%` }}
-                                />
-                            )}
-
-                            {/* Private Rente (xanh dương) */}
-                            {privateInnerPct > 0 && (
-                                <div
-                                    className="absolute inset-y-6 bg-sky-500"
-                                    style={{
-                                        left: `${gesetzInnerPct}%`,
-                                        width: `${privateInnerPct}%`,
-                                    }}
-                                />
-                            )}
-
-                            {/* viền tổng Wunschrente */}
-                            <div className="absolute inset-y-4 left-0 right-0 border border-dashed border-red-300 rounded-md" />
-
-                            {/* Line Wunschrente (drag) */}
-                            <div
-                                className="absolute top-2 bottom-2 w-[2px] bg-red-600 cursor-grab active:cursor-grabbing"
-                                style={{ left: `${wunschePercentage}%` }}
-                                onMouseDown={handleWunschDragStart}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* TIMELINE */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                <div className="flex items-center justify-between text-xs text-gray-600">
-                    <span>0 € — Heute</span>
-                    <div className="flex-1 mx-4 flex items-center">
-                        <div className="flex-1 h-px bg-gray-300" />
-                        <div className="w-3 h-3 rounded-full bg-gray-500 mx-2" />
-                        <div className="flex-1 h-px bg-gray-300" />
-                    </div>
-                    <span>Rentenbeginn {RENT_CONSTANTS.RETIREMENT_AGE} Jahre</span>
-                </div>
-            </div>
-
-            {/* SLIDERS (Jahrgang + private Rente) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Jahrgang */}
-                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                    <div className="flex justify-between mb-3">
-                        <span className="text-sm font-semibold text-gray-700">Jahrgang</span>
-                        <span className="text-sm font-semibold text-gray-900">
-              {jahrgang}
-            </span>
-                    </div>
-                    <input
-                        type="range"
-                        min={1940}
-                        max={2005}
-                        value={jahrgang}
-                        onChange={(e) =>
-                            onJahrgangChange(parseInt(e.target.value, 10))
-                        }
-                        className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200"
-                        style={{
-                            background: `linear-gradient(to right, #111827 0%, #111827 ${
-                                ((jahrgang - 1940) / (2005 - 1940)) * 100
-                            }%, #e5e7eb ${
-                                ((jahrgang - 1940) / (2005 - 1940)) * 100
-                            }%, #e5e7eb 100%)`,
-                        }}
-                    />
-                    <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>1940</span>
-                        <span>2005</span>
-                    </div>
-                </div>
-
-                {/* Private Rente */}
-                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                    <div className="flex justify-between mb-3">
-            <span className="text-sm font-semibold text-gray-700">
-              Angesparte private Rente (monatlich)
-            </span>
-                        <span className="text-sm font-semibold text-gray-900">
-              €{privatrente.toLocaleString("de-DE")}
-            </span>
-                    </div>
-                    <input
-                        type="range"
-                        min={0}
-                        max={10000}
-                        step={100}
-                        value={privatrente}
-                        onChange={(e) =>
-                            onPrivatrenterChange(parseInt(e.target.value, 10))
-                        }
-                        className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200"
-                        style={{
-                            background: `linear-gradient(to right, #4b5563 0%, #4b5563 ${
-                                (privatrente / 10000) * 100
-                            }%, #e5e7eb ${(privatrente / 10000) * 100}%, #e5e7eb 100%)`,
-                        }}
-                    />
-                    <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>0 €</span>
-                        <span>10.000 €</span>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }
