@@ -5,18 +5,17 @@
 export type Bundesland = "west" | "east";
 
 export interface PensionSettings {
-    anspruchRente: boolean;            // Anspruch auf gesetzliche Rente?
-    bundesland: Bundesland;           // West/Ost – wichtig für Rentenwert
-    inflation: number;                // jährliche Inflation in %
-    gehaltssteigerung: number;        // jährliche Gehaltssteigerung in % (real/nominal – vereinfacht)
-    entgeltpunkteHeute: number;       // bereits erworbene Entgeltpunkte
-    rentenbeginnAlter: number;        // gewünschtes Rentenalter (z. B. 67)
-    rentenartFaktor: number;          // i. d. R. 1,0 für Regelaltersrente
-    zugangsfaktor: number;            // 1,0 wenn keine Zu- oder Abschläge
+    anspruchRente: boolean;      // Anspruch auf gesetzliche Rente?
+    bundesland: Bundesland;      // West/Ost – wichtig für Rentenwert
+    inflation: number;           // jährliche Inflation in %
+    gehaltssteigerung: number;   // jährliche Gehaltssteigerung in % (vereinfacht)
+    entgeltpunkteHeute: number;  // bereits erworbene Entgeltpunkte
+    rentenbeginnAlter: number;   // gewünschtes Rentenalter (z. B. 67)
+    rentenartFaktor: number;     // i. d. R. 1,0 für Regelaltersrente
+    zugangsfaktor: number;       // 1,0 wenn keine Zu- oder Abschläge
 }
 
 // Aktueller Rentenwert (vereinfachter Stand, West≈Ost seit 2024)
-// Quelle u. a. DRV / Wikipedia „Gesetzliche Rentenversicherung“  [oai_citation:0‡Wikipedia](https://de.wikipedia.org/wiki/Aktueller_Rentenwert?utm_source=chatgpt.com)
 export const AKTUELLER_RENTENWERT_WEST = 39.32; // € pro Entgeltpunkt
 export const AKTUELLER_RENTENWERT_OST = 39.32;  // Vereinfachung: gleicher Wert
 
@@ -24,7 +23,7 @@ export const AKTUELLER_RENTENWERT_OST = 39.32;  // Vereinfachung: gleicher Wert
 export const BEITRAGSBEMESSUNGSGRENZE_WEST = 97_200;
 export const BEITRAGSBEMESSUNGSGRENZE_OST = 97_200;
 
-// Durchschnittsentgelt der Rentenversicherung (2024 ca. 45.358 € / Jahr)  [oai_citation:1‡ihre-vorsorge.de](https://www.ihre-vorsorge.de/rente/nachrichten/1500-euro-rente-nach-45-jahren-durchschnittsverdienst?utm_source=chatgpt.com)
+// Durchschnittsentgelt der Rentenversicherung (ca. 45.358 € / Jahr)
 export const DURCHSCHNITTSENTGELT = 45_358;
 
 // Default-Einstellungen
@@ -33,7 +32,7 @@ export const DEFAULT_SETTINGS: PensionSettings = {
     bundesland: "west",
     inflation: 2.0,
     gehaltssteigerung: 1.5,
-    entgeltpunkteHeute: 25,          // typischer Wert mit ca. 50 Jahren
+    entgeltpunkteHeute: 25,       // typischer Wert mit ca. 50 Jahren
     rentenbeginnAlter: 67,
     rentenartFaktor: 1.0,
     zugangsfaktor: 1.0,
@@ -112,7 +111,7 @@ export interface PensionCalculationResult {
     privateRente: number;
     gesamtRente: number;           // Summe aus gesetzlich + privat (heutige Kaufkraft)
     wunschrente: number;           // Zielrente (heutige Kaufkraft)
-    vorsorgeluecke: number;        // Lücke in heutiger Kaufkraft
+    vorsorgeluecke: number;        // >0 = Lücke, <0 = Überschuss (heutige Kaufkraft)
 }
 
 /**
@@ -121,7 +120,7 @@ export interface PensionCalculationResult {
  * 2. Projektion Entgeltpunkte
  * 3. Gesetzliche Netto-Rente (nominal)
  * 4. Inflationsbereinigung -> heutige Kaufkraft
- * 5. Lücke zur Wunschrente
+ * 5. Differenz zur Wunschrente (positiv = Lücke, negativ = Überschuss)
  */
 export function calculateTotalPension(
     netIncomeNow: number,
@@ -160,10 +159,13 @@ export function calculateTotalPension(
 
     const gesetzlicheRenteNetto = gesetzlicheRenteNominal / inflationFactor;
 
-    // Private Rente und Wunschrente interpretieren wir als Werte in heutiger Kaufkraft,
-    // deshalb werden sie hier NICHT erneut inflationsbereinigt.
+    // Private Rente und Wunschrente interpretieren wir als Werte in heutiger Kaufkraft
     const gesamtRente = gesetzlicheRenteNetto + privateRenteMonatlich;
-    const vorsorgeluecke = Math.max(0, wunschrente - gesamtRente);
+
+    // WICHTIG: kein Math.max(0, ...)
+    // positiv  = Lücke (zu wenig Rente)
+    // negativ  = Überschuss (mehr als Ziel)
+    const vorsorgeluecke = wunschrente - gesamtRente;
 
     return {
         gesetzlicheRenteNetto,
