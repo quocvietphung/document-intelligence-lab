@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   calculateTotalPension,
   formatCurrency,
@@ -68,433 +68,616 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
 
   // ...existing code...
 
-  // Refs for drag handling
-  const incomeBarRef = useRef<HTMLDivElement>(null);
-  const pensionBarRef = useRef<HTMLDivElement>(null);
-  const incomeHandleRef = useRef<HTMLDivElement>(null);
-  const pensionHandleRef = useRef<HTMLDivElement>(null);
+  // Refs for sliders
+  const incomeBarRef = useRef<HTMLInputElement>(null);
+  const pensionBarRef = useRef<HTMLInputElement>(null);
 
-  // Drag handling for income bar (vertical bar, dragged horizontally via handle)
-  const handleIncomeMouseDown = useCallback(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!incomeBarRef.current) return;
-      const rect = incomeBarRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const percentage = Math.max(0, Math.min(1, x / rect.width));
-      setNetIncome(Math.round(percentage * maxIncome));
-    };
 
-    const handleMouseUp = () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-  }, [maxIncome]);
-
-  // Drag handling for pension bar (changes wunschrente)
-  const handlePensionMouseDown = useCallback(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!pensionBarRef.current) return;
-      const rect = pensionBarRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const percentage = Math.max(0, Math.min(1, x / rect.width));
-      setWunschrente(Math.round(percentage * maxRente));
-    };
-
-    const handleMouseUp = () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-  }, [maxRente]);
-
-  // Click on income bar to set income
-  const handleIncomeBarClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!incomeBarRef.current) return;
-      const rect = incomeBarRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const percentage = Math.max(0, Math.min(1, x / rect.width));
-      setNetIncome(Math.round(percentage * maxIncome));
-    },
-    [maxIncome]
-  );
-
-  // Click on pension bar to set wunschrente
-  const handlePensionBarClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!pensionBarRef.current) return;
-      const rect = pensionBarRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const percentage = Math.max(0, Math.min(1, x / rect.width));
-      setWunschrente(Math.round(percentage * maxRente));
-    },
-    [maxRente]
-  );
-
-  // Calculate bar segments for pension bar
-  const barHeight = 300; // CSS height
-  const gesetzlicheHeight = (pensionResult.gesetzlicheRenteNetto / wunschrente) * 100;
-  const privateHeight = (pensionResult.privateRente / wunschrente) * 100;
-  const vorsorgelueckeHeight = (pensionResult.vorsorgeluecke / wunschrente) * 100;
-
-  // Income bar percentage
+  // Income bar percentage for donut
   const incomePercentage = (netIncome / maxIncome) * 100;
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      {/* Header */}
-      <div className="flex justify-between items-start mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Schritt 1: Berechnen Sie Ihre monatliche Rente
-          </h1>
-        </div>
-        <div className="text-right text-sm text-gray-600">
-          <p className="mb-1">
-            <span className="font-semibold">Alter:</span> {currentAge} Jahre
-          </p>
-          <p>
-            <span className="font-semibold">Rentenbeginn in</span> {yearsUntilRetirement} Jahren
-            <br />
-            <span className="text-xs">(mit Rentenalter {settings.rentenbeginnAlter})</span>
-          </p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6 md:p-12">
+      <div className="max-w-6xl mx-auto">
+        {/* Header Section */}
+        <div className="mb-12">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-8">
+            <div>
+              <div className="inline-block mb-4">
+                <span className="px-4 py-2 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+                  SCHRITT 1 VON 2
+                </span>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-3">
+                Ihre Rente
+                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  {" "}visualisieren
+                </span>
+              </h1>
+              <p className="text-lg text-gray-600 max-w-2xl">
+                Sehen Sie die vollständige Übersicht Ihrer Rente: gesetzlich + privat + Vorsorgelücke
+              </p>
+            </div>
 
-      {/* Settings Button */}
-      <div className="mb-6 flex justify-end">
-        <button
-          onClick={() => setShowSettings(!showSettings)}
-          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition"
-        >
-          {showSettings ? "Einstellungen verbergen" : "Einstellungen"}
-        </button>
-      </div>
-
-      {/* Settings Panel */}
-      {showSettings && (
-        <div className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-bold mb-4 text-gray-900">Einstellungen</h3>
-
-          {/* Anspruch auf Rente */}
-          <div className="mb-4 flex items-center">
-            <label className="flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.anspruchRente}
-                onChange={(e) =>
-                  setSettings({ ...settings, anspruchRente: e.target.checked })
-                }
-                className="w-4 h-4 rounded"
-              />
-              <span className="ml-3 text-sm text-gray-700 font-semibold">
-                Anspruch auf gesetzliche Rente
-              </span>
-            </label>
+            {/* Age Info Card */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 min-w-fit">
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-gray-600 font-medium">Aktuelles Alter</p>
+                  <p className="text-3xl font-bold text-blue-600">{currentAge}</p>
+                </div>
+                <div className="h-px bg-gray-200"></div>
+                <div>
+                  <p className="text-sm text-gray-600 font-medium">Rentenbeginn in</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-2xl font-bold text-gray-900">{yearsUntilRetirement}</p>
+                    <span className="text-sm text-gray-600">Jahren (mit {settings.rentenbeginnAlter})</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* Bundesland */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Bundesland
-            </label>
-            <div className="flex gap-4">
-              {(["west", "east"] as const).map((region) => (
-                <label key={region} className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="bundesland"
-                    checked={settings.bundesland === region}
-                    onChange={() => setSettings({ ...settings, bundesland: region })}
-                    className="w-4 h-4"
+        {/* Main Content - Charts Section */}
+        <div className="grid lg:grid-cols-3 gap-8 mb-12">
+          {/* Left Column: Donut Chart (Income) */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 h-full flex flex-col">
+              <div className="mb-8">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Einkommen heute</h3>
+                <p className="text-sm text-gray-600">Monatliches Nettoeinkommen</p>
+              </div>
+
+              {/* Donut Chart */}
+              <div className="flex-1 flex flex-col items-center justify-center mb-8 relative h-64">
+                <svg className="w-full h-full" viewBox="0 0 200 200">
+                  {/* Background Circle */}
+                  <circle cx="100" cy="100" r="90" fill="none" stroke="#f3f4f6" strokeWidth="20" />
+
+                  {/* Fill Circle */}
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="90"
+                    fill="none"
+                    stroke="url(#blueGradient)"
+                    strokeWidth="20"
+                    strokeDasharray={`${(incomePercentage / 100) * 565} 565`}
+                    strokeDashoffset="0"
+                    strokeLinecap="round"
+                    className="transition-all duration-500"
+                    transform="rotate(-90 100 100)"
                   />
-                  <span className="ml-2 text-sm text-gray-700">
-                    {region === "west" ? "West" : "Ost"}
-                  </span>
-                </label>
-              ))}
+
+                  {/* Gradient Definition */}
+                  <defs>
+                    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#2563eb" />
+                      <stop offset="100%" stopColor="#3b82f6" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                {/* Center Text */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <p className="text-sm text-gray-600 font-medium">Ausgelastet</p>
+                  <p className="text-3xl font-bold text-blue-600">{incomePercentage.toFixed(0)}%</p>
+                </div>
+              </div>
+
+              {/* Donut Info */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
+                  <span className="text-sm text-gray-700 font-medium">Netto</span>
+                  <span className="text-lg font-bold text-blue-600">{formatCurrency(netIncome)}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
+                  <span className="text-sm text-gray-700 font-medium">Brutto (geschätzt)</span>
+                  <span className="text-lg font-bold text-blue-600">{formatCurrency(netIncome * 3)}</span>
+                </div>
+              </div>
+
+              {/* Income Slider */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="flex justify-between items-center mb-3">
+                  <label className="text-sm font-semibold text-gray-900">Anpassen</label>
+                  <span className="text-lg font-bold text-blue-600">{formatCurrency(netIncome)}</span>
+                </div>
+                <input
+                  ref={incomeBarRef}
+                  type="range"
+                  min="0"
+                  max={maxIncome}
+                  step="100"
+                  value={netIncome}
+                  onChange={(e) => setNetIncome(parseInt(e.target.value))}
+                  className="w-full h-3 bg-gradient-to-r from-blue-200 to-blue-400 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Inflation */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Inflation: {formatNumber(settings.inflation, 1)} %
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="5"
-              step="0.1"
-              value={settings.inflation}
-              onChange={(e) =>
-                setSettings({ ...settings, inflation: parseFloat(e.target.value) })
-              }
-              className="w-full"
-            />
+          {/* Middle Column: Stacked Horizontal Bars (Pension) */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 h-full flex flex-col">
+              <div className="mb-8">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Rente im Ruhestand</h3>
+                <p className="text-sm text-gray-600">Zusammensetzung der monatlichen Rente mit {settings.rentenbeginnAlter} Jahren</p>
+              </div>
+
+              {/* Stacked Bars */}
+              <div className="space-y-8 flex-1">
+                {/* Bar 1: Current Situation */}
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">Aktuelle Rentensituation</p>
+                      <p className="text-xs text-gray-600 mt-1">Ohne zusätzliche Vorsorge</p>
+                    </div>
+                    <p className="text-lg font-bold text-gray-900">{formatCurrency(pensionResult.gesamtRente)}</p>
+                  </div>
+
+                  {/* Horizontal Stacked Bar */}
+                  <div className="flex h-12 rounded-full overflow-hidden shadow-md border border-gray-200">
+                    {/* Segment 1: Statutory */}
+                    <div
+                      className="bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-600 hover:to-emerald-500 transition-all duration-300 flex items-center justify-center"
+                      style={{ width: `${(pensionResult.gesetzlicheRenteNetto / pensionResult.gesamtRente) * 100}%` }}
+                      title={`Gesetzlich: ${formatCurrency(pensionResult.gesetzlicheRenteNetto)}`}
+                    >
+                      {(pensionResult.gesetzlicheRenteNetto / pensionResult.gesamtRente) * 100 > 15 && (
+                        <span className="text-white text-xs font-bold drop-shadow">{((pensionResult.gesetzlicheRenteNetto / pensionResult.gesamtRente) * 100).toFixed(0)}%</span>
+                      )}
+                    </div>
+
+                    {/* Segment 2: Private */}
+                    {pensionResult.privateRente > 0 && (
+                      <div
+                        className="bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 hover:to-cyan-500 transition-all duration-300 flex items-center justify-center"
+                        style={{ width: `${(pensionResult.privateRente / pensionResult.gesamtRente) * 100}%` }}
+                        title={`Privat: ${formatCurrency(pensionResult.privateRente)}`}
+                      >
+                        {(pensionResult.privateRente / pensionResult.gesamtRente) * 100 > 15 && (
+                          <span className="text-white text-xs font-bold drop-shadow">{((pensionResult.privateRente / pensionResult.gesamtRente) * 100).toFixed(0)}%</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Legend for this bar */}
+                  <div className="flex gap-4 mt-3 text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                      <span className="text-gray-700">{formatCurrency(pensionResult.gesetzlicheRenteNetto)} (Gesetzlich)</span>
+                    </div>
+                    {pensionResult.privateRente > 0 && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-cyan-500 rounded-full"></div>
+                        <span className="text-gray-700">{formatCurrency(pensionResult.privateRente)} (Privat)</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bar 2: With Desired Pension */}
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">Wunschrente-Ziel</p>
+                      <p className="text-xs text-gray-600 mt-1">Deine finanzielle Zielsetzung</p>
+                    </div>
+                    <p className="text-lg font-bold text-gray-900">{formatCurrency(wunschrente)}</p>
+                  </div>
+
+                  {/* Horizontal Stacked Bar with Gap */}
+                  <div className="flex h-12 rounded-full overflow-hidden shadow-md border border-gray-200">
+                    {/* Segment 1: Statutory */}
+                    <div
+                      className="bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-600 hover:to-emerald-500 transition-all duration-300 flex items-center justify-center"
+                      style={{ width: `${(pensionResult.gesetzlicheRenteNetto / wunschrente) * 100}%` }}
+                      title={`Gesetzlich: ${formatCurrency(pensionResult.gesetzlicheRenteNetto)}`}
+                    >
+                      {(pensionResult.gesetzlicheRenteNetto / wunschrente) * 100 > 10 && (
+                        <span className="text-white text-xs font-bold drop-shadow">{((pensionResult.gesetzlicheRenteNetto / wunschrente) * 100).toFixed(0)}%</span>
+                      )}
+                    </div>
+
+                    {/* Segment 2: Private */}
+                    {pensionResult.privateRente > 0 && (
+                      <div
+                        className="bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 hover:to-cyan-500 transition-all duration-300 flex items-center justify-center"
+                        style={{ width: `${(pensionResult.privateRente / wunschrente) * 100}%` }}
+                        title={`Privat: ${formatCurrency(pensionResult.privateRente)}`}
+                      >
+                        {(pensionResult.privateRente / wunschrente) * 100 > 10 && (
+                          <span className="text-white text-xs font-bold drop-shadow">{((pensionResult.privateRente / wunschrente) * 100).toFixed(0)}%</span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Segment 3: Gap */}
+                    {pensionResult.vorsorgeluecke > 0 && (
+                      <div
+                        className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 transition-all duration-300 flex items-center justify-center"
+                        style={{ width: `${(pensionResult.vorsorgeluecke / wunschrente) * 100}%` }}
+                        title={`Lücke: ${formatCurrency(pensionResult.vorsorgeluecke)}`}
+                      >
+                        {(pensionResult.vorsorgeluecke / wunschrente) * 100 > 10 && (
+                          <span className="text-white text-xs font-bold drop-shadow">{((pensionResult.vorsorgeluecke / wunschrente) * 100).toFixed(0)}%</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Legend for this bar */}
+                  <div className="flex gap-4 mt-3 text-xs flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                      <span className="text-gray-700">{formatCurrency(pensionResult.gesetzlicheRenteNetto)}</span>
+                    </div>
+                    {pensionResult.privateRente > 0 && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-cyan-500 rounded-full"></div>
+                        <span className="text-gray-700">{formatCurrency(pensionResult.privateRente)}</span>
+                      </div>
+                    )}
+                    {pensionResult.vorsorgeluecke > 0 && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                        <span className="text-gray-700">Lücke: {formatCurrency(pensionResult.vorsorgeluecke)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Wunschrente Slider */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="flex justify-between items-center mb-3">
+                  <label className="text-sm font-semibold text-gray-900">Wunschrente anpassen</label>
+                  <span className="text-lg font-bold text-emerald-600">{formatCurrency(wunschrente)}</span>
+                </div>
+                <input
+                  ref={pensionBarRef}
+                  type="range"
+                  min="0"
+                  max={maxRente}
+                  step="100"
+                  value={wunschrente}
+                  onChange={(e) => setWunschrente(parseInt(e.target.value))}
+                  className="w-full h-3 bg-gradient-to-r from-emerald-200 to-emerald-400 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Gehaltssteigerung */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Gehaltssteigerung: {formatNumber(settings.gehaltssteigerung, 1)} %
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="5"
-              step="0.1"
-              value={settings.gehaltssteigerung}
-              onChange={(e) =>
-                setSettings({ ...settings, gehaltssteigerung: parseFloat(e.target.value) })
-              }
-              className="w-full"
-            />
-          </div>
+          {/* Right Column: Stats */}
+          <div className="lg:col-span-1">
+            <div className="space-y-5 h-full flex flex-col">
+              {/* Card 1: Statutory Pension */}
+              <div className="bg-gradient-to-br from-emerald-50 via-white to-emerald-50 rounded-2xl p-6 shadow-lg border-2 border-emerald-100 hover:shadow-xl hover:border-emerald-200 transition-all">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <p className="text-xs text-emerald-700 font-bold uppercase tracking-wide mb-1">Gesetzliche Rente</p>
+                    <p className="text-sm text-emerald-600 font-medium">Entgeltpunkte-basiert</p>
+                  </div>
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl shadow-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-3xl font-bold text-emerald-700 mb-2">
+                  {formatCurrency(pensionResult.gesetzlicheRenteNetto)}
+                </p>
+                <div className="flex items-center gap-2 text-xs text-emerald-600">
+                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
+                  <span>pro Monat (netto)</span>
+                </div>
+              </div>
 
-          {/* Entgeltpunkte */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Entgeltpunkte heute: {formatNumber(settings.entgeltpunkteHeute, 1)}
-            </label>
-            <input
-              type="number"
-              step="0.5"
-              value={settings.entgeltpunkteHeute}
-              onChange={(e) =>
-                setSettings({ ...settings, entgeltpunkteHeute: parseFloat(e.target.value) })
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+              {/* Card 2: Private Pension */}
+              <div className="bg-gradient-to-br from-cyan-50 via-white to-cyan-50 rounded-2xl p-6 shadow-lg border-2 border-cyan-100 hover:shadow-xl hover:border-cyan-200 transition-all">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <p className="text-xs text-cyan-700 font-bold uppercase tracking-wide mb-1">Private Rente</p>
+                    <p className="text-sm text-cyan-600 font-medium">Angesparte Vermögen</p>
+                  </div>
+                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-xl shadow-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-3xl font-bold text-cyan-700 mb-2">
+                  {formatCurrency(pensionResult.privateRente)}
+                </p>
+                <div className="flex items-center gap-2 text-xs text-cyan-600">
+                  <div className="w-1.5 h-1.5 bg-cyan-500 rounded-full"></div>
+                  <span>pro Monat</span>
+                </div>
+              </div>
 
-          {/* Rentenbeginn Alter */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Rentenbeginnsalter: {settings.rentenbeginnAlter}
-            </label>
-            <input
-              type="range"
-              min="60"
-              max="75"
-              step="1"
-              value={settings.rentenbeginnAlter}
-              onChange={(e) =>
-                setSettings({ ...settings, rentenbeginnAlter: parseInt(e.target.value) })
-              }
-              className="w-full"
-            />
+              {/* Card 3: Gap or Success */}
+              <div
+                className={`rounded-2xl p-6 shadow-lg border-2 transition-all flex-1 flex flex-col justify-between ${
+                  pensionResult.vorsorgeluecke > 0
+                    ? "bg-gradient-to-br from-orange-50 via-white to-orange-50 border-orange-100 hover:border-orange-200"
+                    : "bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 border-green-200 hover:border-green-300"
+                }`}
+              >
+                <div>
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <p className={`text-xs font-bold uppercase tracking-wide mb-1 ${
+                        pensionResult.vorsorgeluecke > 0 ? "text-orange-700" : "text-green-700"
+                      }`}>
+                        {pensionResult.vorsorgeluecke > 0 ? "Vorsorgelücke" : "✓ Ziel Erreicht"}
+                      </p>
+                      <p className={`text-sm font-medium ${
+                        pensionResult.vorsorgeluecke > 0 ? "text-orange-600" : "text-green-600"
+                      }`}>
+                        {pensionResult.vorsorgeluecke > 0 ? "Zusatz erforderlich" : "Voll finanziert"}
+                      </p>
+                    </div>
+                    <div className={`w-12 h-12 rounded-xl shadow-lg flex items-center justify-center ${
+                      pensionResult.vorsorgeluecke > 0
+                        ? "bg-gradient-to-br from-orange-400 to-orange-600"
+                        : "bg-gradient-to-br from-green-400 to-emerald-600"
+                    }`}>
+                      <svg className={`w-6 h-6 text-white ${pensionResult.vorsorgeluecke > 0 ? "" : ""}`} fill="currentColor" viewBox="0 0 24 24">
+                        {pensionResult.vorsorgeluecke > 0 ? (
+                          <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                        ) : (
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                        )}
+                      </svg>
+                    </div>
+                  </div>
+                  <p className={`text-3xl font-bold mb-2 ${
+                    pensionResult.vorsorgeluecke > 0 ? "text-orange-700" : "text-green-700"
+                  }`}>
+                    {formatCurrency(pensionResult.vorsorgeluecke)}
+                  </p>
+                </div>
+                <div className={`flex items-center gap-2 text-xs pt-4 border-t-2 ${
+                  pensionResult.vorsorgeluecke > 0 ? "border-orange-200 text-orange-600" : "border-green-200 text-green-600"
+                }`}>
+                  <div className={`w-1.5 h-1.5 rounded-full ${
+                    pensionResult.vorsorgeluecke > 0 ? "bg-orange-500" : "bg-green-500"
+                  }`}></div>
+                  <span>{pensionResult.vorsorgeluecke > 0 ? "noch erforderlich" : "abgedeckt"}</span>
+                </div>
+              </div>
+
+              {/* Total Pension */}
+              <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-6 shadow-xl text-white border-2 border-blue-500 hover:shadow-2xl transition-all">
+                <p className="text-sm font-semibold opacity-90 mb-3 uppercase tracking-wide">Gesamtrente monatlich</p>
+                <p className="text-4xl font-bold">{formatCurrency(pensionResult.gesamtRente)}</p>
+                <div className="mt-4 pt-4 border-t border-white/30">
+                  <p className="text-xs opacity-75">Mit {settings.rentenbeginnAlter} Jahren</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Main Chart Area */}
-      <div className="mb-8">
-        <div className="flex gap-8 items-flex-end justify-center mb-8">
-          {/* LEFT BAR: Today's Net Income */}
-          <div className="flex flex-col items-center">
-            <div
-              ref={incomeBarRef}
-              onClick={handleIncomeBarClick}
-              className="relative w-24 bg-gray-200 rounded-b-lg cursor-pointer group overflow-hidden"
-              style={{ height: `${barHeight}px` }}
-            >
-              {/* Fill */}
-              <div
-                className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-500 to-blue-400 transition-all duration-200"
-                style={{ height: `${incomePercentage}%` }}
-              />
-
-              {/* Label inside bar */}
-              <div className="absolute bottom-4 left-0 right-0 text-center text-white text-xs font-bold pointer-events-none">
-                <p className="text-xs">Nettoeinkommen</p>
-                <p className="font-bold">{formatCurrency(netIncome)}</p>
-              </div>
-
-              {/* Handle at top */}
-              <div
-                ref={incomeHandleRef}
-                onMouseDown={handleIncomeMouseDown}
-                className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-white border-2 border-blue-500 rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing shadow-md hover:shadow-lg transition z-10"
-              >
-                <span className="text-xl text-blue-500">⇕</span>
+        {/* Sliders Section */}
+        <div className="grid md:grid-cols-2 gap-8 mb-12">
+          {/* Birth Year Slider */}
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+            <div className="flex justify-between items-center mb-6">
+              <label className="block text-lg font-bold text-gray-900">Geburtsjahr</label>
+              <div className="text-3xl font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-xl">
+                {birthYear}
               </div>
             </div>
-            <p className="mt-2 text-xs text-gray-500 font-semibold">Einkommen</p>
+            <input
+              type="range"
+              min="1940"
+              max="2005"
+              step="1"
+              value={birthYear}
+              onChange={(e) => setBirthYear(parseInt(e.target.value))}
+              className="w-full h-3 bg-gradient-to-r from-blue-200 to-blue-400 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-4 font-semibold">
+              <span>1940</span>
+              <span>2005</span>
+            </div>
           </div>
 
-          {/* RIGHT BAR: Pension at Retirement (Stacked) */}
-          <div className="flex flex-col items-center">
-            <div
-              ref={pensionBarRef}
-              onClick={handlePensionBarClick}
-              className="relative w-24 bg-gray-100 rounded-b-lg cursor-pointer group overflow-hidden border border-gray-300"
-              style={{ height: `${barHeight}px` }}
-            >
-              {/* Segment 1: Statutory Pension (Bottom, Green) */}
-              <div
-                className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-emerald-500 to-emerald-400 transition-all duration-200"
-                style={{ height: `${gesetzlicheHeight}%` }}
-              />
-
-              {/* Segment 2: Private Pension (Middle, Teal) */}
-              <div
-                className="absolute left-0 right-0 bg-gradient-to-t from-cyan-400 to-cyan-300 transition-all duration-200"
-                style={{
-                  bottom: `${gesetzlicheHeight}%`,
-                  height: `${privateHeight}%`,
-                }}
-              />
-
-              {/* Segment 3: Pension Gap (Top, Orange/Red) */}
-              {vorsorgelueckeHeight > 0 && (
-                <div
-                  className="absolute left-0 right-0 bg-gradient-to-t from-orange-400 to-orange-300 transition-all duration-200"
-                  style={{
-                    bottom: `${gesetzlicheHeight + privateHeight}%`,
-                    height: `${vorsorgelueckeHeight}%`,
-                  }}
-                />
-              )}
-
-              {/* Label at top */}
-              <div className="absolute top-2 left-0 right-0 text-center text-xs font-bold text-gray-800 pointer-events-none">
-                <p className="text-xs">Wunschrente</p>
-                <p className="font-bold">{formatCurrency(wunschrente)}</p>
-              </div>
-
-              {/* Handle at top right */}
-              <div
-                onMouseDown={handlePensionMouseDown}
-                className="absolute -top-6 right-0 w-12 h-12 bg-white border-2 border-emerald-500 rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing shadow-md hover:shadow-lg transition z-10"
-              >
-                <span className="text-xl text-emerald-500">↔</span>
+          {/* Private Pension Slider */}
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+            <div className="flex justify-between items-center mb-6">
+              <label className="block text-lg font-bold text-gray-900">Private Rente</label>
+              <div className="text-3xl font-bold text-cyan-600 bg-cyan-50 px-4 py-2 rounded-xl">
+                {formatCurrency(privateRente)}
               </div>
             </div>
-            <p className="mt-2 text-xs text-gray-500 font-semibold">Rente</p>
+            <input
+              type="range"
+              min="0"
+              max="1000"
+              step="50"
+              value={privateRente}
+              onChange={(e) => setPrivateRente(parseInt(e.target.value))}
+              className="w-full h-3 bg-gradient-to-r from-cyan-200 to-cyan-400 rounded-lg appearance-none cursor-pointer accent-cyan-600"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-4 font-semibold">
+              <span>{formatCurrency(0)}</span>
+              <span>{formatCurrency(1000)}</span>
+            </div>
           </div>
         </div>
 
         {/* Legend */}
-        <div className="flex justify-center gap-6 mb-6 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-gradient-to-t from-emerald-500 to-emerald-400 rounded" />
-            <span className="text-gray-700">Gesetzliche Rente</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-gradient-to-t from-cyan-400 to-cyan-300 rounded" />
-            <span className="text-gray-700">Private Rente</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-gradient-to-t from-orange-400 to-orange-300 rounded" />
-            <span className="text-gray-700">Vorsorgelücke</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Sliders Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        {/* Birth Year Slider */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Geburtsjahr: {birthYear}
-          </label>
-          <input
-            type="range"
-            min="1940"
-            max="2005"
-            step="1"
-            value={birthYear}
-            onChange={(e) => setBirthYear(parseInt(e.target.value))}
-            className="w-full"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>1940</span>
-            <span>2005</span>
+        <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 mb-12">
+          <h3 className="text-lg font-bold text-gray-900 mb-6">Renten-Komponenten</h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="flex items-start gap-4">
+              <div className="w-4 h-4 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg mt-1 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-gray-900 mb-1">Gesetzliche Rente</p>
+                <p className="text-sm text-gray-600">Staatliche Rentenversicherung basierend auf Entgeltpunkten</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="w-4 h-4 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg mt-1 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-gray-900 mb-1">Private Rente</p>
+                <p className="text-sm text-gray-600">Angesparte private Altersvorsorge und Zusatzversicherungen</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="w-4 h-4 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg mt-1 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-gray-900 mb-1">Vorsorgelücke</p>
+                <p className="text-sm text-gray-600">Unterschied zwischen Wunsch und Deckung</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Private Pension Slider */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Private Rente: {formatCurrency(privateRente)} / Monat
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="1000"
-            step="50"
-            value={privateRente}
-            onChange={(e) => setPrivateRente(parseInt(e.target.value))}
-            className="w-full"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>{formatCurrency(0)}</span>
-            <span>{formatCurrency(1000)}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Summary Row */}
-      <div className="border-t pt-6 grid grid-cols-3 gap-4 text-center">
-        <div className="p-4 bg-emerald-50 rounded-lg">
-          <p className="text-xs text-gray-600 mb-1">Gesetzliche Rente (netto)</p>
-          <p className="text-lg font-bold text-emerald-700">
-            {formatCurrency(pensionResult.gesetzlicheRenteNetto)}
-          </p>
-        </div>
-
-        <div className="p-4 bg-cyan-50 rounded-lg">
-          <p className="text-xs text-gray-600 mb-1">Private Rente</p>
-          <p className="text-lg font-bold text-cyan-700">
-            {formatCurrency(pensionResult.privateRente)}
-          </p>
-        </div>
-
-        <div
-          className={`p-4 rounded-lg ${
-            pensionResult.vorsorgeluecke > 0 ? "bg-orange-50" : "bg-green-50"
-          }`}
-        >
-          <p className="text-xs text-gray-600 mb-1">Vorsorgelücke</p>
-          <p
-            className={`text-lg font-bold ${
-              pensionResult.vorsorgeluecke > 0 ? "text-orange-700" : "text-green-700"
-            }`}
+        {/* Settings Button */}
+        <div className="flex justify-between items-center mb-12">
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-gray-300 hover:shadow-lg transition-all"
           >
-            {formatCurrency(pensionResult.vorsorgeluecke)}
-          </p>
-        </div>
-      </div>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.26 2.37 1.806a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.26 3.31-1.806 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.26-2.37-1.806a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.26-3.31 1.806-2.37a1.724 1.724 0 002.572-1.065z" />
+            </svg>
+            Erweiterte Einstellungen
+          </button>
 
-      {/* Info Section */}
-      <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <p className="text-sm text-gray-700">
-          <span className="font-semibold">Gesamtrente:</span>{" "}
-          <span className="font-bold text-lg">{formatCurrency(pensionResult.gesamtRente)}</span>
-        </p>
-        <p className="text-xs text-gray-600 mt-2">
-          Diese Berechnung basiert auf vereinfachten Annahmen. Die tatsächliche Rente kann
-          unterschiedlich ausfallen.
-        </p>
-      </div>
-
-      {/* Next Button */}
-      {onStepComplete && (
-        <div className="mt-8 flex justify-end">
           <button
             onClick={onStepComplete}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-md hover:shadow-lg"
+            className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold hover:shadow-xl transition-all transform hover:scale-105"
           >
-            Weiter zu Schritt 2 →
+            Weiter zu Schritt 2
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
           </button>
         </div>
-      )}
+
+        {/* Settings Panel */}
+        {showSettings && (
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 animate-in fade-in slide-in-from-top-2 duration-300">
+            <h3 className="text-2xl font-bold mb-8 text-gray-900">Erweiterte Einstellungen</h3>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Anspruch auf Rente */}
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={settings.anspruchRente}
+                    onChange={(e) =>
+                      setSettings({ ...settings, anspruchRente: e.target.checked })
+                    }
+                    className="w-5 h-5 rounded-lg accent-blue-600 cursor-pointer"
+                  />
+                  <span className="text-gray-900 font-semibold group-hover:text-blue-600 transition">
+                    Anspruch auf gesetzliche Rente
+                  </span>
+                </label>
+              </div>
+
+              {/* Bundesland */}
+              <div className="space-y-3">
+                <p className="font-semibold text-gray-900 mb-3">Bundesland</p>
+                <div className="flex gap-4">
+                  {(["west", "east"] as const).map((region) => (
+                    <label key={region} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="bundesland"
+                        checked={settings.bundesland === region}
+                        onChange={() => setSettings({ ...settings, bundesland: region })}
+                        className="w-4 h-4 accent-blue-600 cursor-pointer"
+                      />
+                      <span className="text-gray-700 font-medium">{region === "west" ? "West" : "Ost"}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Inflation */}
+              <div>
+                <label className="block font-semibold text-gray-900 mb-3">
+                  Inflation: <span className="text-blue-600">{formatNumber(settings.inflation, 1)}%</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="5"
+                  step="0.1"
+                  value={settings.inflation}
+                  onChange={(e) =>
+                    setSettings({ ...settings, inflation: parseFloat(e.target.value) })
+                  }
+                  className="w-full h-2 bg-blue-200 rounded-lg accent-blue-600"
+                />
+              </div>
+
+              {/* Gehaltssteigerung */}
+              <div>
+                <label className="block font-semibold text-gray-900 mb-3">
+                  Gehaltssteigerung: <span className="text-blue-600">{formatNumber(settings.gehaltssteigerung, 1)}%</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="5"
+                  step="0.1"
+                  value={settings.gehaltssteigerung}
+                  onChange={(e) =>
+                    setSettings({ ...settings, gehaltssteigerung: parseFloat(e.target.value) })
+                  }
+                  className="w-full h-2 bg-blue-200 rounded-lg accent-blue-600"
+                />
+              </div>
+
+              {/* Entgeltpunkte */}
+              <div>
+                <label className="block font-semibold text-gray-900 mb-3">
+                  Entgeltpunkte heute: <span className="text-blue-600">{formatNumber(settings.entgeltpunkteHeute, 1)}</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.5"
+                  value={settings.entgeltpunkteHeute}
+                  onChange={(e) =>
+                    setSettings({ ...settings, entgeltpunkteHeute: parseFloat(e.target.value) })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
+                />
+              </div>
+
+              {/* Rentenbeginn Alter */}
+              <div>
+                <label className="block font-semibold text-gray-900 mb-3">
+                  Rentenbeginnsalter: <span className="text-blue-600">{settings.rentenbeginnAlter}</span>
+                </label>
+                <input
+                  type="range"
+                  min="60"
+                  max="75"
+                  step="1"
+                  value={settings.rentenbeginnAlter}
+                  onChange={(e) =>
+                    setSettings({ ...settings, rentenbeginnAlter: parseInt(e.target.value) })
+                  }
+                  className="w-full h-2 bg-blue-200 rounded-lg accent-blue-600"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
