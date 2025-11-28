@@ -4,10 +4,9 @@ import React, { useState, useMemo } from "react";
 import {
   calculateTotalPension,
   formatCurrency,
-  formatNumber,
   DEFAULT_SETTINGS,
   PensionSettings,
-} from "@/src/utils/pension";
+} from "@/utils/pension";
 
 export interface PensionStep2Props {
   netIncome?: number;
@@ -55,6 +54,8 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
   // State
   const [monthlyContribution, setMonthlyContribution] = useState(200);
   const [settings] = useState<PensionSettings>(DEFAULT_SETTINGS);
+
+  // ...existing code...
 
   // Compute age and years until retirement
   const currentAge = new Date().getFullYear() - birthYear;

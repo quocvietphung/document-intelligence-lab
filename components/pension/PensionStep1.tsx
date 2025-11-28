@@ -7,7 +7,7 @@ import {
   formatNumber,
   DEFAULT_SETTINGS,
   PensionSettings,
-} from "@/src/utils/pension";
+} from "@/utils/pension";
 
 export interface PensionStep1Props {
   initialNetIncome?: number;
@@ -65,6 +65,8 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
   // Compute age and years until retirement
   const currentAge = new Date().getFullYear() - birthYear;
   const yearsUntilRetirement = Math.max(0, settings.rentenbeginnAlter - currentAge);
+
+  // ...existing code...
 
   // Refs for drag handling
   const incomeBarRef = useRef<HTMLDivElement>(null);
