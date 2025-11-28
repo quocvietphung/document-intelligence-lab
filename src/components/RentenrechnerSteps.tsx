@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import PensionStep1 from "./PensionStep1";
 import PensionStep2 from "./PensionStep2";
 
@@ -20,10 +20,10 @@ const RentenrechnerSteps: React.FC = () => {
     wunschrente: 3000,
   });
 
-  // Callback from PensionStep1 to update step1Data
-  const handleStep1DataChange = (data: Partial<Step1Data>) => {
+  // Callback from PensionStep1 to update step1Data (memoized to prevent infinite loops)
+  const handleStep1DataChange = useCallback((data: Partial<Step1Data>) => {
     setStep1Data((prev) => ({ ...prev, ...data }));
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">

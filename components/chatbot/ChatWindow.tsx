@@ -46,7 +46,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                 setWelcomeComplete(true);
             }
         }
-    }, [displayedWelcome, messages.length, welcomeComplete, welcomeText]);
+    }, [messages.length, welcomeComplete, welcomeText, displayedWelcome.length]);
 
     useEffect(() => {
         if (welcomeComplete && messages.length === 0) {
