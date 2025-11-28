@@ -130,7 +130,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                 </div>
                             </div>
                             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                                Ihre {" "}
+                                {t('ihre_pension')}{" "}
                                 <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   {t('income_section')}
                 </span>
