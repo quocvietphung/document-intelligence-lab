@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import {
   calculateTotalPension,
   formatCurrency,
@@ -51,6 +52,8 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
   wunschrente = 3000,
   onBack,
 }) => {
+  const t = useTranslations("rentenrechner");
+
   // State
   const [monthlyContribution, setMonthlyContribution] = useState(200);
   const [settings] = useState<PensionSettings>(DEFAULT_SETTINGS);
@@ -94,15 +97,15 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-              SCHRITT 2/2
+              {t('step2_title')}
             </span>
             <span className="text-sm text-gray-600">
-              <span className="font-medium">Zeitraum bis Rente:</span>
-              <span className="font-bold text-blue-600 ml-1">{yearsUntilRetirement} Jahre</span>
+              <span className="font-medium">{t('step2_years_sum').split('{years}')[0]}</span>
+              <span className="font-bold text-blue-600 ml-1">{yearsUntilRetirement} {t('step2_years_sum').split('{years}')[1]}</span>
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-            Zusätzliche <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">private Vorsorge</span>
+            {t('step2_title')}
           </h1>
         </div>
 
@@ -112,19 +115,19 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
           <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100">
             <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
               <span className="w-5 h-5 rounded-full bg-gray-400"></span>
-              Aktuell
+              {t('step2_current')}
             </h3>
 
             <div className="space-y-3">
               <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-xs text-gray-600 mb-1">Gesetzliche Rente</p>
+                <p className="text-xs text-gray-600 mb-1">{t('legend_statutory')}</p>
                 <p className="text-lg font-bold text-emerald-600">
                   {formatCurrency(basePensionResult.gesetzlicheRenteNetto)}
                 </p>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-xs text-gray-600 mb-1">Private Rente</p>
+                <p className="text-xs text-gray-600 mb-1">{t('legend_private')}</p>
                 <p className="text-lg font-bold text-cyan-600">
                   {formatCurrency(existingPrivateRente)}
                 </p>
@@ -135,7 +138,7 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
                   ? "bg-orange-50 border border-orange-200"
                   : "bg-green-50 border border-green-200"
               }`}>
-                <p className="text-xs text-gray-600 mb-1">Lücke</p>
+                <p className="text-xs text-gray-600 mb-1">{t('legend_gap')}</p>
                 <p className={`text-lg font-bold ${
                   basePensionResult.vorsorgeluecke > 0
                     ? "text-orange-600"
@@ -160,7 +163,7 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
               <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" />
               </svg>
-              Sparplan
+              {t('step2_monthly_contribution')}
             </h3>
 
             <div className="flex-1 flex flex-col justify-between">
@@ -201,11 +204,11 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
             </div>
           </div>
 
-          {/* RIGHT: Projected Situation */}
-          <div className="bg-gradient-to-br from-emerald-50 to-white rounded-2xl p-5 shadow-lg border border-emerald-200">
+          {/* RIGHT: Projetkiert */}
+          <div className="bg-gradient-to-br from-emerald-50 to-transparent rounded-2xl p-5 shadow-lg border border-emerald-100">
             <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
               <span className="w-5 h-5 rounded-full bg-emerald-500"></span>
-              Mit Sparbeitrag
+              {t('step2_with_savings')}
             </h3>
 
             <div className="space-y-3">

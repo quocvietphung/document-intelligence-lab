@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import {
     calculateTotalPension,
     formatCurrency,
@@ -35,6 +36,8 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                                        onDataChange,
                                                        onStepComplete,
                                                    }) => {
+    const t = useTranslations("rentenrechner");
+
     // State for main inputs
     const [netIncome, setNetIncome] = useState(initialNetIncome);
     const [privateRente, setPrivateRente] = useState(initialPrivateRente);
@@ -113,15 +116,15 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                         <div>
                             <div className="flex items-center gap-3 mb-2">
                 <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-                  SCHRITT 1/2
+                  {t('step1_title')}
                 </span>
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <span className="font-medium">Alter:</span>
+                                    <span className="font-medium">{t('current_age')}:</span>
                                     <span className="font-bold text-blue-600">{currentAge}</span>
                                     <span className="mx-1">•</span>
                                     <span className="font-medium">Rentenbeginn:</span>
                                     <span className="font-bold text-gray-900">
-                    in {yearsUntilRetirement} Jahren (mit{" "}
+                    in {yearsUntilRetirement} {t('retirement_age')} (mit{" "}
                                         {settings.rentenbeginnAlter})
                   </span>
                                 </div>
@@ -129,7 +132,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                                 Ihre Rente{" "}
                                 <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  visualisieren
+                  {t('income_section')}
                 </span>
                             </h1>
                         </div>
@@ -145,9 +148,9 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                             {/* Income Donut */}
                             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                                 <h3 className="text-sm font-bold text-gray-900 mb-1">
-                                    Einkommen
+                                    {t('income_section')}
                                 </h3>
-                                <p className="text-xs text-gray-600 mb-4">Monatlich netto</p>
+                                <p className="text-xs text-gray-600 mb-4">{t('income_subtitle')}</p>
 
                                 {/* Donut Chart */}
                                 <div className="relative h-40 mb-4">
@@ -189,7 +192,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                         <p className="text-2xl font-bold text-blue-600">
                                             {incomePercentage.toFixed(0)}%
                                         </p>
-                                        <p className="text-xs text-gray-500">von max</p>
+                                        <p className="text-xs text-gray-500">{t('of_max')}</p>
                                     </div>
                                 </div>
 
@@ -229,10 +232,10 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                             {/* Pension Bars */}
                             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                                 <h3 className="text-sm font-bold text-gray-900 mb-1">
-                                    Rentenübersicht
+                                    {t('pension_overview')}
                                 </h3>
                                 <p className="text-xs text-gray-600 mb-4">
-                                    Mit {settings.rentenbeginnAlter} Jahren
+                                    {t('with_retirement_age', { age: settings.rentenbeginnAlter })}
                                 </p>
 
                                 <div className="space-y-4 mb-4">
@@ -240,7 +243,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                     <div>
                                         <div className="flex justify-between items-center mb-2">
                       <span className="text-xs font-semibold text-gray-700">
-                        Aktuell
+                        {t('current')}
                       </span>
                                             <span className="text-sm font-bold text-gray-900">
                         {formatCurrency(pensionResult.gesamtRente)}
