@@ -62,33 +62,33 @@ export default function GoldInvestmentCalculator() {
 
   return (
     <div className="w-full">
-      <div className="space-y-8">
+      <div className="space-y-6 md:space-y-8">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
+        <div className="text-center space-y-1.5 md:space-y-2">
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
             {t('calculator.title')}
           </h2>
-          <p className="text-slate-600">{t('calculator.description')}</p>
+          <p className="text-sm md:text-base text-slate-600">{t('calculator.description')}</p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 md:gap-8 items-start">
           {/* Input Controls */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 hover:border-slate-300 transition-all shadow-sm">
+          <div className="lg:col-span-1 space-y-5 md:space-y-6">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 space-y-5 md:space-y-6 hover:border-slate-300 transition-all shadow-sm">
               {/* Investment Amount */}
-              <div className="space-y-3">
-                <label className="block text-sm font-semibold text-slate-900">
+              <div className="space-y-2.5">
+                <label className="block text-xs md:text-sm font-semibold text-slate-900">
                   {t('calculator.investmentAmount')}
                 </label>
-                <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-4 py-2 border border-slate-200 hover:border-blue-300 transition-all">
-                  <span className="text-slate-600 font-bold">€</span>
+                <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 md:px-4 py-2 border border-slate-200 hover:border-blue-300 transition-all">
+                  <span className="text-slate-600 font-bold text-sm md:text-base">€</span>
                   <input
                     type="number"
                     min="100"
                     step="500"
                     value={amount}
                     onChange={(e) => setAmount(Number(e.target.value) || 100)}
-                    className="flex-1 bg-transparent text-slate-900 font-semibold outline-none placeholder-slate-400"
+                    className="flex-1 bg-transparent text-slate-900 font-semibold text-sm md:text-base outline-none placeholder-slate-400"
                   />
                 </div>
                 <input
@@ -100,44 +100,44 @@ export default function GoldInvestmentCalculator() {
                   onChange={(e) => setAmount(Number(e.target.value))}
                   className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                 />
-                <div className="flex justify-between text-xs text-slate-600">
+                <div className="flex justify-between text-[0.7rem] md:text-xs text-slate-600">
                   <span>€100</span>
                   <span>€100,000</span>
                 </div>
               </div>
 
               {/* Current Price */}
-              <div className="space-y-3">
-                <label className="block text-sm font-semibold text-slate-900">
+              <div className="space-y-2.5">
+                <label className="block text-xs md:text-sm font-semibold text-slate-900">
                   {t('calculator.currentPrice')}
                 </label>
-                <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-4 py-2 border border-slate-200 hover:border-blue-300 transition-all">
-                  <span className="text-slate-600 font-bold">€</span>
+                <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 md:px-4 py-2 border border-slate-200 hover:border-blue-300 transition-all">
+                  <span className="text-slate-600 font-bold text-sm md:text-base">€</span>
                   <input
                     type="number"
                     min="100"
                     step="10"
                     value={unitPrice}
                     onChange={(e) => setUnitPrice(Number(e.target.value) || 100)}
-                    className="flex-1 bg-transparent text-slate-900 font-semibold outline-none placeholder-slate-400"
+                    className="flex-1 bg-transparent text-slate-900 font-semibold text-sm md:text-base outline-none placeholder-slate-400"
                   />
                 </div>
               </div>
 
               {/* Projected Price */}
-              <div className="space-y-3">
-                <label className="block text-sm font-semibold text-slate-900">
+              <div className="space-y-2.5">
+                <label className="block text-xs md:text-sm font-semibold text-slate-900">
                   {t('calculator.projectedPrice')}
                 </label>
-                <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-4 py-2 border border-slate-200 hover:border-blue-300 transition-all">
-                  <span className="text-slate-600 font-bold">€</span>
+                <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 md:px-4 py-2 border border-slate-200 hover:border-blue-300 transition-all">
+                  <span className="text-slate-600 font-bold text-sm md:text-base">€</span>
                   <input
                     type="number"
                     min="100"
                     step="10"
                     value={futurePrice}
                     onChange={(e) => setFuturePrice(Number(e.target.value) || 100)}
-                    className="flex-1 bg-transparent text-slate-900 font-semibold outline-none placeholder-slate-400"
+                    className="flex-1 bg-transparent text-slate-900 font-semibold text-sm md:text-base outline-none placeholder-slate-400"
                   />
                 </div>
                 <input
@@ -152,9 +152,9 @@ export default function GoldInvestmentCalculator() {
               </div>
 
               {/* Years */}
-              <div className="space-y-3">
-                <label className="block text-sm font-semibold text-slate-900">
-                  {t('calculator.investmentPeriod')}: <span className="text-blue-600 text-lg">{years}</span> {years > 1 ? t('calculator.years') : t('calculator.year')}
+              <div className="space-y-2.5">
+                <label className="block text-xs md:text-sm font-semibold text-slate-900">
+                  {t('calculator.investmentPeriod')}: <span className="text-blue-600 text-base md:text-lg">{years}</span> {years > 1 ? t('calculator.years') : t('calculator.year')}
                 </label>
                 <input
                   type="range"
@@ -165,7 +165,7 @@ export default function GoldInvestmentCalculator() {
                   onChange={(e) => setYears(Number(e.target.value))}
                   className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                 />
-                <div className="flex justify-between text-xs text-slate-600">
+                <div className="flex justify-between text-[0.7rem] md:text-xs text-slate-600">
                   <span>1</span>
                   <span>30 years</span>
                 </div>
@@ -174,11 +174,11 @@ export default function GoldInvestmentCalculator() {
           </div>
 
           {/* Charts & Results */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-5 md:space-y-6">
             {/* Price Development Chart */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-all shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Price Development</h3>
-              <div className="h-40 flex items-end justify-between gap-1 bg-slate-50 rounded-lg p-4">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 hover:border-slate-300 transition-all shadow-sm">
+              <h3 className="text-sm md:text-lg font-semibold text-slate-900 mb-3 md:mb-4">Price Development</h3>
+              <div className="h-36 md:h-40 flex items-end justify-between gap-1.5 bg-slate-50 rounded-lg p-3 md:p-4">
                 {chartData.map((data, idx) => (
                   <div
                     key={idx}
@@ -193,21 +193,21 @@ export default function GoldInvestmentCalculator() {
                       }}
                     />
                     {(idx === 0 || idx === chartData.length - 1) && (
-                      <span className="text-xs text-slate-600 mt-2">Year {data.year}</span>
+                      <span className="text-[0.65rem] md:text-xs text-slate-600 mt-2">Year {data.year}</span>
                     )}
                   </div>
                 ))}
               </div>
-              <div className="mt-4 flex justify-between text-xs text-slate-600">
+              <div className="mt-3 md:mt-4 flex justify-between text-[0.65rem] md:text-xs text-slate-600">
                 <span>€{minPrice.toFixed(0)}</span>
                 <span className="text-blue-600 font-semibold">€{maxPrice.toFixed(0)}</span>
               </div>
             </div>
 
             {/* Portfolio Value Chart */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-all shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Portfolio Value Growth</h3>
-              <div className="h-40 flex items-end justify-between gap-1 bg-slate-50 rounded-lg p-4">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 hover:border-slate-300 transition-all shadow-sm">
+              <h3 className="text-sm md:text-lg font-semibold text-slate-900 mb-3 md:mb-4">Portfolio Value Growth</h3>
+              <div className="h-36 md:h-40 flex items-end justify-between gap-1.5 bg-slate-50 rounded-lg p-3 md:p-4">
                 {chartData.map((data, idx) => (
                   <div
                     key={idx}
@@ -222,12 +222,12 @@ export default function GoldInvestmentCalculator() {
                       }}
                     />
                     {(idx === 0 || idx === chartData.length - 1) && (
-                      <span className="text-xs text-slate-600 mt-2">Year {data.year}</span>
+                      <span className="text-[0.65rem] md:text-xs text-slate-600 mt-2">Year {data.year}</span>
                     )}
                   </div>
                 ))}
               </div>
-              <div className="mt-4 flex justify-between text-xs text-slate-600">
+              <div className="mt-3 md:mt-4 flex justify-between text-[0.65rem] md:text-xs text-slate-600">
                 <span>€{result.currentValue.toFixed(0)}</span>
                 <span className="text-green-600 font-semibold">€{result.futureValue.toFixed(0)}</span>
               </div>
@@ -236,43 +236,43 @@ export default function GoldInvestmentCalculator() {
             {/* Results Summary */}
             <div className="grid md:grid-cols-2 gap-4">
               {/* Key Metrics */}
-              <div className="bg-gradient-to-br from-blue-50 to-slate-50 border border-blue-100 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-sm font-semibold text-slate-900 mb-4">Key Metrics</h3>
-                <div className="space-y-3">
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 md:p-6 shadow-sm">
+                <h3 className="text-xs md:text-sm font-semibold text-slate-900 mb-3 md:mb-4">Key Metrics</h3>
+                <div className="space-y-2.5 md:space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600">{t('calculator.ouncesPurchased')}</span>
-                    <span className="font-bold text-blue-600">{result.ouncesBought.toFixed(4)} oz</span>
+                    <span className="text-[0.7rem] md:text-xs text-slate-600">{t('calculator.ouncesPurchased')}</span>
+                    <span className="font-bold text-sm md:text-base text-slate-900">{result.ouncesBought.toFixed(4)} oz</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600">{t('calculator.projectedPriceLabel')}</span>
-                    <span className="font-bold text-blue-600">{fmtCurrency(result.futurePrice)}</span>
+                    <span className="text-[0.7rem] md:text-xs text-slate-600">{t('calculator.projectedPriceLabel')}</span>
+                    <span className="font-bold text-sm md:text-base text-slate-900">{fmtCurrency(result.futurePrice)}</span>
                   </div>
                   <div className="flex justify-between items-center pt-3 border-t border-slate-200">
-                    <span className="text-slate-900 font-semibold">{t('calculator.projectedValue')}</span>
-                    <span className="text-2xl font-bold text-blue-600">{fmtCurrency(result.futureValue)}</span>
+                    <span className="text-xs md:text-sm font-semibold text-slate-900">{t('calculator.projectedValue')}</span>
+                    <span className="text-lg md:text-xl font-bold text-blue-600">{fmtCurrency(result.futureValue)}</span>
                   </div>
                 </div>
               </div>
 
               {/* Gain/Loss */}
-              <div className={`border rounded-2xl p-6 shadow-sm transition-all ${
+              <div className={`border rounded-2xl p-5 md:p-6 shadow-sm transition-all ${
                 result.gain >= 0
-                  ? 'bg-gradient-to-br from-green-50 to-slate-50 border-green-100'
-                  : 'bg-gradient-to-br from-red-50 to-slate-50 border-red-100'
+                  ? 'bg-green-50 border-green-200'
+                  : 'bg-red-50 border-red-200'
               }`}>
-                <h3 className="text-sm font-semibold text-slate-900 mb-4">{t('calculator.gainLoss')}</h3>
-                <div className="space-y-4">
+                <h3 className="text-xs md:text-sm font-semibold text-slate-900 mb-3 md:mb-4">{t('calculator.gainLoss')}</h3>
+                <div className="space-y-3.5 md:space-y-4">
                   <div>
-                    <p className="text-slate-600 text-sm mb-2">Total Return</p>
-                    <p className={`text-3xl font-bold ${
+                    <p className="text-[0.7rem] md:text-xs text-slate-600 mb-1.5 md:mb-2">Total Return</p>
+                    <p className={`text-xl md:text-2xl font-bold ${
                       result.gain >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}>
                       {result.gain >= 0 ? '+' : ''}{fmtCurrency(result.gain)}
                     </p>
                   </div>
-                  <div className="pt-4 border-t border-slate-200">
-                    <p className="text-slate-600 text-sm mb-2">ROI</p>
-                    <p className={`text-2xl font-bold ${
+                  <div className="pt-3 md:pt-4 border-t border-slate-200">
+                    <p className="text-[0.7rem] md:text-xs text-slate-600 mb-1.5 md:mb-2">ROI</p>
+                    <p className={`text-lg md:text-2xl font-bold ${
                       result.gainPercent >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}>
                       {result.gainPercent >= 0 ? '+' : ''}{result.gainPercent.toFixed(2)}%

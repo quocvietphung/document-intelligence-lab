@@ -3,166 +3,214 @@ import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import GoldPriceWidget from '@/components/gold/GoldPriceWidget';
 import GoldInvestmentCalculator from '@/components/gold/GoldInvestmentCalculator';
-import FAQSection from '@/components/sections/FAQSection';
 
 export default function GoldConsultingPage() {
   const t = useTranslations('gold');
   const locale = useLocale();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-blue-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-500 py-16 border-b border-yellow-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            {t('title')}
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-50">
+      {/* HERO */}
+      <header className="relative overflow-hidden border-b border-yellow-500/20">
+        {/* soft glow background */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-yellow-400/20 blur-3xl" />
+          <div className="absolute bottom-[-5rem] right-[-3rem] h-64 w-64 rounded-full bg-amber-500/20 blur-3xl" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-18 flex flex-col items-center text-center gap-5">
+          <span className="inline-flex items-center gap-2 rounded-full border border-yellow-400/40 bg-black/30 px-4 py-1 text-[0.65rem] md:text-xs font-medium uppercase tracking-[0.18em] text-yellow-100/90 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Gold Investment Advisory
+          </span>
+
+          <h1 className="text-[2.1rem] md:text-[2.6rem] lg:text-[3rem] font-semibold tracking-tight leading-tight">
+            <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-400 bg-clip-text text-transparent">
+              {t('title')}
+            </span>
           </h1>
-          <p className="text-xl text-yellow-100 max-w-3xl mx-auto">
+
+          <p className="max-w-2xl text-[0.9rem] md:text-base text-slate-200/85">
             {t('subtitle')}
           </p>
+
+          {/* primary hero CTA */}
+          <div className="mt-1.5 flex flex-wrap items-center justify-center gap-2.5">
+            <Link
+              href={`/${locale}/contact`}
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 px-6 py-2.5 text-xs md:text-sm font-semibold text-slate-950 shadow-lg shadow-yellow-500/30 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-yellow-400/40"
+            >
+              <span>{t('cta.button')}</span>
+            </Link>
+            <a
+              href="tel:+49123456789"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-500/70 bg-slate-900/60 px-5 py-2 text-xs md:text-sm font-medium text-slate-50/90 hover:border-slate-300 hover:bg-slate-800/80 transition-colors duration-200"
+            >
+              <span>{'Call Now'}</span>
+            </a>
+          </div>
+
+          {/* mini stats */}
+          <dl className="mt-5 grid grid-cols-3 gap-3 text-[0.65rem] md:text-xs text-slate-200/80">
+            <div className="rounded-lg border border-yellow-500/18 bg-slate-900/60 px-3 py-2 backdrop-blur-sm">
+              <dt className="text-[0.6rem] uppercase tracking-[0.17em] text-slate-400">Investors</dt>
+              <dd className="text-sm md:text-base font-semibold text-yellow-100">10k+</dd>
+            </div>
+            <div className="rounded-lg border border-yellow-500/18 bg-slate-900/60 px-3 py-2 backdrop-blur-sm">
+              <dt className="text-[0.6rem] uppercase tracking-[0.17em] text-slate-400">Availability</dt>
+              <dd className="text-sm md:text-base font-semibold text-yellow-100">24/7</dd>
+            </div>
+            <div className="rounded-lg border border-yellow-500/18 bg-slate-900/60 px-3 py-2 backdrop-blur-sm">
+              <dt className="text-[0.6rem] uppercase tracking-[0.17em] text-slate-400">Satisfaction</dt>
+              <dd className="text-sm md:text-base font-semibold text-yellow-100">99%</dd>
+            </div>
+          </dl>
         </div>
-      </div>
+      </header>
 
-      <div className="py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Gold Price Widget */}
-          <div className="mb-16">
-            <GoldPriceWidget />
-          </div>
-
-          {/* Investment Calculator */}
-          <div className="mb-16">
-            <GoldInvestmentCalculator />
-          </div>
-
-          {/* Consulting Services */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+      {/* MAIN CONTENT */}
+      <main className="py-9 md:py-11">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-9 md:space-y-11">
+          {/* Widgets Layout - vertical */}
+          <section className="space-y-6 md:space-y-7">
+            <div className="space-y-2.5">
+              <div className="flex items-baseline justify-between gap-2">
+                <h2 className="text-sm md:text-base font-semibold text-slate-50">
+                  {t('priceWidget.title')}
+                </h2>
+                <span className="text-[0.7rem] text-slate-400 hidden sm:inline">
+                  {t('priceWidget.subtitle')}
+                </span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <div className="mt-1 rounded-2xl border border-slate-700/80 bg-slate-900/70 p-3.5 md:p-4 shadow-xl shadow-black/35 transition-transform duration-200 hover:-translate-y-[1px]">
+                <GoldPriceWidget />
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              <div className="flex items-baseline justify-between gap-2">
+                <h2 className="text-sm md:text-base font-semibold text-slate-50">
+                  {t('calculator.title')}
+                </h2>
+                <span className="text-[0.7rem] text-slate-400 hidden sm:inline">
+                  {t('calculator.description')}
+                </span>
+              </div>
+              <div className="mt-1 rounded-2xl border border-slate-700/80 bg-slate-900/70 p-3.5 md:p-4 shadow-xl shadow-black/35 transition-transform duration-200 hover:-translate-y-[1px]">
+                <GoldInvestmentCalculator />
+              </div>
+            </div>
+          </section>
+
+          {/* Services - compact but premium */}
+          <section className="grid md:grid-cols-3 gap-3.5">
+            <article className="rounded-xl border border-slate-700 bg-slate-950/40 p-4 shadow-md hover:border-yellow-400/60 hover:shadow-lg hover:shadow-yellow-500/15 transition-all duration-200">
+              <h3 className="mb-1.5 text-xs md:text-sm font-semibold text-slate-50">
                 {t('services.priceAnalysis')}
               </h3>
-              <p className="text-gray-600">
+              <p className="text-[0.7rem] md:text-xs text-slate-300/90 leading-relaxed">
                 {t('services.priceAnalysisDesc')}
               </p>
-            </div>
+            </article>
 
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <article className="rounded-xl border border-slate-700 bg-slate-950/40 p-4 shadow-md hover:border-amber-400/60 hover:shadow-lg hover:shadow-amber-400/15 transition-all duration-200">
+              <h3 className="mb-1.5 text-xs md:text-sm font-semibold text-slate-50">
                 {t('services.investmentAdvice')}
               </h3>
-              <p className="text-gray-600">
+              <p className="text-[0.7rem] md:text-xs text-slate-300/90 leading-relaxed">
                 {t('services.investmentAdviceDesc')}
               </p>
-            </div>
+            </article>
 
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <article className="rounded-xl border border-slate-700 bg-slate-950/40 p-4 shadow-md hover:border-orange-400/60 hover:shadow-lg hover:shadow-orange-400/15 transition-all duration-200">
+              <h3 className="mb-1.5 text-xs md:text-sm font-semibold text-slate-50">
                 {t('services.taxOptimization')}
               </h3>
-              <p className="text-gray-600">
+              <p className="text-[0.7rem] md:text-xs text-slate-300/90 leading-relaxed">
                 {t('services.taxOptimizationDesc')}
               </p>
-            </div>
-          </div>
+            </article>
+          </section>
 
-          {/* Market Insights */}
-          <div className="bg-white rounded-xl shadow-lg p-8 mb-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              {t('marketInsights.title')}
-            </h2>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  {t('marketInsights.factors.title')}
-                </h3>
-                <ul className="space-y-2 text-gray-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-600 font-bold mt-1">•</span>
-                    <span>{t('marketInsights.factors.economic')}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-600 font-bold mt-1">•</span>
-                    <span>{t('marketInsights.factors.inflation')}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-600 font-bold mt-1">•</span>
-                    <span>{t('marketInsights.factors.geopolitical')}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-600 font-bold mt-1">•</span>
-                    <span>{t('marketInsights.factors.currency')}</span>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  {t('marketInsights.tips.title')}
-                </h3>
-                <ul className="space-y-2 text-gray-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-600 font-bold mt-1">✓</span>
-                    <span>{t('marketInsights.tips.diversify')}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-600 font-bold mt-1">✓</span>
-                    <span>{t('marketInsights.tips.longTerm')}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-600 font-bold mt-1">✓</span>
-                    <span>{t('marketInsights.tips.monitor')}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-600 font-bold mt-1">✓</span>
-                    <span>{t('marketInsights.tips.consult')}</span>
-                  </li>
-                </ul>
-              </div>
+          {/* Key Insights - 2 Columns */}
+          <section className="grid md:grid-cols-2 gap-5">
+            <div className="rounded-xl border border-slate-700 bg-slate-950/50 p-5 shadow-md">
+              <h3 className="text-xs md:text-sm font-semibold text-slate-50 mb-3">
+                {t('marketInsights.factors.title')}
+              </h3>
+              <ul className="space-y-1.5 text-[0.7rem] md:text-xs">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-yellow-400" />
+                  <span className="text-slate-200">{t('marketInsights.factors.economic')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-yellow-400" />
+                  <span className="text-slate-200">{t('marketInsights.factors.inflation')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-yellow-400" />
+                  <span className="text-slate-200">{t('marketInsights.factors.geopolitical')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-yellow-400" />
+                  <span className="text-slate-200">{t('marketInsights.factors.currency')}</span>
+                </li>
+              </ul>
             </div>
-          </div>
 
-          {/* FAQ Section */}
-          <FAQSection />
+            <div className="rounded-xl border border-slate-700 bg-slate-950/50 p-5 shadow-md">
+              <h3 className="text-xs md:text-sm font-semibold text-slate-50 mb-3">
+                {t('marketInsights.tips.title')}
+              </h3>
+              <ul className="space-y-1.5 text-[0.7rem] md:text-xs">
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 h-3 w-3 rounded-full border border-emerald-400/70" />
+                  <span className="text-slate-200">{t('marketInsights.tips.diversify')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 h-3 w-3 rounded-full border border-emerald-400/70" />
+                  <span className="text-slate-200">{t('marketInsights.tips.longTerm')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 h-3 w-3 rounded-full border border-emerald-400/70" />
+                  <span className="text-slate-200">{t('marketInsights.tips.monitor')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 h-3 w-3 rounded-full border border-emerald-400/70" />
+                  <span className="text-slate-200">{t('marketInsights.tips.consult')}</span>
+                </li>
+              </ul>
+            </div>
+          </section>
 
           {/* CTA Section */}
-          <div className="text-center bg-gradient-to-br from-white to-slate-50 rounded-2xl p-8 md:p-16 shadow-xl border border-slate-100 mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              {t('cta.title')}
-            </h2>
-            <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
-              {t('cta.subtitle')}
-            </p>
-            <div className="flex flex-col md:flex-row gap-4 justify-center">
-              <Link
-                href={`/${locale}/contact`}
-                className="inline-block bg-gradient-to-r from-yellow-400 to-amber-400 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all transform hover:scale-105"
-              >
-                {t('cta.button')}
-              </Link>
-              <a
-                href="tel:+49123456789"
-                className="inline-block bg-slate-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-all transform hover:scale-105"
-              >
-                📞 Call Us Now
-              </a>
+          <section className="mt-2 rounded-2xl border border-yellow-500/40 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-7 md:p-9 shadow-2xl shadow-black/60 relative overflow-hidden">
+            <div className="pointer-events-none absolute inset-x-10 -top-20 h-32 rounded-full bg-yellow-400/12 blur-3xl" />
+            <div className="relative z-10 text-center max-w-2xl mx-auto space-y-3.5">
+              <h2 className="text-2xl md:text-3xl font-semibold text-slate-50">
+                {t('cta.title')}
+              </h2>
+              <p className="text-xs md:text-sm text-slate-200/90">
+                {t('cta.subtitle')}
+              </p>
+              <div className="mt-3 flex flex-col sm:flex-row gap-2.5 justify-center">
+                <Link
+                  href={`/${locale}/contact`}
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 px-7 py-2.5 text-xs md:text-sm font-semibold text-slate-950 shadow-lg shadow-yellow-500/40 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-yellow-400/50"
+                >
+                  <span>{t('cta.button')}</span>
+                </Link>
+                <a
+                  href="tel:+49123456789"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-500/80 bg-slate-900/70 px-7 py-2.5 text-xs md:text-sm font-medium text-slate-50 hover:border-slate-200 hover:bg-slate-800/80 transition-colors duration-200"
+                >
+                  <span>{'Call Now'}</span>
+                </a>
+              </div>
             </div>
-          </div>
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
