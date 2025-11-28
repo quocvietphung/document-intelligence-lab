@@ -100,8 +100,8 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
               {t('step2_title')}
             </span>
             <span className="text-sm text-gray-600">
-              <span className="font-medium">{t('step2_years_sum').split('{years}')[0]}</span>
-              <span className="font-bold text-blue-600 ml-1">{yearsUntilRetirement} {t('step2_years_sum').split('{years}')[1]}</span>
+              <span className="font-bold text-blue-600">{yearsUntilRetirement}</span>
+              <span className="font-medium">{t('step2_years')}</span>
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
@@ -120,7 +120,7 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
 
             <div className="space-y-3">
               <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-xs text-gray-600 mb-1">{t('legend_statutory')}</p>
+                <p className="text-xs text-gray-600 mb-1">{t('step2_statutory_pension_label')}</p>
                 <p className="text-lg font-bold text-emerald-600">
                   {formatCurrency(basePensionResult.gesetzlicheRenteNetto)}
                 </p>
@@ -149,7 +149,7 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
               </div>
 
               <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                <p className="text-xs text-gray-600 mb-1">Gesamt/Monat</p>
+                <p className="text-xs text-gray-600 mb-1">{t('step2_total_invested')}</p>
                 <p className="text-lg font-bold text-blue-600">
                   {formatCurrency(basePensionResult.gesamtRente)}
                 </p>
@@ -169,7 +169,7 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
             <div className="flex-1 flex flex-col justify-between">
               <div>
                 <div className="text-center mb-4">
-                  <p className="text-xs text-gray-600 mb-2">Monatliche Sparquote</p>
+                  <p className="text-xs text-gray-600 mb-2">{t('step2_monthly_contribution')}</p>
                   <p className="text-3xl font-bold text-blue-600">
                     {formatCurrency(monthlyContribution)}
                   </p>
@@ -193,11 +193,11 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
 
               <div className="space-y-2 mt-4 pt-4 border-t border-gray-200">
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-600">Jährlich:</span>
+                  <span className="text-gray-600">{t('step2_annually')}</span>
                   <span className="font-bold text-gray-900">{formatCurrency(totalAnnualInvestment)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-600">{yearsUntilRetirement}J Summe:</span>
+                  <span className="text-gray-600">{yearsUntilRetirement}{t('step2_years')}</span>
                   <span className="font-bold text-gray-900">{formatCurrency(totalCumulativeInvestment)}</span>
                 </div>
               </div>
@@ -213,14 +213,14 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
 
             <div className="space-y-3">
               <div className="bg-white rounded-lg p-3 border border-gray-200">
-                <p className="text-xs text-gray-600 mb-1">Gesetzliche Rente</p>
+                <p className="text-xs text-gray-600 mb-1">{t('step2_statutory_pension_label')}</p>
                 <p className="text-lg font-bold text-emerald-600">
                   {formatCurrency(projectedPensionResult.gesetzlicheRenteNetto)}
                 </p>
               </div>
 
               <div className="bg-white rounded-lg p-3 border border-gray-200">
-                <p className="text-xs text-gray-600 mb-1">Private Rente (inkl. Zusatz)</p>
+                <p className="text-xs text-gray-600 mb-1">{t('step2_private_pension_with_addition')}</p>
                 <p className="text-lg font-bold text-cyan-600">
                   {formatCurrency(totalPrivatePension)}
                 </p>
@@ -231,7 +231,7 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
                   ? "bg-orange-100 border border-orange-300"
                   : "bg-green-100 border border-green-300"
               }`}>
-                <p className="text-xs text-gray-600 mb-1">Verbleibende Lücke</p>
+                <p className="text-xs text-gray-600 mb-1">{t('step2_remaining_gap')}</p>
                 <p className={`text-lg font-bold ${
                   projectedPensionResult.vorsorgeluecke > 0
                     ? "text-orange-700"
@@ -242,7 +242,7 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
               </div>
 
               <div className="bg-emerald-100 rounded-lg p-3 border border-emerald-300">
-                <p className="text-xs text-gray-600 mb-1">Neue Gesamt/Monat</p>
+                <p className="text-xs text-gray-600 mb-1">{t('step2_new_total_monthly')}</p>
                 <p className="text-lg font-bold text-emerald-700">
                   {formatCurrency(projectedPensionResult.gesamtRente)}
                 </p>
@@ -254,27 +254,27 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
         {/* Impact Summary - Compact */}
         <div className="grid md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-100">
-            <p className="text-xs text-gray-600 mb-1">Lückenschließung</p>
+            <p className="text-xs text-gray-600 mb-1">{t('step2_gap_closure_label')}</p>
             <p className="text-2xl font-bold text-emerald-600">
               {formatCurrency(gapReduction)}
             </p>
-            <p className="text-xs text-gray-500 mt-1">{gapReductionPercent.toFixed(0)}% der Lücke</p>
+            <p className="text-xs text-gray-500 mt-1">{gapReductionPercent.toFixed(0)}{t('step2_of_gap')}</p>
           </div>
 
           <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-100">
-            <p className="text-xs text-gray-600 mb-1">Zusätzliche Rente p.M.</p>
+            <p className="text-xs text-gray-600 mb-1">{t('step2_additional_pension_label')}</p>
             <p className="text-2xl font-bold text-cyan-600">
               {formatCurrency(additionalPrivatePension)}
             </p>
-            <p className="text-xs text-gray-500 mt-1">aus Sparplan</p>
+            <p className="text-xs text-gray-500 mt-1">{t('step2_from_savings_plan')}</p>
           </div>
 
           <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-100">
-            <p className="text-xs text-gray-600 mb-1">Rentensteigerung</p>
+            <p className="text-xs text-gray-600 mb-1">{t('step2_pension_increase_label')}</p>
             <p className="text-2xl font-bold text-blue-600">
               +{formatCurrency(projectedPensionResult.gesamtRente - basePensionResult.gesamtRente)}
             </p>
-            <p className="text-xs text-gray-500 mt-1">monatlich mehr</p>
+            <p className="text-xs text-gray-500 mt-1">{t('step2_monthly_more_label')}</p>
           </div>
         </div>
 
@@ -294,14 +294,14 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Zurück zu Schritt 1
+            {t('step2_back_to_step1')}
           </button>
 
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold hover:shadow-xl transition-all transform hover:scale-105"
           >
-            Fertig
+            {t('step2_done')}
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
