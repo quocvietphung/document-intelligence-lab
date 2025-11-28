@@ -75,7 +75,8 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
     );
 
     // Income bar percentage for donut
-    const incomePercentage = (netIncome / maxIncome) * 100;
+    const incomePercentage =
+        maxIncome > 0 ? Math.min((netIncome / maxIncome) * 100, 100) : 0;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-6">
