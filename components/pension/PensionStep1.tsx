@@ -314,7 +314,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                                 <div className="flex h-8 rounded-full overflow-hidden shadow-sm border border-gray-200">
                                                     {/* Gesetzlich */}
                                                     <div
-                                                        className="bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-600 transition-all flex items-center justify-center"
+                                                        className="bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-600 transition-all duration-700 ease-out flex items-center justify-center"
                                                         style={{
                                                             width: `${gesetzlichTargetPercent}%`,
                                                         }}
@@ -330,7 +330,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                                     {pensionResult.privateRente > 0 &&
                                                         pensionResult.gesetzlicheRenteNetto + pensionResult.privateRente < wunschrente && (
                                                             <div
-                                                                className="bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 transition-all flex items-center justify-center"
+                                                                className="bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 transition-all duration-700 ease-out flex items-center justify-center"
                                                                 style={{
                                                                     width: `${privatTargetPercent}%`,
                                                                 }}
@@ -346,7 +346,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                                     {/* Lücke */}
                                                     {pensionResult.vorsorgeluecke > 0 && (
                                                         <div
-                                                            className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 transition-all flex items-center justify-center"
+                                                            className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 transition-all duration-700 ease-out flex items-center justify-center"
                                                             style={{
                                                                 width: `${gapTargetPercent}%`,
                                                             }}
