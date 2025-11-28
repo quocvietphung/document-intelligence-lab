@@ -122,15 +122,15 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                     <span className="font-medium">{t('current_age')}:</span>
                                     <span className="font-bold text-blue-600">{currentAge}</span>
                                     <span className="mx-1">•</span>
-                                    <span className="font-medium">Rentenbeginn:</span>
+                                    <span className="font-medium">{t('retirement_start')}:</span>
                                     <span className="font-bold text-gray-900">
-                    in {yearsUntilRetirement} {t('retirement_age')} (mit{" "}
+                    in {yearsUntilRetirement} {t('retirement_age')} ({t('mit')}{" "}
                                         {settings.rentenbeginnAlter})
                   </span>
                                 </div>
                             </div>
                             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                                Ihre Rente{" "}
+                                Ihre {" "}
                                 <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   {t('income_section')}
                 </span>
@@ -198,13 +198,13 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
 
                                 <div className="space-y-2 mb-4 pb-4 border-b border-gray-200">
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600 font-medium">Netto</span>
+                                        <span className="text-gray-600 font-medium">{t('net')}</span>
                                         <span className="font-bold text-blue-600">
                       {formatCurrency(netIncome)}
                     </span>
                                     </div>
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600 font-medium">Brutto ~</span>
+                                        <span className="text-gray-600 font-medium">{t('gross')}</span>
                                         <span className="font-bold text-gray-700">
                       {formatCurrency((netIncome * 1.3 * 12) / 12)}
                     </span>
@@ -212,7 +212,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                 </div>
 
                                 <label className="block text-xs font-semibold text-gray-700 mb-2">
-                                    Monatliches Nettoeinkommen
+                                    {t('monthly_net_income_label')}
                                 </label>
                                 <input
                                     type="range"
@@ -306,7 +306,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                     {/* Bar 2: Target - Ziel */}
                                     <div>
                                         <div className="flex justify-between items-center mb-2">
-                                            <span className="text-xs font-semibold text-gray-700">Ziel</span>
+                                            <span className="text-xs font-semibold text-gray-700">{t('target')}</span>
                                             <span className="text-sm font-bold text-gray-900">
                                                 {formatCurrency(wunschrente)}
                                             </span>
@@ -365,17 +365,17 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
 
                                                 {/* Labels always visible below bar */}
                                                 <div className="flex justify-between text-xs mt-2 text-gray-600 font-medium gap-2">
-                                                    <span>Gesetzlich: {gesetzlichTargetPercent.toFixed(0)}%</span>
+                                                    <span>{t('statutory_label')}: {gesetzlichTargetPercent.toFixed(0)}%</span>
                                                     {pensionResult.privateRente > 0 &&
                                                         pensionResult.gesetzlicheRenteNetto + pensionResult.privateRente < wunschrente && (
-                                                            <span>Privat: {privatTargetPercent.toFixed(0)}%</span>
+                                                            <span>{t('private_label')}: {privatTargetPercent.toFixed(0)}%</span>
                                                         )}
                                                     {pensionResult.vorsorgeluecke > 0 && (
-                                                        <span>Lücke: {gapTargetPercent.toFixed(0)}%</span>
+                                                        <span>{t('gap_label')}: {gapTargetPercent.toFixed(0)}%</span>
                                                     )}
                                                     {reachedTarget && (
                                                         <span className="text-green-600 font-bold">
-                                                            Gesamt: {formatCurrency(pensionResult.gesamtRente)}
+                                                            {t('total_label')}: {formatCurrency(pensionResult.gesamtRente)}
                                                         </span>
                                                     )}
                                                 </div>
@@ -383,7 +383,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                         ) : (
                                             <div className="flex h-8 rounded-full overflow-hidden shadow-sm border border-gray-300 bg-gray-100">
                                                 <div className="flex items-center justify-center w-full text-gray-500 text-xs font-semibold">
-                                                    Bitte Wunschrente setzen
+                                                    {t('please_set_target')}
                                                 </div>
                                             </div>
                                         )}
@@ -394,22 +394,22 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                 <div className="flex gap-3 mb-4 pb-4 border-b border-gray-200 text-xs">
                                     <div className="flex items-center gap-1.5">
                                         <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full" />
-                                        <span className="text-gray-600">Gesetzlich</span>
+                                        <span className="text-gray-600">{t('statutory_label')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <div className="w-2.5 h-2.5 bg-cyan-500 rounded-full" />
-                                        <span className="text-gray-600">Privat</span>
+                                        <span className="text-gray-600">{t('private_label')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />
-                                        <span className="text-gray-600">Lücke</span>
+                                        <span className="text-gray-600">{t('gap_label')}</span>
                                     </div>
                                 </div>
 
                                 {/* Wunschrente Slider */}
                                 <div className="space-y-3 pt-6 border-t border-gray-200">
                                     <div className="flex justify-between items-center">
-                                        <label className="text-sm font-bold text-gray-900">Gewünschte Monatsrente</label>
+                                        <label className="text-sm font-bold text-gray-900">{t('desired_monthly_pension')}</label>
                                         <div className="text-2xl font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">
                                             {formatCurrency(wunschrente)}
                                         </div>
@@ -437,7 +437,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                             <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-4 border border-emerald-100 shadow-sm">
                                 <div className="flex items-center justify-between mb-2">
                                     <p className="text-xs text-emerald-700 font-bold">
-                                        GESETZLICH
+                                        {t('statutory_label').toUpperCase()}
                                     </p>
                                     <div className="w-5 h-5 bg-emerald-500 rounded-lg" />
                                 </div>
@@ -450,7 +450,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                             {/* Private */}
                             <div className="bg-gradient-to-br from-cyan-50 to-white rounded-xl p-4 border border-cyan-100 shadow-sm">
                                 <div className="flex items-center justify-between mb-2">
-                                    <p className="text-xs text-cyan-700 font-bold">PRIVAT</p>
+                                    <p className="text-xs text-cyan-700 font-bold">{t('private_label').toUpperCase()}</p>
                                     <div className="w-5 h-5 bg-cyan-500 rounded-lg" />
                                 </div>
                                 <p className="text-lg font-bold text-cyan-700">
@@ -475,7 +475,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                                 : "text-green-700"
                                         }`}
                                     >
-                                        {pensionResult.vorsorgeluecke > 0 ? "LÜCKE" : "ÜBERSCHUSS"}
+                                        {pensionResult.vorsorgeluecke > 0 ? t('shortfall_label') : t('surplus_label')}
                                     </p>
                                     <div
                                         className={`w-5 h-5 rounded-lg ${
@@ -504,14 +504,14 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                     }`}
                                 >
                                     {pensionResult.vorsorgeluecke > 0
-                                        ? "Fehlbetrag"
-                                        : "Mehr als Ziel"}
+                                        ? t('shortfall_amount')
+                                        : t('more_than_target')}
                                 </p>
                             </div>
 
                             {/* Total */}
                             <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl p-4 shadow-lg text-white">
-                                <p className="text-xs font-semibold opacity-90 mb-1">GESAMT</p>
+                                <p className="text-xs font-semibold opacity-90 mb-1">{t('total_label')}</p>
                                 <p className="text-xl font-bold">
                                     {formatCurrency(pensionResult.gesamtRente)}
                                 </p>
@@ -537,7 +537,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                         d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.26 2.37 1.806a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.26 3.31-1.806 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.26-2.37-1.806a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.26-3.31 1.806-2.37a1.724 1.724 0 002.572-1.065z"
                                     />
                                 </svg>
-                                Einstellungen
+                                {t('settings_title')}
                             </h3>
 
                             <div className="space-y-5">
@@ -556,7 +556,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                             className="w-4 h-4 rounded-lg accent-blue-600 cursor-pointer"
                                         />
                                         <span className="text-sm text-gray-900 font-medium group-hover:text-blue-600 transition">
-                      Anspruch auf Rente
+                      {t('pension_entitlement')}
                     </span>
                                     </label>
                                 </div>
@@ -564,7 +564,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                 {/* Bundesland */}
                                 <div>
                                     <p className="text-sm font-semibold text-gray-900 mb-2">
-                                        Bundesland
+                                        {t('region')}
                                     </p>
                                     <div className="flex gap-3">
                                         {(["west", "east"] as const).map((region) => (
@@ -582,7 +582,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                                     className="w-4 h-4 accent-blue-600 cursor-pointer"
                                                 />
                                                 <span className="text-sm text-gray-700">
-                          {region === "west" ? "West" : "Ost"}
+                          {region === "west" ? t('west') : t('east')}
                         </span>
                                             </label>
                                         ))}
@@ -592,7 +592,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                 {/* Inflation */}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-900 mb-2">
-                                        Inflation:{" "}
+                                        {t('inflation')}:{" "}
                                         <span className="text-blue-600">
                       {formatNumber(settings.inflation, 1)}%
                     </span>
@@ -616,7 +616,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                 {/* Gehaltssteigerung */}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-900 mb-2">
-                                        Gehaltssteigerung:{" "}
+                                        {t('salary_growth')}:{" "}
                                         <span className="text-blue-600">
                       {formatNumber(settings.gehaltssteigerung, 1)}%
                     </span>
@@ -640,7 +640,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                 {/* Entgeltpunkte */}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-900 mb-2">
-                                        Entgeltpunkte:{" "}
+                                        {t('contribution_points')}:{" "}
                                         <span className="text-blue-600">
                       {formatNumber(settings.entgeltpunkteHeute, 1)}
                     </span>
@@ -662,7 +662,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                 {/* Rentenbeginn Alter */}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-900 mb-2">
-                                        Rentenbeginn:{" "}
+                                        {t('retirement_age_label')}:{" "}
                                         <span className="text-blue-600">
                       {settings.rentenbeginnAlter}
                     </span>
@@ -697,7 +697,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                     <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                         <div className="flex justify-between items-center mb-6">
                             <label className="block text-lg font-bold text-gray-900">
-                                Geburtsjahr
+                                {t('birth_year_label')}
                             </label>
                             <div className="text-3xl font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-xl">
                                 {birthYear}
@@ -722,7 +722,7 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                     <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                         <div className="flex justify-between items-center mb-6">
                             <label className="block text-lg font-bold text-gray-900">
-                                Private Rente
+                                {t('private_pension_label')}
                             </label>
                             <div className="text-3xl font-bold text-cyan-600 bg-cyan-50 px-4 py-2 rounded-xl">
                                 {formatCurrency(privateRente)}
@@ -747,18 +747,17 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                 {/* Legend / Info Section */}
                 <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 mb-12">
                     <h3 className="text-lg font-bold text-gray-900 mb-6">
-                        Renten-Komponenten
+                        {t('pension_components')}
                     </h3>
                     <div className="grid md:grid-cols-3 gap-6">
                         <div className="flex items-start gap-4">
                             <div className="w-4 h-4 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg mt-1 flex-shrink-0" />
                             <div>
                                 <p className="font-semibold text-gray-900 mb-1">
-                                    Gesetzliche Rente
+                                    {t('statutory_label')}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                    Staatliche Rentenversicherung basierend auf Ihrer
-                                    Erwerbstätigkeit und Entgeltpunkten
+                                    {t('statutory_pension_desc')}
                                 </p>
                             </div>
                         </div>
@@ -766,11 +765,10 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                             <div className="w-4 h-4 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg mt-1 flex-shrink-0" />
                             <div>
                                 <p className="font-semibold text-gray-900 mb-1">
-                                    Private Rente
+                                    {t('private_label')}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                    Angesparte private Altersvorsorge (Riester, Rürup,
-                                    Kapitallebensversicherung)
+                                    {t('private_pension_desc')}
                                 </p>
                             </div>
                         </div>
@@ -778,11 +776,10 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                             <div className="w-4 h-4 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg mt-1 flex-shrink-0" />
                             <div>
                                 <p className="font-semibold text-gray-900 mb-1">
-                                    Vorsorgelücke
+                                    {t('gap_label')}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                    Differenz zwischen Ihrer Wunschrente und der verfügbaren
-                                    Gesamtrente
+                                    {t('pension_gap_desc')}
                                 </p>
                             </div>
                         </div>
@@ -810,14 +807,14 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                 d="M15 19l-7-7 7-7"
                             />
                         </svg>
-                        Zurück nach oben
+                        {t('scroll_to_top')}
                     </button>
 
                     <button
                         onClick={onStepComplete}
                         className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold hover:shadow-xl transition-all transform hover:scale-105"
                     >
-                        Weiter zu Schritt 2
+                        {t('next_step')}
                         <svg
                             className="w-5 h-5"
                             fill="none"
