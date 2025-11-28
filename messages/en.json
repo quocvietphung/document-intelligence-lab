@@ -295,6 +295,7 @@
     "step2_from_savings_plan": "from savings plan",
     "step2_monthly_more_label": "monthly more",
     "step2_info_text": "With {amount}/month you save {total} until retirement ({years} years). This closes {percent}% of your pension gap.",
+    "step2_info_text": "With {amount}/month you save {total} until retirement ({years} years). This closes {percent}% of your pension gap.",
     "step2_back_to_step1": "Back to Step 1",
     "step2_done": "Done",
     "legend_statutory": "Statutory Pension",

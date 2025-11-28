@@ -295,6 +295,7 @@
     "step2_from_savings_plan": "từ kế hoạch tiết kiệm",
     "step2_monthly_more_label": "hàng tháng nhiều hơn",
     "step2_info_text": "Với {amount}/tháng bạn tiết kiệm {total} cho đến khi hưu trí ({years} năm). Điều này đóng lại {percent}% khoảng trống hưu trí của bạn.",
+    "step2_info_text": "Với {amount}/tháng bạn tiết kiệm {total} cho đến khi hưu trí ({years} năm). Điều này đóng lại {percent}% khoảng trống hưu trí của bạn.",
     "step2_back_to_step1": "Quay Lại Bước 1",
     "step2_done": "Hoàn Thành",
     "legend_statutory": "Lương Hưu Theo Luật",

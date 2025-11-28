@@ -281,7 +281,7 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
         {/* Info Box */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
           <p className="text-xs text-gray-700">
-            <span className="font-semibold text-blue-900">💡 Info:</span> Mit {formatCurrency(monthlyContribution)}/Monat sparen Sie {formatCurrency(totalCumulativeInvestment)} bis Rente ({yearsUntilRetirement} Jahre). Dies schließt {gapReductionPercent.toFixed(0)}% Ihrer Vorsorgelücke.
+            <span className="font-semibold text-blue-900">💡 Info:</span> {t('step2_monthly_contribution')}: <span className="font-bold">{formatCurrency(monthlyContribution)}</span>, {t('step2_years')}: <span className="font-bold">{yearsUntilRetirement}</span>, {t('step2_gap_closure_label')}: <span className="font-bold">{gapReductionPercent.toFixed(0)}%</span>
           </p>
         </div>
 
