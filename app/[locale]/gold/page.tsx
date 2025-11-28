@@ -10,14 +10,14 @@ export default function GoldConsultingPage() {
   const locale = useLocale();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-amber-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-blue-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-yellow-400 to-amber-500 py-16">
+      <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-blue-900 py-16 border-b border-slate-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             {t('title')}
           </h1>
-          <p className="text-xl text-white opacity-90 max-w-3xl mx-auto">
+          <p className="text-xl text-slate-200 max-w-3xl mx-auto">
             {t('subtitle')}
           </p>
         </div>

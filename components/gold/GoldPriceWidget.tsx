@@ -133,10 +133,11 @@ export default function GoldPriceWidget() {
 
     if (loading) {
         return (
-            <div className="bg-white rounded-xl shadow-lg p-6" role="status" aria-live="polite">
-                <div className="animate-pulse">
-                    <div className="h-8 bg-gray-200 rounded w-1/3 mb-4" />
-                    <div className="h-12 bg-gray-200 rounded w-1/2 mb-4" />
+            <div className="bg-white border border-slate-200 rounded-2xl p-8" role="status" aria-live="polite">
+                <div className="animate-pulse space-y-4">
+                    <div className="h-8 bg-slate-200 rounded-lg w-1/3" />
+                    <div className="h-12 bg-slate-200 rounded-lg w-1/2" />
+                    <div className="h-40 bg-slate-100 rounded-lg" />
                 </div>
             </div>
         );
@@ -144,16 +145,18 @@ export default function GoldPriceWidget() {
 
     if (err || !gold) {
         return (
-            <div className="bg-white rounded-xl shadow-lg p-6">
-                <div className="text-center">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="bg-white border border-slate-200 rounded-2xl p-8">
+                <div className="text-center space-y-4">
+                    <div className="w-16 h-16 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mx-auto">
                         <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                         </svg>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("priceWidget.error")}</h3>
-                    <p className="text-gray-600 mb-4">{err ?? t("priceWidget.error")}</p>
-                    <button onClick={reload} className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
+                    <div>
+                        <h3 className="text-lg font-semibold text-red-700 mb-2">{t("priceWidget.error")}</h3>
+                        <p className="text-slate-600 text-sm">{err ?? t("priceWidget.error")}</p>
+                    </div>
+                    <button onClick={reload} className="mt-4 px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-semibold hover:shadow-lg transition-all transform hover:scale-105">
                         {t("priceWidget.retry")}
                     </button>
                 </div>
@@ -169,92 +172,121 @@ export default function GoldPriceWidget() {
     const low24h  = history.length ? Math.min(...history) : perOunceEUR;
 
     return (
-        <div className="bg-white rounded-xl shadow-lg p-6" aria-labelledby="gold-widget-title">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center" aria-hidden="true">
-                        <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 id="gold-widget-title" className="text-lg font-semibold text-gray-900">{t("priceWidget.title")}</h3>
-                        <p className="text-sm text-gray-500">{t("priceWidget.subtitle")}</p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-2 text-sm text-gray-600">
-                        <span className="sr-only">{t("priceWidget.currencyLabel")}</span>
-                        <select aria-label={t("priceWidget.currencyLabel")} value={currency} onChange={(e) => setCurrency(e.target.value as Currency)} className="rounded-md border-gray-200 text-sm px-2 py-1">
-                            <option value="EUR">EUR €</option>
-                            <option value="VND">VND ₫</option>
-                        </select>
-                    </label>
-
-                    <div className="inline-flex rounded-md bg-gray-100 p-1" role="group" aria-label={t("priceWidget.unitSelector") || "Unit selector"}>
-                        <button onClick={() => setUnit("ounce")} aria-pressed={unit === "ounce"} className={`px-3 py-1 text-sm font-medium ${unit === "ounce" ? "bg-white shadow rounded" : "text-gray-600"}`}>{t("priceWidget.unitOz")}</button>
-                        <button onClick={() => setUnit("gram")}  aria-pressed={unit === "gram"}  className={`px-3 py-1 text-sm font-medium ${unit === "gram"  ? "bg-white shadow rounded" : "text-gray-600"}`}>{t("priceWidget.unitGram")}</button>
+        <div className="w-full space-y-6" aria-labelledby="gold-widget-title">
+            {/* Header with Controls */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-all shadow-sm">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                    <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-slate-50 border border-blue-200 rounded-xl flex items-center justify-center" aria-hidden="true">
+                            <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 id="gold-widget-title" className="text-2xl font-bold text-slate-800">{t("priceWidget.title")}</h3>
+                            <p className="text-sm text-slate-600 mt-1">{t("priceWidget.subtitle")}</p>
+                        </div>
                     </div>
 
-                    <button onClick={reload} title={t("priceWidget.refresh")} className="p-2 text-gray-400 hover:text-gray-600" aria-label={t("priceWidget.refresh")}>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    </button>
+                    <div className="flex items-center gap-4 flex-wrap justify-start md:justify-end">
+                        <label className="flex items-center gap-2 text-sm">
+                            <span className="sr-only">{t("priceWidget.currencyLabel")}</span>
+                            <select aria-label={t("priceWidget.currencyLabel")} value={currency} onChange={(e) => setCurrency(e.target.value as Currency)} className="bg-slate-50 border border-slate-300 text-slate-800 text-sm px-3 py-2 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all hover:border-slate-400">
+                                <option value="EUR">EUR €</option>
+                                <option value="VND">VND ₫</option>
+                            </select>
+                        </label>
+
+                        <div className="inline-flex rounded-lg bg-slate-100 border border-slate-200 p-1" role="group" aria-label={t("priceWidget.unitSelector") || "Unit selector"}>
+                            <button onClick={() => setUnit("ounce")} aria-pressed={unit === "ounce"} className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${unit === "ounce" ? "bg-white text-blue-600 shadow-sm border border-slate-200" : "text-slate-600 hover:text-slate-800"}`}>{t("priceWidget.unitOz")}</button>
+                            <button onClick={() => setUnit("gram")}  aria-pressed={unit === "gram"}  className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${unit === "gram"  ? "bg-white text-blue-600 shadow-sm border border-slate-200" : "text-slate-600 hover:text-slate-800"}`}>{t("priceWidget.unitGram")}</button>
+                        </div>
+
+                        <button onClick={reload} title={t("priceWidget.refresh")} className="p-3 text-slate-500 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 rounded-lg border border-slate-200 hover:border-blue-300 transition-all transform hover:scale-110 hover:rotate-180 duration-500" aria-label={t("priceWidget.refresh")}>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 items-start">
-                <div className="md:col-span-1 text-center md:text-left">
-                    <div className="flex items-center gap-2">
-                        <div className="text-3xl md:text-4xl font-bold text-gray-900" aria-live="polite">
-                            {formatMoney(shown, currency)}
-                        </div>
-                        <span aria-hidden="true" className={`mt-1 ${isUp ? "text-green-600" : "text-red-600"}`}>
-              {isUp ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7 7 7M12 3v18"/></svg>
-              ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7-7-7M12 21V3"/></svg>
-              )}
-            </span>
-                    </div>
-
-                    <div className="text-sm text-gray-500 mt-1">{unit === "ounce" ? (t("priceWidget.perOunce") || "per ounce") : t("priceWidget.perGram")}</div>
-
-                    <div className={`inline-block mt-3 px-3 py-1 rounded-full text-sm font-medium ${isUp ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
-                        {formatChange(gold.change, gold.changePercent)}
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
-                        <div className="p-2 rounded bg-gray-50">
-                            <div className="text-gray-500">{t("priceWidget.high24h")}</div>
-                            <div className="font-semibold text-gray-900">
-                                {formatMoney(unit === "ounce" ? high24h : high24h / OUNCE_TO_GRAM, currency)}
+            {/* Main Price Display */}
+            <div className="grid lg:grid-cols-3 gap-6">
+                {/* Price Card */}
+                <div className="lg:col-span-1 bg-gradient-to-br from-blue-50 to-slate-50 border border-blue-100 rounded-2xl p-8 hover:border-blue-200 transition-all shadow-sm">
+                    <div className="space-y-6">
+                        {/* Current Price */}
+                        <div className="space-y-2">
+                            <p className="text-sm text-slate-600">{unit === "ounce" ? (t("priceWidget.perOunce") || "per ounce") : t("priceWidget.perGram")}</p>
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-5xl font-bold text-slate-900" aria-live="polite">
+                                    {formatMoney(shown, currency)}
+                                </div>
+                                <span aria-hidden="true" className={`animate-bounce ${isUp ? "text-green-600" : "text-red-600"}`}>
+                                    {isUp ? (
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7 7 7M12 3v18"/></svg>
+                                    ) : (
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7-7-7M12 21V3"/></svg>
+                                    )}
+                                </span>
                             </div>
                         </div>
-                        <div className="p-2 rounded bg-gray-50">
-                            <div className="text-gray-500">{t("priceWidget.low24h")}</div>
-                            <div className="font-semibold text-gray-900">
-                                {formatMoney(unit === "ounce" ? low24h : low24h / OUNCE_TO_GRAM, currency)}
+
+                        {/* Change Badge */}
+                        <div className={`inline-block px-4 py-2 rounded-lg font-medium text-sm border ${isUp ? "bg-green-50 border-green-200 text-green-700" : "bg-red-50 border-red-200 text-red-700"}`}>
+                            {formatChange(gold.change, gold.changePercent)}
+                        </div>
+
+                        {/* High/Low Stats */}
+                        <div className="grid grid-cols-2 gap-3 pt-6 border-t border-slate-200">
+                            <div className="bg-slate-100 rounded-lg p-4 hover:bg-slate-200 transition-all">
+                                <div className="text-xs text-slate-600 mb-1">{t("priceWidget.high24h")}</div>
+                                <div className="text-lg font-bold text-slate-900">
+                                    {formatMoney(unit === "ounce" ? high24h : high24h / OUNCE_TO_GRAM, currency)}
+                                </div>
+                            </div>
+                            <div className="bg-slate-100 rounded-lg p-4 hover:bg-slate-200 transition-all">
+                                <div className="text-xs text-slate-600 mb-1">{t("priceWidget.low24h")}</div>
+                                <div className="text-lg font-bold text-slate-900">
+                                    {formatMoney(unit === "ounce" ? low24h : low24h / OUNCE_TO_GRAM, currency)}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="text-xs text-gray-400 mt-2">
-                        {t("priceWidget.lastUpdated")} : {new Date(gold.lastUpdated).toLocaleString()} • {t("priceWidget.cacheNote")}
+                        {/* Last Updated */}
+                        <div className="text-xs text-slate-600 pt-4 border-t border-slate-200">
+                            <p>{t("priceWidget.lastUpdated")}</p>
+                            <p className="font-mono text-slate-700 mt-1">{new Date(gold.lastUpdated).toLocaleString()}</p>
+                            <p className="text-slate-600 mt-2">• {t("priceWidget.cacheNote")}</p>
+                        </div>
                     </div>
                 </div>
 
-                <div className="md:col-span-2 flex flex-col items-center">
-                    <div className="mb-2 w-full flex justify-center"><Sparkline points={history} /></div>
-                    <div className="text-xs text-gray-500">{t("priceWidget.chart")} • {t("priceWidget.last24h")}</div>
-                    {!fxRate && currency === "VND" && (
-                        <div className="mt-2 text-[11px] text-amber-600">{t("priceWidget.fxRateMissing")}</div>
-                    )}
-                </div>
-            </div>
+                {/* Chart Section */}
+                <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-8 hover:border-slate-300 transition-all shadow-sm">
+                    <div className="space-y-6">
+                        <div>
+                            <h4 className="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                <span className="w-1 h-4 bg-gradient-to-b from-blue-600 to-blue-400 rounded"></span>
+                                {t("priceWidget.chart")} • {t("priceWidget.last24h")}
+                            </h4>
+                            <div className="flex justify-center p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-all">
+                                <Sparkline points={history} />
+                            </div>
+                        </div>
 
-            <div className="mt-4 border-t pt-3 text-[11px] text-gray-500 leading-relaxed">
-                {t("priceWidget.sourceNote")} <a className="underline" href="https://gold-api.com/docs" target="_blank" rel="noopener noreferrer">gold-api.com</a>
+                        {/* Info Box */}
+                        {!fxRate && currency === "VND" && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-700">
+                                <span className="font-semibold">ℹ️</span> {t("priceWidget.fxRateMissing")}
+                            </div>
+                        )}
+
+                        {/* Source Note */}
+                        <div className="text-xs text-slate-600 pt-4 border-t border-slate-200 leading-relaxed">
+                            {t("priceWidget.sourceNote")} <a className="text-blue-600 hover:text-blue-700 underline transition-colors" href="https://gold-api.com/docs" target="_blank" rel="noopener noreferrer">gold-api.com</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
