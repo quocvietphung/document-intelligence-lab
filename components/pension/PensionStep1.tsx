@@ -78,6 +78,32 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
     const incomePercentage =
         maxIncome > 0 ? Math.min((netIncome / maxIncome) * 100, 100) : 0;
 
+    // Derived state for Ziel bar
+    const hasTarget = wunschrente > 0;
+
+    const gesetzlichTargetPercent = hasTarget
+        ? Math.min(
+              (pensionResult.gesetzlicheRenteNetto / wunschrente) * 100,
+              100
+          )
+        : 0;
+
+    const privatTargetPercent = hasTarget && pensionResult.privateRente > 0
+        ? Math.min(
+              (pensionResult.privateRente / wunschrente) * 100,
+              100
+          )
+        : 0;
+
+    const gapTargetPercent = hasTarget && pensionResult.vorsorgeluecke > 0
+        ? Math.min(
+              (pensionResult.vorsorgeluecke / wunschrente) * 100,
+              100
+          )
+        : 0;
+
+    const reachedTarget = hasTarget && pensionResult.vorsorgeluecke <= 0;
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-6">
             <div className="max-w-7xl mx-auto">
@@ -274,90 +300,90 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                         </div>
                                     </div>
 
-                                    {/* Bar 2: Target */}
+                                    {/* Bar 2: Target - Ziel */}
                                     <div>
                                         <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs font-semibold text-gray-700">
-                        Ziel
-                      </span>
+                                            <span className="text-xs font-semibold text-gray-700">Ziel</span>
                                             <span className="text-sm font-bold text-gray-900">
-                        {formatCurrency(wunschrente)}
-                      </span>
+                                                {formatCurrency(wunschrente)}
+                                            </span>
                                         </div>
-                                        <div className="flex h-8 rounded-full overflow-hidden shadow-sm border border-gray-200">
-                                            <div
-                                                className="bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-600 transition-all flex items-center justify-center"
-                                                style={{
-                                                    width: `${Math.min(
-                                                        (pensionResult.gesetzlicheRenteNetto /
-                                                            wunschrente) *
-                                                        100,
-                                                        100
-                                                    )}%`,
-                                                }}
-                                            >
-                                                {(pensionResult.gesetzlicheRenteNetto / wunschrente) *
-                                                    100 >
-                                                    15 && (
-                                                        <span className="text-white text-xs font-bold">
-                            {Math.min(
-                                (pensionResult.gesetzlicheRenteNetto /
-                                    wunschrente) *
-                                100,
-                                100
-                            ).toFixed(0)}
-                                                            %
-                          </span>
+
+                                        {hasTarget ? (
+                                            <>
+                                                <div className="flex h-8 rounded-full overflow-hidden shadow-sm border border-gray-200">
+                                                    {/* Gesetzlich */}
+                                                    <div
+                                                        className="bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-600 transition-all flex items-center justify-center"
+                                                        style={{
+                                                            width: `${gesetzlichTargetPercent}%`,
+                                                        }}
+                                                    >
+                                                        {gesetzlichTargetPercent > 15 && (
+                                                            <span className="text-white text-xs font-bold">
+                                                                {gesetzlichTargetPercent.toFixed(0)}%
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Private */}
+                                                    {pensionResult.privateRente > 0 &&
+                                                        pensionResult.gesetzlicheRenteNetto + pensionResult.privateRente < wunschrente && (
+                                                            <div
+                                                                className="bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 transition-all flex items-center justify-center"
+                                                                style={{
+                                                                    width: `${privatTargetPercent}%`,
+                                                                }}
+                                                            >
+                                                                {privatTargetPercent > 15 && (
+                                                                    <span className="text-white text-xs font-bold">
+                                                                        {privatTargetPercent.toFixed(0)}%
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                    {/* Lücke */}
+                                                    {pensionResult.vorsorgeluecke > 0 && (
+                                                        <div
+                                                            className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 transition-all flex items-center justify-center"
+                                                            style={{
+                                                                width: `${gapTargetPercent}%`,
+                                                            }}
+                                                        >
+                                                            {gapTargetPercent > 15 && (
+                                                                <span className="text-white text-xs font-bold">
+                                                                    {gapTargetPercent.toFixed(0)}%
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     )}
+                                                </div>
+
+                                                {/* Labels always visible below bar */}
+                                                <div className="flex justify-between text-xs mt-2 text-gray-600 font-medium gap-2">
+                                                    <span>Gesetzlich: {gesetzlichTargetPercent.toFixed(0)}%</span>
+                                                    {pensionResult.privateRente > 0 &&
+                                                        pensionResult.gesetzlicheRenteNetto + pensionResult.privateRente < wunschrente && (
+                                                            <span>Privat: {privatTargetPercent.toFixed(0)}%</span>
+                                                        )}
+                                                    {pensionResult.vorsorgeluecke > 0 && (
+                                                        <span>Lücke: {gapTargetPercent.toFixed(0)}%</span>
+                                                    )}
+                                                    {reachedTarget && (
+                                                        <span className="text-green-600 font-bold">
+                                                            Gesamt: {formatCurrency(pensionResult.gesamtRente)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="flex h-8 rounded-full overflow-hidden shadow-sm border border-gray-300 bg-gray-100">
+                                                <div className="flex items-center justify-center w-full text-gray-500 text-xs font-semibold">
+                                                    Bitte Wunschrente setzen
+                                                </div>
                                             </div>
-                                            {pensionResult.privateRente > 0 && (
-                                                <div
-                                                    className="bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 transition-all flex items-center justify-center"
-                                                    style={{
-                                                        width: `${Math.min(
-                                                            (pensionResult.privateRente / wunschrente) * 100,
-                                                            100
-                                                        )}%`,
-                                                    }}
-                                                >
-                                                    {(pensionResult.privateRente / wunschrente) * 100 >
-                                                        15 && (
-                                                            <span className="text-white text-xs font-bold">
-                              {Math.min(
-                                  (pensionResult.privateRente / wunschrente) *
-                                  100,
-                                  100
-                              ).toFixed(0)}
-                                                                %
-                            </span>
-                                                        )}
-                                                </div>
-                                            )}
-                                            {pensionResult.vorsorgeluecke > 0 && (
-                                                <div
-                                                    className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 transition-all flex items-center justify-center"
-                                                    style={{
-                                                        width: `${Math.min(
-                                                            (pensionResult.vorsorgeluecke / wunschrente) *
-                                                            100,
-                                                            100
-                                                        )}%`,
-                                                    }}
-                                                >
-                                                    {(pensionResult.vorsorgeluecke / wunschrente) * 100 >
-                                                        15 && (
-                                                            <span className="text-white text-xs font-bold">
-                              {Math.min(
-                                  (pensionResult.vorsorgeluecke / wunschrente) *
-                                  100,
-                                  100
-                              ).toFixed(0)}
-                                                                %
-                            </span>
-                                                        )}
-                                                </div>
-                                            )}
-                                        </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -377,21 +403,27 @@ const PensionStep1: React.FC<PensionStep1Props> = ({
                                     </div>
                                 </div>
 
-                                <label className="block text-xs font-semibold text-gray-700 mb-2">
-                                    Gewünschte Monatsrente
-                                </label>
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max={maxRente}
-                                    step="100"
-                                    value={wunschrente}
-                                    onChange={(e) => setWunschrente(parseInt(e.target.value))}
-                                    className="w-full h-2 bg-gradient-to-r from-emerald-200 to-emerald-400 rounded-lg appearance-none cursor-pointer"
-                                />
-                                <div className="flex justify-between text-xs text-gray-500 mt-2 font-semibold">
-                                    <span>{formatCurrency(0)}</span>
-                                    <span>{formatCurrency(maxRente)}</span>
+                                {/* Wunschrente Slider */}
+                                <div className="space-y-3 pt-6 border-t border-gray-200">
+                                    <div className="flex justify-between items-center">
+                                        <label className="text-sm font-bold text-gray-900">Gewünschte Monatsrente</label>
+                                        <div className="text-2xl font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">
+                                            {formatCurrency(wunschrente)}
+                                        </div>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max={maxRente}
+                                        step="100"
+                                        value={wunschrente}
+                                        onChange={(e) => setWunschrente(parseInt(e.target.value))}
+                                        className="w-full h-3 bg-gradient-to-r from-emerald-200 to-emerald-400 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                                    />
+                                    <div className="flex justify-between text-xs text-gray-500 font-semibold">
+                                        <span>{formatCurrency(0)}</span>
+                                        <span>{formatCurrency(maxRente)}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
