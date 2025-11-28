@@ -12,12 +12,12 @@ export default function GoldConsultingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-blue-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-blue-900 py-16 border-b border-slate-200">
+      <div className="bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-500 py-16 border-b border-yellow-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             {t('title')}
           </h1>
-          <p className="text-xl text-slate-200 max-w-3xl mx-auto">
+          <p className="text-xl text-yellow-100 max-w-3xl mx-auto">
             {t('subtitle')}
           </p>
         </div>
@@ -139,23 +139,23 @@ export default function GoldConsultingPage() {
           <FAQSection />
 
           {/* CTA Section */}
-          <div className="text-center bg-gradient-to-r from-yellow-400 to-amber-500 rounded-xl p-8 md:p-12 text-white mb-16">
-            <h2 className="text-3xl font-bold mb-4">
+          <div className="text-center bg-gradient-to-br from-white to-slate-50 rounded-2xl p-8 md:p-16 shadow-xl border border-slate-100 mb-16">
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">
               {t('cta.title')}
             </h2>
-            <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto">
+            <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
               {t('cta.subtitle')}
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               <Link
                 href={`/${locale}/contact`}
-                className="inline-block bg-white text-yellow-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                className="inline-block bg-gradient-to-r from-yellow-400 to-amber-400 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all transform hover:scale-105"
               >
                 {t('cta.button')}
               </Link>
               <a
                 href="tel:+49123456789"
-                className="inline-block bg-yellow-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-yellow-700 transition-colors"
+                className="inline-block bg-slate-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-all transform hover:scale-105"
               >
                 📞 Call Us Now
               </a>
