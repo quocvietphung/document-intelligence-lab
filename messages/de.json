@@ -298,6 +298,8 @@
     "step2_info_text": "Mit {amount}/Monat sparen Sie {total} bis Rente ({years} Jahre). Dies schließt {percent}% Ihrer Vorsorgelücke.",
     "step2_back_to_step1": "Zurück zu Schritt 1",
     "step2_done": "Fertig",
+    "tab_step1": "Schritt 1: Berechnung",
+    "tab_step2": "Schritt 2: Vorsorgeplanung",
     "legend_statutory": "Gesetzliche Rente",
     "legend_private": "Private Rente",
     "legend_gap": "Versorgungslücke",

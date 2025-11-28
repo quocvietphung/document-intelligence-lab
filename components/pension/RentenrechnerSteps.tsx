@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import PensionStep1 from "./PensionStep1";
 import PensionStep2 from "./PensionStep2";
 
@@ -12,6 +13,7 @@ interface Step1Data {
 }
 
 const RentenrechnerSteps: React.FC = () => {
+  const t = useTranslations("rentenrechner");
   const [activeStep, setActiveStep] = useState<1 | 2>(1);
   const [step1Data, setStep1Data] = useState<Step1Data>({
     netIncome: 2500,
@@ -38,7 +40,7 @@ const RentenrechnerSteps: React.FC = () => {
                 : "text-gray-600 hover:text-gray-800"
             }`}
           >
-            Schritt 1: Berechnung
+            {t('tab_step1')}
           </button>
           <button
             onClick={() => setActiveStep(2)}
@@ -48,7 +50,7 @@ const RentenrechnerSteps: React.FC = () => {
                 : "text-gray-600 hover:text-gray-800"
             }`}
           >
-            Schritt 2: Vorsorgeplanung
+            {t('tab_step2')}
           </button>
         </div>
 

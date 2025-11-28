@@ -298,6 +298,8 @@
     "step2_info_text": "With {amount}/month you save {total} until retirement ({years} years). This closes {percent}% of your pension gap.",
     "step2_back_to_step1": "Back to Step 1",
     "step2_done": "Done",
+    "tab_step1": "Step 1: Calculation",
+    "tab_step2": "Step 2: Pension Planning",
     "legend_statutory": "Statutory Pension",
     "legend_private": "Private Pension",
     "legend_gap": "Pension Gap",
