@@ -1,6 +1,8 @@
-import PensionStep1 from "@/src/components/PensionStep1";
+"use client";
+
+import RentenrechnerSteps from "@/src/components/RentenrechnerSteps";
 
 export default function RentenrechnerPage() {
-  return <PensionStep1 />;
+  return <RentenrechnerSteps />;
 }
 

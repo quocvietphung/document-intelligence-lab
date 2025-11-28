@@ -102,9 +102,7 @@ export function calculateGesetzlicheRente(gesamtEntgeltpunkte: number, settings:
   const grossRente = gesamtEntgeltpunkte * settings.zugangsfaktor * settings.rentenartFaktor * rentenwert;
 
   // Rough approximation: net pension is ~70% of gross (includes basic tax-free allowance + social security contributions)
-  const netRente = grossRente * 0.7;
-
-  return netRente;
+  return grossRente * 0.7;
 }
 
 export interface PensionCalculationResult {
