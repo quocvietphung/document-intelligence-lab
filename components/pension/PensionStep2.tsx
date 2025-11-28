@@ -55,8 +55,6 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
   const [monthlyContribution, setMonthlyContribution] = useState(200);
   const [settings] = useState<PensionSettings>(DEFAULT_SETTINGS);
 
-  // ...existing code...
-
   // Compute age and years until retirement
   const currentAge = new Date().getFullYear() - birthYear;
   const yearsUntilRetirement = Math.max(0, settings.rentenbeginnAlter - currentAge);
@@ -80,222 +78,233 @@ const PensionStep2: React.FC<PensionStep2Props> = ({
   }, [netIncome, birthYear, totalPrivatePension, settings, wunschrente]);
 
   // Calculate annual cost and cumulative investment
-  const totalMonthlyInvestment = monthlyContribution;
   const totalAnnualInvestment = monthlyContribution * 12;
   const totalCumulativeInvestment = monthlyContribution * 12 * yearsUntilRetirement;
 
+  // Calculate gap reduction and percentage
+  const gapReduction = basePensionResult.vorsorgeluecke - projectedPensionResult.vorsorgeluecke;
+  const gapReductionPercent = basePensionResult.vorsorgeluecke > 0
+    ? (gapReduction / basePensionResult.vorsorgeluecke) * 100
+    : 0;
+
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Schritt 2: Zusätzliche private Vorsorge planen
-        </h1>
-        <p className="text-gray-600">
-          Berechnen Sie, wie viel Sie monatlich sparen müssen, um Ihre Vorsorgelücke zu schließen.
-        </p>
-      </div>
-
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Left: Current Situation */}
-        <div className="p-6 bg-gray-50 rounded-lg border border-gray-200">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Aktuelle Situation</h2>
-
-          <div className="space-y-4">
-            <div>
-              <p className="text-xs text-gray-600">Nettoeinkommen (monatlich)</p>
-              <p className="text-xl font-bold text-gray-900">{formatCurrency(netIncome)}</p>
-            </div>
-
-            <div>
-              <p className="text-xs text-gray-600">Gesetzliche Rente (netto)</p>
-              <p className="text-xl font-bold text-emerald-700">
-                {formatCurrency(basePensionResult.gesetzlicheRenteNetto)}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs text-gray-600">Angesparte private Rente</p>
-              <p className="text-xl font-bold text-cyan-700">
-                {formatCurrency(existingPrivateRente)}
-              </p>
-            </div>
-
-            <div className="pt-2 border-t border-gray-300">
-              <p className="text-xs text-gray-600 mb-1">Vorsorgelücke</p>
-              <p
-                className={`text-xl font-bold ${
-                  basePensionResult.vorsorgeluecke > 0
-                    ? "text-orange-700"
-                    : "text-green-700"
-                }`}
-              >
-                {formatCurrency(basePensionResult.vorsorgeluecke)}
-              </p>
-            </div>
-
-            <div className="pt-2 border-t border-gray-300">
-              <p className="text-xs text-gray-600 mb-1">Gesamtrente</p>
-              <p className="text-lg font-bold text-gray-900">
-                {formatCurrency(basePensionResult.gesamtRente)}
-              </p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Compact Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+              SCHRITT 2/2
+            </span>
+            <span className="text-sm text-gray-600">
+              <span className="font-medium">Zeitraum bis Rente:</span>
+              <span className="font-bold text-blue-600 ml-1">{yearsUntilRetirement} Jahre</span>
+            </span>
           </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            Zusätzliche <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">private Vorsorge</span>
+          </h1>
         </div>
 
-        {/* Right: Projected Situation */}
-        <div className="p-6 bg-green-50 rounded-lg border border-green-200">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Mit zusätzlicher Vorsorge</h2>
+        {/* Main 3-Column Grid */}
+        <div className="grid lg:grid-cols-3 gap-5 mb-6">
+          {/* LEFT: Aktuelle Situation */}
+          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100">
+            <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-gray-400"></span>
+              Aktuell
+            </h3>
 
-          <div className="space-y-4">
-            <div>
-              <p className="text-xs text-gray-600">Monatliche zusätzliche Sparbeitrag</p>
-              <p className="text-xl font-bold text-gray-900">{formatCurrency(monthlyContribution)}</p>
+            <div className="space-y-3">
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-xs text-gray-600 mb-1">Gesetzliche Rente</p>
+                <p className="text-lg font-bold text-emerald-600">
+                  {formatCurrency(basePensionResult.gesetzlicheRenteNetto)}
+                </p>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-xs text-gray-600 mb-1">Private Rente</p>
+                <p className="text-lg font-bold text-cyan-600">
+                  {formatCurrency(existingPrivateRente)}
+                </p>
+              </div>
+
+              <div className={`rounded-lg p-3 ${
+                basePensionResult.vorsorgeluecke > 0
+                  ? "bg-orange-50 border border-orange-200"
+                  : "bg-green-50 border border-green-200"
+              }`}>
+                <p className="text-xs text-gray-600 mb-1">Lücke</p>
+                <p className={`text-lg font-bold ${
+                  basePensionResult.vorsorgeluecke > 0
+                    ? "text-orange-600"
+                    : "text-green-600"
+                }`}>
+                  {formatCurrency(basePensionResult.vorsorgeluecke)}
+                </p>
+              </div>
+
+              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                <p className="text-xs text-gray-600 mb-1">Gesamt/Monat</p>
+                <p className="text-lg font-bold text-blue-600">
+                  {formatCurrency(basePensionResult.gesamtRente)}
+                </p>
+              </div>
             </div>
+          </div>
 
-            <div>
-              <p className="text-xs text-gray-600">Gesetzliche Rente (netto) [unverändert]</p>
-              <p className="text-xl font-bold text-emerald-700">
-                {formatCurrency(projectedPensionResult.gesetzlicheRenteNetto)}
-              </p>
+          {/* MIDDLE: Slider */}
+          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 flex flex-col">
+            <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" />
+              </svg>
+              Sparplan
+            </h3>
+
+            <div className="flex-1 flex flex-col justify-between">
+              <div>
+                <div className="text-center mb-4">
+                  <p className="text-xs text-gray-600 mb-2">Monatliche Sparquote</p>
+                  <p className="text-3xl font-bold text-blue-600">
+                    {formatCurrency(monthlyContribution)}
+                  </p>
+                </div>
+
+                <input
+                  type="range"
+                  min="0"
+                  max="1000"
+                  step="25"
+                  value={monthlyContribution}
+                  onChange={(e) => setMonthlyContribution(parseInt(e.target.value))}
+                  className="w-full h-3 bg-gradient-to-r from-blue-200 to-blue-400 rounded-lg accent-blue-600 mb-3"
+                />
+
+                <div className="flex justify-between text-xs text-gray-500 font-semibold">
+                  <span>{formatCurrency(0)}</span>
+                  <span>{formatCurrency(1000)}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 mt-4 pt-4 border-t border-gray-200">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-600">Jährlich:</span>
+                  <span className="font-bold text-gray-900">{formatCurrency(totalAnnualInvestment)}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-600">{yearsUntilRetirement}J Summe:</span>
+                  <span className="font-bold text-gray-900">{formatCurrency(totalCumulativeInvestment)}</span>
+                </div>
+              </div>
             </div>
+          </div>
 
-            <div>
-              <p className="text-xs text-gray-600">Geschätzte private Rente (inkl. Zusatz)</p>
-              <p className="text-xl font-bold text-cyan-700">
-                {formatCurrency(totalPrivatePension)}
-              </p>
-            </div>
+          {/* RIGHT: Projected Situation */}
+          <div className="bg-gradient-to-br from-emerald-50 to-white rounded-2xl p-5 shadow-lg border border-emerald-200">
+            <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-emerald-500"></span>
+              Mit Sparbeitrag
+            </h3>
 
-            <div className="pt-2 border-t border-green-300">
-              <p className="text-xs text-gray-600 mb-1">Verbleibende Vorsorgelücke</p>
-              <p
-                className={`text-xl font-bold ${
+            <div className="space-y-3">
+              <div className="bg-white rounded-lg p-3 border border-gray-200">
+                <p className="text-xs text-gray-600 mb-1">Gesetzliche Rente</p>
+                <p className="text-lg font-bold text-emerald-600">
+                  {formatCurrency(projectedPensionResult.gesetzlicheRenteNetto)}
+                </p>
+              </div>
+
+              <div className="bg-white rounded-lg p-3 border border-gray-200">
+                <p className="text-xs text-gray-600 mb-1">Private Rente (inkl. Zusatz)</p>
+                <p className="text-lg font-bold text-cyan-600">
+                  {formatCurrency(totalPrivatePension)}
+                </p>
+              </div>
+
+              <div className={`rounded-lg p-3 ${
+                projectedPensionResult.vorsorgeluecke > 0
+                  ? "bg-orange-100 border border-orange-300"
+                  : "bg-green-100 border border-green-300"
+              }`}>
+                <p className="text-xs text-gray-600 mb-1">Verbleibende Lücke</p>
+                <p className={`text-lg font-bold ${
                   projectedPensionResult.vorsorgeluecke > 0
                     ? "text-orange-700"
                     : "text-green-700"
-                }`}
-              >
-                {formatCurrency(projectedPensionResult.vorsorgeluecke)}
-              </p>
+                }`}>
+                  {formatCurrency(projectedPensionResult.vorsorgeluecke)}
+                </p>
+              </div>
+
+              <div className="bg-emerald-100 rounded-lg p-3 border border-emerald-300">
+                <p className="text-xs text-gray-600 mb-1">Neue Gesamt/Monat</p>
+                <p className="text-lg font-bold text-emerald-700">
+                  {formatCurrency(projectedPensionResult.gesamtRente)}
+                </p>
+              </div>
             </div>
-
-            <div className="pt-2 border-t border-green-300">
-              <p className="text-xs text-gray-600 mb-1">Geschätzte Gesamtrente</p>
-              <p className="text-lg font-bold text-gray-900">
-                {formatCurrency(projectedPensionResult.gesamtRente)}
-              </p>
-            </div>
           </div>
         </div>
-      </div>
 
-      {/* Contribution Slider */}
-      <div className="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">
-          Monatlicher Sparbeitrag: {formatCurrency(monthlyContribution)}
-        </h3>
+        {/* Impact Summary - Compact */}
+        <div className="grid md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-100">
+            <p className="text-xs text-gray-600 mb-1">Lückenschließung</p>
+            <p className="text-2xl font-bold text-emerald-600">
+              {formatCurrency(gapReduction)}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">{gapReductionPercent.toFixed(0)}% der Lücke</p>
+          </div>
 
-        <input
-          type="range"
-          min="0"
-          max="1000"
-          step="50"
-          value={monthlyContribution}
-          onChange={(e) => setMonthlyContribution(parseInt(e.target.value))}
-          className="w-full mb-4"
-        />
+          <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-100">
+            <p className="text-xs text-gray-600 mb-1">Zusätzliche Rente p.M.</p>
+            <p className="text-2xl font-bold text-cyan-600">
+              {formatCurrency(additionalPrivatePension)}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">aus Sparplan</p>
+          </div>
 
-        <div className="flex justify-between text-sm text-gray-600">
-          <span>{formatCurrency(0)} / Monat</span>
-          <span>{formatCurrency(1000)} / Monat</span>
+          <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-100">
+            <p className="text-xs text-gray-600 mb-1">Rentensteigerung</p>
+            <p className="text-2xl font-bold text-blue-600">
+              +{formatCurrency(projectedPensionResult.gesamtRente - basePensionResult.gesamtRente)}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">monatlich mehr</p>
+          </div>
         </div>
-      </div>
 
-      {/* Investment Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-          <p className="text-xs text-gray-600 mb-1">Monatlicher Sparbeitrag</p>
-          <p className="text-2xl font-bold text-purple-700">
-            {formatCurrency(totalMonthlyInvestment)}
+        {/* Info Box */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+          <p className="text-xs text-gray-700">
+            <span className="font-semibold text-blue-900">💡 Info:</span> Mit {formatCurrency(monthlyContribution)}/Monat sparen Sie {formatCurrency(totalCumulativeInvestment)} bis Rente ({yearsUntilRetirement} Jahre). Dies schließt {gapReductionPercent.toFixed(0)}% Ihrer Vorsorgelücke.
           </p>
         </div>
 
-        <div className="p-4 bg-indigo-50 rounded-lg border border-indigo-200">
-          <p className="text-xs text-gray-600 mb-1">Jährliche Sparleistung</p>
-          <p className="text-2xl font-bold text-indigo-700">
-            {formatCurrency(totalAnnualInvestment)}
-          </p>
-        </div>
-
-        <div className="p-4 bg-pink-50 rounded-lg border border-pink-200">
-          <p className="text-xs text-gray-600 mb-1">
-            Kumulative Investition <br />
-            ({yearsUntilRetirement} Jahre)
-          </p>
-          <p className="text-2xl font-bold text-pink-700">
-            {formatCurrency(totalCumulativeInvestment)}
-          </p>
-        </div>
-      </div>
-
-      {/* Impact Analysis */}
-      <div className="border-t pt-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Auswirkungsanalyse</h3>
-
-        <div className="space-y-3">
-          <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-            <span className="text-gray-700">Schließung der Vorsorgelücke</span>
-            <span className="font-bold text-gray-900">
-              {formatCurrency(
-                basePensionResult.vorsorgeluecke - projectedPensionResult.vorsorgeluecke
-              )}
-            </span>
-          </div>
-
-          <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-            <span className="text-gray-700">Verbleibende Vorsorgelücke</span>
-            <span
-              className={`font-bold ${
-                projectedPensionResult.vorsorgeluecke > 0
-                  ? "text-orange-700"
-                  : "text-green-700"
-              }`}
-            >
-              {formatCurrency(projectedPensionResult.vorsorgeluecke)}
-            </span>
-          </div>
-
-          <div className="flex justify-between items-center p-3 bg-green-50 rounded border border-green-200">
-            <span className="text-gray-700 font-semibold">Neue Gesamtrente monatlich</span>
-            <span className="text-lg font-bold text-green-700">
-              {formatCurrency(projectedPensionResult.gesamtRente)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Disclaimer */}
-      <div className="mt-8 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-        <p className="text-xs text-gray-700">
-          <span className="font-semibold">Hinweis:</span> Dies ist eine vereinfachte Schätzung
-          basierend auf durchschnittlichen Annahmen. Die tatsächliche Rendite kann variieren.
-          Konsultieren Sie einen Finanzberater für eine persönliche Analyse.
-        </p>
-      </div>
-
-      {/* Back Button */}
-      {onBack && (
-        <div className="mt-8 flex justify-start">
+        {/* Footer Buttons */}
+        <div className="flex justify-between items-center gap-4">
           <button
             onClick={onBack}
-            className="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold rounded-lg transition shadow-md hover:shadow-lg"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-gray-300 hover:shadow-lg transition-all"
           >
-            ← Zurück zu Schritt 1
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Zurück zu Schritt 1
+          </button>
+
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold hover:shadow-xl transition-all transform hover:scale-105"
+          >
+            Fertig
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
           </button>
         </div>
-      )}
+      </div>
     </div>
   );
 };
