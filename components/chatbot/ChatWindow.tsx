@@ -87,6 +87,19 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
         }
     }, [input]);
 
+    // Lock body scroll when fullscreen
+    useEffect(() => {
+        if (isExpanded && !isMinimized) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "unset";
+        }
+
+        return () => {
+            document.body.style.overflow = "unset";
+        };
+    }, [isExpanded, isMinimized]);
+
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!input.trim() || isLoading) return;
@@ -150,10 +163,10 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
     return (
         <div
-            className={`fixed z-50 transition-all duration-500 ease-out flex flex-col ${
+            className={`fixed z-50 transition-all duration-300 ease-out flex flex-col ${
                 isExpanded
-                    ? "bottom-6 right-6 w-[95vw] h-[95vh] max-w-6xl max-h-[900px] rounded-2xl"
-                    : "bottom-6 right-6 w-full sm:w-[450px] h-[650px] sm:h-[750px] mx-4 sm:mx-0 max-w-[calc(100vw-32px)] rounded-2xl"
+                    ? "bottom-6 right-6 w-[95vw] h-[95vh] max-w-6xl max-h-[900px] rounded-2xl scale-100 opacity-100"
+                    : "bottom-6 right-6 w-full sm:w-[450px] h-[650px] sm:h-[750px] mx-4 sm:mx-0 max-w-[calc(100vw-32px)] rounded-2xl scale-100 opacity-100"
             }`}
         >
             {/* Outer glow effect */}
@@ -195,34 +208,40 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                     </div>
 
                     {/* Header Buttons */}
-                    <div className="flex items-center gap-2 relative z-10">
-                        {/* Expand Button */}
+                    <div className="flex items-center gap-1.5 relative z-10">
+                        {/* Expand/Restore Button */}
                         <button
                             onClick={() => setIsExpanded(!isExpanded)}
-                            className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200 flex items-center justify-center backdrop-blur-md"
+                            className="w-9 h-9 flex items-center justify-center rounded-[10px] text-white/70 hover:text-white hover:bg-white/15 active:scale-95 transition-all duration-200 backdrop-blur-md"
                             title={isExpanded ? t("restore_tooltip") : t("expand_tooltip")}
+                            aria-label={isExpanded ? t("restore_tooltip") : t("expand_tooltip")}
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 transition-transform hover:scale-110"
-                                fill="none"
                                 viewBox="0 0 24 24"
+                                fill="none"
                                 stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="w-6 h-6 transition-all duration-150"
                             >
                                 {isExpanded ? (
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
+                                    // Restore/Exit - diagonal arrows pointing inward
+                                    <>
+                                        <path d="M8 3v5a2 2 0 0 1-2 2H3" />
+                                        <path d="M21 3v5a2 2 0 0 0 2 2h2" />
+                                        <path d="M3 12v5a2 2 0 0 0 2 2h5" />
+                                        <path d="M21 12v5a2 2 0 0 1 2 2h2" />
+                                    </>
                                 ) : (
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M4 8V4m0 0h4m-4 0l5 5m11-5v4m0 0h-4m4 0l-5 5M4 20v-4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5"
-                                    />
+                                    // Expand - corners pointing outward
+                                    <>
+                                        <path d="M8 3H3v5" />
+                                        <path d="M16 3h5v5" />
+                                        <path d="M8 21H3v-5" />
+                                        <path d="M16 21h5v-5" />
+                                    </>
                                 )}
                             </svg>
                         </button>
@@ -230,22 +249,22 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                         {/* Minimize Button */}
                         <button
                             onClick={onToggleMinimize}
-                            className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200 flex items-center justify-center backdrop-blur-md"
+                            className="w-9 h-9 flex items-center justify-center rounded-[10px] text-white/70 hover:text-white hover:bg-white/15 transition-all duration-200 active:scale-95 backdrop-blur-md"
                             title={t("minimize_tooltip")}
+                            aria-label={t("minimize_tooltip")}
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 transition-transform hover:scale-110"
-                                fill="none"
                                 viewBox="0 0 24 24"
+                                fill="none"
                                 stroke="currentColor"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="w-6 h-6"
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M20 12H4"
-                                />
+                                {/* Minimize - clean horizontal dash */}
+                                <path d="M5 12h14" />
                             </svg>
                         </button>
                     </div>
