@@ -11,11 +11,12 @@ export default function GoldConsultingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-50">
       {/* HERO */}
-      <header className="relative overflow-hidden border-b border-yellow-500/20">
-        {/* soft glow background */}
+      <header className="relative overflow-hidden border-b border-yellow-500/30">
+        {/* soft golden glow background */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-yellow-400/20 blur-3xl" />
-          <div className="absolute bottom-[-5rem] right-[-3rem] h-64 w-64 rounded-full bg-amber-500/20 blur-3xl" />
+          <div className="absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-yellow-400/35 blur-3xl" />
+          <div className="absolute bottom-[-5rem] right-[-3rem] h-72 w-72 rounded-full bg-amber-500/35 blur-3xl" />
+          <div className="absolute top-1/3 right-1/4 h-64 w-64 rounded-full bg-yellow-300/25 blur-2xl" />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-18 flex flex-col items-center text-center gap-5">
@@ -69,8 +70,14 @@ export default function GoldConsultingPage() {
       </header>
 
       {/* MAIN CONTENT */}
-      <main className="py-9 md:py-11">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-9 md:space-y-11">
+      <main className="relative py-9 md:py-11">
+        {/* golden glow background */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute top-10 -left-32 h-96 w-96 rounded-full bg-yellow-500/20 blur-3xl" />
+          <div className="absolute top-1/2 right-[-5rem] h-80 w-80 rounded-full bg-amber-400/18 blur-3xl" />
+          <div className="absolute bottom-20 left-1/3 h-72 w-72 rounded-full bg-yellow-400/15 blur-2xl" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-9 md:space-y-11">
           {/* Widgets Layout - vertical */}
           <section className="space-y-6 md:space-y-7">
             <div className="space-y-2.5">
@@ -82,8 +89,11 @@ export default function GoldConsultingPage() {
                   {t('priceWidget.subtitle')}
                 </span>
               </div>
-              <div className="mt-1 rounded-2xl border border-slate-700/80 bg-slate-900/70 p-3.5 md:p-4 shadow-xl shadow-black/35 transition-transform duration-200 hover:-translate-y-[1px]">
-                <GoldPriceWidget />
+              <div className="relative mt-1 rounded-2xl border border-yellow-500/40 bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-slate-950/80 p-3.5 md:p-4 shadow-xl shadow-yellow-500/15 transition-transform duration-200 hover:-translate-y-[1px] hover:shadow-yellow-400/20 overflow-hidden">
+                <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-yellow-400/5 to-amber-500/5" />
+                <div className="relative z-10">
+                  <GoldPriceWidget />
+                </div>
               </div>
             </div>
 
@@ -96,8 +106,11 @@ export default function GoldConsultingPage() {
                   {t('calculator.description')}
                 </span>
               </div>
-              <div className="mt-1 rounded-2xl border border-slate-700/80 bg-slate-900/70 p-3.5 md:p-4 shadow-xl shadow-black/35 transition-transform duration-200 hover:-translate-y-[1px]">
-                <GoldInvestmentCalculator />
+              <div className="relative mt-1 rounded-2xl border border-amber-500/40 bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-slate-950/80 p-3.5 md:p-4 shadow-xl shadow-amber-500/15 transition-transform duration-200 hover:-translate-y-[1px] hover:shadow-amber-400/20 overflow-hidden">
+                <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-400/5 to-yellow-500/5" />
+                <div className="relative z-10">
+                  <GoldInvestmentCalculator />
+                </div>
               </div>
             </div>
           </section>

@@ -63,13 +63,6 @@ export default function GoldInvestmentCalculator() {
   return (
     <div className="w-full">
       <div className="space-y-6 md:space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-1.5 md:space-y-2">
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
-            {t('calculator.title')}
-          </h2>
-          <p className="text-sm md:text-base text-slate-600">{t('calculator.description')}</p>
-        </div>
 
         <div className="grid lg:grid-cols-3 gap-6 md:gap-8 items-start">
           {/* Input Controls */}
@@ -186,7 +179,7 @@ export default function GoldInvestmentCalculator() {
                     title={`Year ${data.year}: €${data.price.toFixed(0)}`}
                   >
                     <div
-                      className="w-full bg-gradient-to-t from-blue-600 to-blue-500 rounded-t opacity-75 hover:opacity-100 transition-all group-hover:shadow-lg group-hover:shadow-blue-600/30 cursor-pointer"
+                      className="w-full bg-gradient-to-t from-amber-500 to-amber-400 rounded-t opacity-75 hover:opacity-100 transition-all group-hover:shadow-lg group-hover:shadow-amber-500/40 cursor-pointer"
                       style={{
                         height: `${((data.price - minPrice) / (maxPrice - minPrice)) * 100}%`,
                         minHeight: '4px'
@@ -200,7 +193,7 @@ export default function GoldInvestmentCalculator() {
               </div>
               <div className="mt-3 md:mt-4 flex justify-between text-[0.65rem] md:text-xs text-slate-600">
                 <span>€{minPrice.toFixed(0)}</span>
-                <span className="text-blue-600 font-semibold">€{maxPrice.toFixed(0)}</span>
+                <span className="text-amber-600 font-semibold">€{maxPrice.toFixed(0)}</span>
               </div>
             </div>
 
@@ -215,7 +208,7 @@ export default function GoldInvestmentCalculator() {
                     title={`Year ${data.year}: €${data.value.toFixed(0)}`}
                   >
                     <div
-                      className="w-full bg-gradient-to-t from-green-600 to-green-500 rounded-t opacity-75 hover:opacity-100 transition-all group-hover:shadow-lg group-hover:shadow-green-600/30 cursor-pointer"
+                      className="w-full bg-gradient-to-t from-emerald-500 to-emerald-400 rounded-t opacity-75 hover:opacity-100 transition-all group-hover:shadow-lg group-hover:shadow-emerald-500/40 cursor-pointer"
                       style={{
                         height: `${(data.value / maxValue) * 100}%`,
                         minHeight: '4px'
@@ -229,14 +222,14 @@ export default function GoldInvestmentCalculator() {
               </div>
               <div className="mt-3 md:mt-4 flex justify-between text-[0.65rem] md:text-xs text-slate-600">
                 <span>€{result.currentValue.toFixed(0)}</span>
-                <span className="text-green-600 font-semibold">€{result.futureValue.toFixed(0)}</span>
+                <span className="text-emerald-600 font-semibold">€{result.futureValue.toFixed(0)}</span>
               </div>
             </div>
 
             {/* Results Summary */}
             <div className="grid md:grid-cols-2 gap-4">
               {/* Key Metrics */}
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 md:p-6 shadow-sm">
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 shadow-sm hover:border-slate-300 transition-all">
                 <h3 className="text-xs md:text-sm font-semibold text-slate-900 mb-3 md:mb-4">Key Metrics</h3>
                 <div className="space-y-2.5 md:space-y-3">
                   <div className="flex justify-between items-center">
@@ -255,7 +248,7 @@ export default function GoldInvestmentCalculator() {
               </div>
 
               {/* Gain/Loss */}
-              <div className={`border rounded-2xl p-5 md:p-6 shadow-sm transition-all ${
+              <div className={`border rounded-2xl p-5 md:p-6 shadow-sm transition-all hover:shadow-md ${
                 result.gain >= 0
                   ? 'bg-green-50 border-green-200'
                   : 'bg-red-50 border-red-200'
@@ -283,7 +276,7 @@ export default function GoldInvestmentCalculator() {
             </div>
 
             {/* Warning Note */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm">
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all">
               <p className="text-xs text-slate-700">
                 <span className="text-blue-600 font-semibold">ℹ️</span> {t('calculator.warningNote')}
               </p>
