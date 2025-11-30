@@ -208,65 +208,51 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                     </div>
 
                     {/* Header Buttons */}
-                    <div className="flex items-center gap-1.5 relative z-10">
-                        {/* Expand/Restore Button */}
-                        <button
-                            onClick={() => setIsExpanded(!isExpanded)}
-                            className="w-9 h-9 flex items-center justify-center rounded-[10px] text-white/70 hover:text-white hover:bg-white/15 active:scale-95 transition-all duration-200 backdrop-blur-md"
-                            title={isExpanded ? t("restore_tooltip") : t("expand_tooltip")}
-                            aria-label={isExpanded ? t("restore_tooltip") : t("expand_tooltip")}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="w-6 h-6 transition-all duration-150"
-                            >
-                                {isExpanded ? (
-                                    // Restore/Exit - diagonal arrows pointing inward
-                                    <>
-                                        <path d="M8 3v5a2 2 0 0 1-2 2H3" />
-                                        <path d="M21 3v5a2 2 0 0 0 2 2h2" />
-                                        <path d="M3 12v5a2 2 0 0 0 2 2h5" />
-                                        <path d="M21 12v5a2 2 0 0 1 2 2h2" />
-                                    </>
-                                ) : (
-                                    // Expand - corners pointing outward
-                                    <>
-                                        <path d="M8 3H3v5" />
-                                        <path d="M16 3h5v5" />
-                                        <path d="M8 21H3v-5" />
-                                        <path d="M16 21h5v-5" />
-                                    </>
-                                )}
-                            </svg>
-                        </button>
+                    <div className="flex items-center gap-2 relative z-10">
 
-                        {/* Minimize Button */}
-                        <button
-                            onClick={onToggleMinimize}
-                            className="w-9 h-9 flex items-center justify-center rounded-[10px] text-white/70 hover:text-white hover:bg-white/15 transition-all duration-200 active:scale-95 backdrop-blur-md"
-                            title={t("minimize_tooltip")}
-                            aria-label={t("minimize_tooltip")}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="w-6 h-6"
-                            >
-                                {/* Minimize - clean horizontal dash */}
-                                <path d="M5 12h14" />
-                            </svg>
-                        </button>
+                      {/* Expand / Restore */}
+                      <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg text-white/80 hover:text-white hover:bg-white/20 transition-all duration-200 active:scale-95 backdrop-blur-md"
+                        title={isExpanded ? t("restore_tooltip") : t("expand_tooltip")}
+                      >
+                        {isExpanded ? (
+                          /* Restore */
+                          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="14 3 14 10 21 10" />
+                            <line x1="14" y1="10" x2="21" y2="3" />
+                            <polyline points="10 21 10 14 3 14" />
+                            <line x1="3" y1="21" x2="10" y2="14" />
+                          </svg>
+                        ) : (
+                          /* Expand */
+                          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 3 21 3 21 9" />
+                            <line x1="21" y1="3" x2="14" y2="10" />
+                            <polyline points="9 21 3 21 3 15" />
+                            <line x1="3" y1="21" x2="10" y2="14" />
+                          </svg>
+                        )}
+                      </button>
+
+                      {/* Minimize */}
+                      <button
+                        onClick={onToggleMinimize}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg text-white/80 hover:text-white hover:bg-white/20 transition-all duration-200 active:scale-95 backdrop-blur-md"
+                        title={t("minimize_tooltip")}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                          viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                      </button>
+
+
                     </div>
                 </div>
 
