@@ -10,6 +10,31 @@ interface ChatWindowProps {
     onToggleMinimize: () => void;
 }
 
+// Quick action suggestions by language - Finance-focused questions
+const QUICK_ACTIONS = {
+    de: [
+        "Wie kann ich meine Steuern optimieren?",
+        "Was ist der beste Weg zur Altersvorsorge?",
+        "Immobilienberatung und Finanzierung",
+        "Wie erstelle ich einen Finanzplan?",
+        "Was kostet eine Beratung?"
+    ],
+    en: [
+        "How can I optimize my taxes?",
+        "What's the best retirement planning strategy?",
+        "Real estate consulting and financing",
+        "How do I create a financial plan?",
+        "What does your consultation cost?"
+    ],
+    vi: [
+        "Làm thế nào để tối ưu hóa thuế?",
+        "Chiến lược lập kế hoạch hưu trí tốt nhất là gì?",
+        "Tư vấn bất động sản và tài chính",
+        "Cách tạo kế hoạch tài chính?",
+        "Chi phí tư vấn là bao nhiêu?"
+    ]
+};
+
 export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindowProps) {
     const t = useTranslations("chatbot");
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -22,12 +47,27 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
     const [welcomeComplete, setWelcomeComplete] = useState(false);
     const [typingMessageId, setTypingMessageId] = useState<string | null>(null);
     const [displayedContent, setDisplayedContent] = useState<Record<string, string>>({});
+    const [hasUserInteracted, setHasUserInteracted] = useState(false);
+    const [currentLocale, setCurrentLocale] = useState<"de" | "en" | "vi">("de");
     const typingSpeedRef = useRef(25);
 
     const welcomeText = t("welcome");
 
+    useEffect(() => {
+        // Detect current locale from browser or default to DE
+        const locale = document.documentElement.lang || "de";
+        if (locale.startsWith("en")) setCurrentLocale("en");
+        else if (locale.startsWith("vi")) setCurrentLocale("vi");
+        else setCurrentLocale("de");
+    }, []);
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    const handleQuickAction = async (action: string) => {
+        setHasUserInteracted(true);
+        await sendMessage(action);
     };
 
     useEffect(() => {
@@ -104,6 +144,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
         e.preventDefault();
         if (!input.trim() || isLoading) return;
 
+        setHasUserInteracted(true);
         await sendMessage(input);
         if (inputRef.current) {
             inputRef.current.style.height = "auto";
@@ -311,6 +352,24 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                 </div>
                             );
                         })}
+
+                    {/* Quick Actions - Only visible before first user message */}
+                    {messages.filter((m) => m.role === "user").length === 0 &&
+                        welcomeComplete &&
+                        !hasUserInteracted && (
+                        <div className="flex flex-wrap gap-2 mt-6 animate-slideIn">
+                            {QUICK_ACTIONS[currentLocale].map((action, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => handleQuickAction(action)}
+                                    disabled={isLoading}
+                                    className="px-4 py-2 bg-white rounded-3xl text-slate-700 text-xs font-medium border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                                >
+                                    {action}
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Loading State */}
                     {isLoading && (
