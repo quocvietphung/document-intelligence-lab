@@ -35,6 +35,32 @@ const QUICK_ACTIONS = {
     ]
 };
 
+// Helper to parse assistant message into answer and suggestions
+function parseAssistantMessage(content: string): { answer: string; suggestions: string[] } | null {
+  if (!content) return null;
+  const marker = "SUGGESTIONS:";
+  const idx = content.indexOf(marker);
+  if (idx === -1) {
+    return null;
+  }
+
+  const answerRaw = content.slice(0, idx).trim();
+  const suggestionsRaw = content.slice(idx + marker.length).trim();
+
+  const answer = answerRaw.replace(/^ANSWER:\s*/i, "").trim();
+
+  const suggestions = suggestionsRaw
+    .split(/\r?\n/)
+    .map(line => line.replace(/^[-•]\s*/, "").trim())
+    .filter(line => line.length > 0);
+
+  if (!answer && suggestions.length === 0) {
+    return null;
+  }
+
+  return { answer: answer || content.trim(), suggestions };
+}
+
 export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindowProps) {
     const t = useTranslations("chatbot");
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -320,9 +346,15 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                             const isUser = message.role === "user";
                             const isWelcome = (message as any).isWelcome;
 
-                            let displayContent = message.content;
-                            if (!isUser && !isWelcome && displayedContent[message.id]) {
-                                displayContent = displayedContent[message.id];
+                            let displayText = message.content;
+                            let suggestions: string[] = [];
+
+                            if (!isUser && !isWelcome) {
+                                const parsed = parseAssistantMessage(message.content);
+                                if (parsed) {
+                                    displayText = parsed.answer;
+                                    suggestions = parsed.suggestions;
+                                }
                             }
 
                             return (
@@ -338,11 +370,26 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                         }`}
                                     >
                                         <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                                            {displayContent}
+                                            {displayText}
                                             {typingMessageId === message.id && (
                                                 <span className={`animate-pulse ml-1 ${isUser ? "text-blue-200" : "text-blue-600"}`}>▌</span>
                                             )}
                                         </p>
+                                        {!isUser && !isWelcome && suggestions.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 mt-3">
+                                                {suggestions.map((s, idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        type="button"
+                                                        onClick={() => handleQuickAction(s)}
+                                                        disabled={isLoading}
+                                                        className="px-3 py-1.5 bg-slate-100 rounded-2xl text-xs font-medium text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {s}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
                                         <span className={`text-xs mt-2 block font-medium ${
                                             isUser ? "text-blue-200" : "text-slate-400"
                                         }`}>
