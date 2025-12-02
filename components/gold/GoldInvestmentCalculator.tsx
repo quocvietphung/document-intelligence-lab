@@ -60,6 +60,9 @@ export default function GoldInvestmentCalculator() {
   const minPrice = Math.min(unitPrice, futurePrice);
   const maxPrice = Math.max(unitPrice, futurePrice);
 
+  const priceRange = maxPrice - minPrice || 1;
+  const safeMaxValue = maxValue || 1;
+
   return (
     <div className="w-full">
       <div className="space-y-6 md:space-y-8">
@@ -169,81 +172,346 @@ export default function GoldInvestmentCalculator() {
           {/* Charts & Results */}
           <div className="lg:col-span-2 space-y-5 md:space-y-6">
             {/* Price Development Chart */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 hover:border-slate-300 transition-all shadow-sm">
-              <h3 className="text-sm md:text-lg font-semibold text-slate-900 mb-3 md:mb-4">Price Development</h3>
-              <div className="h-36 md:h-40 flex items-end justify-between gap-1.5 bg-slate-50 rounded-lg p-3 md:p-4">
-                {chartData.map((data, idx) => (
-                  <div
-                    key={idx}
-                    className="flex-1 flex flex-col items-center group"
-                    title={`Year ${data.year}: €${data.price.toFixed(0)}`}
-                  >
-                    <div
-                      className="w-full bg-gradient-to-t from-amber-500 to-amber-400 rounded-t opacity-75 hover:opacity-100 transition-all group-hover:shadow-lg group-hover:shadow-amber-500/40 cursor-pointer"
-                      style={{
-                        height: `${((data.price - minPrice) / (maxPrice - minPrice)) * 100}%`,
-                        minHeight: '4px'
-                      }}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 hover:border-amber-300 transition-all shadow-lg">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm md:text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
+                    <span className="w-1 h-5 bg-gradient-to-b from-amber-500 to-amber-400 rounded"></span>
+                    Price Development Over {years} Year{years > 1 ? 's' : ''}
+                  </h3>
+                  <p className="text-xs text-slate-500">Gold price projection from €{unitPrice.toFixed(0)} to €{futurePrice.toFixed(0)}</p>
+                </div>
+
+                {/* SVG Chart with line and bars */}
+                <div className="relative h-48 md:h-56 bg-gradient-to-b from-amber-50/40 to-white rounded-xl p-4 border border-amber-100/50">
+                  <svg viewBox="0 0 800 240" preserveAspectRatio="xMidYMid meet" className="w-full h-full">
+                    <defs>
+                      {/* Grid background */}
+                      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e5e7eb" strokeWidth="0.5" opacity="0.3"/>
+                      </pattern>
+                    </defs>
+
+                    {/* Grid */}
+                    <rect width="800" height="240" fill="url(#grid)" />
+
+                    {/* Y-axis labels */}
+                    <text x="35" y="15" fontSize="12" fill="#64748b" textAnchor="end" fontWeight="600">€{maxPrice.toFixed(0)}</text>
+                    <text x="35" y="230" fontSize="12" fill="#64748b" textAnchor="end" fontWeight="600">€{minPrice.toFixed(0)}</text>
+
+                    {/* Bars */}
+                    {chartData.map((data, idx) => {
+                      const barWidth = 800 / (chartData.length + 1);
+                      const x = 50 + idx * barWidth;
+                      const barHeight = ((data.price - minPrice) / priceRange) * 180;
+                      const y = 220 - barHeight;
+                      const percentChange = ((data.price - unitPrice) / unitPrice) * 100;
+
+                      return (
+                        <g key={`bar-${idx}`}>
+                          {/* Bar with gradient */}
+                          <defs>
+                            <linearGradient id={`barGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" stopColor={data.price >= unitPrice ? "#fbbf24" : "#fca5a5"} />
+                              <stop offset="100%" stopColor={data.price >= unitPrice ? "#f59e0b" : "#f87171"} />
+                            </linearGradient>
+                          </defs>
+                          <rect
+                            x={x - barWidth / 2 + 15}
+                            y={y}
+                            width={barWidth - 20}
+                            height={barHeight}
+                            fill={`url(#barGrad${idx})`}
+                            rx="4"
+                            opacity="0.85"
+                            className="hover:opacity-100 transition-all"
+                          />
+
+                          {/* Percentage label on top of bar */}
+                          {barHeight > 30 && (
+                            <text
+                              x={x}
+                              y={y - 8}
+                              fontSize="11"
+                              fill={data.price >= unitPrice ? "#d97706" : "#dc2626"}
+                              textAnchor="middle"
+                              fontWeight="700"
+                            >
+                              {percentChange >= 0 ? '+' : ''}{percentChange.toFixed(1)}%
+                            </text>
+                          )}
+
+                          {/* Price label */}
+                          <text
+                            x={x}
+                            y={y - 20}
+                            fontSize="10"
+                            fill="#374151"
+                            textAnchor="middle"
+                            fontWeight="600"
+                          >
+                            €{data.price.toFixed(0)}
+                          </text>
+
+                          {/* Year label */}
+                          <text
+                            x={x}
+                            y="235"
+                            fontSize="11"
+                            fill="#6b7280"
+                            textAnchor="middle"
+                            fontWeight="500"
+                          >
+                            Y{data.year}
+                          </text>
+                        </g>
+                      );
+                    })}
+
+                    {/* Trend line */}
+                    <polyline
+                      points={chartData.map((data, idx) => {
+                        const barWidth = 800 / (chartData.length + 1);
+                        const x = 50 + idx * barWidth;
+                        const barHeight = ((data.price - minPrice) / priceRange) * 180;
+                        const y = 220 - barHeight;
+                        return `${x},${y}`;
+                      }).join(' ')}
+                      fill="none"
+                      stroke="#d97706"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      opacity="0.6"
                     />
-                    {(idx === 0 || idx === chartData.length - 1) && (
-                      <span className="text-[0.65rem] md:text-xs text-slate-600 mt-2">Year {data.year}</span>
-                    )}
+                  </svg>
+                </div>
+
+                {/* Chart Info */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                    <p className="text-[0.65rem] text-slate-600 font-semibold uppercase">Start Price</p>
+                    <p className="text-base font-bold text-blue-700 mt-1">€{unitPrice.toFixed(0)}</p>
                   </div>
-                ))}
-              </div>
-              <div className="mt-3 md:mt-4 flex justify-between text-[0.65rem] md:text-xs text-slate-600">
-                <span>€{minPrice.toFixed(0)}</span>
-                <span className="text-amber-600 font-semibold">€{maxPrice.toFixed(0)}</span>
+                  <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
+                    <p className="text-[0.65rem] text-slate-600 font-semibold uppercase">Target Price</p>
+                    <p className="text-base font-bold text-amber-700 mt-1">€{futurePrice.toFixed(0)}</p>
+                  </div>
+                  <div className={`rounded-lg p-3 border ${result.gain >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                    <p className="text-[0.65rem] text-slate-600 font-semibold uppercase">Total Increase</p>
+                    <p className={`text-base font-bold mt-1 ${result.gainPercent >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                      {result.gainPercent >= 0 ? '+' : ''}{result.gainPercent.toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Portfolio Value Chart */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 hover:border-slate-300 transition-all shadow-sm">
-              <h3 className="text-sm md:text-lg font-semibold text-slate-900 mb-3 md:mb-4">Portfolio Value Growth</h3>
-              <div className="h-36 md:h-40 flex items-end justify-between gap-1.5 bg-slate-50 rounded-lg p-3 md:p-4">
-                {chartData.map((data, idx) => (
-                  <div
-                    key={idx}
-                    className="flex-1 flex flex-col items-center group relative"
-                    title={`Year ${data.year}: €${data.value.toFixed(0)}`}
-                  >
-                    <div
-                      className="w-full bg-gradient-to-t from-emerald-500 to-emerald-400 rounded-t opacity-75 hover:opacity-100 transition-all group-hover:shadow-lg group-hover:shadow-emerald-500/40 cursor-pointer"
-                      style={{
-                        height: `${(data.value / maxValue) * 100}%`,
-                        minHeight: '4px'
-                      }}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 hover:border-emerald-300 transition-all shadow-lg">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm md:text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
+                    <span className="w-1 h-5 bg-gradient-to-b from-emerald-500 to-emerald-400 rounded"></span>
+                    Portfolio Value Growth Over {years} Year{years > 1 ? 's' : ''}
+                  </h3>
+                  <p className="text-xs text-slate-500">Your €{amount.toFixed(0)} investment projected growth</p>
+                </div>
+
+                {/* SVG Chart with area and line */}
+                <div className="relative h-48 md:h-56 bg-gradient-to-b from-emerald-50/40 to-white rounded-xl p-4 border border-emerald-100/50">
+                  <svg viewBox="0 0 800 240" preserveAspectRatio="xMidYMid meet" className="w-full h-full">
+                    <defs>
+                      {/* Grid background */}
+                      <pattern id="gridValue" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e5e7eb" strokeWidth="0.5" opacity="0.3"/>
+                      </pattern>
+
+                      {/* Area gradient - gain area */}
+                      <linearGradient id="gainArea" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.15" />
+                        <stop offset="100%" stopColor="#10b981" stopOpacity="0.02" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Grid */}
+                    <rect width="800" height="240" fill="url(#gridValue)" />
+
+                    {/* Y-axis labels */}
+                    <text x="35" y="15" fontSize="12" fill="#64748b" textAnchor="end" fontWeight="600">€{safeMaxValue.toFixed(0)}</text>
+                    <text x="35" y="100" fontSize="11" fill="#94a3b8" textAnchor="end" fontWeight="500">(Initial)</text>
+                    <text x="35" y="230" fontSize="12" fill="#64748b" textAnchor="end" fontWeight="600">€0</text>
+
+                    {/* Initial investment line */}
+                    <line
+                      x1="50"
+                      y1={220 - (amount / safeMaxValue) * 180}
+                      x2="750"
+                      y2={220 - (amount / safeMaxValue) * 180}
+                      stroke="#3b82f6"
+                      strokeWidth="1.5"
+                      strokeDasharray="5,5"
+                      opacity="0.5"
                     />
-                    {(idx === 0 || idx === chartData.length - 1) && (
-                      <span className="text-[0.65rem] md:text-xs text-slate-600 mt-2">Year {data.year}</span>
+                    <text x="760" y={220 - (amount / safeMaxValue) * 180 + 4} fontSize="10" fill="#3b82f6" fontWeight="600">
+                      €{amount.toFixed(0)}
+                    </text>
+
+                    {/* Area under trend line (gain area) */}
+                    {chartData.length > 1 && (
+                      <polygon
+                        points={[
+                          `50,220`,
+                          ...chartData.map((data, idx) => {
+                            const barWidth = 800 / (chartData.length + 1);
+                            const x = 50 + idx * barWidth;
+                            const barHeight = (data.value / safeMaxValue) * 180;
+                            const y = 220 - barHeight;
+                            return `${x},${y}`;
+                          }),
+                          `${50 + (chartData.length - 1) * (800 / (chartData.length + 1))},220`
+                        ].join(' ')}
+                        fill="url(#gainArea)"
+                      />
                     )}
+
+                    {/* Bars */}
+                    {chartData.map((data, idx) => {
+                      const barWidth = 800 / (chartData.length + 1);
+                      const x = 50 + idx * barWidth;
+                      const barHeight = (data.value / safeMaxValue) * 180;
+                      const y = 220 - barHeight;
+                      const gainPercent = ((data.value - amount) / amount) * 100;
+
+                      return (
+                        <g key={`valuebar-${idx}`}>
+                          {/* Bar with gradient */}
+                          <defs>
+                            <linearGradient id={`valueBarGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" stopColor="#10b981" />
+                              <stop offset="100%" stopColor="#059669" />
+                            </linearGradient>
+                          </defs>
+                          <rect
+                            x={x - barWidth / 2 + 15}
+                            y={y}
+                            width={barWidth - 20}
+                            height={barHeight}
+                            fill={`url(#valueBarGrad${idx})`}
+                            rx="4"
+                            opacity="0.8"
+                            className="hover:opacity-100 transition-all"
+                          />
+
+                          {/* Gain % label */}
+                          {barHeight > 30 && gainPercent > 0 && (
+                            <text
+                              x={x}
+                              y={y - 8}
+                              fontSize="11"
+                              fill="#059669"
+                              textAnchor="middle"
+                              fontWeight="700"
+                            >
+                              +{gainPercent.toFixed(1)}%
+                            </text>
+                          )}
+
+                          {/* Value label */}
+                          <text
+                            x={x}
+                            y={y - 20}
+                            fontSize="10"
+                            fill="#374151"
+                            textAnchor="middle"
+                            fontWeight="600"
+                          >
+                            €{data.value.toFixed(0)}
+                          </text>
+
+                          {/* Year label */}
+                          <text
+                            x={x}
+                            y="235"
+                            fontSize="11"
+                            fill="#6b7280"
+                            textAnchor="middle"
+                            fontWeight="500"
+                          >
+                            Y{data.year}
+                          </text>
+                        </g>
+                      );
+                    })}
+
+                    {/* Trend line */}
+                    <polyline
+                      points={chartData.map((data, idx) => {
+                        const barWidth = 800 / (chartData.length + 1);
+                        const x = 50 + idx * barWidth;
+                        const barHeight = (data.value / safeMaxValue) * 180;
+                        const y = 220 - barHeight;
+                        return `${x},${y}`;
+                      }).join(' ')}
+                      fill="none"
+                      stroke="#059669"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      opacity="0.8"
+                    />
+                  </svg>
+                </div>
+
+                {/* Chart Info */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                    <p className="text-[0.65rem] text-slate-600 font-semibold uppercase">Initial</p>
+                    <p className="text-base font-bold text-blue-700 mt-1">€{result.currentValue.toFixed(0)}</p>
                   </div>
-                ))}
-              </div>
-              <div className="mt-3 md:mt-4 flex justify-between text-[0.65rem] md:text-xs text-slate-600">
-                <span>€{result.currentValue.toFixed(0)}</span>
-                <span className="text-emerald-600 font-semibold">€{result.futureValue.toFixed(0)}</span>
+                  <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
+                    <p className="text-[0.65rem] text-slate-600 font-semibold uppercase">Projected</p>
+                    <p className="text-base font-bold text-emerald-700 mt-1">€{result.futureValue.toFixed(0)}</p>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                    <p className="text-[0.65rem] text-slate-600 font-semibold uppercase">Total Gain</p>
+                    <p className="text-base font-bold text-green-700 mt-1">+€{result.gain.toFixed(0)}</p>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Results Summary */}
             <div className="grid md:grid-cols-2 gap-4">
-              {/* Key Metrics */}
+              {/* Investment Summary - Important Metrics */}
               <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 shadow-sm hover:border-slate-300 transition-all">
-                <h3 className="text-xs md:text-sm font-semibold text-slate-900 mb-3 md:mb-4">Key Metrics</h3>
+                <h3 className="text-xs md:text-sm font-semibold text-slate-900 mb-3 md:mb-4 flex items-center gap-2">
+                  <span className="w-1 h-4 bg-gradient-to-b from-blue-600 to-blue-400 rounded"></span>
+                  Investment Summary
+                </h3>
                 <div className="space-y-2.5 md:space-y-3">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center pb-2.5 border-b border-slate-100">
                     <span className="text-[0.7rem] md:text-xs text-slate-600">{t('calculator.ouncesPurchased')}</span>
                     <span className="font-bold text-sm md:text-base text-slate-900">{result.ouncesBought.toFixed(4)} oz</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[0.7rem] md:text-xs text-slate-600">{t('calculator.projectedPriceLabel')}</span>
+                  <div className="flex justify-between items-center pb-2.5 border-b border-slate-100">
+                    <span className="text-[0.7rem] md:text-xs text-slate-600">Initial Investment</span>
+                    <span className="font-bold text-sm md:text-base text-blue-600">{fmtCurrency(result.currentValue)}</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-2.5 border-b border-slate-100">
+                    <span className="text-[0.7rem] md:text-xs text-slate-600">Target Price per oz</span>
                     <span className="font-bold text-sm md:text-base text-slate-900">{fmtCurrency(result.futurePrice)}</span>
                   </div>
-                  <div className="flex justify-between items-center pt-3 border-t border-slate-200">
-                    <span className="text-xs md:text-sm font-semibold text-slate-900">{t('calculator.projectedValue')}</span>
-                    <span className="text-lg md:text-xl font-bold text-blue-600">{fmtCurrency(result.futureValue)}</span>
-                  </div>
+
+                  {/* CAGR - Compound Annual Growth Rate */}
+                  {years > 0 && (
+                    <div className="flex justify-between items-center pt-2.5 border-t-2 border-blue-200 bg-blue-50 -mx-5 md:-mx-6 px-5 md:px-6 py-3 rounded-lg">
+                      <span className="text-[0.7rem] md:text-xs text-slate-700 font-semibold uppercase">CAGR</span>
+                      <span className="font-bold text-base md:text-lg text-blue-700">
+                        {years > 0 ? (((Math.pow(result.futureValue / result.currentValue, 1 / years) - 1) * 100).toFixed(2)) : '0'}%
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -253,7 +521,10 @@ export default function GoldInvestmentCalculator() {
                   ? 'bg-green-50 border-green-200'
                   : 'bg-red-50 border-red-200'
               }`}>
-                <h3 className="text-xs md:text-sm font-semibold text-slate-900 mb-3 md:mb-4">{t('calculator.gainLoss')}</h3>
+                <h3 className="text-xs md:text-sm font-semibold text-slate-900 mb-3 md:mb-4 flex items-center gap-2">
+                  <span className={`w-1 h-4 rounded ${result.gain >= 0 ? 'bg-gradient-to-b from-green-600 to-green-400' : 'bg-gradient-to-b from-red-600 to-red-400'}`}></span>
+                  {t('calculator.gainLoss')}
+                </h3>
                 <div className="space-y-3.5 md:space-y-4">
                   <div>
                     <p className="text-[0.7rem] md:text-xs text-slate-600 mb-1.5 md:mb-2">Total Return</p>
@@ -271,7 +542,41 @@ export default function GoldInvestmentCalculator() {
                       {result.gainPercent >= 0 ? '+' : ''}{result.gainPercent.toFixed(2)}%
                     </p>
                   </div>
+                  <div className="pt-3 md:pt-4 border-t border-slate-200">
+                    <p className="text-[0.7rem] md:text-xs text-slate-600 mb-1.5 md:mb-2">Gain per Year</p>
+                    <p className={`text-base md:text-lg font-bold ${
+                      result.gain >= 0 ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {years > 0 ? (result.gain >= 0 ? '+' : '') + fmtCurrency(result.gain / years) : 'N/A'}
+                    </p>
+                  </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Key Metrics Row */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-3 border border-slate-200">
+                <p className="text-[0.65rem] text-slate-600 font-semibold uppercase mb-1.5">Projected Value</p>
+                <p className="text-sm md:text-base font-bold text-slate-900">{fmtCurrency(result.futureValue)}</p>
+              </div>
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-3 border border-emerald-200">
+                <p className="text-[0.65rem] text-slate-600 font-semibold uppercase mb-1.5">Final Value</p>
+                <p className="text-sm md:text-base font-bold text-emerald-700">{fmtCurrency(result.futureValue)}</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 border border-blue-200">
+                <p className="text-[0.65rem] text-slate-600 font-semibold uppercase mb-1.5">Investment Period</p>
+                <p className="text-sm md:text-base font-bold text-blue-700">{years} Year{years > 1 ? 's' : ''}</p>
+              </div>
+              <div className={`rounded-xl p-3 border transition-all ${
+                result.gainPercent >= 0
+                  ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'
+                  : 'bg-gradient-to-br from-red-50 to-red-100 border-red-200'
+              }`}>
+                <p className="text-[0.65rem] text-slate-600 font-semibold uppercase mb-1.5">Total ROI</p>
+                <p className={`text-sm md:text-base font-bold ${
+                  result.gainPercent >= 0 ? 'text-green-700' : 'text-red-700'
+                }`}>{result.gainPercent >= 0 ? '+' : ''}{result.gainPercent.toFixed(1)}%</p>
               </div>
             </div>
 
