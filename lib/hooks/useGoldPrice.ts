@@ -8,6 +8,7 @@ interface GoldPriceData {
     changePercent: number;
     lastUpdated: string;
     currency: "EUR";
+    fxRate?: number; // EUR/VND rate from gold-api.com
     history?: number[];
 }
 
@@ -61,26 +62,9 @@ export function useGoldPrice(): UseGoldPriceReturn {
         return ageHours >= 9 ? 'cache' : 'api';
     };
 
-    /**
-     * Fetch FX rate (EUR/VND) - 1 hour cache
-     */
-    const fetchFXRate = useCallback(async () => {
-        try {
-            const resp = await fetch(
-                "https://api.exchangerate.host/latest?base=EUR&symbols=VND",
-                { next: { revalidate: 3600 } }
-            );
-            if (!resp.ok) return;
-            const json = await resp.json();
-            const rate = Number(json?.rates?.VND);
-            if (Number.isFinite(rate)) setFxRate(rate);
-        } catch (e) {
-            console.error("[useGoldPrice] FX rate fetch error:", e);
-        }
-    }, []);
 
     /**
-     * Main fetch gold price
+     * Main fetch gold price + FX rate from gold-api.com
      */
     const fetchPrice = useCallback(async () => {
         try {
@@ -101,15 +85,18 @@ export function useGoldPrice(): UseGoldPriceReturn {
             const source = detectDataSource(data);
             setPriceSource(source);
 
-            // Fetch FX rate on success
-            await fetchFXRate();
+            // FX rate is included in gold-api.com response
+            // Extract if available, otherwise set default
+            if (data.fxRate) {
+                setFxRate(data.fxRate);
+            }
         } catch (e) {
             console.error("[useGoldPrice] fetch error:", e);
             setError(e instanceof Error ? e.message : 'Failed to fetch gold price');
         } finally {
             setLoading(false);
         }
-    }, [fetchFXRate]);
+    }, []);
 
     /**
      * Initial load + periodic refresh (every 10 hours)
