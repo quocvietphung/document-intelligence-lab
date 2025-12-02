@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 
 interface CalculatorResult {
@@ -11,6 +11,14 @@ interface CalculatorResult {
   gainPercent: number;
 }
 
+interface GoldPriceData {
+  price: number;
+  change: number;
+  changePercent: number;
+  lastUpdated: string;
+  currency: "EUR";
+}
+
 export default function GoldInvestmentCalculator() {
   const t = useTranslations('gold');
 
@@ -18,7 +26,42 @@ export default function GoldInvestmentCalculator() {
   const [unitPrice, setUnitPrice] = useState<number>(1890);
   const [futurePrice, setFuturePrice] = useState<number>(2100);
   const [years, setYears] = useState<number>(5);
-  const [startYear, setStartYear] = useState<number>(new Date().getFullYear()); // Năm hiện tại
+  const [startYear, setStartYear] = useState<number>(new Date().getFullYear());
+
+  // Real-time price API integration
+  const [useRealTimePrice, setUseRealTimePrice] = useState<boolean>(true);
+  const [realTimePrice, setRealTimePrice] = useState<number | null>(null);
+  const [priceLoading, setPriceLoading] = useState(false);
+
+  // Fetch real-time gold price from API
+  const fetchRealTimePrice = useCallback(async () => {
+    try {
+      setPriceLoading(true);
+      const res = await fetch("/api/gold-price", { cache: "no-store" });
+      if (!res.ok) {
+        console.error("Failed to fetch gold price");
+        return;
+      }
+      const data: GoldPriceData = await res.json();
+      setRealTimePrice(data.price);
+      // Auto-update unitPrice if useRealTimePrice is enabled
+      if (useRealTimePrice) {
+        setUnitPrice(data.price);
+      }
+    } catch (e) {
+      console.error("[GoldInvestmentCalculator] fetch error:", e);
+    } finally {
+      setPriceLoading(false);
+    }
+  }, [useRealTimePrice]);
+
+  // Load real-time price on mount and when useRealTimePrice changes
+  useEffect(() => {
+    void fetchRealTimePrice();
+    // Refresh every 10 minutes
+    const timer = setInterval(fetchRealTimePrice, 600000);
+    return () => clearInterval(timer);
+  }, [fetchRealTimePrice]);
 
   const result: CalculatorResult & { ouncesBought: number } = useMemo(() => {
     const currentValue = amount;
@@ -75,9 +118,19 @@ export default function GoldInvestmentCalculator() {
             <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 space-y-5 md:space-y-6 hover:border-slate-300 transition-all shadow-sm">
               {/* Investment Amount */}
               <div className="space-y-2.5">
-                <label className="block text-xs md:text-sm font-semibold text-slate-900">
-                  {t('calculator.investmentAmount')}
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs md:text-sm font-semibold text-slate-900">
+                    {t('calculator.investmentAmount')}
+                  </label>
+                  <button
+                    onClick={() => fetchRealTimePrice()}
+                    disabled={priceLoading}
+                    title="Update gold price from API"
+                    className="text-xs md:text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-all disabled:opacity-50"
+                  >
+                    {priceLoading ? '⟳ Updating...' : '⟳ Update Price'}
+                  </button>
+                </div>
                 <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 md:px-4 py-2 border border-slate-200 hover:border-blue-300 transition-all">
                   <span className="text-slate-600 font-bold text-sm md:text-base">€</span>
                   <input
@@ -106,9 +159,17 @@ export default function GoldInvestmentCalculator() {
 
               {/* Current Price */}
               <div className="space-y-2.5">
-                <label className="block text-xs md:text-sm font-semibold text-slate-900">
-                  {t('calculator.currentPrice')}
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs md:text-sm font-semibold text-slate-900">
+                    {t('calculator.currentPrice')}
+                  </label>
+                  {useRealTimePrice && realTimePrice && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 border border-green-300 rounded-full text-[0.65rem] md:text-xs font-semibold text-green-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                      Real-time
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 md:px-4 py-2 border border-slate-200 hover:border-blue-300 transition-all">
                   <span className="text-slate-600 font-bold text-sm md:text-base">€</span>
                   <input
@@ -116,10 +177,45 @@ export default function GoldInvestmentCalculator() {
                     min="100"
                     step="10"
                     value={unitPrice}
-                    onChange={(e) => setUnitPrice(Number(e.target.value) || 100)}
-                    className="flex-1 bg-transparent text-slate-900 font-semibold text-sm md:text-base outline-none placeholder-slate-400"
+                    onChange={(e) => {
+                      setUnitPrice(Number(e.target.value) || 100);
+                      setUseRealTimePrice(false); // Disable real-time when manually edited
+                    }}
+                    disabled={useRealTimePrice && priceLoading}
+                    className={`flex-1 bg-transparent text-slate-900 font-semibold text-sm md:text-base outline-none placeholder-slate-400 ${
+                      useRealTimePrice && priceLoading ? 'opacity-60 cursor-not-allowed' : ''
+                    }`}
                   />
                 </div>
+
+                {/* Real-time Toggle */}
+                <div className="flex items-center gap-2.5 pt-2 border-t border-slate-200">
+                  <button
+                    onClick={() => setUseRealTimePrice(!useRealTimePrice)}
+                    className={`relative inline-flex items-center h-5 w-9 rounded-full transition-colors ${
+                      useRealTimePrice
+                        ? 'bg-green-500 hover:bg-green-600'
+                        : 'bg-slate-300 hover:bg-slate-400'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${
+                        useRealTimePrice ? 'translate-x-4' : 'translate-x-0.5'
+                      }`}
+                    />
+                  </button>
+                  <span className="text-xs text-slate-600">
+                    {useRealTimePrice ? '📡 Auto-sync with API' : '📝 Manual price'}
+                  </span>
+                  {priceLoading && useRealTimePrice && (
+                    <span className="text-[0.65rem] text-slate-500 ml-auto">Loading...</span>
+                  )}
+                </div>
+                {realTimePrice && !useRealTimePrice && (
+                  <p className="text-xs text-slate-500 pt-1.5">
+                    Current market price: <span className="font-semibold text-slate-700">€{realTimePrice.toFixed(2)}</span>
+                  </p>
+                )}
               </div>
 
               {/* Projected Price */}
