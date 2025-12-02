@@ -96,13 +96,24 @@ export default function GoldPriceWidget() {
         return arr;
     }, [gold]);
 
-    function Sparkline({ points }: { points: number[] }) {
+    function Sparkline({
+        points,
+        minLabel,
+        maxLabel,
+    }: {
+        points: number[];
+        minLabel: string;
+        maxLabel: string;
+    }) {
         if (!points?.length) return null;
-        const w = 300, h = 80;
+
+        const w = 320;
+        const h = 90;
         const min = Math.min(...points);
         const max = Math.max(...points);
         const range = max - min || 1;
-        const step = w / (points.length - 1);
+        const step = w / Math.max(1, points.length - 1);
+
         const d = points
             .map((p, i) => {
                 const x = i * step;
@@ -110,33 +121,134 @@ export default function GoldPriceWidget() {
                 return `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
             })
             .join(" ");
+
         const up = points[points.length - 1] >= points[0];
-        const gradId = `sparkline-${up ? "up" : "down"}-${Math.random().toString(36).slice(2, 9)}`;
+
+        // Last point for highlight dot
+        const lastX = (points.length - 1) * step;
+        const lastY =
+            h - ((points[points.length - 1] - min) / range) * h;
+
+        const fillId = up ? "sparkline-fill-up" : "sparkline-fill-down";
+        const shadowId = up ? "sparkline-shadow-up" : "sparkline-shadow-down";
 
         return (
-            <svg width={w} height={h} role="img" aria-label={t("priceWidget.chart")} className="w-full" style={{ maxWidth: '100%', height: 'auto' }}>
+            <svg
+                viewBox={`0 0 ${w} ${h}`}
+                preserveAspectRatio="none"
+                role="img"
+                aria-label={t("priceWidget.chart")}
+                className="w-full h-24 md:h-28 rounded-xl overflow-hidden"
+            >
                 <defs>
-                    <linearGradient id={gradId} x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor={up ? "#3b82f6" : "#f87171"} stopOpacity="0.4" />
-                        <stop offset="100%" stopColor={up ? "#3b82f6" : "#f87171"} stopOpacity="0.02" />
+                    {/* Up-trend gradient */}
+                    <linearGradient id="sparkline-fill-up" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#22c55e" stopOpacity="0.35" />
+                        <stop offset="100%" stopColor="#22c55e" stopOpacity="0.02" />
                     </linearGradient>
-                    <filter id={`shadow-${gradId}`} x="-50%" y="-50%" width="200%" height="200%">
-                        <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
+
+                    {/* Down-trend gradient */}
+                    <linearGradient id="sparkline-fill-down" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#ef4444" stopOpacity="0.35" />
+                        <stop offset="100%" stopColor="#ef4444" stopOpacity="0.02" />
+                    </linearGradient>
+
+                    {/* Soft shadow for the line */}
+                    <filter id="sparkline-shadow-up" x="-50%" y="-50%" width="200%" height="200%">
+                        <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#22c55e" floodOpacity="0.18" />
+                    </filter>
+                    <filter id="sparkline-shadow-down" x="-50%" y="-50%" width="200%" height="200%">
+                        <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#ef4444" floodOpacity="0.18" />
                     </filter>
                 </defs>
-                {/* Grid lines */}
-                <line x1="0" y1={h * 0.25} x2={w} y2={h * 0.25} stroke="#e2e8f0" strokeWidth="0.5" opacity="0.5" />
-                <line x1="0" y1={h * 0.5} x2={w} y2={h * 0.5} stroke="#e2e8f0" strokeWidth="0.5" opacity="0.5" />
-                <line x1="0" y1={h * 0.75} x2={w} y2={h * 0.75} stroke="#e2e8f0" strokeWidth="0.5" opacity="0.5" />
+
+                {/* Background grid */}
+                <rect x="0" y="0" width={w} height={h} fill="url(#sparkline-bg)" fillOpacity="0" />
+                <line
+                    x1="0"
+                    y1={h * 0.25}
+                    x2={w}
+                    y2={h * 0.25}
+                    stroke="#e5e7eb"
+                    strokeWidth="0.6"
+                    opacity="0.7"
+                />
+                <line
+                    x1="0"
+                    y1={h * 0.5}
+                    x2={w}
+                    y2={h * 0.5}
+                    stroke="#e5e7eb"
+                    strokeWidth="0.6"
+                    opacity="0.7"
+                />
+                <line
+                    x1="0"
+                    y1={h * 0.75}
+                    x2={w}
+                    y2={h * 0.75}
+                    stroke="#e5e7eb"
+                    strokeWidth="0.6"
+                    opacity="0.7"
+                />
+                {/* Y-axis labels */}
+                <text
+                    x={8}
+                    y={14}
+                    fontSize="10"
+                    fill="#64748b"
+                    textAnchor="start"
+                >
+                    {maxLabel}
+                </text>
+                <text
+                    x={8}
+                    y={h - 6}
+                    fontSize="10"
+                    fill="#94a3b8"
+                    textAnchor="start"
+                >
+                    {minLabel}
+                </text>
+
                 {/* Area fill */}
-                <path d={`${d} L ${w} ${h} L 0 ${h} Z`} fill={`url(#${gradId})`} opacity="1" />
-                {/* Line stroke with glow */}
-                <path d={d} fill="none" stroke={up ? "#2563eb" : "#dc2626"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" filter={`url(#shadow-${gradId})`} opacity="0.9" />
-                {/* Smooth animation effect */}
-                <path d={d} fill="none" stroke={up ? "#3b82f6" : "#f87171"} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" opacity="0.3" />
+                <path
+                    d={`${d} L ${w} ${h} L 0 ${h} Z`}
+                    fill={`url(#${fillId})`}
+                />
+
+                {/* Main line */}
+                <path
+                    d={d}
+                    fill="none"
+                    stroke={up ? "#16a34a" : "#dc2626"}
+                    strokeWidth={2.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    filter={`url(#${shadowId})`}
+                />
+
+                {/* End point highlight */}
+                <circle
+                    cx={lastX}
+                    cy={lastY}
+                    r={3.2}
+                    fill="#ffffff"
+                    stroke={up ? "#16a34a" : "#dc2626"}
+                    strokeWidth={1.4}
+                />
             </svg>
         );
     }
+    const historyDisplay: number[] = useMemo(() => {
+        if (!history.length) return [];
+        return history.map((v) => {
+            const perUnitEUR = unit === "ounce" ? v : v / OUNCE_TO_GRAM;
+            const val =
+                currency === "VND" && fxRate ? perUnitEUR * fxRate : perUnitEUR;
+            return val;
+        });
+    }, [history, unit, currency, fxRate]);
 
     function formatChange(change?: number | null, pct?: number | null) {
         const raw = Number(change ?? 0); // EUR/oz
@@ -184,11 +296,25 @@ export default function GoldPriceWidget() {
     }
 
     const perOunceEUR = gold.price || 0;
-    const perUnitEUR = unit === "ounce" ? perOunceEUR : perOunceEUR / OUNCE_TO_GRAM;
-    const shown = currency === "EUR" ? perUnitEUR : (fxRate ? perUnitEUR * fxRate : perUnitEUR);
+    const perUnitEUR =
+        unit === "ounce" ? perOunceEUR : perOunceEUR / OUNCE_TO_GRAM;
+    const shown =
+        currency === "EUR"
+            ? perUnitEUR
+            : fxRate
+            ? perUnitEUR * fxRate
+            : perUnitEUR;
     const isUp = (gold.change ?? 0) >= 0;
-    const high24h = history.length ? Math.max(...history) : perOunceEUR;
-    const low24h  = history.length ? Math.min(...history) : perOunceEUR;
+
+    // 24h high/low in currently selected unit & currency
+    const high24hDisplay =
+        historyDisplay.length > 0
+            ? Math.max(...historyDisplay)
+            : shown;
+    const low24hDisplay =
+        historyDisplay.length > 0
+            ? Math.min(...historyDisplay)
+            : shown;
 
     return (
         <div className="w-full space-y-5" aria-labelledby="gold-widget-title">
@@ -273,7 +399,7 @@ export default function GoldPriceWidget() {
                                     {t("priceWidget.high24h")}
                                 </div>
                                 <div className="text-base md:text-lg font-semibold text-amber-900 break-words">
-                                    {formatMoney(unit === "ounce" ? high24h : high24h / OUNCE_TO_GRAM, currency)}
+                                    {formatMoney(high24hDisplay, currency)}
                                 </div>
                             </div>
                             <div className="bg-gradient-to-br from-yellow-100/60 to-amber-50 rounded-xl p-3 border border-yellow-200/50">
@@ -281,7 +407,7 @@ export default function GoldPriceWidget() {
                                     {t("priceWidget.low24h")}
                                 </div>
                                 <div className="text-base md:text-lg font-semibold text-amber-900 break-words">
-                                    {formatMoney(unit === "ounce" ? low24h : low24h / OUNCE_TO_GRAM, currency)}
+                                    {formatMoney(low24hDisplay, currency)}
                                 </div>
                             </div>
                         </div>
@@ -306,7 +432,11 @@ export default function GoldPriceWidget() {
                                 <span className="bg-gradient-to-r from-amber-700 to-yellow-600 bg-clip-text text-transparent">{t("priceWidget.chart")} • {t("priceWidget.last24h")}</span>
                             </h4>
                             <div className="flex justify-center p-6 bg-gradient-to-b from-blue-50/40 via-white to-amber-50/20 rounded-xl hover:from-blue-50/60 transition-all border border-slate-100">
-                                <Sparkline points={history} />
+                                <Sparkline
+                                    points={historyDisplay}
+                                    maxLabel={formatMoney(high24hDisplay, currency)}
+                                    minLabel={formatMoney(low24hDisplay, currency)}
+                                />
                             </div>
                         </div>
 
