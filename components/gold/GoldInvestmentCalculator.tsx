@@ -18,6 +18,7 @@ export default function GoldInvestmentCalculator() {
   const [unitPrice, setUnitPrice] = useState<number>(1890);
   const [futurePrice, setFuturePrice] = useState<number>(2100);
   const [years, setYears] = useState<number>(5);
+  const [startYear, setStartYear] = useState<number>(new Date().getFullYear()); // Năm hiện tại
 
   const result: CalculatorResult & { ouncesBought: number } = useMemo(() => {
     const currentValue = amount;
@@ -50,10 +51,11 @@ export default function GoldInvestmentCalculator() {
       const progress = years > 0 ? i / years : 0;
       const price = unitPrice + (futurePrice - unitPrice) * progress;
       const value = (amount / unitPrice) * price;
-      points.push({ year: i, price, value });
+      const actualYear = startYear + i; // Năm cụ thể
+      points.push({ year: i, actualYear, price, value });
     }
     return points;
-  }, [amount, unitPrice, futurePrice, years]);
+  }, [amount, unitPrice, futurePrice, years, startYear]);
 
   // Max values for scaling charts
   const maxValue = Math.max(...chartData.map(d => d.value), result.futureValue);
@@ -166,6 +168,28 @@ export default function GoldInvestmentCalculator() {
                   <span>30 years</span>
                 </div>
               </div>
+
+              {/* Start Year */}
+              <div className="space-y-2.5 pt-4 border-t border-slate-200">
+                <label className="block text-xs md:text-sm font-semibold text-slate-900">
+                  Start Year: <span className="text-emerald-600 text-base md:text-lg">{startYear}</span>
+                </label>
+                <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 md:px-4 py-2 border border-slate-200 hover:border-emerald-300 transition-all">
+                  <input
+                    type="number"
+                    min="2000"
+                    max="2100"
+                    step="1"
+                    value={startYear}
+                    onChange={(e) => setStartYear(Number(e.target.value) || new Date().getFullYear())}
+                    className="flex-1 bg-transparent text-slate-900 font-semibold text-sm md:text-base outline-none placeholder-slate-400"
+                  />
+                </div>
+                <div className="flex justify-between text-[0.7rem] md:text-xs text-slate-600">
+                  <span>2000</span>
+                  <span>2100</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -262,7 +286,7 @@ export default function GoldInvestmentCalculator() {
                             textAnchor="middle"
                             fontWeight="500"
                           >
-                            Y{data.year}
+                            {data.actualYear}
                           </text>
                         </g>
                       );
@@ -438,7 +462,7 @@ export default function GoldInvestmentCalculator() {
                             textAnchor="middle"
                             fontWeight="500"
                           >
-                            Y{data.year}
+                            {data.actualYear}
                           </text>
                         </g>
                       );
