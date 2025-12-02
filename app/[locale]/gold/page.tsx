@@ -14,9 +14,16 @@ export default function GoldConsultingPage() {
       <header className="relative overflow-hidden border-b border-yellow-500/30">
         {/* soft golden glow background */}
         <div className="pointer-events-none absolute inset-0">
+          {/* center-top glow */}
           <div className="absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-yellow-400/50 blur-3xl" />
+
+          {/* right-side glows */}
           <div className="absolute bottom-[-5rem] right-[-3rem] h-72 w-72 rounded-full bg-amber-500/45 blur-3xl" />
           <div className="absolute top-1/3 right-1/4 h-64 w-64 rounded-full bg-yellow-300/40 blur-2xl" />
+
+          {/* NEW: left-side golden spots */}
+          <div className="absolute top-10 -left-20 h-72 w-72 rounded-full bg-yellow-500/35 blur-3xl" />
+          <div className="absolute bottom-10 left-8 h-52 w-52 rounded-full bg-amber-400/28 blur-3xl" />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-18 flex flex-col items-center text-center gap-5">
