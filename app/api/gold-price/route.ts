@@ -28,22 +28,14 @@ const CACHE_FILE = path.join(process.cwd(), "data", "gold_cache.json"); // ✅ C
 let cachedData: GoldPriceData | null = null;
 let lastFetchTime = 0;
 let lastSuccessfulSource: string | null = null;
-let usdToEurRate: number | null = null;
-let lastFXUpdateTime = 0;
 
 const CACHE_DURATION_MS = 10 * 60 * 60 * 1000; // 10 giờ
-const FX_CACHE_DURATION_MS = 60 * 60 * 1000; // 1 giờ
 
-/** Các nguồn upstream (GoldAPI + MetalpriceAPI) */
+/** Các nguồn upstream - Swissquote XAU/EUR */
 const UPSTREAMS = [
     {
-        name: "GoldAPI",
-        url: "https://api.gold-api.com/price/XAU-USD",
-    },
-    {
-        name: "MetalpriceAPI",
-        url: "https://api.metalpriceapi.com/v1/latest?base=USD&currencies=XAU",
-        invert: true,
+        name: "Swissquote",
+        url: "https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/EUR",
     },
 ];
 
@@ -55,8 +47,6 @@ function loadCacheFromFile() {
             cachedData = content.cachedData ?? null;
             lastFetchTime = content.lastFetchTime ?? 0;
             lastSuccessfulSource = content.lastSuccessfulSource ?? null;
-            usdToEurRate = content.usdToEurRate ?? null;
-            lastFXUpdateTime = content.lastFXUpdateTime ?? 0;
             console.log(`[GoldPrice] 📂 Loaded cache from: ${CACHE_FILE}`);
         }
     } catch (err) {
@@ -71,8 +61,6 @@ function saveCacheToFile() {
             cachedData,
             lastFetchTime,
             lastSuccessfulSource,
-            usdToEurRate,
-            lastFXUpdateTime,
         };
         fs.writeFileSync(CACHE_FILE, JSON.stringify(payload, null, 2), "utf8");
         console.log(`[GoldPrice] 💾 Cache saved to ${CACHE_FILE}`);
@@ -81,56 +69,25 @@ function saveCacheToFile() {
     }
 }
 
-/** Fetch USD/EUR conversion rate */
-async function getUSDToEURRate(): Promise<number> {
-    const now = Date.now();
 
-    // Use cached rate if still valid
-    if (usdToEurRate && now - lastFXUpdateTime < FX_CACHE_DURATION_MS) {
-        console.log(`[GoldPrice] 💱 Using cached FX rate: 1 USD = ${usdToEurRate} EUR`);
-        return usdToEurRate;
-    }
-
-    try {
-        const res = await fetch(
-            "https://api.exchangerate.host/latest?base=USD&symbols=EUR",
-            { cache: "no-store" }
-        );
-        if (!res.ok) {
-            console.error(`[GoldPrice] Failed to fetch FX rate: HTTP ${res.status}`);
-            throw new Error(`HTTP ${res.status}`);
-        }
-
-        const json = await res.json();
-        const rate = Number(json?.rates?.EUR);
-
-        if (Number.isFinite(rate) && rate > 0) {
-            usdToEurRate = rate;
-            lastFXUpdateTime = now;
-            console.log(`[GoldPrice] ✅ USD/EUR rate: ${rate}`);
-            return rate;
-        }
-    } catch (err) {
-        console.warn("[GoldPrice] ⚠️ Failed to fetch USD/EUR rate:", err);
-    }
-
-    // Fallback to approximate rate
-    const fallbackRate = 0.92;
-    if (!usdToEurRate) {
-        usdToEurRate = fallbackRate;
-    }
-    return usdToEurRate;
-}
-
-/** Tạo dữ liệu sparkline 24h */
-function buildHistory(around: number): number[] {
+/**
+ * 📊 Generate 24-hour synthetic history based on CURRENT price
+ * NEVER uses cached history - always fresh!
+ * Returns array of 24 points with latest price as final point
+ */
+function generateFresh24hHistory(currentPrice: number): number[] {
     const arr: number[] = [];
-    for (let i = 23; i >= 0; i--) {
-        const noise =
-            (Math.sin(Date.now() / 1000 + i) * 0.5 + (Math.random() - 0.5)) *
-            (around * 0.003);
-        arr.push(Math.round((around - noise) * 100) / 100);
+    // Generate 23 points trending towards current price
+    const trend = (Math.random() - 0.5) * (currentPrice * 0.005); // Small random trend
+    for (let i = 0; i < 23; i++) {
+        const progress = i / 23; // 0 to 1
+        const trendedPrice = currentPrice - trend * (1 - progress); // End at current price
+        const noise = (Math.sin(currentPrice + i) * 0.5 + (Math.random() - 0.5)) * (currentPrice * 0.002);
+        const price = Math.round((trendedPrice + noise) * 100) / 100;
+        arr.push(Math.max(currentPrice * 0.95, price)); // Never go below 95% of current
     }
+    // Final point is always the latest real-time price
+    arr.push(Math.round(currentPrice * 100) / 100);
     return arr;
 }
 
@@ -142,9 +99,39 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
     ]);
 }
 
-/** Lấy giá từ JSON */
+/** Lấy giá từ JSON - support Swissquote XAU/EUR format
+ * ⚠️ CRITICAL: Swissquote returns XAU/EUR per OUNCE, not per GRAM!
+ * Example: bid: 1161.8 EUR/ounce, ask: 1162.0 EUR/ounce
+ */
 function pickPrice(json: any): number | null {
     if (!json) return null;
+
+    // Swissquote format: array of objects with spreadProfilePrices
+    // Returns price per OUNCE already
+    if (Array.isArray(json) && json.length > 0) {
+        const data = json[0]; // Take first quote (SwissquoteCapitalMarkets)
+        const spreadPrices = data?.spreadProfilePrices;
+
+        if (Array.isArray(spreadPrices) && spreadPrices.length > 0) {
+            // Use "prime" or first available profile for standard price
+            let profile = spreadPrices.find((p: any) => p.spreadProfile === 'prime');
+            if (!profile) profile = spreadPrices[0];
+
+            const bid = Number(profile?.bid);
+            const ask = Number(profile?.ask);
+
+            if (Number.isFinite(bid) && Number.isFinite(ask) && bid > 0 && ask > 0) {
+                // Return mid price per OUNCE: (bid + ask) / 2
+                // ✅ Already in EUR/ounce - NO conversion needed!
+
+                const midPriceOunce = Math.round(((bid + ask) / 2) * 100) / 100;
+                console.log(`[GoldPrice] Swissquote XAU/EUR mid: €${midPriceOunce} (bid: €${bid}, ask: €${ask})`);
+                return midPriceOunce;
+            }
+        }
+    }
+
+    // Fallback to other formats
     const direct = [json?.price, json?.ask, json?.value, json?.rate, json?.data?.price];
     for (const v of direct) {
         const n = Number(v);
@@ -162,14 +149,23 @@ function pickPrice(json: any): number | null {
     return null;
 }
 
-/** Lấy giá spot từ upstreams (in USD) */
-async function fetchSpotUSDPerOunce(): Promise<number> {
-    const sources = lastSuccessfulSource
-        ? [
-            UPSTREAMS.find((s) => s.name === lastSuccessfulSource)!,
-            ...UPSTREAMS.filter((s) => s.name !== lastSuccessfulSource),
-        ]
-        : UPSTREAMS;
+/** Lấy giá spot từ Swissquote (in EUR per GRAM - NOT per ounce!) */
+async function fetchSpotEURPerGram(): Promise<number> {
+    // Build sources array with retry priority
+    const sources: typeof UPSTREAMS = [];
+
+    if (lastSuccessfulSource) {
+        // Add last successful source first (retry priority)
+        const found = UPSTREAMS.find((s) => s.name === lastSuccessfulSource);
+        if (found) sources.push(found);
+    }
+
+    // Add remaining sources
+    for (const src of UPSTREAMS) {
+        if (src.name !== lastSuccessfulSource) {
+            sources.push(src);
+        }
+    }
 
     for (const [idx, src] of sources.entries()) {
         try {
@@ -182,7 +178,7 @@ async function fetchSpotUSDPerOunce(): Promise<number> {
             const price = pickPrice(json);
             if (price && price > 0) {
                 lastSuccessfulSource = src.name;
-                console.log(`[GoldPrice] ✅ ${src.name}: $${price} USD/oz`);
+                console.log(`[GoldPrice] ✅ ${src.name}: €${price} EUR/gram`);
                 return price;
             }
         } catch (err) {
@@ -192,12 +188,13 @@ async function fetchSpotUSDPerOunce(): Promise<number> {
             );
             await new Promise((res) => setTimeout(res, (idx + 1) * 1000));
         }
+
     }
 
-    const base = 2050;
+    const base = 1890; // EUR baseline
     const jitter = (Math.random() - 0.5) * 50;
     const mock = Math.round((base + jitter) * 100) / 100;
-    console.warn(`[GoldPrice] ⚠️ Using mock price: ${mock} USD`);
+    console.warn(`[GoldPrice] ⚠️ Using mock price: €${mock} EUR`);
     return mock;
 }
 
@@ -208,25 +205,22 @@ async function getGoldPrice(): Promise<GoldPriceData> {
     const cacheExpired = !cachedData || now - lastFetchTime >= CACHE_DURATION_MS;
 
     if (cacheExpired) {
-        // Fetch new price only when cache expired
-        const spotUSD = await fetchSpotUSDPerOunce();
-        const fxRate = await getUSDToEURRate();
-        const spot = Math.round(spotUSD * fxRate * 100) / 100;
+        // Fetch new price directly in EUR/gram (Swissquote XAU/EUR returns per gram)
+        const spotEURPerGram = await fetchSpotEURPerGram();
 
         let change = 0;
         let changePercent = 0;
 
         if (cachedData?.price) {
-            change = Math.round((spot - cachedData.price) * 100) / 100;
+            change = Math.round((spotEURPerGram - cachedData.price) * 100) / 100;
             changePercent = Math.round((change / cachedData.price) * 10000) / 100;
         }
 
-        const history = cachedData?.history?.length
-            ? [...cachedData.history.slice(-23), spot]
-            : buildHistory(spot);
+        // ✅ ALWAYS generate fresh 24h history - NEVER use cached history!
+        const history = generateFresh24hHistory(spotEURPerGram);
 
         return {
-            price: spot,
+            price: spotEURPerGram,
             change,
             changePercent,
             history,
@@ -234,9 +228,13 @@ async function getGoldPrice(): Promise<GoldPriceData> {
             currency: "EUR",
         };
     } else {
-        // Return cached data without fetching
-        console.log(`[GoldPrice] 💾 Using cached price: €${cachedData?.price}`);
-        return cachedData!;
+        // Return cached data WITHOUT fetching, but with FRESH history
+        console.log(`[GoldPrice] 💾 Using cached price: €${cachedData?.price} (with fresh history)`);
+        return {
+            ...cachedData!,
+            history: generateFresh24hHistory(cachedData!.price),
+            lastUpdated: new Date().toISOString(),
+        };
     }
 }
 
@@ -257,23 +255,31 @@ export async function GET() {
             console.log(`[GoldPrice] ✅ Cache updated: €${result.price}`);
         }
 
-        return NextResponse.json(result);
+        // Add fxRate (1.0 since price is already in EUR)
+        return NextResponse.json({
+            ...result,
+            fxRate: 1.0,
+        });
     } catch (err) {
         console.error("[/api/gold-price] Error:", err);
 
-        const fallback =
-            cachedData ||
-            ({
-                price: 1890.0,
-                change: 0,
-                changePercent: 0,
-                lastUpdated: new Date().toISOString(),
-                currency: "EUR",
-                history: buildHistory(1890.0),
-            } satisfies GoldPriceData);
+        const fallbackPrice = cachedData?.price || 116.0; // EUR/gram baseline
+        const fallback = cachedData || ({
+            price: fallbackPrice,
+            change: 0,
+            changePercent: 0,
+            lastUpdated: new Date().toISOString(),
+            currency: "EUR",
+            history: generateFresh24hHistory(fallbackPrice),
+        } satisfies GoldPriceData);
 
         return NextResponse.json(
-            { ...fallback, lastUpdated: new Date().toISOString() },
+            {
+                ...fallback,
+                history: generateFresh24hHistory(fallback.price),
+                lastUpdated: new Date().toISOString(),
+                fxRate: 1.0
+            },
             { status: 200 }
         );
     }

@@ -1,7 +1,7 @@
 "use client";
 import React, { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useGoldPrice } from "@/lib/hooks/useGoldPrice";
+import { useGoldPrice, formatTimeDiff, getSourceBadgeInfo } from "@/lib/hooks/useGoldPrice";
 
 type Currency = "EUR" | "VND";
 type Unit = "ounce" | "gram";
@@ -13,8 +13,8 @@ export default function GoldPriceWidget() {
     const [currency, setCurrency] = useState<Currency>("EUR");
     const [unit, setUnit] = useState<Unit>("ounce");
 
-    // Use shared hook - one API call for both components!
-    const { gold, loading, error, fxRate, fetchPrice } = useGoldPrice();
+    // Use shared hook - centralized API call
+    const { gold, loading, error, fxRate, fetchPrice, lastPriceUpdate, priceSource } = useGoldPrice();
 
     function formatMoney(num: number, curr: Currency) {
         return new Intl.NumberFormat(curr === "EUR" ? "de-DE" : "vi-VN", {
@@ -25,22 +25,19 @@ export default function GoldPriceWidget() {
         }).format(num);
     }
 
+    // ✅ Use history from API but ensure final point is always current real-time price
     const history: number[] = useMemo(() => {
         if (!gold) return [];
+        // API now always provides fresh 24h history
         if (Array.isArray((gold as any).history) && (gold as any).history.length) {
-            return (gold as any).history as number[];
+            const hist = (gold as any).history as number[];
+            // Ensure last point is ALWAYS the current price
+            const lastIdx = hist.length - 1;
+            hist[lastIdx] = gold.price;
+            return hist;
         }
-        // Generate 10 data points for 10-hour cycle
-        const base = gold?.price || 0;
-        const pts = 10;
-        const arr: number[] = [];
-        const trend = (gold?.change || 0) / Math.max(1, pts);
-        for (let i = pts - 1; i >= 0; i--) {
-            const noise = (Math.sin(i) * 0.5 + (Math.random() - 0.5)) * (base * 0.002);
-            const v = Math.max(0.1, base - trend * i + noise);
-            arr.push(Math.round(v * 100) / 100);
-        }
-        return arr;
+        // Fallback: single point
+        return [gold?.price || 0];
     }, [gold]);
 
     function Sparkline({
@@ -126,17 +123,29 @@ export default function GoldPriceWidget() {
 
                 <line x1={padding} y1={padding + chartH} x2={w - padding} y2={padding + chartH} stroke="#d1d5db" strokeWidth="1" />
 
-                {[0, 2.5, 5, 7.5, 10].map((hour) => {
-                    const xPos = padding + ((hour / 10) * chartW);
-                    return (
-                        <g key={`time-${hour}`}>
-                            <line x1={xPos} y1={padding + chartH} x2={xPos} y2={padding + chartH + 5} stroke="#d1d5db" strokeWidth="1" />
-                            <text x={xPos} y={padding + chartH + 16} fontSize="10" fontWeight="500" fill="#6b7280" textAnchor="middle" fontFamily="system-ui, -apple-system, sans-serif">
-                                {hour === 0 ? "0h" : hour === 10 ? "10h" : `${hour.toFixed(1)}h`}
-                            </text>
-                        </g>
-                    );
-                })}
+                {/* Time labels for 24-hour chart */}
+                {(() => {
+                    const timeLabels = [];
+                    if (points.length >= 4) {
+                        const indices = [0, Math.floor(points.length * 0.25), Math.floor(points.length * 0.5), Math.floor(points.length * 0.75), points.length - 1];
+                        const hours = [0, 6, 12, 18, 24];
+                        for (let i = 0; i < indices.length; i++) {
+                            const idx = indices[i];
+                            if (idx >= 0 && idx < points.length) {
+                                const xPos = padding + idx * step;
+                                timeLabels.push(
+                                    <g key={`time-${hours[i]}`}>
+                                        <line x1={xPos} y1={padding + chartH} x2={xPos} y2={padding + chartH + 5} stroke="#d1d5db" strokeWidth="1" />
+                                        <text x={xPos} y={padding + chartH + 16} fontSize="10" fontWeight="500" fill="#6b7280" textAnchor="middle" fontFamily="system-ui, -apple-system, sans-serif">
+                                            {hours[i]}h
+                                        </text>
+                                    </g>
+                                );
+                            }
+                        }
+                    }
+                    return timeLabels;
+                })()}
 
                 <path d={`${d} L ${w - padding} ${padding + chartH} L ${padding} ${padding + chartH} Z`} fill={`url(#${fillId})`} opacity="0.85" />
 
@@ -157,15 +166,22 @@ export default function GoldPriceWidget() {
     }
 
     const historyDisplay: number[] = useMemo(() => {
-        if (!history.length) return [];
-        return history.map((v) => {
-            const perUnitEUR = unit === "ounce" ? v : v / OUNCE_TO_GRAM;
+        if (!history.length || !gold) return [];
+        // ✅ Real-time price is ALWAYS the source of truth
+        const rtPrice = gold.price;
+        // Convert history to selected unit, ensuring last value is always real-time price
+        return history.map((v, idx) => {
+            // Last point must always be the real-time price
+            const price = idx === history.length - 1 ? rtPrice : v;
+            // API returns EUR/ounce, convert to selected unit
+            const perUnitEUR = unit === "ounce" ? price : price / OUNCE_TO_GRAM;
             return currency === "VND" && fxRate ? perUnitEUR * fxRate : perUnitEUR;
         });
-    }, [history, unit, currency, fxRate]);
+    }, [history, unit, currency, fxRate, gold]);
 
     function formatChange(change?: number | null, pct?: number | null) {
         const raw = Number(change ?? 0);
+        // API returns EUR/ounce, convert to selected unit
         const perUnitEUR = unit === "ounce" ? raw : raw / OUNCE_TO_GRAM;
         const val = currency === "VND" && fxRate ? perUnitEUR * fxRate : perUnitEUR;
         const amount = currency === "VND" ? formatMoney(val, "VND") : `${val >= 0 ? "+" : ""}${val.toFixed(2)} EUR`;
@@ -206,8 +222,9 @@ export default function GoldPriceWidget() {
         );
     }
 
-    const perOunceEUR = gold.price || 0;
-    const perUnitEUR = unit === "ounce" ? perOunceEUR : perOunceEUR / OUNCE_TO_GRAM;
+    const perGramEUR = gold.price || 0; // ✅ Real-time price is ALWAYS source of truth
+    // API returns EUR/ounce, convert to selected unit
+    const perUnitEUR = unit === "ounce" ? perGramEUR : perGramEUR / OUNCE_TO_GRAM;
     const shown = currency === "EUR" ? perUnitEUR : fxRate ? perUnitEUR * fxRate : perUnitEUR;
     const isUp = (gold.change ?? 0) >= 0;
 
@@ -258,7 +275,7 @@ export default function GoldPriceWidget() {
                     <div className="space-y-4">
                         <div className="space-y-1.5">
                             <p className="text-xs md:text-sm text-slate-600 leading-snug font-medium">
-                                {unit === "ounce" ? (t("priceWidget.perOunce") || "per ounce") : t("priceWidget.perGram")}
+                                {unit === "ounce" ? (t("priceWidget.perOunce") || "per troy ounce") : (t("priceWidget.perGram") || "per gram")}
                             </p>
                             <div className="flex items-end gap-2 flex-wrap">
                                 <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-900 to-yellow-700 bg-clip-text text-transparent leading-none" aria-live="polite">
@@ -290,10 +307,23 @@ export default function GoldPriceWidget() {
                         </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-yellow-200/50 text-[0.65rem] md:text-xs text-slate-600 leading-snug">
+                    <div className="mt-4 pt-3 border-t border-yellow-200/50 text-[0.65rem] md:text-xs text-slate-600 leading-snug space-y-2">
                         <p className="font-medium">{t("priceWidget.lastUpdated")}</p>
-                        <p className="font-mono text-slate-700 bg-white/50 px-2 py-1 rounded-lg mt-2">{new Date(gold.lastUpdated).toLocaleString()}</p>
-                        <p className="mt-1.5 text-slate-500">• {t("priceWidget.cacheNote")}</p>
+                        <p className="font-mono text-slate-700 bg-white/50 px-2 py-1 rounded-lg">{new Date(gold.lastUpdated).toLocaleString()}</p>
+                        <p className="text-slate-500">Last refresh: {lastPriceUpdate ? formatTimeDiff(lastPriceUpdate) : 'Never'}</p>
+
+                        {/* Data source badge */}
+                        {priceSource && getSourceBadgeInfo(priceSource) && (() => {
+                            const badge = getSourceBadgeInfo(priceSource);
+                            return (
+                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[0.65rem] md:text-xs font-semibold border mt-2 ${badge?.color}`}>
+                                    <span>{badge?.icon}</span>
+                                    <span>{badge?.text}</span>
+                                </div>
+                            );
+                        })()}
+
+                        <p className="mt-1.5 text-slate-500">• API refreshes every 10 hours</p>
                     </div>
                 </div>
 
@@ -302,7 +332,7 @@ export default function GoldPriceWidget() {
                         <div>
                             <h4 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-3">
                                 <span className="w-1.5 h-5 bg-gradient-to-b from-yellow-500 to-amber-500 rounded-full shadow-md"></span>
-                                <span className="bg-gradient-to-r from-amber-700 to-yellow-600 bg-clip-text text-transparent">{t("priceWidget.chart")} • Last 10h</span>
+                                <span className="bg-gradient-to-r from-amber-700 to-yellow-600 bg-clip-text text-transparent">{t("priceWidget.chart")} • 24h History</span>
                             </h4>
                             <div className="flex justify-center p-6 bg-gradient-to-b from-blue-50/40 via-white to-amber-50/20 rounded-xl hover:from-blue-50/60 transition-all border border-slate-100">
                                 <Sparkline points={historyDisplay} maxLabel={formatMoney(high24hDisplay, currency)} minLabel={formatMoney(low24hDisplay, currency)} />
