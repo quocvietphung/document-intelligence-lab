@@ -69,13 +69,10 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
         useCustomChat("/api/chat");
     const [isExpanded, setIsExpanded] = useState(false);
     const [displayedWelcome, setDisplayedWelcome] = useState("");
-    const [showWelcomeTyping, setShowWelcomeTyping] = useState(true);
     const [welcomeComplete, setWelcomeComplete] = useState(false);
-    const [typingMessageId, setTypingMessageId] = useState<string | null>(null);
     const [displayedContent, setDisplayedContent] = useState<Record<string, string>>({});
     const [hasUserInteracted, setHasUserInteracted] = useState(false);
     const [currentLocale, setCurrentLocale] = useState<"de" | "en" | "vi">("de");
-    const typingSpeedRef = useRef(25);
 
     const welcomeText = t("welcome");
 
@@ -102,17 +99,10 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
     useEffect(() => {
         if (messages.length === 0 && !welcomeComplete) {
-            if (displayedWelcome.length < welcomeText.length) {
-                const timer = setTimeout(() => {
-                    setDisplayedWelcome(welcomeText.slice(0, displayedWelcome.length + 1));
-                }, 30);
-                return () => clearTimeout(timer);
-            } else {
-                setShowWelcomeTyping(false);
-                setWelcomeComplete(true);
-            }
+            setDisplayedWelcome(welcomeText);
+            setWelcomeComplete(true);
         }
-    }, [messages.length, welcomeComplete, welcomeText, displayedWelcome.length]);
+    }, [messages.length, welcomeComplete, welcomeText]);
 
     useEffect(() => {
         if (welcomeComplete && messages.length === 0) {
@@ -128,23 +118,12 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
         if (lastMessage && lastMessage.role === "assistant" && !(lastMessage as any).isWelcome && !isLoading) {
             const messageId = lastMessage.id;
             const fullContent = lastMessage.content;
-            const currentDisplayed = displayedContent[messageId] || "";
-
-            if (currentDisplayed.length < fullContent.length) {
-                const timer = setTimeout(() => {
-                    setDisplayedContent(prev => ({
-                        ...prev,
-                        [messageId]: fullContent.slice(0, currentDisplayed.length + 1)
-                    }));
-                    setTypingMessageId(messageId);
-                }, typingSpeedRef.current);
-
-                return () => clearTimeout(timer);
-            } else if (currentDisplayed.length === fullContent.length) {
-                setTypingMessageId(null);
-            }
+            setDisplayedContent(prev => ({
+                ...prev,
+                [messageId]: fullContent
+            }));
         }
-    }, [messages, displayedContent, isLoading]);
+    }, [messages, isLoading]);
 
     useEffect(() => {
         if (inputRef.current) {
@@ -331,7 +310,6 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                             <div className="max-w-xs bg-white rounded-2xl rounded-tl-none px-5 py-4 shadow-md border border-slate-200/50 backdrop-blur-sm">
                                 <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap font-medium">
                                     {displayedWelcome}
-                                    {showWelcomeTyping && <span className="animate-pulse text-blue-600">▌</span>}
                                 </p>
                                 <span className="text-xs mt-3 block text-slate-400 font-medium">
                                     {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -371,9 +349,6 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                     >
                                         <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
                                             {displayText}
-                                            {typingMessageId === message.id && (
-                                                <span className={`animate-pulse ml-1 ${isUser ? "text-blue-200" : "text-blue-600"}`}>▌</span>
-                                            )}
                                         </p>
                                         {!isUser && !isWelcome && suggestions.length > 0 && (
                                             <div className="flex flex-wrap gap-2 mt-3">
