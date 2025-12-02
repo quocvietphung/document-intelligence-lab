@@ -7,13 +7,13 @@
  * Or integrate with Jest/Vitest test runner
  */
 
-import { retrieveErgoDocuments, formatRetrievedContext } from "./ergo-retriever";
-import { detectLanguage, getSystemPrompt, createSystemMessage } from "./prompt-templates";
+import { retrieveErgoDocuments, formatRetrievedContext } from "./rag/ergo-retriever";
+import { detectLanguage, getSystemPrompt, createSystemMessage } from "./rag/prompt-templates";
 import {
   calculateAdvancedRelevance,
   isErgoRelated,
   formatDocumentText,
-} from "./rag-utils";
+} from "./rag/rag-utils";
 
 // ============================================
 // Test Suite: Language Detection

@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, FormEvent, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useCustomChat } from "@/lib/useCustomChat";
-import { getWelcomeMessage, detectLanguage } from "@/lib/prompt-templates";
+import { useCustomChat } from "@/lib/hooks/useCustomChat";
+import { getWelcomeMessage, detectLanguage } from "@/lib/rag/prompt-templates";
 
 interface ChatWindowProps {
     isMinimized: boolean;

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { useGoldPrice, formatTimeDiff, getSourceBadgeInfo } from '@/lib/useGoldPrice';
+import { useGoldPrice, formatTimeDiff, getSourceBadgeInfo } from '@/lib/hooks/useGoldPrice';
 
 interface CalculatorResult {
   currentValue: number;

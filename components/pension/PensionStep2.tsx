@@ -7,7 +7,7 @@ import {
   formatCurrency,
   DEFAULT_SETTINGS,
   PensionSettings,
-} from "@/utils/pension";
+} from "@/lib/calculators/pension";
 
 export interface PensionStep2Props {
   netIncome?: number;

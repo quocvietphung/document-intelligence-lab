@@ -1,7 +1,7 @@
 "use client";
 import React, { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useGoldPrice } from "@/lib/useGoldPrice";
+import { useGoldPrice } from "@/lib/hooks/useGoldPrice";
 
 type Currency = "EUR" | "VND";
 type Unit = "ounce" | "gram";
