@@ -1,11 +1,9 @@
 {
   "cachedData": {
-    "price": 1901.12,
-    "change": 1.35,
-    "changePercent": 0.07,
+    "price": 1871.31,
+    "change": -10.88,
+    "changePercent": -0.58,
     "history": [
-      2051.45,
-      2053.78,
       2055.92,
       2057.34,
       2058.67,
@@ -27,12 +25,14 @@
       1871.51,
       1891.2,
       1899.77,
-      1901.12
+      1901.12,
+      1882.19,
+      1871.31
     ],
-    "lastUpdated": "2025-11-30T21:57:07.507Z",
+    "lastUpdated": "2025-12-02T10:42:20.594Z",
     "currency": "EUR"
   },
-  "lastFetchTime": 1764539826296,
+  "lastFetchTime": 1764672137074,
   "lastSuccessfulSource": "GoldAPI",
   "usdToEurRate": 0.92,
   "lastFXUpdateTime": 1763989103420

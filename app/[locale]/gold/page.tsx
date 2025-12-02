@@ -14,9 +14,9 @@ export default function GoldConsultingPage() {
       <header className="relative overflow-hidden border-b border-yellow-500/30">
         {/* soft golden glow background */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-yellow-400/35 blur-3xl" />
-          <div className="absolute bottom-[-5rem] right-[-3rem] h-72 w-72 rounded-full bg-amber-500/35 blur-3xl" />
-          <div className="absolute top-1/3 right-1/4 h-64 w-64 rounded-full bg-yellow-300/25 blur-2xl" />
+          <div className="absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-yellow-400/50 blur-3xl" />
+          <div className="absolute bottom-[-5rem] right-[-3rem] h-72 w-72 rounded-full bg-amber-500/45 blur-3xl" />
+          <div className="absolute top-1/3 right-1/4 h-64 w-64 rounded-full bg-yellow-300/40 blur-2xl" />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-18 flex flex-col items-center text-center gap-5">
@@ -73,9 +73,11 @@ export default function GoldConsultingPage() {
       <main className="relative py-9 md:py-11">
         {/* golden glow background */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-10 -left-32 h-96 w-96 rounded-full bg-yellow-500/20 blur-3xl" />
-          <div className="absolute top-1/2 right-[-5rem] h-80 w-80 rounded-full bg-amber-400/18 blur-3xl" />
-          <div className="absolute bottom-20 left-1/3 h-72 w-72 rounded-full bg-yellow-400/15 blur-2xl" />
+          <div className="absolute top-10 -left-32 h-96 w-96 rounded-full bg-yellow-500/35 blur-3xl" />
+          <div className="absolute top-1/3 -left-20 h-80 w-80 rounded-full bg-amber-400/32 blur-3xl" />
+          <div className="absolute bottom-32 left-[10%] h-72 w-72 rounded-full bg-yellow-400/28 blur-2xl" />
+          <div className="absolute top-1/2 right-[-5rem] h-80 w-80 rounded-full bg-amber-400/30 blur-3xl" />
+          <div className="absolute bottom-20 left-1/3 h-72 w-72 rounded-full bg-yellow-400/28 blur-2xl" />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-9 md:space-y-11">
           {/* Widgets Layout - vertical */}
@@ -198,7 +200,7 @@ export default function GoldConsultingPage() {
 
           {/* CTA Section */}
           <section className="mt-2 rounded-2xl border border-yellow-500/40 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-7 md:p-9 shadow-2xl shadow-black/60 relative overflow-hidden">
-            <div className="pointer-events-none absolute inset-x-10 -top-20 h-32 rounded-full bg-yellow-400/12 blur-3xl" />
+            <div className="pointer-events-none absolute inset-x-10 -top-20 h-32 rounded-full bg-yellow-400/25 blur-3xl" />
             <div className="relative z-10 text-center max-w-2xl mx-auto space-y-3.5">
               <h2 className="text-2xl md:text-3xl font-semibold text-slate-50">
                 {t('cta.title')}
