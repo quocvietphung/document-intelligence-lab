@@ -253,7 +253,7 @@ export default function GoldInvestmentCalculator() {
                 <input
                   type="range"
                   min="1"
-                  max="30"
+                  max="5"
                   step="1"
                   value={years}
                   onChange={(e) => setYears(Number(e.target.value))}
@@ -261,7 +261,7 @@ export default function GoldInvestmentCalculator() {
                 />
                 <div className="flex justify-between text-[0.7rem] md:text-xs text-slate-600">
                   <span>1</span>
-                  <span>30 years</span>
+                  <span>5 years</span>
                 </div>
               </div>
 
