@@ -83,9 +83,9 @@ export default function GoldPriceWidget() {
         if (Array.isArray((gold as any).history) && (gold as any).history.length) {
             return (gold as any).history as number[];
         }
-        // tạo nhanh nếu chưa có
+        // tạo 10 điểm dữ liệu (mỗi điểm = ~2.4 giờ trong chu kỳ 10 giờ)
         const base = gold?.price || 0;
-        const pts = 24;
+        const pts = 10;
         const arr: number[] = [];
         const trend = (gold?.change || 0) / Math.max(1, pts);
         for (let i = pts - 1; i >= 0; i--) {
@@ -108,10 +108,10 @@ export default function GoldPriceWidget() {
         if (!points?.length) return null;
 
         const w = 380;
-        const h = 120;
+        const h = 145;
         const padding = 20;
         const chartW = w - padding * 2;
-        const chartH = h - padding * 2;
+        const chartH = h - padding * 3; // increased padding for time labels
 
         const min = Math.min(...points);
         const max = Math.max(...points);
@@ -203,6 +203,36 @@ export default function GoldPriceWidget() {
 
                 {/* X-axis line */}
                 <line x1={padding} y1={padding + chartH} x2={w - padding} y2={padding + chartH} stroke="#d1d5db" strokeWidth="1" />
+
+                {/* X-axis time labels - 10 hour cycle */}
+                {[0, 2.5, 5, 7.5, 10].map((hour) => {
+                    const xPos = padding + ((hour / 10) * chartW);
+                    return (
+                        <g key={`time-${hour}`}>
+                            {/* Tick mark */}
+                            <line
+                                x1={xPos}
+                                y1={padding + chartH}
+                                x2={xPos}
+                                y2={padding + chartH + 5}
+                                stroke="#d1d5db"
+                                strokeWidth="1"
+                            />
+                            {/* Time label */}
+                            <text
+                                x={xPos}
+                                y={padding + chartH + 16}
+                                fontSize="10"
+                                fontWeight="500"
+                                fill="#6b7280"
+                                textAnchor="middle"
+                                fontFamily="system-ui, -apple-system, sans-serif"
+                            >
+                                {hour === 0 ? "0h" : hour === 10 ? "10h" : `${hour.toFixed(1)}h`}
+                            </text>
+                        </g>
+                    );
+                })}
 
                 {/* Area fill with gradient */}
                 <path
@@ -459,7 +489,7 @@ export default function GoldPriceWidget() {
                         <div>
                             <h4 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-3">
                                 <span className="w-1.5 h-5 bg-gradient-to-b from-yellow-500 to-amber-500 rounded-full shadow-md"></span>
-                                <span className="bg-gradient-to-r from-amber-700 to-yellow-600 bg-clip-text text-transparent">{t("priceWidget.chart")} • {t("priceWidget.last24h")}</span>
+                                <span className="bg-gradient-to-r from-amber-700 to-yellow-600 bg-clip-text text-transparent">{t("priceWidget.chart")} • Last 10h</span>
                             </h4>
                             <div className="flex justify-center p-6 bg-gradient-to-b from-blue-50/40 via-white to-amber-50/20 rounded-xl hover:from-blue-50/60 transition-all border border-slate-100">
                                 <Sparkline
