@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { useGoldPrice, formatTimeDiff, getSourceBadgeInfo } from '@/lib/useGoldPrice';
 
 interface CalculatorResult {
   currentValue: number;
@@ -9,14 +10,6 @@ interface CalculatorResult {
   futureValue: number;
   gain: number;
   gainPercent: number;
-}
-
-interface GoldPriceData {
-  price: number;
-  change: number;
-  changePercent: number;
-  lastUpdated: string;
-  currency: "EUR";
 }
 
 export default function GoldInvestmentCalculator() {
@@ -28,40 +21,17 @@ export default function GoldInvestmentCalculator() {
   const [years, setYears] = useState<number>(5);
   const [startYear, setStartYear] = useState<number>(new Date().getFullYear());
 
-  // Real-time price API integration
+  // Real-time price from shared hook!
   const [useRealTimePrice, setUseRealTimePrice] = useState<boolean>(true);
-  const [realTimePrice, setRealTimePrice] = useState<number | null>(null);
-  const [priceLoading, setPriceLoading] = useState(false);
+  const { realTimePrice, lastPriceUpdate, priceSource, fetchPrice } = useGoldPrice();
+  const [priceLoading] = useState(false);
 
-  // Fetch real-time gold price from API
-  const fetchRealTimePrice = useCallback(async () => {
-    try {
-      setPriceLoading(true);
-      const res = await fetch("/api/gold-price", { cache: "no-store" });
-      if (!res.ok) {
-        console.error("Failed to fetch gold price");
-        return;
-      }
-      const data: GoldPriceData = await res.json();
-      setRealTimePrice(data.price);
-      // Auto-update unitPrice if useRealTimePrice is enabled
-      if (useRealTimePrice) {
-        setUnitPrice(data.price);
-      }
-    } catch (e) {
-      console.error("[GoldInvestmentCalculator] fetch error:", e);
-    } finally {
-      setPriceLoading(false);
-    }
-  }, [useRealTimePrice]);
-
-  // Load real-time price on mount and when useRealTimePrice changes
+  // Auto-update unitPrice when realTimePrice changes and useRealTimePrice is ON
   useEffect(() => {
-    void fetchRealTimePrice();
-    // Refresh every 10 minutes
-    const timer = setInterval(fetchRealTimePrice, 600000);
-    return () => clearInterval(timer);
-  }, [fetchRealTimePrice]);
+    if (useRealTimePrice && realTimePrice) {
+      setUnitPrice(realTimePrice);
+    }
+  }, [realTimePrice, useRealTimePrice]);
 
   const result: CalculatorResult & { ouncesBought: number } = useMemo(() => {
     const currentValue = amount;
@@ -86,6 +56,11 @@ export default function GoldInvestmentCalculator() {
       currency: 'EUR',
       maximumFractionDigits: 2
     }).format(v);
+
+  // Use helper from hook
+  const getLastUpdateText = () => formatTimeDiff(lastPriceUpdate);
+
+  const sourceBadge = getSourceBadgeInfo(priceSource);
 
   // Chart data for visualization
   const chartData = useMemo(() => {
@@ -123,7 +98,7 @@ export default function GoldInvestmentCalculator() {
                     {t('calculator.investmentAmount')}
                   </label>
                   <button
-                    onClick={() => fetchRealTimePrice()}
+                    onClick={() => fetchPrice()}
                     disabled={priceLoading}
                     title="Update gold price from API"
                     className="text-xs md:text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-all disabled:opacity-50"
@@ -211,6 +186,31 @@ export default function GoldInvestmentCalculator() {
                     <span className="text-[0.65rem] text-slate-500 ml-auto">Loading...</span>
                   )}
                 </div>
+
+                {/* Data Source Badge */}
+                {sourceBadge && (
+                  <div className={`mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.65rem] md:text-xs font-semibold border ${sourceBadge.color}`}>
+                    <span>{sourceBadge.icon}</span>
+                    <span>{sourceBadge.text}</span>
+                  </div>
+                )}
+
+                {/* Last Update Info */}
+                <div className="pt-2.5 text-[0.65rem] md:text-xs text-slate-500 space-y-1">
+                  {lastPriceUpdate && (
+                    <>
+                      <p>📅 Last updated: <span className="font-semibold text-slate-600">{getLastUpdateText()}</span></p>
+                      <p className="text-slate-400">
+                        {priceSource === 'cache'
+                          ? '💾 Using cached data from gold_cache.json'
+                          : priceSource === 'api'
+                          ? '🔄 Fresh data from Gold API'
+                          : '⏱️ API refreshes every 10 hours'}
+                      </p>
+                    </>
+                  )}
+                </div>
+
                 {realTimePrice && !useRealTimePrice && (
                   <p className="text-xs text-slate-500 pt-1.5">
                     Current market price: <span className="font-semibold text-slate-700">€{realTimePrice.toFixed(2)}</span>
