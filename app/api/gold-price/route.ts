@@ -69,19 +69,37 @@ function generateFresh24hHistory(currentPrice: number): number[] {
     return arr;
 }
 
-/** Fetch current price from Gold-API.com (EUR per ounce) */
+/** Fetch current price from Swissquote (EUR per ounce) */
 async function fetchGoldPriceEURPerOunce(): Promise<number> {
-    const url = "https://api.gold-api.com/price/XAU";
+    const url =
+        "https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/EUR";
 
     const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error("Gold API failed");
+    if (!res.ok) throw new Error("Swissquote API failed");
 
     const json = await res.json();
+    const first = json[0];
 
-    if (!json.price) throw new Error("Gold API returned invalid data");
+    if (!first || !first.spreadProfilePrices)
+        throw new Error("Invalid Swissquote structure");
 
-    console.log(`[GoldPrice] GOLD-API → €${json.price} / ounce`);
-    return Number(json.price);
+    // Prefer PRIME profile
+    let profile = first.spreadProfilePrices.find(
+        (p: any) => p.spreadProfile === "prime"
+    );
+    if (!profile) profile = first.spreadProfilePrices[0];
+
+    const bid = Number(profile.bid);
+    const ask = Number(profile.ask);
+
+    if (!bid || !ask) throw new Error("Invalid bid/ask from Swissquote");
+
+    const mid = (bid + ask) / 2;
+    const rounded = Math.round(mid * 100) / 100;
+
+    console.log(`[Swissquote] EUR/oz → bid=${bid}, ask=${ask}, mid=${rounded}`);
+
+    return rounded;
 }
 
 /** Convert ounce → gram */
@@ -89,7 +107,7 @@ function ounceToGram(ouncePrice: number): number {
     return Math.round((ouncePrice / OUNCE_TO_GRAM) * 100) / 100;
 }
 
-/** Main gold logic */
+/** Main logic */
 async function getGoldPrice(): Promise<GoldPriceData> {
     const now = Date.now();
     const cacheExpired = !cachedData || now - lastFetchTime >= CACHE_DURATION_MS;
@@ -127,7 +145,7 @@ async function getGoldPrice(): Promise<GoldPriceData> {
     };
 }
 
-/** API route */
+/** Route handler */
 export async function GET() {
     loadCacheFromFile();
     const now = Date.now();
@@ -146,7 +164,7 @@ export async function GET() {
             fxRate: 1.0,
         });
     } catch (err) {
-        console.error("[Gold API] ERROR:", err);
+        console.error("[GoldPrice API] ERROR:", err);
 
         const fallbackPrice = cachedData?.price || 60.0;
 
