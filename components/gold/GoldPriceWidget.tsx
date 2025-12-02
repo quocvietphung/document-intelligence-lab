@@ -107,136 +107,167 @@ export default function GoldPriceWidget() {
     }) {
         if (!points?.length) return null;
 
-        const w = 320;
-        const h = 90;
+        const w = 380;
+        const h = 120;
+        const padding = 20;
+        const chartW = w - padding * 2;
+        const chartH = h - padding * 2;
+
         const min = Math.min(...points);
         const max = Math.max(...points);
         const range = max - min || 1;
-        const step = w / Math.max(1, points.length - 1);
+        const step = chartW / Math.max(1, points.length - 1);
 
         const d = points
             .map((p, i) => {
-                const x = i * step;
-                const y = h - ((p - min) / range) * h;
+                const x = padding + i * step;
+                const y = padding + chartH - ((p - min) / range) * chartH;
                 return `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
             })
             .join(" ");
 
         const up = points[points.length - 1] >= points[0];
 
-        // Last point for highlight dot
-        const lastX = (points.length - 1) * step;
-        const lastY =
-            h - ((points[points.length - 1] - min) / range) * h;
+        // Last point for highlight
+        const lastX = padding + (points.length - 1) * step;
+        const lastY = padding + chartH - ((points[points.length - 1] - min) / range) * chartH;
 
-        const fillId = up ? "sparkline-fill-up" : "sparkline-fill-down";
-        const shadowId = up ? "sparkline-shadow-up" : "sparkline-shadow-down";
+        // First point
+        const firstX = padding;
+        const firstY = padding + chartH - ((points[0] - min) / range) * chartH;
+
+        const fillId = `sparkline-fill-${up ? "up" : "down"}-${Date.now()}`;
+        const shadowId = `sparkline-shadow-${up ? "up" : "down"}-${Date.now()}`;
 
         return (
             <svg
                 viewBox={`0 0 ${w} ${h}`}
-                preserveAspectRatio="none"
+                preserveAspectRatio="xMidYMid meet"
                 role="img"
                 aria-label={t("priceWidget.chart")}
-                className="w-full h-24 md:h-28 rounded-xl overflow-hidden"
+                className="w-full h-32 md:h-40"
             >
                 <defs>
-                    {/* Up-trend gradient */}
-                    <linearGradient id="sparkline-fill-up" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#22c55e" stopOpacity="0.35" />
-                        <stop offset="100%" stopColor="#22c55e" stopOpacity="0.02" />
+                    {/* Premium gradient fill */}
+                    <linearGradient id={fillId} x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor={up ? "#fbbf24" : "#fca5a5"} stopOpacity="0.28" />
+                        <stop offset="50%" stopColor={up ? "#fcd34d" : "#fecaca"} stopOpacity="0.12" />
+                        <stop offset="100%" stopColor={up ? "#fef3c7" : "#fee2e2"} stopOpacity="0.02" />
                     </linearGradient>
 
-                    {/* Down-trend gradient */}
-                    <linearGradient id="sparkline-fill-down" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#ef4444" stopOpacity="0.35" />
-                        <stop offset="100%" stopColor="#ef4444" stopOpacity="0.02" />
-                    </linearGradient>
-
-                    {/* Soft shadow for the line */}
-                    <filter id="sparkline-shadow-up" x="-50%" y="-50%" width="200%" height="200%">
-                        <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#22c55e" floodOpacity="0.18" />
+                    {/* Glow effect */}
+                    <filter id={shadowId} x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
+                        <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor={up ? "#f59e0b" : "#f87171"} floodOpacity="0.22" />
                     </filter>
-                    <filter id="sparkline-shadow-down" x="-50%" y="-50%" width="200%" height="200%">
-                        <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#ef4444" floodOpacity="0.18" />
+
+                    {/* Point glow */}
+                    <filter id={`point-glow-${Date.now()}`} x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" />
                     </filter>
                 </defs>
 
-                {/* Background grid */}
-                <rect x="0" y="0" width={w} height={h} fill="url(#sparkline-bg)" fillOpacity="0" />
-                <line
-                    x1="0"
-                    y1={h * 0.25}
-                    x2={w}
-                    y2={h * 0.25}
-                    stroke="#e5e7eb"
-                    strokeWidth="0.6"
-                    opacity="0.7"
-                />
-                <line
-                    x1="0"
-                    y1={h * 0.5}
-                    x2={w}
-                    y2={h * 0.5}
-                    stroke="#e5e7eb"
-                    strokeWidth="0.6"
-                    opacity="0.7"
-                />
-                <line
-                    x1="0"
-                    y1={h * 0.75}
-                    x2={w}
-                    y2={h * 0.75}
-                    stroke="#e5e7eb"
-                    strokeWidth="0.6"
-                    opacity="0.7"
-                />
-                {/* Y-axis labels */}
+                {/* Background subtle grid */}
+                <g opacity="0.5">
+                    <line x1={padding} y1={padding + chartH * 0.25} x2={w - padding} y2={padding + chartH * 0.25} stroke="#e5e7eb" strokeWidth="0.5" strokeDasharray="3,3" />
+                    <line x1={padding} y1={padding + chartH * 0.5} x2={w - padding} y2={padding + chartH * 0.5} stroke="#e5e7eb" strokeWidth="0.5" strokeDasharray="3,3" />
+                    <line x1={padding} y1={padding + chartH * 0.75} x2={w - padding} y2={padding + chartH * 0.75} stroke="#e5e7eb" strokeWidth="0.5" strokeDasharray="3,3" />
+                </g>
+
+                {/* Y-axis line */}
+                <line x1={padding - 1} y1={padding} x2={padding - 1} y2={padding + chartH} stroke="#d1d5db" strokeWidth="1" />
+
+                {/* Y-axis labels with better positioning */}
                 <text
-                    x={8}
-                    y={14}
-                    fontSize="10"
-                    fill="#64748b"
-                    textAnchor="start"
+                    x={padding - 8}
+                    y={padding + 4}
+                    fontSize="11"
+                    fontWeight="600"
+                    fill="#374151"
+                    textAnchor="end"
+                    fontFamily="system-ui, -apple-system, sans-serif"
                 >
                     {maxLabel}
                 </text>
                 <text
-                    x={8}
-                    y={h - 6}
-                    fontSize="10"
-                    fill="#94a3b8"
-                    textAnchor="start"
+                    x={padding - 8}
+                    y={padding + chartH + 4}
+                    fontSize="11"
+                    fontWeight="600"
+                    fill="#9ca3af"
+                    textAnchor="end"
+                    fontFamily="system-ui, -apple-system, sans-serif"
                 >
                     {minLabel}
                 </text>
 
-                {/* Area fill */}
+                {/* X-axis line */}
+                <line x1={padding} y1={padding + chartH} x2={w - padding} y2={padding + chartH} stroke="#d1d5db" strokeWidth="1" />
+
+                {/* Area fill with gradient */}
                 <path
-                    d={`${d} L ${w} ${h} L 0 ${h} Z`}
+                    d={`${d} L ${w - padding} ${padding + chartH} L ${padding} ${padding + chartH} Z`}
                     fill={`url(#${fillId})`}
+                    opacity="0.85"
                 />
 
-                {/* Main line */}
+                {/* Main line with glow */}
                 <path
                     d={d}
                     fill="none"
-                    stroke={up ? "#16a34a" : "#dc2626"}
-                    strokeWidth={2.2}
+                    stroke={up ? "#f59e0b" : "#f87171"}
+                    strokeWidth="2.8"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     filter={`url(#${shadowId})`}
+                    opacity="0.95"
                 />
 
-                {/* End point highlight */}
+                {/* Start point - subtle */}
                 <circle
-                    cx={lastX}
-                    cy={lastY}
-                    r={3.2}
-                    fill="#ffffff"
-                    stroke={up ? "#16a34a" : "#dc2626"}
-                    strokeWidth={1.4}
+                    cx={firstX}
+                    cy={firstY}
+                    r="2.5"
+                    fill={up ? "#d97706" : "#dc2626"}
+                    opacity="0.4"
                 />
+
+                {/* End point - highlighted */}
+                <g>
+                    {/* Outer glow */}
+                    <circle
+                        cx={lastX}
+                        cy={lastY}
+                        r="5.5"
+                        fill="none"
+                        stroke={up ? "#fbbf24" : "#fca5a5"}
+                        strokeWidth="1.2"
+                        opacity="0.5"
+                    />
+                    {/* Main point */}
+                    <circle
+                        cx={lastX}
+                        cy={lastY}
+                        r="3.8"
+                        fill="#ffffff"
+                        stroke={up ? "#f59e0b" : "#f87171"}
+                        strokeWidth="2"
+                        filter={`url(#point-glow-${Date.now()})`}
+                    />
+                </g>
+
+                {/* Trend indicator text */}
+                <text
+                    x={w - padding + 2}
+                    y={padding + 14}
+                    fontSize="12"
+                    fontWeight="700"
+                    fill={up ? "#d97706" : "#dc2626"}
+                    textAnchor="start"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                >
+                    {up ? "↑" : "↓"}
+                </text>
             </svg>
         );
     }
@@ -244,9 +275,7 @@ export default function GoldPriceWidget() {
         if (!history.length) return [];
         return history.map((v) => {
             const perUnitEUR = unit === "ounce" ? v : v / OUNCE_TO_GRAM;
-            const val =
-                currency === "VND" && fxRate ? perUnitEUR * fxRate : perUnitEUR;
-            return val;
+            return currency === "VND" && fxRate ? perUnitEUR * fxRate : perUnitEUR;
         });
     }, [history, unit, currency, fxRate]);
 
@@ -416,7 +445,7 @@ export default function GoldPriceWidget() {
                     {/* Last Updated */}
                     <div className="mt-4 pt-3 border-t border-yellow-200/50 text-[0.65rem] md:text-xs text-slate-600 leading-snug">
                         <p className="font-medium">{t("priceWidget.lastUpdated")}</p>
-                        <p className="font-mono text-slate-700 mt-0.5 bg-white/50 px-2 py-1 rounded-lg mt-2">
+                        <p className="font-mono text-slate-700 bg-white/50 px-2 py-1 rounded-lg mt-2">
                             {new Date(gold.lastUpdated).toLocaleString()}
                         </p>
                         <p className="mt-1.5 text-slate-500">• {t("priceWidget.cacheNote")}</p>
@@ -426,6 +455,7 @@ export default function GoldPriceWidget() {
                 {/* Chart Section */}
                 <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-8 hover:border-yellow-300 transition-all shadow-lg hover:shadow-xl">
                     <div className="space-y-6">
+                        {/* Title */}
                         <div>
                             <h4 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-3">
                                 <span className="w-1.5 h-5 bg-gradient-to-b from-yellow-500 to-amber-500 rounded-full shadow-md"></span>
@@ -437,6 +467,68 @@ export default function GoldPriceWidget() {
                                     maxLabel={formatMoney(high24hDisplay, currency)}
                                     minLabel={formatMoney(low24hDisplay, currency)}
                                 />
+                            </div>
+                        </div>
+
+                        {/* Market Statistics Grid */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {/* 24h Change */}
+                            <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-3.5 border border-slate-200">
+                                <p className="text-[0.65rem] md:text-xs text-slate-600 font-semibold uppercase tracking-wider mb-1.5">
+                                    24h Change
+                                </p>
+                                <p className={`text-sm md:text-base font-bold ${isUp ? "text-green-600" : "text-red-600"}`}>
+                                    {isUp ? "+" : ""}{(gold.changePercent ?? 0).toFixed(2)}%
+                                </p>
+                                <p className="text-[0.6rem] text-slate-500 mt-1">{isUp ? "📈 Uptrend" : "📉 Downtrend"}</p>
+                            </div>
+
+                            {/* Price Range */}
+                            <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-lg p-3.5 border border-yellow-200">
+                                <p className="text-[0.65rem] md:text-xs text-slate-600 font-semibold uppercase tracking-wider mb-1.5">
+                                    Price Range
+                                </p>
+                                <p className="text-sm md:text-base font-bold text-amber-700">
+                                    {currency === "EUR" ? "€" : "₫"}{Math.abs(high24hDisplay - low24hDisplay).toFixed(currency === "EUR" ? 2 : 0)}
+                                </p>
+                                <p className="text-[0.6rem] text-slate-500 mt-1">High - Low</p>
+                            </div>
+
+                            {/* Average Price */}
+                            <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg p-3.5 border border-blue-200">
+                                <p className="text-[0.65rem] md:text-xs text-slate-600 font-semibold uppercase tracking-wider mb-1.5">
+                                    Avg Price
+                                </p>
+                                <p className="text-sm md:text-base font-bold text-blue-700">
+                                    {formatMoney(
+                                        historyDisplay.length > 0
+                                            ? historyDisplay.reduce((a, b) => a + b, 0) / historyDisplay.length
+                                            : shown,
+                                        currency
+                                    )}
+                                </p>
+                                <p className="text-[0.6rem] text-slate-500 mt-1">24h Average</p>
+                            </div>
+
+                            {/* Volatility */}
+                            <div className="bg-gradient-to-br from-slate-50 to-purple-50 rounded-lg p-3.5 border border-purple-200">
+                                <p className="text-[0.65rem] md:text-xs text-slate-600 font-semibold uppercase tracking-wider mb-1.5">
+                                    Volatility
+                                </p>
+                                <p className="text-sm md:text-base font-bold text-purple-700">
+                                    {historyDisplay.length > 1
+                                        ? (
+                                            (Math.sqrt(
+                                                historyDisplay.reduce((sum, price) => {
+                                                    const avg = historyDisplay.reduce((a, b) => a + b, 0) / historyDisplay.length;
+                                                    return sum + Math.pow(price - avg, 2);
+                                                }, 0) / historyDisplay.length
+                                            ) / (historyDisplay.reduce((a, b) => a + b, 0) / historyDisplay.length)) * 100
+                                        ).toFixed(2)
+                                        : "N/A"
+                                    }%
+                                </p>
+                                <p className="text-[0.6rem] text-slate-500 mt-1">{historyDisplay.length > 1 ? "Price SD" : "—"}</p>
                             </div>
                         </div>
 
