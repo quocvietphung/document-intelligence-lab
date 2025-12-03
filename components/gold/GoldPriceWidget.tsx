@@ -222,9 +222,9 @@ export default function GoldPriceWidget() {
         );
     }
 
-    const perGramEUR = gold.price || 0; // ✅ Real-time price is ALWAYS source of truth
+    const perOunceEUR = gold.price || 0; // ✅ Real-time price is ALWAYS source of truth
     // API returns EUR/ounce, convert to selected unit
-    const perUnitEUR = unit === "ounce" ? perGramEUR : perGramEUR / OUNCE_TO_GRAM;
+    const perUnitEUR = unit === "ounce" ? perOunceEUR : perOunceEUR / OUNCE_TO_GRAM;
     const shown = currency === "EUR" ? perUnitEUR : fxRate ? perUnitEUR * fxRate : perUnitEUR;
     const isUp = (gold.change ?? 0) >= 0;
 
