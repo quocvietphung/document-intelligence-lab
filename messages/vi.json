@@ -32,41 +32,111 @@
       "title": "Khai báo Thuế",
       "description": "Chuẩn bị và nộp tờ khai thuế chuyên nghiệp (thuế thu nhập, thuế doanh nghiệp, thuế VAT) với tài liệu đầy đủ và các khoản khấu trừ tối ưu.",
       "details": "Dịch vụ khai báo thuế của chúng tôi bao gồm tất cả các khía cạnh của nghĩa vụ thuế hàng năm của bạn. Chúng tôi xử lý độ phức tạp và đảm bảo bạn nhận được các khoản khấu trừ tối đa.",
-      "features": ["Khai báo thuế hoàn chỉnh cho cá nhân và doanh nghiệp", "Tối ưu hóa các khoản khấu trừ và miễn trừ", "Hỗ trợ thuế thu nhập, doanh nghiệp và VAT", "Quản lý hoàn thuế và thanh toán bổ sung"],
-      "benefits": ["✓ Hoàn thuế tối đa", "✓ Tuân thủ quy định hoàn toàn", "✓ Tiết kiệm thời gian và giảm căng thẳng", "✓ Hỗ trợ tài liệu chuyên nghiệp"],
-      "deliverables": ["Khai báo thuế hoàn chỉnh", "Báo cáo chi tiết", "Tư vấn lập kế hoạch tương lai"]
+      "features": [
+        "Khai báo thuế hoàn chỉnh cho cá nhân và doanh nghiệp",
+        "Tối ưu hóa các khoản khấu trừ và miễn trừ",
+        "Hỗ trợ thuế thu nhập, doanh nghiệp và VAT",
+        "Quản lý hoàn thuế và thanh toán bổ sung"
+      ],
+      "benefits": [
+        "✓ Hoàn thuế tối đa",
+        "✓ Tuân thủ quy định hoàn toàn",
+        "✓ Tiết kiệm thời gian và giảm căng thẳng",
+        "✓ Hỗ trợ tài liệu chuyên nghiệp"
+      ],
+      "deliverables": [
+        "Khai báo thuế hoàn chỉnh",
+        "Báo cáo chi tiết",
+        "Tư vấn lập kế hoạch tương lai"
+      ]
     },
     "steueroptimierung": {
       "title": "Tối ưu Thuế",
       "description": "Tư vấn chiến lược nhằm giảm gánh nặng thuế thông qua cấu trúc pháp lý phù hợp và kế hoạch thuế thông minh.",
       "details": "Lập kế hoạch thuế chiến lược để giảm thiểu trách nhiệm thuế của bạn. Chúng tôi xác định các cơ hội pháp lý để giảm thuế.",
-      "features": ["Phân tích tình hình thuế hiện tại của bạn", "Xác định tiềm năng tiết kiệm", "Cấu trúc hóa kinh doanh chiến lược", "Tối ưu hóa đầu tư và bảo vệ tài sản"],
-      "benefits": ["✓ Tiết kiệm thuế lên đến 30%", "✓ Các chiến lược pháp lý và an toàn", "✓ Lập kế hoạch thuế dài hạn", "✓ Tài liệu minh bạch"],
-      "deliverables": ["Kế hoạch tiết kiệm thuế", "Tư vấn triển khai", "Giám sát liên tục"]
+      "features": [
+        "Phân tích tình hình thuế hiện tại của bạn",
+        "Xác định tiềm năng tiết kiệm",
+        "Cấu trúc hóa kinh doanh chiến lược",
+        "Tối ưu hóa đầu tư và bảo vệ tài sản"
+      ],
+      "benefits": [
+        "✓ Tiết kiệm thuế lên đến 30%",
+        "✓ Các chiến lược pháp lý và an toàn",
+        "✓ Lập kế hoạch thuế dài hạn",
+        "✓ Tài liệu minh bạch"
+      ],
+      "deliverables": [
+        "Kế hoạch tiết kiệm thuế",
+        "Tư vấn triển khai",
+        "Giám sát liên tục"
+      ]
     },
     "real_estate": {
       "title": "Tư vấn Bất động sản",
       "description": "Hỗ trợ mua bán, cho thuê, định giá và tối ưu hóa tài chính bất động sản tại Đức và quốc tế.",
       "details": "Tư vấn toàn diện cho các khoản đầu tư bất động sản với tối ưu hóa thuế và bảo vệ tài sản.",
-      "features": ["Tối ưu hóa thuế cho mua bán bất động sản", "Chiến lược cho thuê và tối đa hóa thu nhập", "Tối ưu hóa khấu hao", "Tạo giá trị bất động sản quốc tế"],
-      "benefits": ["✓ Lợi suất tối đa trên các khoản đầu tư bất động sản", "✓ Cấu trúc tài sản hiệu quả về mặt thuế", "✓ Bảo mật pháp lý trong các giao dịch", "✓ Lập kế hoạch tài sản dài hạn"],
-      "deliverables": ["Phân tích đầu tư", "Kế hoạch thuế", "Kiểm tra và tư vấn hợp đồng"]
+      "features": [
+        "Tối ưu hóa thuế cho mua bán bất động sản",
+        "Chiến lược cho thuê và tối đa hóa thu nhập",
+        "Tối ưu hóa khấu hao",
+        "Tạo giá trị bất động sản quốc tế"
+      ],
+      "benefits": [
+        "✓ Lợi suất tối đa trên các khoản đầu tư bất động sản",
+        "✓ Cấu trúc tài sản hiệu quả về mặt thuế",
+        "✓ Bảo mật pháp lý trong các giao dịch",
+        "✓ Lập kế hoạch tài sản dài hạn"
+      ],
+      "deliverables": [
+        "Phân tích đầu tư",
+        "Kế hoạch thuế",
+        "Kiểm tra và tư vấn hợp đồng"
+      ]
     },
     "it_consulting": {
       "title": "Chuyển đổi Số",
       "description": "Nâng cấp quy trình tài chính với giải pháp đám mây, kế toán tự động và quản lý tài liệu số an toàn.",
       "details": "Hiện đại hóa các quy trình thuế của bạn thông qua các giải pháp dựa trên đám mây và hệ thống tự động.",
-      "features": ["Di chuyển đám mây cho các hệ thống thuế", "Sổ cái tự động và hóa đơn", "Quản lý tài liệu kỹ thuật số an toàn", "Tích hợp với các hệ thống hiện có"],
-      "benefits": ["✓ Tiết kiệm thời gian và chi phí 50%", "✓ Bảo mật dữ liệu được cải thiện", "✓ Tổng quan thuế thời gian thực", "✓ Giải pháp có thể mở rộng"],
-      "deliverables": ["Triển khai hệ thống", "Đào tạo và hỗ trợ", "Bảo trì liên tục"]
+      "features": [
+        "Di chuyển đám mây cho các hệ thống thuế",
+        "Sổ cái tự động và hóa đơn",
+        "Quản lý tài liệu kỹ thuật số an toàn",
+        "Tích hợp với các hệ thống hiện có"
+      ],
+      "benefits": [
+        "✓ Tiết kiệm thời gian và chi phí 50%",
+        "✓ Bảo mật dữ liệu được cải thiện",
+        "✓ Tổng quan thuế thời gian thực",
+        "✓ Giải pháp có thể mở rộng"
+      ],
+      "deliverables": [
+        "Triển khai hệ thống",
+        "Đào tạo và hỗ trợ",
+        "Bảo trì liên tục"
+      ]
     },
     "accounting": {
       "title": "Kế toán & Báo cáo",
       "description": "Dịch vụ kế toán đầy đủ, báo cáo tài chính, bảng cân đối và báo cáo lợi nhuận dành cho mọi loại hình doanh nghiệp.",
       "details": "Giải pháp kế toán và báo cáo tài chính toàn diện cho các doanh nghiệp mọi quy mô.",
-      "features": ["Sổ cái liên tục và kế toán thuế", "Báo cáo tài chính hàng tháng và hàng năm", "Báo cáo lợi nhuận và lỗ", "Bảng cân đối kế toán và báo cáo"],
-      "benefits": ["✓ Minh bạch tài chính hoàn toàn", "✓ Tuân thủ các tiêu chuẩn kế toán", "✓ Báo cáo thuế kịp thời", "✓ Quyết định kinh doanh dựa trên dữ liệu"],
-      "deliverables": ["Báo cáo hàng tháng", "Báo cáo hàng năm", "Báo cáo thuế và phân tích"]
+      "features": [
+        "Sổ cái liên tục và kế toán thuế",
+        "Báo cáo tài chính hàng tháng và hàng năm",
+        "Báo cáo lợi nhuận và lỗ",
+        "Bảng cân đối kế toán và báo cáo"
+      ],
+      "benefits": [
+        "✓ Minh bạch tài chính hoàn toàn",
+        "✓ Tuân thủ các tiêu chuẩn kế toán",
+        "✓ Báo cáo thuế kịp thời",
+        "✓ Quyết định kinh doanh dựa trên dữ liệu"
+      ],
+      "deliverables": [
+        "Báo cáo hàng tháng",
+        "Báo cáo hàng năm",
+        "Báo cáo thuế và phân tích"
+      ]
     }
   },
   "process": {
@@ -263,34 +333,80 @@
     }
   },
   "rentenrechner": {
-    "title": "Máy Tính Hưu Trí",
-    "subtitle": "Tính toán hưu trí của bạn với công cụ tương tác của chúng tôi",
-    "step1": "Lương Hưu Mong Muốn",
-    "step2": "Khoảng Trống Hưu Trí",
-    "step3": "Kết Quả Của Bạn",
-    "back": "← Quay Lại",
-    "next": "Tiếp Theo →",
-    "rentSituation": "Tình Hình Hưu Trí Của Bạn",
-    "desiredRetirement": "Lương Hưu Mong Muốn",
-    "netIncome": "Thu Nhập Ròng",
-    "statutoryPension": "Lương Hưu Theo Luật (ròng)",
-    "yourInformation": "Thông Tin Của Bạn",
-    "yearOfBirth": "Năm Sinh",
-    "age": "Tuổi",
-    "privateSavings": "Tiết Kiệm Tư Nhân",
-    "gapAnalysis": "Khoảng Trống Hưu Trí Của Bạn",
-    "gap": "Khoảng Trống",
-    "savingRecommendation": "💡 Bạn nên tiết kiệm €",
-    "savingRecommendationEnd": "mỗi tháng để đóng khoảng trống hưu trí.",
-    "results": "Kết Quả Của Bạn",
-    "yearOfBirthLabel": "Năm Sinh",
-    "retirementAge": "Tuổi Hưu Trí",
-    "privateSavingsLabel": "Tiết Kiệm Tư Nhân",
-    "totalRetirement": "✓ Kế Hoạch Hưu Trí Của Bạn",
-    "statutoryPensionLabel": "Lương Hưu Theo Luật",
-    "privatePensionLabel": "Lương Hưu Tư Nhân",
-    "totalPension": "Tổng Lương Hưu",
-    "disclaimer": "Máy tính này là công cụ kế hoạch chỉ dùng cho mục đích thông tin. Để được tư vấn cá nhân hóa, vui lòng liên hệ với cố vấn hưu trí.",
-    "loading": "Đang tải..."
+    "step1_title": "Bước 1/2: Tình Hình Của Bạn",
+    "step2_title": "Bước 2/2: Đóng Khoảng Trống Hưu Trí",
+    "income_section": "Thu Nhập",
+    "income_subtitle": "Hàng tháng ròng",
+    "of_max": "của tối đa",
+    "pension_overview": "Tổng Quan Lương Hưu",
+    "with_retirement_age": "Với {age} Tuổi",
+    "current": "Hiện Tại",
+    "retirement_age": "Tuổi Hưu",
+    "current_age": "Tuổi Hiện Tại",
+    "step2_current": "Hiện Tại",
+    "step2_with_savings": "Với Tiết Kiệm",
+    "step2_monthly_contribution": "Tỷ Lệ Tiết Kiệm Hàng Tháng",
+    "step2_gap_closure": "Đóng Khoảng Trống",
+    "step2_additional_pension": "Lương Hưu Bổ Sung T.H.",
+    "step2_from_savings": "từ kế hoạch tiết kiệm",
+    "step2_pension_increase": "Tăng Lương Hưu",
+    "step2_monthly_more": "hàng tháng nhiều hơn",
+    "step2_years": "N Tổng",
+    "step2_annually": "Hàng Năm:",
+    "step2_total_invested": "Tổng/Hàng Tháng",
+    "step2_remaining_gap": "Khoảng Trống Còn Lại",
+    "step2_statutory_pension_label": "Lương Hưu Theo Luật",
+    "step2_private_pension_with_addition": "Lương Hưu Tư Nhân (kèm Bổ Sung)",
+    "step2_new_total_monthly": "Tổng Mới/Hàng Tháng",
+    "step2_gap_closure_label": "Đóng Khoảng Trống",
+    "step2_additional_pension_label": "Lương Hưu Bổ Sung T.H.",
+    "step2_pension_increase_label": "Tăng Lương Hưu",
+    "step2_of_gap": "% của Khoảng Trống",
+    "step2_from_savings_plan": "từ kế hoạch tiết kiệm",
+    "step2_monthly_more_label": "hàng tháng nhiều hơn",
+    "step2_info_text": "Với {amount}/tháng bạn tiết kiệm {total} cho đến khi hưu trí ({years} năm). Điều này đóng lại {percent}% khoảng trống hưu trí của bạn.",
+    "step2_back_to_step1": "Quay Lại Bước 1",
+    "step2_done": "Hoàn Thành",
+    "tab_step1": "Bước 1: Tính Toán",
+    "tab_step2": "Bước 2: Lập Kế Hoạch Hưu Trí",
+    "ihre_pension": "Lương Hưu Của Bạn",
+    "legend_statutory": "Lương Hưu Theo Luật",
+    "legend_private": "Lương Hưu Tư Nhân",
+    "legend_gap": "Khoảng Trống Hưu Trí",
+    "net": "Ròng",
+    "gross": "Brutto ~",
+    "monthly_net_income_label": "Thu Nhập Ròng Hàng Tháng",
+    "target": "Mục Tiêu",
+    "please_set_target": "Vui Lòng Đặt Mục Tiêu Hưu Trí",
+    "statutory_label": "Theo Luật",
+    "private_label": "Tư Nhân",
+    "gap_label": "Khoảng Trống",
+    "total_label": "Tổng",
+    "surplus_label": "THẶNG DƯ",
+    "shortfall_label": "KHOẢNG TRỐNG",
+    "more_than_target": "Nhiều Hơn Mục Tiêu",
+    "shortfall_amount": "Thiếu Hụt",
+    "desired_monthly_pension": "Lương Hưu Hàng Tháng Mong Muốn",
+    "settings_title": "Cài Đặt",
+    "pension_entitlement": "Quyền Hưu Trí",
+    "region": "Vùng",
+    "west": "Tây",
+    "east": "Đông",
+    "inflation": "Lạm Phát",
+    "salary_growth": "Tăng Trưởng Lương",
+    "contribution_points": "Điểm Đóng Góp",
+    "retirement_age_label": "Tuổi Hưu",
+    "birth_year_label": "Năm Sinh",
+    "private_pension_label": "Lương Hưu Tư Nhân",
+    "pension_components": "Thành Phần Lương Hưu",
+    "statutory_pension_desc": "Bảo hiểm lương hưu nhà nước dựa trên lịch sử làm việc và điểm đóng góp",
+    "private_pension_desc": "Tiền lương hưu tư nhân được tích lũy (Riester, Rürup, Bảo hiểm Nhân thọ)",
+    "pension_gap_desc": "Chênh lệch giữa lương hưu mong muốn và tổng lương hưu có sẵn",
+    "scroll_to_top": "Quay Về Đầu Trang",
+    "next_step": "Tiếp Theo Bước 2",
+    "retirement_start": "Bắt Đầu Hưu Trí",
+    "mit": "với",
+    "tab_step1": "Bước 1: Tính Toán",
+    "tab_step2": "Bước 2: Lập Kế Hoạch Hưu Trí"
   }
 }

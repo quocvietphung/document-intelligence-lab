@@ -2,12 +2,63 @@
 
 import { useEffect, useRef, FormEvent, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useCustomChat } from "@/lib/useCustomChat";
-import { getWelcomeMessage, detectLanguage } from "@/lib/prompt-templates";
+import { useCustomChat } from "@/lib/hooks/useCustomChat";
+import { getWelcomeMessage, detectLanguage } from "@/lib/rag/prompt-templates";
 
 interface ChatWindowProps {
     isMinimized: boolean;
     onToggleMinimize: () => void;
+}
+
+// Quick action suggestions by language - Finance-focused questions
+const QUICK_ACTIONS = {
+    de: [
+        "Wie kann ich meine Steuern optimieren?",
+        "Was ist der beste Weg zur Altersvorsorge?",
+        "Immobilienberatung und Finanzierung",
+        "Wie erstelle ich einen Finanzplan?",
+        "Was kostet eine Beratung?"
+    ],
+    en: [
+        "How can I optimize my taxes?",
+        "What's the best retirement planning strategy?",
+        "Real estate consulting and financing",
+        "How do I create a financial plan?",
+        "What does your consultation cost?"
+    ],
+    vi: [
+        "Làm thế nào để tối ưu hóa thuế?",
+        "Chiến lược lập kế hoạch hưu trí tốt nhất là gì?",
+        "Tư vấn bất động sản và tài chính",
+        "Cách tạo kế hoạch tài chính?",
+        "Chi phí tư vấn là bao nhiêu?"
+    ]
+};
+
+// Helper to parse assistant message into answer and suggestions
+function parseAssistantMessage(content: string): { answer: string; suggestions: string[] } | null {
+  if (!content) return null;
+  const marker = "SUGGESTIONS:";
+  const idx = content.indexOf(marker);
+  if (idx === -1) {
+    return null;
+  }
+
+  const answerRaw = content.slice(0, idx).trim();
+  const suggestionsRaw = content.slice(idx + marker.length).trim();
+
+  const answer = answerRaw.replace(/^ANSWER:\s*/i, "").trim();
+
+  const suggestions = suggestionsRaw
+    .split(/\r?\n/)
+    .map(line => line.replace(/^[-•]\s*/, "").trim())
+    .filter(line => line.length > 0);
+
+  if (!answer && suggestions.length === 0) {
+    return null;
+  }
+
+  return { answer: answer || content.trim(), suggestions };
 }
 
 export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindowProps) {
@@ -18,16 +69,28 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
         useCustomChat("/api/chat");
     const [isExpanded, setIsExpanded] = useState(false);
     const [displayedWelcome, setDisplayedWelcome] = useState("");
-    const [showWelcomeTyping, setShowWelcomeTyping] = useState(true);
     const [welcomeComplete, setWelcomeComplete] = useState(false);
-    const [typingMessageId, setTypingMessageId] = useState<string | null>(null);
     const [displayedContent, setDisplayedContent] = useState<Record<string, string>>({});
-    const typingSpeedRef = useRef(25);
+    const [hasUserInteracted, setHasUserInteracted] = useState(false);
+    const [currentLocale, setCurrentLocale] = useState<"de" | "en" | "vi">("de");
 
     const welcomeText = t("welcome");
 
+    useEffect(() => {
+        // Detect current locale from browser or default to DE
+        const locale = document.documentElement.lang || "de";
+        if (locale.startsWith("en")) setCurrentLocale("en");
+        else if (locale.startsWith("vi")) setCurrentLocale("vi");
+        else setCurrentLocale("de");
+    }, []);
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    const handleQuickAction = async (action: string) => {
+        setHasUserInteracted(true);
+        await sendMessage(action);
     };
 
     useEffect(() => {
@@ -36,17 +99,10 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
     useEffect(() => {
         if (messages.length === 0 && !welcomeComplete) {
-            if (displayedWelcome.length < welcomeText.length) {
-                const timer = setTimeout(() => {
-                    setDisplayedWelcome(welcomeText.slice(0, displayedWelcome.length + 1));
-                }, 30);
-                return () => clearTimeout(timer);
-            } else {
-                setShowWelcomeTyping(false);
-                setWelcomeComplete(true);
-            }
+            setDisplayedWelcome(welcomeText);
+            setWelcomeComplete(true);
         }
-    }, [displayedWelcome, messages.length, welcomeComplete, welcomeText]);
+    }, [messages.length, welcomeComplete, welcomeText]);
 
     useEffect(() => {
         if (welcomeComplete && messages.length === 0) {
@@ -62,23 +118,12 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
         if (lastMessage && lastMessage.role === "assistant" && !(lastMessage as any).isWelcome && !isLoading) {
             const messageId = lastMessage.id;
             const fullContent = lastMessage.content;
-            const currentDisplayed = displayedContent[messageId] || "";
-
-            if (currentDisplayed.length < fullContent.length) {
-                const timer = setTimeout(() => {
-                    setDisplayedContent(prev => ({
-                        ...prev,
-                        [messageId]: fullContent.slice(0, currentDisplayed.length + 1)
-                    }));
-                    setTypingMessageId(messageId);
-                }, typingSpeedRef.current);
-
-                return () => clearTimeout(timer);
-            } else if (currentDisplayed.length === fullContent.length) {
-                setTypingMessageId(null);
-            }
+            setDisplayedContent(prev => ({
+                ...prev,
+                [messageId]: fullContent
+            }));
         }
-    }, [messages, displayedContent, isLoading]);
+    }, [messages, isLoading]);
 
     useEffect(() => {
         if (inputRef.current) {
@@ -87,10 +132,24 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
         }
     }, [input]);
 
+    // Lock body scroll when fullscreen
+    useEffect(() => {
+        if (isExpanded && !isMinimized) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "unset";
+        }
+
+        return () => {
+            document.body.style.overflow = "unset";
+        };
+    }, [isExpanded, isMinimized]);
+
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!input.trim() || isLoading) return;
 
+        setHasUserInteracted(true);
         await sendMessage(input);
         if (inputRef.current) {
             inputRef.current.style.height = "auto";
@@ -150,10 +209,10 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
     return (
         <div
-            className={`fixed z-50 transition-all duration-500 ease-out flex flex-col ${
+            className={`fixed z-50 transition-all duration-300 ease-out flex flex-col ${
                 isExpanded
-                    ? "bottom-6 right-6 w-[95vw] h-[95vh] max-w-6xl max-h-[900px] rounded-2xl"
-                    : "bottom-6 right-6 w-full sm:w-[450px] h-[650px] sm:h-[750px] mx-4 sm:mx-0 max-w-[calc(100vw-32px)] rounded-2xl"
+                    ? "bottom-6 right-6 w-[95vw] h-[95vh] max-w-6xl max-h-[900px] rounded-2xl scale-100 opacity-100"
+                    : "bottom-6 right-6 w-full sm:w-[450px] h-[650px] sm:h-[750px] mx-4 sm:mx-0 max-w-[calc(100vw-32px)] rounded-2xl scale-100 opacity-100"
             }`}
         >
             {/* Outer glow effect */}
@@ -196,58 +255,50 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
                     {/* Header Buttons */}
                     <div className="flex items-center gap-2 relative z-10">
-                        {/* Expand Button */}
-                        <button
-                            onClick={() => setIsExpanded(!isExpanded)}
-                            className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200 flex items-center justify-center backdrop-blur-md"
-                            title={isExpanded ? t("restore_tooltip") : t("expand_tooltip")}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 transition-transform hover:scale-110"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                {isExpanded ? (
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                ) : (
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M4 8V4m0 0h4m-4 0l5 5m11-5v4m0 0h-4m4 0l-5 5M4 20v-4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5"
-                                    />
-                                )}
-                            </svg>
-                        </button>
 
-                        {/* Minimize Button */}
-                        <button
-                            onClick={onToggleMinimize}
-                            className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200 flex items-center justify-center backdrop-blur-md"
-                            title={t("minimize_tooltip")}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 transition-transform hover:scale-110"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M20 12H4"
-                                />
-                            </svg>
-                        </button>
+                      {/* Expand / Restore */}
+                      <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg text-white/80 hover:text-white hover:bg-white/20 transition-all duration-200 active:scale-95 backdrop-blur-md"
+                        title={isExpanded ? t("restore_tooltip") : t("expand_tooltip")}
+                      >
+                        {isExpanded ? (
+                          /* Restore */
+                          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="14 3 14 10 21 10" />
+                            <line x1="14" y1="10" x2="21" y2="3" />
+                            <polyline points="10 21 10 14 3 14" />
+                            <line x1="3" y1="21" x2="10" y2="14" />
+                          </svg>
+                        ) : (
+                          /* Expand */
+                          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 3 21 3 21 9" />
+                            <line x1="21" y1="3" x2="14" y2="10" />
+                            <polyline points="9 21 3 21 3 15" />
+                            <line x1="3" y1="21" x2="10" y2="14" />
+                          </svg>
+                        )}
+                      </button>
+
+                      {/* Minimize */}
+                      <button
+                        onClick={onToggleMinimize}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg text-white/80 hover:text-white hover:bg-white/20 transition-all duration-200 active:scale-95 backdrop-blur-md"
+                        title={t("minimize_tooltip")}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                          viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                      </button>
+
+
                     </div>
                 </div>
 
@@ -259,7 +310,6 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                             <div className="max-w-xs bg-white rounded-2xl rounded-tl-none px-5 py-4 shadow-md border border-slate-200/50 backdrop-blur-sm">
                                 <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap font-medium">
                                     {displayedWelcome}
-                                    {showWelcomeTyping && <span className="animate-pulse text-blue-600">▌</span>}
                                 </p>
                                 <span className="text-xs mt-3 block text-slate-400 font-medium">
                                     {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -274,9 +324,15 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                             const isUser = message.role === "user";
                             const isWelcome = (message as any).isWelcome;
 
-                            let displayContent = message.content;
-                            if (!isUser && !isWelcome && displayedContent[message.id]) {
-                                displayContent = displayedContent[message.id];
+                            let displayText = message.content;
+                            let suggestions: string[] = [];
+
+                            if (!isUser && !isWelcome) {
+                                const parsed = parseAssistantMessage(message.content);
+                                if (parsed) {
+                                    displayText = parsed.answer;
+                                    suggestions = parsed.suggestions;
+                                }
                             }
 
                             return (
@@ -292,11 +348,23 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                         }`}
                                     >
                                         <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                                            {displayContent}
-                                            {typingMessageId === message.id && (
-                                                <span className={`animate-pulse ml-1 ${isUser ? "text-blue-200" : "text-blue-600"}`}>▌</span>
-                                            )}
+                                            {displayText}
                                         </p>
+                                        {!isUser && !isWelcome && suggestions.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 mt-3">
+                                                {suggestions.map((s, idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        type="button"
+                                                        onClick={() => handleQuickAction(s)}
+                                                        disabled={isLoading}
+                                                        className="px-3 py-1.5 bg-slate-100 rounded-2xl text-xs font-medium text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {s}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
                                         <span className={`text-xs mt-2 block font-medium ${
                                             isUser ? "text-blue-200" : "text-slate-400"
                                         }`}>
@@ -306,6 +374,31 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                 </div>
                             );
                         })}
+
+                    {/* Quick Actions - Only visible before first user message */}
+                    {messages.filter((m) => m.role === "user").length === 0 &&
+                        welcomeComplete &&
+                        !hasUserInteracted && (
+                        <div className="mt-8 space-y-3 animate-slideIn">
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide px-1 mb-3">
+                                {currentLocale === "de" && "Häufige Anfragen"}
+                                {currentLocale === "en" && "Popular Questions"}
+                                {currentLocale === "vi" && "Câu hỏi phổ biến"}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {QUICK_ACTIONS[currentLocale].map((action, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => handleQuickAction(action)}
+                                        disabled={isLoading}
+                                        className="px-4 py-2.5 bg-gradient-to-r from-blue-50 to-blue-50/80 rounded-full text-slate-700 text-xs font-medium border border-blue-200/60 hover:border-blue-300 hover:bg-blue-100/40 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md hover:from-blue-100 hover:to-blue-100/80"
+                                    >
+                                        {action}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Loading State */}
                     {isLoading && (

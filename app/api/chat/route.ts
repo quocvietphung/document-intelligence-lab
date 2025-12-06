@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { retrieveErgoDocuments, formatRetrievedContext } from "@/lib/ergo-retriever";
-import { createSystemMessage, stripMarkdown, summarizeConversationHistory } from "@/lib/prompt-templates";
+import { retrieveErgoDocuments, formatRetrievedContext } from "@/lib/rag/ergo-retriever";
+import { createSystemMessage, stripMarkdown, summarizeConversationHistory } from "@/lib/rag/prompt-templates";
 
 /**
  * ========================================
