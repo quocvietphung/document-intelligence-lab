@@ -31,6 +31,7 @@ export default function Navigation() {
     { label: t("home"), href: `/${locale}` },
     { label: t("gold"), href: `/${locale}/gold` },
     { label: t("rentenrechner"), href: `/${locale}/rentenrechner` },
+    { label: t("sparrechner"), href: `/${locale}/sparrechner` },
     { label: t("blog"), href: `/${locale}/blog` },
     { label: t("contact"), href: `/${locale}/contact` },
   ];
