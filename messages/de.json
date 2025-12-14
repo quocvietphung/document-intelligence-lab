@@ -4,6 +4,7 @@
     "services": "Leistungen",
     "gold": "Gold",
     "rentenrechner": "Rentenrechner",
+    "sparrechner": "Sparrechner",
     "blog": "Blog",
     "contact": "Kontakt"
   },
@@ -337,5 +338,29 @@
     "next_step": "Weiter zu Schritt 2",
     "retirement_start": "Rentenbeginn",
     "mit": "mit"
+  },
+  "sparrechner": {
+    "title": "Sparplan Rechner (Zinseszins)",
+    "initial_capital": "Startkapital",
+    "monthly_contribution": "Monatlicher Beitrag",
+    "annual_return": "Jährliche Rendite",
+    "years": "Laufzeit (Jahre)",
+    "inflation": "Inflation",
+    "contribution_timing": "Beitragszeitpunkt",
+    "timing_end": "Nachschüssig (Ende des Monats)",
+    "timing_begin": "Vorschüssig (Anfang des Monats)",
+    "result_nominal": "Endergebnis (Nominal)",
+    "result_real": "Endergebnis (Real)",
+    "interest": "Zinsertrag",
+    "adjusted_inflation": "Angepasst für",
+    "total_contributions": "Gesamteinzahlungen",
+    "return_pct": "Rendite",
+    "effective_return": "Effektive Rendite",
+    "cagr": "p.a. (CAGR)",
+    "yearly_breakdown": "Jahresübersicht",
+    "year": "Jahr",
+    "capital_nominal": "Kapital (nominal)",
+    "capital_real": "Kapital (real)",
+    "interest_earned": "Zinsertrag"
   }
 }

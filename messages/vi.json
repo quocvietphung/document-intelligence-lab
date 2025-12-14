@@ -4,6 +4,7 @@
     "services": "Dịch vụ",
     "gold": "Vàng",
     "rentenrechner": "Tính toán Hưu trí",
+    "sparrechner": "Máy tính Tiết kiệm",
     "blog": "Blog",
     "contact": "Liên hệ"
   },
@@ -408,5 +409,29 @@
     "mit": "với",
     "tab_step1": "Bước 1: Tính Toán",
     "tab_step2": "Bước 2: Lập Kế Hoạch Hưu Trí"
+  },
+  "sparrechner": {
+    "title": "Máy Tính Kế Hoạch Tiết Kiệm (Lãi Kép)",
+    "initial_capital": "Vốn Ban Đầu",
+    "monthly_contribution": "Đóng Góp Hàng Tháng",
+    "annual_return": "Lợi Suất Hàng Năm",
+    "years": "Thời Hạn (Năm)",
+    "inflation": "Lạm Phát",
+    "contribution_timing": "Thời Gian Đóng Góp",
+    "timing_end": "Cuối Kỳ (Cuối Tháng)",
+    "timing_begin": "Đầu Kỳ (Đầu Tháng)",
+    "result_nominal": "Kết Quả Cuối Cùng (Danh Nghĩa)",
+    "result_real": "Kết Quả Cuối Cùng (Thực Tế)",
+    "interest": "Lãi Kiếm Được",
+    "adjusted_inflation": "Điều Chỉnh Cho",
+    "total_contributions": "Tổng Đóng Góp",
+    "return_pct": "Lợi Suất",
+    "effective_return": "Lợi Suất Hiệu Quả",
+    "cagr": "mỗi năm (CAGR)",
+    "yearly_breakdown": "Bảng Tính Hàng Năm",
+    "year": "Năm",
+    "capital_nominal": "Vốn (Danh Nghĩa)",
+    "capital_real": "Vốn (Thực Tế)",
+    "interest_earned": "Lãi Kiếm Được"
   }
 }

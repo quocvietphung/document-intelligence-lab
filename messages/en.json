@@ -4,6 +4,7 @@
     "services": "Services",
     "gold": "Gold",
     "rentenrechner": "Retirement Calculator",
+    "sparrechner": "Savings Calculator",
     "blog": "Blog",
     "contact": "Contact"
   },
@@ -337,5 +338,29 @@
     "next_step": "Next to Step 2",
     "retirement_start": "Retirement Start",
     "mit": "at"
+  },
+  "sparrechner": {
+    "title": "Savings Plan Calculator (Compound Interest)",
+    "initial_capital": "Initial Capital",
+    "monthly_contribution": "Monthly Contribution",
+    "annual_return": "Annual Return",
+    "years": "Duration (Years)",
+    "inflation": "Inflation",
+    "contribution_timing": "Contribution Timing",
+    "timing_end": "Post-numerando (End of Month)",
+    "timing_begin": "Prenumerando (Beginning of Month)",
+    "result_nominal": "Final Result (Nominal)",
+    "result_real": "Final Result (Real)",
+    "interest": "Interest Earned",
+    "adjusted_inflation": "Adjusted for",
+    "total_contributions": "Total Contributions",
+    "return_pct": "Return",
+    "effective_return": "Effective Return",
+    "cagr": "p.a. (CAGR)",
+    "yearly_breakdown": "Yearly Breakdown",
+    "year": "Year",
+    "capital_nominal": "Capital (Nominal)",
+    "capital_real": "Capital (Real)",
+    "interest_earned": "Interest Earned"
   }
 }
