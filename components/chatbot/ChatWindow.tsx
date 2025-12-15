@@ -245,8 +245,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
                         <div>
                             <h3 className="font-bold text-base leading-tight">{t("title")}</h3>
-                            <p className="text-blue-100 text-xs font-medium flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                            <p className="text-blue-100 text-xs font-medium">
                                 {t("status_ready")}
                             </p>
                         </div>
