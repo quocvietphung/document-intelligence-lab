@@ -318,7 +318,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
                     {/* Messages List */}
                     {messages.length > 0 &&
-                        messages.map((message) => {
+                        messages.map((message, msgIndex) => {
                             const isUser = message.role === "user";
                             const isWelcome = (message as any).isWelcome;
 
@@ -333,42 +333,48 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                 }
                             }
 
+                            // Check if this is the last assistant message
+                            const isLastAssistantMessage = msgIndex === messages.length - 1 && !isUser && suggestions.length > 0;
+
                             return (
-                                <div
-                                    key={message.id}
-                                    className={`flex ${isUser ? "justify-end" : "justify-start"} animate-slideIn`}
-                                >
+                                <div key={message.id}>
                                     <div
-                                        className={`max-w-xs rounded-2xl px-5 py-3.5 shadow-sm transition-all ${
-                                            isUser
-                                                ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-none border border-blue-500/30"
-                                                : "bg-white text-slate-700 rounded-tl-none border border-slate-200/50 shadow-md"
-                                        }`}
+                                        className={`flex ${isUser ? "justify-end" : "justify-start"} animate-slideIn`}
                                     >
-                                        <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                                            {displayText}
-                                        </p>
-                                        {!isUser && !isWelcome && suggestions.length > 0 && (
-                                            <div className="flex flex-wrap gap-2 mt-3">
-                                                {suggestions.map((s, idx) => (
-                                                    <button
-                                                        key={idx}
-                                                        type="button"
-                                                        onClick={() => handleQuickAction(s)}
-                                                        disabled={isLoading}
-                                                        className="px-3 py-1.5 bg-slate-100 rounded-2xl text-xs font-medium text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    >
-                                                        {s}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                        <span className={`text-xs mt-2 block font-medium ${
-                                            isUser ? "text-blue-200" : "text-slate-400"
-                                        }`}>
-                                            {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                                        </span>
+                                        <div
+                                            className={`max-w-xs rounded-2xl px-5 py-3.5 shadow-sm transition-all ${
+                                                isUser
+                                                    ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-none border border-blue-500/30"
+                                                    : "bg-white text-slate-700 rounded-tl-none border border-slate-200/50 shadow-md"
+                                            }`}
+                                        >
+                                            <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                                                {displayText}
+                                            </p>
+                                            <span className={`text-xs mt-2 block font-medium ${
+                                                isUser ? "text-blue-200" : "text-slate-400"
+                                            }`}>
+                                                {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                            </span>
+                                        </div>
                                     </div>
+
+                                    {/* Suggestions as separate tag buttons below last assistant message */}
+                                    {isLastAssistantMessage && (
+                                        <div className="mt-4 flex flex-wrap gap-2 animate-slideIn">
+                                            {suggestions.map((s, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    type="button"
+                                                    onClick={() => handleQuickAction(s)}
+                                                    disabled={isLoading}
+                                                    className="px-3 py-1.5 bg-slate-100 rounded-full text-xs font-medium text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                                >
+                                                    {s}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
