@@ -244,7 +244,7 @@ export async function POST(req: NextRequest) {
     let ragDocuments: any[];
 
     console.log(`[chat/route] → RAG retrieval for: "${lastUserMessage.content.substring(0, 50)}..."`);
-    ragDocuments = await retrieveErgoDocuments(lastUserMessage.content, 3);
+    ragDocuments = await retrieveErgoDocuments(lastUserMessage.content, 2); // Reduced from 3 to 2 for faster retrieval
     console.log(`[chat/route] ✓ Retrieved ${ragDocuments.length} RAG documents`);
 
     ragContext = formatRetrievedContext(ragDocuments);
