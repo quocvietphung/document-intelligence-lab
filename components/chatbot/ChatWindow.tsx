@@ -361,14 +361,14 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
                                     {/* Suggestions as separate tag buttons below last assistant message */}
                                     {isLastAssistantMessage && (
-                                        <div className="mt-4 flex flex-wrap gap-2 animate-slideIn">
+                                        <div className="mt-5 flex flex-wrap gap-2.5 animate-slideIn pl-1">
                                             {suggestions.map((s, idx) => (
                                                 <button
                                                     key={idx}
                                                     type="button"
                                                     onClick={() => handleQuickAction(s)}
                                                     disabled={isLoading}
-                                                    className="px-3 py-1.5 bg-slate-100 rounded-full text-xs font-medium text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                                    className="px-4 py-2 bg-gradient-to-r from-blue-50 to-slate-50 rounded-lg text-xs font-semibold text-slate-700 border border-blue-200/60 hover:border-blue-400/80 hover:from-blue-100 hover:to-blue-50 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md hover:bg-blue-50/90 backdrop-blur-sm"
                                                 >
                                                     {s}
                                                 </button>
@@ -389,13 +389,13 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                 {currentLocale === "en" && "Popular Questions"}
                                 {currentLocale === "vi" && "Câu hỏi phổ biến"}
                             </p>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2.5">
                                 {QUICK_ACTIONS[currentLocale].map((action, idx) => (
                                     <button
                                         key={idx}
                                         onClick={() => handleQuickAction(action)}
                                         disabled={isLoading}
-                                        className="px-4 py-2.5 bg-gradient-to-r from-blue-50 to-blue-50/80 rounded-full text-slate-700 text-xs font-medium border border-blue-200/60 hover:border-blue-300 hover:bg-blue-100/40 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md hover:from-blue-100 hover:to-blue-100/80"
+                                        className="px-4 py-2.5 bg-gradient-to-r from-blue-50 via-slate-50 to-blue-50/80 rounded-lg text-slate-700 text-xs font-semibold border border-blue-200/70 hover:border-blue-400/80 hover:from-blue-100 hover:via-blue-50 hover:to-blue-100/80 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md backdrop-blur-sm"
                                     >
                                         {action}
                                     </button>
