@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, FormEvent, useState } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useCustomChat } from "@/lib/hooks/useCustomChat";
 import { getWelcomeMessage, detectLanguage } from "@/lib/rag/prompt-templates";
@@ -230,16 +231,14 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                     <div className="flex items-center gap-4 relative z-10">
                         {/* Premium Avatar */}
                         <div className="relative">
-                            <div className="w-11 h-11 bg-gradient-to-br from-blue-300 via-blue-400 to-blue-600 rounded-xl shadow-lg flex items-center justify-center border border-blue-300/50">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-6 w-6 text-white"
-                                    fill="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                                </svg>
-                            </div>
+                            <Image
+                                src="/ava.png"
+                                alt="Jenny - Financial Advisor"
+                                width={44}
+                                height={44}
+                                className="rounded-full object-cover border border-blue-300/50 shadow-lg"
+                                priority
+                            />
                             {/* Status dot */}
                             <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-blue-700 shadow-lg animate-pulse"></div>
                         </div>
