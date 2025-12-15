@@ -223,7 +223,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
             <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl flex flex-col overflow-hidden h-full border border-white/40 relative z-10">
 
                 {/* ========== HEADER ========== */}
-                <div className="relative bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 text-white px-6 py-5 flex items-center justify-between border-b border-blue-500/40">
+                <div className="relative bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 text-white px-6 py-5 flex items-center justify-between border-b border-blue-500/40 min-h-[80px]">
                     {/* Header background effects */}
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-400/5 to-purple-500/10"></div>
                     <div className="absolute top-0 right-0 w-40 h-40 bg-blue-400/10 rounded-full blur-3xl"></div>
@@ -306,10 +306,10 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                     {messages.length === 0 && displayedWelcome.length > 0 && (
                         <div className="flex justify-start animate-slideInLeft">
                             <div className="max-w-xs bg-white rounded-2xl rounded-tl-none px-5 py-4 shadow-md border border-slate-200/50 backdrop-blur-sm">
-                                <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap font-medium">
+                                <p className="text-sm leading-relaxed text-slate-900 whitespace-pre-wrap font-semibold">
                                     {displayedWelcome}
                                 </p>
-                                <span className="text-xs mt-3 block text-slate-400 font-medium">
+                                <span className="text-xs mt-3 block text-slate-500 font-medium">
                                     {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                 </span>
                             </div>
@@ -345,10 +345,10 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                             className={`max-w-xs rounded-2xl px-5 py-3.5 shadow-sm transition-all ${
                                                 isUser
                                                     ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-none border border-blue-500/30"
-                                                    : "bg-white text-slate-700 rounded-tl-none border border-slate-200/50 shadow-md"
+                                                    : "bg-white text-slate-900 rounded-tl-none border border-slate-200/50 shadow-md"
                                             }`}
                                         >
-                                            <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                                            <p className="text-sm leading-relaxed whitespace-pre-wrap font-semibold">
                                                 {displayText}
                                             </p>
                                             <span className={`text-xs mt-2 block font-medium ${
@@ -451,7 +451,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 placeholder={t("placeholder")}
-                                className="flex-1 px-4 py-3 border border-slate-300/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none bg-white hover:bg-slate-50/50 focus:bg-white transition-all max-h-[200px] shadow-sm placeholder:text-slate-400 font-medium"
+                                className="flex-1 px-4 py-3 border border-slate-300/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none bg-white hover:bg-slate-50/50 focus:bg-white transition-all max-h-[200px] shadow-sm placeholder:text-slate-500 placeholder:font-medium font-medium"
                                 disabled={isLoading}
                                 autoFocus
                                 rows={3}

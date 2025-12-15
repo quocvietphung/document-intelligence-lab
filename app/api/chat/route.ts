@@ -301,8 +301,9 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         messages: messagesWithSystem,
-        max_tokens: 1500,
-        temperature: 0.7,
+        max_tokens: 1200, // Reduced from 1500 for faster response
+        temperature: 0.75, // Increased from 0.7 for more engaging responses
+        top_p: 0.95, // Add top_p for better quality at faster speed
       }),
     });
 
