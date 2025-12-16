@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, FormEvent, useState } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useCustomChat } from "@/lib/hooks/useCustomChat";
 import { getWelcomeMessage, detectLanguage } from "@/lib/rag/prompt-templates";
@@ -165,7 +166,9 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
     if (isMinimized) {
         return (
-            <div className="fixed bottom-6 right-6 z-50">
+            <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-4">
+
+                {/* Main Chat Button */}
                 <button
                     onClick={onToggleMinimize}
                     className="group relative flex items-center justify-center"
@@ -203,6 +206,29 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                         </div>
                     </div>
                 </button>
+
+                {/* Quick Contact Button */}
+                {/* WhatsApp Button */}
+                <a
+                    href="https://wa.me/491777884553?text=Xin%20chào%20Jenny,%20tôi%20muốn%20tư%20vấn%20về%20tài%20chính"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative w-14 h-14 rounded-full bg-white shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-110 flex items-center justify-center border border-gray-200/50 hover:border-gray-300 backdrop-blur-md"
+                    title="WhatsApp"
+                >
+                    <Image
+                        src="/whatsapp.svg"
+                        alt="WhatsApp"
+                        width={28}
+                        height={28}
+                        className="relative z-10"
+                    />
+                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                        <div className="bg-gray-900 text-white text-xs font-semibold py-1 px-2 rounded-lg whitespace-nowrap">
+                            WhatsApp
+                        </div>
+                    </div>
+                </a>
             </div>
         );
     }
@@ -222,7 +248,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
             <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl flex flex-col overflow-hidden h-full border border-white/40 relative z-10">
 
                 {/* ========== HEADER ========== */}
-                <div className="relative bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 text-white px-6 py-5 flex items-center justify-between border-b border-blue-500/40">
+                <div className="relative bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 text-white px-6 py-5 flex items-center justify-between border-b border-blue-500/40 min-h-[80px]">
                     {/* Header background effects */}
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-400/5 to-purple-500/10"></div>
                     <div className="absolute top-0 right-0 w-40 h-40 bg-blue-400/10 rounded-full blur-3xl"></div>
@@ -230,24 +256,21 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                     <div className="flex items-center gap-4 relative z-10">
                         {/* Premium Avatar */}
                         <div className="relative">
-                            <div className="w-11 h-11 bg-gradient-to-br from-blue-300 via-blue-400 to-blue-600 rounded-xl shadow-lg flex items-center justify-center border border-blue-300/50">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-6 w-6 text-white"
-                                    fill="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                                </svg>
-                            </div>
+                            <Image
+                                src="/ava.png"
+                                alt="Jenny - Financial Advisor"
+                                width={44}
+                                height={44}
+                                className="rounded-full object-cover border border-blue-300/50 shadow-lg"
+                                priority
+                            />
                             {/* Status dot */}
                             <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-blue-700 shadow-lg animate-pulse"></div>
                         </div>
 
                         <div>
                             <h3 className="font-bold text-base leading-tight">{t("title")}</h3>
-                            <p className="text-blue-100 text-xs font-medium flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                            <p className="text-blue-100 text-xs font-medium">
                                 {t("status_ready")}
                             </p>
                         </div>
@@ -297,21 +320,19 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                           <line x1="5" y1="12" x2="19" y2="12" />
                         </svg>
                       </button>
-
-
                     </div>
                 </div>
 
-                {/* ========== MESSAGES AREA ========== */}
+                {/* ========== ANIMATIONS ========== */}
                 <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 bg-gradient-to-b from-slate-50/50 via-white to-slate-50/30 scroll-smooth">
                     {/* Welcome Message */}
                     {messages.length === 0 && displayedWelcome.length > 0 && (
                         <div className="flex justify-start animate-slideInLeft">
                             <div className="max-w-xs bg-white rounded-2xl rounded-tl-none px-5 py-4 shadow-md border border-slate-200/50 backdrop-blur-sm">
-                                <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap font-medium">
+                                <p className="text-sm leading-relaxed text-slate-900 whitespace-pre-wrap font-semibold">
                                     {displayedWelcome}
                                 </p>
-                                <span className="text-xs mt-3 block text-slate-400 font-medium">
+                                <span className="text-xs mt-3 block text-slate-500 font-medium">
                                     {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                 </span>
                             </div>
@@ -320,7 +341,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
                     {/* Messages List */}
                     {messages.length > 0 &&
-                        messages.map((message) => {
+                        messages.map((message, msgIndex) => {
                             const isUser = message.role === "user";
                             const isWelcome = (message as any).isWelcome;
 
@@ -335,42 +356,48 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                 }
                             }
 
+                            // Check if this is the last assistant message
+                            const isLastAssistantMessage = msgIndex === messages.length - 1 && !isUser && suggestions.length > 0;
+
                             return (
-                                <div
-                                    key={message.id}
-                                    className={`flex ${isUser ? "justify-end" : "justify-start"} animate-slideIn`}
-                                >
+                                <div key={message.id}>
                                     <div
-                                        className={`max-w-xs rounded-2xl px-5 py-3.5 shadow-sm transition-all ${
-                                            isUser
-                                                ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-none border border-blue-500/30"
-                                                : "bg-white text-slate-700 rounded-tl-none border border-slate-200/50 shadow-md"
-                                        }`}
+                                        className={`flex ${isUser ? "justify-end" : "justify-start"} animate-slideIn`}
                                     >
-                                        <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                                            {displayText}
-                                        </p>
-                                        {!isUser && !isWelcome && suggestions.length > 0 && (
-                                            <div className="flex flex-wrap gap-2 mt-3">
-                                                {suggestions.map((s, idx) => (
-                                                    <button
-                                                        key={idx}
-                                                        type="button"
-                                                        onClick={() => handleQuickAction(s)}
-                                                        disabled={isLoading}
-                                                        className="px-3 py-1.5 bg-slate-100 rounded-2xl text-xs font-medium text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    >
-                                                        {s}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                        <span className={`text-xs mt-2 block font-medium ${
-                                            isUser ? "text-blue-200" : "text-slate-400"
-                                        }`}>
-                                            {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                                        </span>
+                                        <div
+                                            className={`max-w-xs rounded-2xl px-5 py-3.5 shadow-sm transition-all ${
+                                                isUser
+                                                    ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-none border border-blue-500/30"
+                                                    : "bg-white text-slate-900 rounded-tl-none border border-slate-200/50 shadow-md"
+                                            }`}
+                                        >
+                                            <p className="text-sm leading-relaxed whitespace-pre-wrap font-semibold">
+                                                {displayText}
+                                            </p>
+                                            <span className={`text-xs mt-2 block font-medium ${
+                                                isUser ? "text-blue-200" : "text-slate-400"
+                                            }`}>
+                                                {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                            </span>
+                                        </div>
                                     </div>
+
+                                    {/* Suggestions as separate tag buttons below last assistant message */}
+                                    {isLastAssistantMessage && (
+                                        <div className="mt-5 flex flex-wrap gap-2.5 animate-slideIn pl-1">
+                                            {suggestions.map((s, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    type="button"
+                                                    onClick={() => handleQuickAction(s)}
+                                                    disabled={isLoading}
+                                                    className="px-4 py-2 bg-gradient-to-r from-blue-50 to-slate-50 rounded-lg text-xs font-semibold text-slate-700 border border-blue-200/60 hover:border-blue-400/80 hover:from-blue-100 hover:to-blue-50 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md hover:bg-blue-50/90 backdrop-blur-sm"
+                                                >
+                                                    {s}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
@@ -385,13 +412,13 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                 {currentLocale === "en" && "Popular Questions"}
                                 {currentLocale === "vi" && "Câu hỏi phổ biến"}
                             </p>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2.5">
                                 {QUICK_ACTIONS[currentLocale].map((action, idx) => (
                                     <button
                                         key={idx}
                                         onClick={() => handleQuickAction(action)}
                                         disabled={isLoading}
-                                        className="px-4 py-2.5 bg-gradient-to-r from-blue-50 to-blue-50/80 rounded-full text-slate-700 text-xs font-medium border border-blue-200/60 hover:border-blue-300 hover:bg-blue-100/40 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md hover:from-blue-100 hover:to-blue-100/80"
+                                        className="px-4 py-2.5 bg-gradient-to-r from-blue-50 via-slate-50 to-blue-50/80 rounded-lg text-slate-700 text-xs font-semibold border border-blue-200/70 hover:border-blue-400/80 hover:from-blue-100 hover:via-blue-50 hover:to-blue-100/80 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md backdrop-blur-sm"
                                     >
                                         {action}
                                     </button>
@@ -447,7 +474,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 placeholder={t("placeholder")}
-                                className="flex-1 px-4 py-3 border border-slate-300/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none bg-white hover:bg-slate-50/50 focus:bg-white transition-all max-h-[200px] shadow-sm placeholder:text-slate-400 font-medium"
+                                className="flex-1 px-4 py-3 border border-slate-300/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none bg-white hover:bg-slate-50/50 focus:bg-white transition-all max-h-[200px] shadow-sm placeholder:text-slate-500 placeholder:font-medium font-medium"
                                 disabled={isLoading}
                                 autoFocus
                                 rows={3}
