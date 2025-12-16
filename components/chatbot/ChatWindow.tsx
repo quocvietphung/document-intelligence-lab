@@ -133,18 +133,72 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
         }
     }, [input]);
 
-    // Lock body scroll when fullscreen
+    // Lock body scroll when chat is open (not minimized) or fullscreen
     useEffect(() => {
-        if (isExpanded && !isMinimized) {
+        if (!isMinimized) {
+            // Chat is open - prevent background scroll
             document.body.style.overflow = "hidden";
+            document.body.style.position = "fixed";
+            document.body.style.width = "100%";
+            document.documentElement.style.overflow = "hidden";
         } else {
+            // Chat is minimized - restore scroll
             document.body.style.overflow = "unset";
+            document.body.style.position = "unset";
+            document.body.style.width = "unset";
+            document.documentElement.style.overflow = "unset";
         }
 
         return () => {
             document.body.style.overflow = "unset";
+            document.body.style.position = "unset";
+            document.body.style.width = "unset";
+            document.documentElement.style.overflow = "unset";
         };
-    }, [isExpanded, isMinimized]);
+    }, [isMinimized]);
+
+    // Prevent zoom on mobile and double-tap zoom
+    useEffect(() => {
+        const handleTouchStart = (e: TouchEvent) => {
+            // Prevent pinch zoom
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        };
+
+        const handleWheel = (e: WheelEvent) => {
+            // Prevent Ctrl+wheel zoom on desktop
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+            }
+        };
+
+        document.addEventListener("touchstart", handleTouchStart, { passive: false });
+        document.addEventListener("wheel", handleWheel, { passive: false });
+
+        // Add viewport meta tag to prevent zoom
+        let metaViewport = document.querySelector("meta[name='viewport']");
+        if (metaViewport) {
+            metaViewport.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no");
+        }
+
+        return () => {
+            document.removeEventListener("touchstart", handleTouchStart);
+            document.removeEventListener("wheel", handleWheel);
+        };
+    }, []);
+
+    const handleExpandToggle = () => {
+        // Reset scroll and zoom before toggling
+        if (isExpanded) {
+            // Exiting fullscreen
+            document.body.style.overflow = "unset";
+            document.body.style.position = "unset";
+            document.body.style.width = "unset";
+            window.scrollTo(0, 0);
+        }
+        setIsExpanded(!isExpanded);
+    };
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -281,7 +335,7 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
                       {/* Expand / Restore */}
                       <button
-                        onClick={() => setIsExpanded(!isExpanded)}
+                        onClick={handleExpandToggle}
                         className="w-9 h-9 flex items-center justify-center rounded-lg text-white/80 hover:text-white hover:bg-white/20 transition-all duration-200 active:scale-95 backdrop-blur-md"
                         title={isExpanded ? t("restore_tooltip") : t("expand_tooltip")}
                       >
