@@ -61,7 +61,7 @@ const CompoundInterestCalculator: React.FC<CompoundInterestCalculatorProps> = ({
                     <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">
                         {t('title')}
                     </h1>
-                    <p className="text-gray-600 text-lg">Ihre Vermögensaufbau mit eleganten Schiebereglern</p>
+                    <p className="text-gray-600 text-lg">{t('subtitle')}</p>
                 </div>
 
                 {/* Main Grid */}
@@ -69,7 +69,7 @@ const CompoundInterestCalculator: React.FC<CompoundInterestCalculatorProps> = ({
                     {/* Input Panel - Sliders */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-8 bg-white rounded-2xl shadow-lg p-8 border border-gray-200 backdrop-blur-sm bg-white/95">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-8">Einstellungen</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-8">{t('settings')}</h2>
 
                             <div className="space-y-8">
                                 {/* Initial Capital Slider */}
@@ -167,8 +167,8 @@ const CompoundInterestCalculator: React.FC<CompoundInterestCalculatorProps> = ({
                                         className="w-full h-3 bg-gradient-to-r from-orange-200 to-orange-400 rounded-full appearance-none cursor-pointer slider"
                                     />
                                     <div className="flex justify-between text-xs text-gray-500 mt-2">
-                                        <span>1 Jahr</span>
-                                        <span>50 Jahre</span>
+                                        <span>1 {t('year')}</span>
+                                        <span>50 {t('years')}</span>
                                     </div>
                                 </div>
 
@@ -211,7 +211,7 @@ const CompoundInterestCalculator: React.FC<CompoundInterestCalculatorProps> = ({
                                                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                                             }`}
                                         >
-                                            Ende
+                                            {t('end')}
                                         </button>
                                         <button
                                             onClick={() => setContributionTiming("begin")}
@@ -221,7 +221,7 @@ const CompoundInterestCalculator: React.FC<CompoundInterestCalculatorProps> = ({
                                                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                                             }`}
                                         >
-                                            Anfang
+                                            {t('begin')}
                                         </button>
                                     </div>
                                 </div>
@@ -242,7 +242,7 @@ const CompoundInterestCalculator: React.FC<CompoundInterestCalculatorProps> = ({
                                     {formatCurrency(result.finalCapitalNominal).split(',')[0]}
                                 </h3>
                                 <p className="text-sm text-blue-600">
-                                    Zins: {formatCurrency(result.totalInterest)}
+                                    {t('zins')}: {formatCurrency(result.totalInterest)}
                                 </p>
                             </div>
 
@@ -255,7 +255,7 @@ const CompoundInterestCalculator: React.FC<CompoundInterestCalculatorProps> = ({
                                     {formatCurrency(result.finalCapitalReal).split(',')[0]}
                                 </h3>
                                 <p className="text-sm text-green-600">
-                                    (mit {formatPercentage(inflationRate, 1)})
+                                    ({t('with')} {formatPercentage(inflationRate, 1)})
                                 </p>
                             </div>
 
@@ -268,7 +268,7 @@ const CompoundInterestCalculator: React.FC<CompoundInterestCalculatorProps> = ({
                                     {formatCurrency(result.totalContributions).split(',')[0]}
                                 </h3>
                                 <p className="text-sm text-purple-600">
-                                    ROI: {formatPercentage(result.interestAsPercentage, 1)}
+                                    {t('roi')}: {formatPercentage(result.interestAsPercentage, 1)}
                                 </p>
                             </div>
 
@@ -289,17 +289,17 @@ const CompoundInterestCalculator: React.FC<CompoundInterestCalculatorProps> = ({
                         {/* Yearly Breakdown Table */}
                         <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
                             <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-blue-50">
-                                <h3 className="text-lg font-bold text-gray-900">Wachstum - Jahresübersicht</h3>
+                                <h3 className="text-lg font-bold text-gray-900">{t('growth')} - {t('yearly_breakdown')}</h3>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="bg-gray-50 border-b border-gray-200">
-                                            <th className="px-6 py-4 text-left font-semibold text-gray-900">Jahr</th>
-                                            <th className="px-6 py-4 text-right font-semibold text-gray-900">Kapital (Nominal)</th>
-                                            <th className="px-6 py-4 text-right font-semibold text-gray-900">Kapital (Real)</th>
-                                            <th className="px-6 py-4 text-right font-semibold text-gray-900">Zinsertrag</th>
-                                            <th className="px-6 py-4 text-right font-semibold text-gray-900">ROI</th>
+                                            <th className="px-6 py-4 text-left font-semibold text-gray-900">{t('year')}</th>
+                                            <th className="px-6 py-4 text-right font-semibold text-gray-900">{t('capital_nominal')}</th>
+                                            <th className="px-6 py-4 text-right font-semibold text-gray-900">{t('capital_real')}</th>
+                                            <th className="px-6 py-4 text-right font-semibold text-gray-900">{t('interest_earned')}</th>
+                                            <th className="px-6 py-4 text-right font-semibold text-gray-900">{t('roi')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>

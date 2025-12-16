@@ -341,6 +341,7 @@
   },
   "sparrechner": {
     "title": "Savings Plan Calculator (Compound Interest)",
+    "subtitle": "Build your wealth with smart investment planning",
     "initial_capital": "Initial Capital",
     "monthly_contribution": "Monthly Contribution",
     "annual_return": "Annual Return",
@@ -361,6 +362,13 @@
     "year": "Year",
     "capital_nominal": "Capital (Nominal)",
     "capital_real": "Capital (Real)",
-    "interest_earned": "Interest Earned"
+    "interest_earned": "Interest Earned",
+    "settings": "Settings",
+    "growth": "Growth",
+    "roi": "ROI",
+    "with": "with",
+    "end": "End",
+    "begin": "Begin",
+    "zins": "Interest"
   }
 }
