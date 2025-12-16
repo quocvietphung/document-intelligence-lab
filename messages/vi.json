@@ -412,6 +412,7 @@
   },
   "sparrechner": {
     "title": "Máy Tính Kế Hoạch Tiết Kiệm (Lãi Kép)",
+    "subtitle": "Xây dựng tài sản của bạn với lập kế hoạch đầu tư thông minh",
     "initial_capital": "Vốn Ban Đầu",
     "monthly_contribution": "Đóng Góp Hàng Tháng",
     "annual_return": "Lợi Suất Hàng Năm",
@@ -432,6 +433,13 @@
     "year": "Năm",
     "capital_nominal": "Vốn (Danh Nghĩa)",
     "capital_real": "Vốn (Thực Tế)",
-    "interest_earned": "Lãi Kiếm Được"
+    "interest_earned": "Lãi Kiếm Được",
+    "settings": "Cài Đặt",
+    "growth": "Tăng Trưởng",
+    "roi": "ROI",
+    "with": "với",
+    "end": "Cuối",
+    "begin": "Đầu",
+    "zins": "Lãi"
   }
 }

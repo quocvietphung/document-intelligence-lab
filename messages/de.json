@@ -341,6 +341,7 @@
   },
   "sparrechner": {
     "title": "Sparplan Rechner (Zinseszins)",
+    "subtitle": "Bauen Sie Ihr Vermögen mit eleganten Reglern auf",
     "initial_capital": "Startkapital",
     "monthly_contribution": "Monatlicher Beitrag",
     "annual_return": "Jährliche Rendite",
@@ -361,6 +362,13 @@
     "year": "Jahr",
     "capital_nominal": "Kapital (nominal)",
     "capital_real": "Kapital (real)",
-    "interest_earned": "Zinsertrag"
+    "interest_earned": "Zinsertrag",
+    "settings": "Einstellungen",
+    "growth": "Wachstum",
+    "roi": "ROI",
+    "with": "mit",
+    "end": "Ende",
+    "begin": "Anfang",
+    "zins": "Zins"
   }
 }
