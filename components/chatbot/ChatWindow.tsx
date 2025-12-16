@@ -166,7 +166,9 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
 
     if (isMinimized) {
         return (
-            <div className="fixed bottom-6 right-6 z-50">
+            <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-4">
+
+                {/* Main Chat Button */}
                 <button
                     onClick={onToggleMinimize}
                     className="group relative flex items-center justify-center"
@@ -204,6 +206,47 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                         </div>
                     </div>
                 </button>
+
+                {/* Quick Contact Buttons */}
+                <div className="flex flex-col gap-3">
+                    {/* WhatsApp Button */}
+                    <a
+                        href="https://wa.me/491777884553?text=Xin%20chào%20Jenny,%20tôi%20muốn%20tư%20vấn%20về%20tài%20chính"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative w-14 h-14 rounded-full bg-white shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-110 flex items-center justify-center border border-gray-200/50 hover:border-gray-300 backdrop-blur-md"
+                        title="WhatsApp"
+                    >
+                        {/* WhatsApp official icon */}
+                        <svg className="w-7 h-7 relative z-10" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004a5.505 5.505 0 0 0-5.5 5.515c0 3.048 2.468 5.573 5.466 5.573h.004c3.022 0 5.5-2.525 5.5-5.517 0-1.54-.635-3.051-1.746-4.15-1.112-1.1-2.588-1.703-4.22-1.721M2.604 2.862A10.07 10.07 0 0 1 12.004 0C6.719 0 2.5 4.22 2.5 9.506c0 1.659.429 3.268 1.234 4.649L2.167 21.995l7.168-2.333c1.295.707 2.759 1.08 4.234 1.08 5.285 0 9.503-4.22 9.503-9.506C21.507 6.718 17.29 2.862 12.004 2.862" fill="#25D366" />
+                        </svg>
+                        <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <div className="bg-gray-900 text-white text-xs font-semibold py-1 px-2 rounded-lg whitespace-nowrap">
+                                WhatsApp
+                            </div>
+                        </div>
+                    </a>
+
+                    {/* Zalo Button */}
+                    <a
+                        href="https://zalo.me/84917788553"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative w-14 h-14 rounded-full bg-white shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-110 flex items-center justify-center border border-gray-200/50 hover:border-gray-300 backdrop-blur-md"
+                        title="Zalo"
+                    >
+                        {/* Zalo official icon */}
+                        <svg className="w-7 h-7 relative z-10" fill="#0084FF" viewBox="0 0 24 24">
+                            <path d="M12 0C5.373 0 0 5.373 0 12c0 2.05.532 4.02 1.504 5.738L0 24l6.459-3.187C8.704 22.766 10.308 23.5 12 23.5c6.627 0 12-5.373 12-12S18.627 0 12 0zm5.833 15.833h-9.166c-.459 0-.834-.375-.834-.833v-2.5c0-.459.375-.833.834-.833h9.166c.459 0 .834.375.834.833v2.5c0 .458-.375.833-.834.833z" />
+                        </svg>
+                        <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <div className="bg-gray-900 text-white text-xs font-semibold py-1 px-2 rounded-lg whitespace-nowrap">
+                                Zalo
+                            </div>
+                        </div>
+                    </a>
+                </div>
             </div>
         );
     }
@@ -295,12 +338,10 @@ export default function ChatWindow({ isMinimized, onToggleMinimize }: ChatWindow
                           <line x1="5" y1="12" x2="19" y2="12" />
                         </svg>
                       </button>
-
-
                     </div>
                 </div>
 
-                {/* ========== MESSAGES AREA ========== */}
+                {/* ========== ANIMATIONS ========== */}
                 <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 bg-gradient-to-b from-slate-50/50 via-white to-slate-50/30 scroll-smooth">
                     {/* Welcome Message */}
                     {messages.length === 0 && displayedWelcome.length > 0 && (
