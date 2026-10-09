@@ -141,3 +141,5 @@ services/credit-api/target/
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .cache/
+.vercel
+.env*
