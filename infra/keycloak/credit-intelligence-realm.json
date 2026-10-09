@@ -1,0 +1,58 @@
+{
+  "realm": "credit-intelligence",
+  "enabled": true,
+  "displayName": "Credit Intelligence Lab",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "roles": {
+    "realm": [
+      { "name": "CUSTOMER" },
+      { "name": "CO_APPLICANT" },
+      { "name": "ADVISOR" },
+      { "name": "REVIEWER" },
+      { "name": "ADMIN" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "credit-intelligence-web",
+      "name": "Credit Intelligence Web",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"],
+      "attributes": { "pkce.code.challenge.method": "S256" },
+      "protocolMappers": [
+        {
+          "name": "tenant-id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "tenant_id",
+            "claim.name": "tenant_id",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "advisor.demo",
+      "enabled": true,
+      "firstName": "Mara",
+      "lastName": "Klein",
+      "email": "advisor@example.invalid",
+      "emailVerified": true,
+      "attributes": { "tenant_id": ["praxisbank-demo"] },
+      "realmRoles": ["ADVISOR", "REVIEWER"],
+      "credentials": [{ "type": "password", "value": "demo-password", "temporary": false }]
+    }
+  ]
+}

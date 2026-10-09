@@ -1,0 +1,51 @@
+name: credit-intelligence-lab
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: local-admin-only
+      KC_HOSTNAME: http://localhost:8080
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./infra/keycloak/credit-intelligence-realm.json:/opt/keycloak/data/import/realm.json:ro
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3; grep '200 OK' <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+
+  credit-api:
+    build: ./services/credit-api
+    environment:
+      KEYCLOAK_ISSUER: http://localhost:8080/realms/credit-intelligence
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/credit-intelligence/protocol/openid-connect/certs
+      SECURITY_ENABLED: "true"
+    ports:
+      - "8081:8080"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 4s
+      retries: 12
+
+  web:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_KEYCLOAK_URL: http://localhost:8080
+        NEXT_PUBLIC_KEYCLOAK_REALM: credit-intelligence
+        NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: credit-intelligence-web
+    environment:
+      CREDIT_API_URL: http://credit-api:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      credit-api:
+        condition: service_healthy

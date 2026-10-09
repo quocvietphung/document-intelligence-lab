@@ -1,10 +1,8 @@
-import { NextIntlClientProvider } from "next-intl";
+import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/routing";
-import Navigation from "@/components/ui/Navigation";
-import Footer from "@/components/ui/Footer";
-import ChatBot from "@/components/chatbot/ChatBot";
+import { KeycloakProvider } from "@/components/auth/KeycloakProvider";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -20,7 +18,7 @@ export default async function LocaleLayout({
   const { locale } = await params;
   
   // Ensure that the incoming `locale` is valid
-  if (!routing.locales.includes(locale as any)) {
+  if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
 
@@ -35,10 +33,7 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body>
         <NextIntlClientProvider messages={messages}>
-          <Navigation />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-          <ChatBot />
+          <KeycloakProvider>{children}</KeycloakProvider>
         </NextIntlClientProvider>
       </body>
     </html>

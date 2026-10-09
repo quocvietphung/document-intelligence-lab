@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Finance Consulting - Steuerberatung Deutschland",
-  description: "Professional finance consulting services in Germany",
+  title: "Credit Intelligence Lab",
+  description:
+    "A secure banking AI engineering lab for document intelligence, human review and explainable workflows.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
