@@ -1,408 +1,145 @@
-# 🚀 Finance Consulting & ERGO RAG Chatbot Platform
+# Credit Intelligence Lab
 
-> Professional finance consulting website with AI-powered chatbot, gold investment tracking, and multilingual support (German/English/Vietnamese)
+A production-minded banking AI engineering portfolio built from an earlier finance prototype. The lab demonstrates document intelligence, tenant isolation, human review, measurable AI quality and keyless Azure OpenAI access.
 
----
+> All names, documents, amounts and metrics are synthetic. This independent project is not affiliated with apoBank or any lender. It does not provide financial advice or make credit decisions.
 
-## ⭐ Key Features
+## What the lab demonstrates
 
-### 💼 **Finance Consulting Services**
-- ✅ Finance declaration & optimization
-- ✅ Real estate consulting
-- ✅ IT consulting & automation
-- ✅ Accounting services
-- ✅ Business consulting
+- Credit intake inspired by real document-collection workflows: applicant, co-applicant, checklist, save/resume model and missing-document status.
+- Document AI concepts: classification, OCR field extraction, per-field confidence, missing-field checks and contradiction detection.
+- Human-in-the-loop control: low-confidence or conflicting evidence is escalated; there is no approval/rejection endpoint.
+- AI evaluation: labelled reference-set metrics are shown separately from technical availability.
+- Explainable AI copilot: Nova answers questions about the synthetic case and cites the current workflow context.
+- OAuth 2.0/OIDC with Keycloak and PKCE for the browser.
+- Tenant and role enforcement in a Java 21/Spring Boot resource server.
+- Azure OpenAI via Microsoft Entra workload identity / Vercel OIDC—no long-lived Azure API key.
+- Docker Compose for the full local platform and CI for both TypeScript and Java.
 
-### 🤖 **AI-Powered RAG Chatbot**
-- ✅ Knowledge from 12 ERGO PDF documents (5,076 indexed chunks)
-- ✅ BM25 relevance scoring for accurate retrieval
-- ✅ Multilingual support (German, English, Vietnamese)
-- ✅ Source citations for transparency
-- ✅ No hallucinations - only fact-based responses
+## Architecture
 
-### 💰 **Gold Investment Tools**
-- ✅ Live gold price widget (USD/VND)
-- ✅ ROI calculator with projections
-- ✅ Investment tips & market insights
-- ✅ 24-hour price trends
-
-### 🌍 **Multilingual & Global**
-- ✅ 3 languages: German (DE), English (EN), Vietnamese (VI)
-- ✅ Localized content for each market
-- ✅ Currency conversion (USD ↔ VND)
-
----
-
-## 🏗️ Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| **Framework** | Next.js 15, React 19, TypeScript |
-| **Styling** | Tailwind CSS, responsive design |
-| **i18n** | next-intl (3 languages) |
-| **AI/ML** | Azure OpenAI gpt-35-turbo, RAG retrieval |
-| **APIs** | Next.js API routes, RESTful endpoints |
-| **Deployment** | Vercel-ready, edge-compatible |
-
----
-
-## 📁 Project Structure
-
-```
-finance-consulting/
-├── app/
-│   ├── [locale]/
-│   │   ├── page.tsx          # Homepage
-│   │   ├── blog/             # Blog articles
-│   │   ├── gold/             # Gold consulting page ✨
-│   │   ├── datenschutz/      # Privacy policy
-│   │   ├── impressum/        # Legal notice
-│   │   └── terms/            # Terms of service
-│   └── api/
-│       ├── chat/             # RAG-powered chatbot API
-│       ├── booking/          # Booking management
-│       └── gold-price/       # Live gold price API ✨
-├── components/
-│   ├── chatbot/
-│   │   ├── ChatBot.tsx       # Floating chat button
-│   │   └── ChatWindow.tsx    # Chat interface with RAG
-│   ├── GoldPriceWidget.tsx   # Live prices widget ✨
-│   ├── GoldInvestmentCalculator.tsx # ROI calculator ✨
-│   ├── Navigation.tsx        # Multi-language nav
-│   ├── Footer.tsx
-│   └── sections/
-│       ├── HeroSection.tsx
-│       ├── ServicesSection.tsx
-│       ├── ProcessSection.tsx
-│       ├── TestimonialsSection.tsx
-│       └── ContactSection.tsx
-├── lib/
-│   ├── ergo-retriever.ts     # RAG document retrieval
-│   ├── rag-utils.ts          # BM25 scoring, text processing
-│   ├── prompt-templates.ts   # Multilingual prompts
-│   ├── rag.test.ts           # Test suite (200+ lines)
-│   └── useCustomChat.ts
-├── data/
-│   ├── ergo_docs.json        # Full corpus (5,076 chunks, 20.4 MB)
-│   ├── ergo_prompt.json      # Optimized RAG (16.5 KB)
-│   ├── blogPosts.ts
-│   └── reviews.json
-├── messages/
-│   ├── de.json               # German translations
-│   ├── en.json               # English translations
-│   └── vi.json               # Vietnamese translations
-├── scripts/
-│   ├── extract-all-ergo-pdfs.js      # PDF extraction
-│   └── generate-ergo-prompt-v2.js    # Prompt optimization
-├── QUICK_START.md            # Quick setup guide
-├── RAG_CHATBOT_INDEX.md      # Comprehensive documentation
-└── README.md                 # This file
+```text
+Browser / Next.js 16
+  ├─ Keycloak OAuth 2.0 + OIDC + PKCE
+  ├─ Credit workspace and human review
+  └─ Nova streaming chat
+         │
+         ├─ Next.js AI route ── Vercel OIDC ── Azure OpenAI
+         │                        (short-lived Entra token)
+         │
+         └─ Java 21 / Spring Boot API
+              ├─ JWT signature and role validation
+              ├─ tenant_id derived from verified token
+              ├─ case/document workflow
+              └─ health and audit-safe operations
 ```
 
----
+The same word “tenant” appears in two independent security boundaries:
 
-## 🚀 Quick Start
+1. **Business tenant**: `tenant_id` in the Keycloak JWT isolates customer organisations.
+2. **Azure tenant**: Microsoft Entra tenant used to exchange Vercel’s OIDC assertion for a short-lived Azure token.
 
-# ⚡ Quick Start Guide - RAG Chatbot Setup (5 Minutes)
+## Run the web app
 
-**Status**: ✅ Production Ready
+Requirements: Node.js 22+.
 
----
-
-## 🎯 In 5 Minutes
-
-### Step 1: Environment Setup (1 min)
 ```bash
-# Create .env.local in project root
-AZURE_OPENAI_API_KEY=your-api-key-here
-AZURE_OPENAI_ENDPOINT=https://xxx.openai.azure.com/
-AZURE_OPENAI_DEPLOYMENT_NAME=gpt-35-turbo
-AZURE_OPENAI_API_VERSION=2024-12-01-preview
-```
-
-### Step 2: Install & Run (2 min)
-```bash
-npm install
+npm ci
 npm run dev
-# Server runs on http://localhost:3000
 ```
 
-### Step 3: Test Chatbot (2 min)
-```
-1. Open http://localhost:3000
-2. Click "Chat with us" button
-3. Ask: "What are ERGO's health insurance benefits?"
-4. See AI response backed by real ERGO documents ✅
-```
+Open `http://localhost:3000`. Without Keycloak or Azure configuration the UI starts in a clearly labelled synthetic demo mode and Nova uses deterministic demo answers.
 
----
+## AI Solution Engineer practice map
 
-## 🤖 What You Get
+| Capability | Demonstrated here |
+|---|---|
+| Document AI | Classification, OCR-style extracted fields, confidence and evidence review |
+| LLM/RAG | Case-scoped retrieval, multilingual streaming answers and deterministic fallback |
+| Evaluation | Labelled synthetic reference metrics kept separate from service uptime |
+| Java integration | Spring Boot REST resource server with validation and tests |
+| Identity | OAuth 2.0/OIDC, PKCE, roles and verified `tenant_id` claims |
+| Azure security | Workload identity and short-lived tokens instead of a stored API key |
+| Operations | Health endpoint, audit-safe events, Docker Compose and CI |
+| Responsible AI | Human review, uncertainty handling and no automated lending decision |
 
-| Feature | Details |
-|---------|---------|
-| **RAG System** | 5,076 indexed document chunks |
-| **Knowledge Base** | 12 ERGO PDF documents (20.4 MB) |
-| **AI Model** | Azure OpenAI gpt-35-turbo |
-| **Languages** | German, English, Vietnamese |
-| **Response Time** | ~3-7 seconds |
-| **Accuracy** | Fact-based only, no hallucinations |
+## Run the complete OAuth platform
 
----
-
-## 📊 Architecture Overview
-
-```
-User Question
-    ↓
-Load 5,076 chunks from ergo_docs.json
-    ↓
-Score relevance (BM25 algorithm)
-    ↓
-Select top-3 most relevant chunks
-    ↓
-Add to Azure OpenAI prompt
-    ↓
-Generate response
-    ↓
-Display with sources ✅
-```
-
----
-
-## 📊 Data Overview
-
-### ERGO Documents (12 PDFs)
-
-| Category | PDFs | Chunks | Content |
-|----------|------|--------|---------|
-| **Health** | 1 | 2,073 | Health insurance products |
-| **Pension** | 6 | 1,754 | Life insurance, pensions, finance info |
-| **Property** | 3 | 1,249 | Property & casualty insurance |
-| **Other** | 2 | 0 | Supporting materials |
-| **Total** | 12 | 5,076 | 20.4 MB corpus |
-
-### Retrieval Performance
-- Load time: ~50ms (first time), ~0ms (cached)
-- Scoring 5,076 chunks: ~1,500ms
-- Azure API response: ~1,500ms
-- **Total response time: ~3-7 seconds**
-
----
-
-## 🌐 Multilingual Support
-
-### Supported Languages
-- 🇩🇪 **German (DE)** - Default language
-- 🇬🇧 **English (EN)** - Full support
-- 🇻🇳 **Vietnamese (VI)** - Complete translations
-
-### URL Examples
-```
-/de                    # German homepage
-/en                    # English homepage
-/vi                    # Vietnamese homepage
-/en/blog              # English blog
-/de/gold              # German gold page
-```
-
-### Chatbot Languages
-Chatbot automatically detects user language and responds accordingly. Supports mid-conversation language switching.
-
----
-
-## 📈 Gold Investment Features
-
-### GoldPriceWidget Component
-- Live price updates (USD/VND)
-- 24-hour price trends with sparkline
-- Toggle between grams/ounces
-- Exchange rate auto-fetch
-
-### GoldInvestmentCalculator
-- Project investment returns
-- Simulate price scenarios
-- Compare outcomes
-- Risk analysis
-
-### Gold API (`/api/gold-price`)
-- Real-time price feeds
-- 5-minute cache duration
-- Exponential backoff retry logic
-- Fallback data handling
-
----
-
-## 🔧 Available Scripts
+Requirements: Docker Desktop with Docker Compose.
 
 ```bash
-# Development
-npm run dev              # Start dev server with Turbopack
-npm run build           # Build for production
-npm start               # Run production build
-
-# RAG Management
-node scripts/extract-all-ergo-pdfs.js      # Extract PDFs
-node scripts/generate-ergo-prompt-v2.js    # Generate prompts
-
-# Testing
-npm run lint            # Run ESLint
-npx ts-node lib/rag.test.ts  # Run RAG tests
+docker compose up --build
 ```
 
----
+| Service | URL |
+|---|---|
+| Next.js workspace | `http://localhost:3000` |
+| Keycloak | `http://localhost:8080` |
+| Java API | `http://localhost:8081/actuator/health` |
 
-## 🧪 Testing
+Local-only demo login:
 
-### Chatbot Test Examples
+- User: `advisor.demo`
+- Password: `demo-password`
+- Roles: `ADVISOR`, `REVIEWER`
+- Business tenant: `praxisbank-demo`
 
-**Test 1: German Query**
-```
-Q: "Was sind die Leistungen der ERGO Krankenversicherung?"
-Expected: Specific ERGO benefits from documents ✅
-```
+The checked-in account is deliberately limited to local development. Do not reuse these credentials outside the lab.
 
-**Test 2: English Query**
-```
-Q: "Tell me about ERGO pension plans"
-Expected: Pension details with sources ✅
-```
+## Run and test the Java API
 
-**Test 3: Vietnamese Query**
-```
-Q: "Bảo hiểm ERGO bao gồm những gì?"
-Expected: Vietnamese response with facts ✅
-```
-
----
-
-## 📝 Pages & Features
-
-### Homepage (`/[locale]`)
-- Hero section with CTA
-- Services overview (5 services)
-- 3-step process explanation
-- Client testimonials
-- Contact/booking form
-- Gold price widget
-
-### Blog (`/[locale]/blog`)
-- Article listing
-- Individual post pages
-- Multi-language support
-- Responsive design
-
-### Gold Consulting (`/[locale]/gold`)
-- Live gold prices
-- ROI calculator
-- Market insights
-- Investment tips
-- FAQ section
-- Risk disclaimer
-- Service CTA
-
-### Legal Pages
-- **Impressum** - Legal notice (required in Germany)
-- **Datenschutz** - Privacy policy (GDPR compliant)
-- **Terms** - Terms of service
-
----
-
-## 🔐 Security & Compliance
-
-✅ **GDPR Compliant** - Privacy policy, data handling, cookie consent  
-✅ **HTTPS Only** - Secure connections enforced  
-✅ **API Key Protection** - Environment variables, no hardcoding  
-✅ **Input Validation** - XSS/injection prevention  
-✅ **Rate Limiting** - Azure OpenAI built-in limits  
-
----
-
-## 📦 Deployment
-
-### Build & Export
 ```bash
-npm run build
-# Next.js creates optimized production build
+cd services/credit-api
+mvn spring-boot:run -Dspring-boot.run.arguments="--app.security.enabled=false"
 ```
 
-### Deploy to Vercel (Recommended)
 ```bash
-npm install -g vercel
-vercel
-# Set environment variables in Vercel dashboard
+curl -H "X-Demo-Tenant: praxisbank-demo" http://localhost:8080/api/cases
 ```
 
-### Deploy to Other Platforms
+In the secured Docker profile the demo header is not an authentication mechanism: the API derives `tenant_id` from the verified Keycloak token. The header exists only for the isolated, security-disabled Java test profile.
+
+## Azure OpenAI without an API key
+
+Copy `.env.example` to `.env.local` and set endpoint, deployment, Azure tenant ID and client ID. Locally, `DefaultAzureCredential` can use `az login`. On Vercel, configure workload identity federation and grant the application the minimum Azure OpenAI role. The route exchanges Vercel’s signed OIDC assertion through `ClientAssertionCredential`.
+
+Never commit an Azure API key. The project intentionally has no API-key code path.
+
+## Production topology on Vercel
+
+The Git repository can be connected to three Vercel projects so each workload has an independent release boundary:
+
+| Project | Root directory | Runtime |
+|---|---|---|
+| `credit-intelligence-lab` | `/` | Native Next.js |
+| `credit-intelligence-api` | `services/credit-api` | OCI container from `Dockerfile.vercel` |
+| `credit-intelligence-auth` | `infra/keycloak` | OCI container from `Dockerfile.vercel` |
+
+Keycloak uses an external PostgreSQL database provisioned through the Vercel Marketplace. This is required because Vercel containers are stateless and scale to zero. The database preserves the realm, users, sessions and signing material across container restarts.
+
+Production environment boundaries:
+
+- The browser uses OAuth 2.0 Authorization Code with PKCE and never receives a client secret.
+- The Java API validates the Keycloak issuer and signing keys before deriving roles and `tenant_id`.
+- The Next.js chat route exchanges Vercel OIDC for a short-lived Microsoft Entra token; no Azure OpenAI key is stored.
+- All public portfolio records are synthetic. The shared demo account is intentionally restricted to synthetic read-only data.
+
+Vercel container support is suitable here as a portfolio lab. A regulated production bank deployment should run Keycloak in an always-on, multi-replica environment with managed PostgreSQL, backups, private networking and operational ownership.
+
+## Verification
+
 ```bash
-npm start
-# Listen on PORT environment variable (default 3000)
+npm run verify
+cd services/credit-api && mvn verify
 ```
 
-### Environment Variables Required
-```
-AZURE_OPENAI_API_KEY
-AZURE_OPENAI_ENDPOINT
-AZURE_OPENAI_DEPLOYMENT_NAME
-AZURE_OPENAI_API_VERSION
-```
+The GitHub Actions workflow runs lint, TypeScript checks, unit tests, Next.js production build and Maven tests on every pull request.
 
----
+## Safety boundaries
 
-## 📚 Documentation Files
-
-| File | Purpose |
-|------|---------|
-| **README.md** | Main project documentation (this file) |
-| **QUICK_START.md** | 5-minute setup guide |
-| **RAG_CHATBOT_INDEX.md** | Comprehensive RAG documentation |
-
----
-
-## 🎯 Performance Metrics
-
-| Metric | Target | Actual |
-|--------|--------|--------|
-| Page Load | <2s | ✅ ~1.5s |
-| Chat Response | <10s | ✅ ~3-7s |
-| SEO Score | >90 | ✅ 95+ |
-| Accessibility | WCAG AA | ✅ Compliant |
-| Mobile Score | >90 | ✅ 92+ |
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
----
-
-## 📄 License
-
-MIT License - See LICENSE file for details
-
----
-
-## 📞 Support & Contact
-
-- **Website**: https://finance-consulting.example.com
-- **Email**: info@finance-consulting.de
-- **Phone**: +49-XXX-XXXXXX
-- **Support Hours**: Mon-Fri 9:00-17:00 CET
-
----
-
-## 🎉 Status
-
-✅ **Production Ready**  
-✅ **All Features Complete**  
-✅ **Tests Passing**  
-✅ **Performance Optimized**  
-
-**Version**: 1.0.0  
-**Last Updated**: November 6, 2025  
-**Maintained By**: Development Team
+- Synthetic portfolio data only.
+- AI output is explanatory, not a lending decision.
+- Confidence values are model signals, not factual certainty.
+- Contradictions and confidence below policy thresholds require human review.
+- Logs should contain IDs and status codes, not raw document text or identity numbers.
+- A production deployment still needs persistent encrypted storage, distributed rate limiting, complete audit retention, DPIA/legal review and independent model validation.

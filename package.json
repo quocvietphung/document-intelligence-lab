@@ -1,35 +1,48 @@
 {
-  "name": "finance-consulting",
+  "name": "credit-intelligence-lab",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint",
-    "build:ergo-json": "node scripts/build-ergo-json.js"
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^2.0.53",
-    "@ai-sdk/react": "^2.0.76",
-    "ai": "^5.0.76",
-    "next": "15.5.9",
-    "next-intl": "^4.5.8",
-    "openai": "^6.6.0",
+    "@ai-sdk/azure": "^4.0.99",
+    "@ai-sdk/react": "^4.0.140",
+    "@azure/identity": "^4.13.3",
+    "@swc/helpers": "^0.5.23",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@vercel/oidc": "^4.0.0",
+    "ai": "^7.0.137",
+    "keycloak-js": "^26.2.4",
+    "lucide-react": "^1.54.0",
+    "next": "^16.4.0",
+    "next-intl": "^4.14.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "pdf-parse": "^1.1.1",
-    "natural": "^6.2.0"
+    "sharp": "^0.35.5",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^26.6.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "autoprefixer": "^10.0.1",
-    "eslint": "^8",
-    "eslint-config-next": "15.5.7",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.0",
+    "postcss": "^8.5.29",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5",
+    "vitest": "^5.0.3"
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.6.0": true,
+    "@swc/core@1.16.13": true,
+    "sharp@0.34.5": true,
+    "unrs-resolver@1.11.1": true
   }
 }
