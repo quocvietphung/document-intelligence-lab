@@ -5,24 +5,24 @@ import type {WorkspaceCase} from "@/lib/credit-api";
 import {publicDemoAnswer,publicDemoCase} from "@/lib/public-demo";
 import {publicDemoText} from "@/lib/public-demo-language";
 import {workspaceText} from "@/lib/workspace-language";
-import {ModalSurface} from "./ModalSurface";
+import {NovaChatSurface} from "./NovaChatSurface";
 import {novaGreeting} from "@/lib/nova-welcome";
 
-export function DemoCopilot({item,locale,close,initialQuestion,openSource}:{item:WorkspaceCase;locale:string;close:()=>void;initialQuestion?:string;openSource:(id:string)=>void}) {
+export function DemoCopilot({item,locale,open,onOpen,close,initialQuestion,openSource}:{item:WorkspaceCase;locale:string;open:boolean;onOpen:()=>void;close:()=>void;initialQuestion?:string;openSource:(id:string)=>void}) {
   const t=workspaceText(locale),d=publicDemoText(locale);
   const [text,setText]=useState(initialQuestion||"");
   const welcome={id:"nova-welcome",role:"assistant" as const,text:novaGreeting(locale)};
   const [messages,setMessages]=useState<{id:string;role:"user"|"assistant";text:string}[]>(()=>[welcome]);
   const bottom=useRef<HTMLDivElement>(null);
-  useEffect(()=>{bottom.current?.scrollIntoView({block:"nearest"});},[messages]);
+  useEffect(()=>{if(open)bottom.current?.scrollIntoView({block:"nearest"});},[messages,open]);
+  useEffect(()=>{if(initialQuestion===undefined)return;const timer=window.setTimeout(()=>setText(initialQuestion),0);return()=>window.clearTimeout(timer);},[initialQuestion]);
   function send(event?:FormEvent,question=text) {
     event?.preventDefault();if(!question.trim())return;
     setMessages(previous=>[...previous.slice(-18),{id:crypto.randomUUID(),role:"user",text:question.trim()},
       {id:crypto.randomUUID(),role:"assistant",text:publicDemoAnswer(question.trim(),locale)}]);setText("");
   }
-  return <ModalSurface title={t("nova")} close={close} label={t("close")}>
-    <p className="notice-lab"><ShieldCheck size={16}/>{d("badge")}</p>
-    <p className="mt-3 text-sm leading-relaxed text-slate-600">{d("notice")}</p>
+  return <NovaChatSurface title={t("nova")} locale={locale} open={open} onOpen={onOpen} close={close}>
+    <details className="nova-disclosure"><summary><ShieldCheck size={13}/>{d("badge")}</summary><p>{d("notice")}</p></details>
     <div className="chat-history" role="log" aria-label={t("nova")}>
       {!messages.length?<div className="chat-welcome"><MessageSquareText size={32}/><h3>{t("chatReady")}</h3><button className="button-secondary" onClick={()=>send(undefined,t("question"))}>{t("question")}</button></div>:messages.map(m=><article key={m.id} className={`chat-bubble ${m.role==="user"?"chat-user":"chat-assistant"}`}>
         <div className="whitespace-pre-wrap">{m.text}</div>
@@ -34,5 +34,5 @@ export function DemoCopilot({item,locale,close,initialQuestion,openSource}:{item
     </div>
     <form onSubmit={send} className="chat-composer"><label className="sr-only" htmlFor="nova-demo-question">{t("ask")}</label><textarea id="nova-demo-question" rows={2} maxLength={2000} value={text} onChange={e=>setText(e.target.value)} placeholder={t("ask")}/><button className="button-primary" disabled={!text.trim()}><Send size={17}/>{t("send")}</button></form>
     <button className="button-link mt-3" onClick={()=>setMessages([welcome])}>{t("clear")}</button>
-  </ModalSurface>;
+  </NovaChatSurface>;
 }
