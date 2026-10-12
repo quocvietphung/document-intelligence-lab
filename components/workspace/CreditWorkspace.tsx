@@ -12,6 +12,8 @@ import {toWorkspaceCase,type WorkspaceCase} from "@/lib/credit-api";
 import {workspaceText} from "@/lib/workspace-language";
 import {useRouter} from "@/routing";
 import {ModalSurface} from "./ModalSurface";
+import {NovaChatSurface} from "./NovaChatSurface";
+import {novaWidgetText} from "@/lib/nova-widget-language";
 import {PlatformWorkbench} from "./PlatformWorkbench";
 import {platformText} from "@/lib/platform-language";
 import {FlaskConical,Layers3,GitBranch,ScanSearch} from "lucide-react";
@@ -26,7 +28,7 @@ import {novaWelcomeMessage,welcomeSessionKey} from "@/lib/nova-welcome";
 type Tab="overview"|"banking"|"documents"|"studio"|"pipeline"|"controls"|"operations"|"evaluation"|"audit";
 const navigation=[["overview",LayoutDashboard],["studio",FlaskConical],["documents",FileSearch],["pipeline",Layers3],["controls",ScanSearch],["banking",WalletCards],["evaluation",Gauge],["operations",GitBranch],["audit",ClipboardCheck]] as const;
 
-function Copilot({item,locale,close,initialQuestion,openSource}:{item:WorkspaceCase;locale:string;close:()=>void;initialQuestion?:string;openSource:(id:string)=>void}) {
+function Copilot({item,locale,open,onOpen,close,initialQuestion,openSource}:{item:WorkspaceCase;locale:string;open:boolean;onOpen:()=>void;close:()=>void;initialQuestion?:string;openSource:(id:string)=>void}) {
   const auth=useAuth(); const base=workspaceText(locale),d=documentText(locale); const t=(key:string)=>key==="chatReady"?d("greeting"):key==="sources"?d("sources"):base(key); const [text,setText]=useState(initialQuestion||""); const [mode,setMode]=useState<string>();
   const bottom=useRef<HTMLDivElement>(null);
   const transport=useMemo(()=>new DefaultChatTransport({api:"/api/chat",headers:()=>({Authorization:`Bearer ${auth.token}`}),body:{caseId:item.id,locale},fetch:async(input,init)=>{
@@ -34,9 +36,10 @@ function Copilot({item,locale,close,initialQuestion,openSource}:{item:WorkspaceC
   },prepareSendMessagesRequest:({messages})=>({body:caseChatPayload(messages,item.id,locale)})}),[auth.token,item.id,locale,setMode]);
   const {messages,sendMessage,status,error,stop,setMessages,clearError}=useChat({transport,messages:[novaWelcomeMessage(locale)]});
   const busy=status==="submitted"||status==="streaming";
-  useEffect(()=>{bottom.current?.scrollIntoView({block:"nearest"});},[messages]);
+  useEffect(()=>{if(open)bottom.current?.scrollIntoView({block:"nearest"});},[messages,open]);
+  useEffect(()=>{if(initialQuestion===undefined)return;const timer=window.setTimeout(()=>setText(initialQuestion),0);return()=>window.clearTimeout(timer);},[initialQuestion]);
   function send(event?:FormEvent) { event?.preventDefault();if(!text.trim()||busy)return;void sendMessage({text:text.trim()});setText(""); }
-  return <ModalSurface title={t("nova")} close={()=>{void stop();close();}} label={t("close")}>
+  return <NovaChatSurface title={t("nova")} locale={locale} open={open} onOpen={onOpen} close={close}>
     <div className="flex items-center gap-2 text-xs font-semibold text-teal-700"><ShieldCheck size={15}/>{item.id} · {t("chatHint")}</div>
     <div className="chat-history scrollbar-thin" role="log" aria-label={t("nova")}>
       {!messages.length?<div className="chat-welcome"><MessageSquareText size={32}/><h3>{t("chatReady")}</h3><button className="button-secondary" disabled={!auth.token} onClick={()=>void sendMessage({text:t("question")})}>{t("question")} <ArrowUpRight size={16}/></button></div>:messages.map(message=><article key={message.id} className={`chat-bubble ${message.role==="user"?"chat-user":"chat-assistant"}`}>
@@ -48,8 +51,8 @@ function Copilot({item,locale,close,initialQuestion,openSource}:{item:WorkspaceC
     </div>
     <form onSubmit={send} className="chat-composer"><label className="sr-only" htmlFor="nova-question">{t("ask")}</label><textarea id="nova-question" value={text} onChange={e=>setText(e.target.value)} maxLength={2000} placeholder={t("ask")} rows={2}/><button className="button-primary" disabled={busy||!text.trim()||!auth.token} type="submit"><Send size={17}/>{t("send")}</button></form>
     <div className="mt-3 flex flex-wrap gap-2"><button className="button-link" onClick={()=>{void stop();}} disabled={!busy}>{t("stop")}</button><button className="button-link" onClick={()=>{setMessages([novaWelcomeMessage(locale)]);clearError();setMode(undefined);}} disabled={busy}>{t("clear")}</button></div>
-    {mode?<p className="mt-3 text-xs font-semibold text-teal-800">{d(assistantModeKey(mode))}</p>:null}<p className="mt-2 text-xs leading-relaxed text-slate-500">{d("singleQuestion")}</p><p className="mt-2 text-xs leading-relaxed text-slate-500">{t("quota")}</p>
-  </ModalSurface>;
+    {mode?<p className="mt-2 text-xs font-semibold text-teal-800">{d(assistantModeKey(mode))}</p>:null}<details className="nova-disclosure mt-2"><summary>{novaWidgetText(locale).details}</summary><p>{d("singleQuestion")}</p><p>{t("quota")}</p></details>
+  </NovaChatSurface>;
 }
 
 export function CreditWorkspace({locale}:{locale:string}) {
@@ -176,6 +179,6 @@ export function CreditWorkspace({locale}:{locale:string}) {
     {editor&&auth.authenticated?<ModalSurface title={t(editor==="new"?"newCase":"editCase")} label={t("close")} close={()=>{if(!busy)setEditor(null);}}><form key={editor} onSubmit={saveDraft} className="draft-form">{[["applicant","applicant",editor==="edit"?item?.applicant:""],["purpose","purpose",editor==="edit"?item?.purpose:""],["coApplicant","coApplicant",editor==="edit"?item?.coApplicant:""]].map(([name,label,value])=><label key={name}>{t(label!)}<input name={name} required={name!=="coApplicant"} maxLength={name==="purpose"?160:120} defaultValue={value}/></label>)}<label>{t("amount")}<input type="number" name="amountEuro" min={1} max={10000000} step={1} required defaultValue={editor==="edit"?item?.amountEuro:10000}/></label>{error?<p className="notice-error" role="alert">{t(error)}</p>:null}<div className="flex justify-end gap-2"><button type="button" className="button-secondary" disabled={busy} onClick={()=>setEditor(null)}>{t("cancel")}</button><button className="button-primary" disabled={busy}>{t(busy?"loading":"save")}</button></div></form></ModalSurface>:null}
     {inspected&&item?<ModalSurface wide title={inspected.name} label={t("close")} close={()=>{if(!busy)setInspected(null);}}><p className="notice-lab">{inspected.originalAvailable?documentText(locale)("review"):t("fixture")} · {inspected.analysisProvider||"local"} · {inspected.modelId||"transparent-rules"}</p><DocumentEvidence key={inspected.id} doc={inspected} caseId={item.id} locale={locale} editable={canReview&&!!inspected.originalAvailable&&!busy} values={reviewValues} onChange={(index,value)=>setReviewValues(v=>v.map((previous,i)=>i===index?value:previous))}/>
       {error?<p className="notice-error" role="alert">{t(error)}</p>:null}<div className="mt-6 flex flex-wrap justify-end gap-2">{inspected.originalAvailable?<button className="button-secondary" onClick={()=>void original(inspected)}>{t("original")}</button>:null}<button className="button-primary" disabled={!canReview||!inspected.originalAvailable||!inspected.fields?.length||reviewValues.some(v=>!v.trim())||busy} onClick={()=>void request(`/api/cases/${item.id}/documents/${inspected.id}/review`,"POST",JSON.stringify({version:item.version||0,values:reviewValues}))}><CheckCircle2 size={17}/>{t(busy?"loading":"confirm")}</button></div></ModalSurface>:null}
-    {chat&&item&&auth.authenticated?<Chat key={`${item.id}:${item.version}:${auth.tenantId}:${auth.displayName}`} item={item} locale={locale} openSource={id=>{const doc=item.documents.find(d=>id.startsWith(d.id+":"));if(doc){setChat(false);inspect(doc);}}} initialQuestion={chatQuestion} close={()=>{setChat(false);setChatQuestion(undefined);}}/>:null}
+    {item&&auth.authenticated?<div hidden={Boolean(editor||inspected)}><Chat key={`${item.id}:${item.version}:${auth.tenantId}:${auth.displayName}`} item={item} locale={locale} open={chat} onOpen={()=>setChat(true)} openSource={id=>{const doc=item.documents.find(d=>id.startsWith(d.id+":"));if(doc){setChat(false);inspect(doc);}}} initialQuestion={chatQuestion} close={()=>{setChat(false);setChatQuestion(undefined);}}/></div>:null}
   </div>;
 }
