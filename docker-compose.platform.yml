@@ -1,0 +1,65 @@
+# Local reliability lab. No external banking endpoints or new Azure resources.
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.19.1
+    restart: unless-stopped
+    volumes:
+      - lab_vectors:/qdrant/storage
+  redis:
+    image: redis:7.4-alpine
+    command: redis-server --appendonly yes --maxmemory 64mb --maxmemory-policy noeviction
+    restart: unless-stopped
+    volumes:
+      - lab_limits:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 12
+  clamav:
+    image: clamav/clamav:stable
+    # Official ClamAV image is amd64; Docker Desktop emulates it on Apple Silicon.
+    platform: linux/amd64
+    restart: unless-stopped
+    volumes:
+      - lab_virus_definitions:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "clamdscan", "--ping=1"]
+      interval: 20s
+      timeout: 10s
+      retries: 30
+      start_period: 120s
+  storage-init:
+    image: busybox:1.37
+    user: root
+    command: ["sh", "-c", "chown $$STORAGE_UID:$$STORAGE_GID /documents && chmod 700 /documents"]
+    environment:
+      STORAGE_UID: ${CREDIT_LOCAL_UID:-1000}
+      STORAGE_GID: ${CREDIT_LOCAL_GID:-1000}
+    volumes:
+      - lab_documents:/documents
+  credit-api:
+    environment:
+      LOCAL_EMBEDDINGS_ENABLED: "true"
+      QDRANT_URL: http://qdrant:6333
+      REDIS_HOST: redis
+      REDIS_LIMITS_ENABLED: "true"
+      CLAMAV_HOST: clamav
+      DOCUMENT_STORAGE_ROOT: /app/documents
+      DOCUMENT_RETENTION_DAYS: "30"
+      JAVA_TOOL_OPTIONS: -Xmx640m -XX:ActiveProcessorCount=2
+    volumes:
+      - lab_documents:/app/documents
+    depends_on:
+      redis:
+        condition: service_healthy
+      clamav:
+        condition: service_healthy
+      storage-init:
+        condition: service_completed_successfully
+      qdrant:
+        condition: service_started
+volumes:
+  lab_vectors:
+  lab_limits:
+  lab_documents:
+  lab_virus_definitions:

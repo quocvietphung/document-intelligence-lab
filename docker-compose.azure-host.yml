@@ -1,0 +1,6 @@
+# Run the databases and Keycloak in Docker; run Java on the host so az login
+# can provide a short-lived Entra token without copying credential files.
+services:
+  case-db:
+    ports:
+      - "127.0.0.1:5433:5432"

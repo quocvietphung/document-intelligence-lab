@@ -1,70 +1,42 @@
-import { NextRequest, NextResponse } from "next/server";
-import {
-  convertToModelMessages,
-  createUIMessageStream,
-  createUIMessageStreamResponse,
-  streamText,
-  toUIMessageStream,
-  type UIMessage,
-} from "ai";
-import { createAzureModel, getAzureConfig } from "@/lib/azure-openai";
-import { buildCreditInstructions, demoAnswer, messageText } from "@/lib/credit-chat";
-
-export const runtime = "nodejs";
-export const maxDuration = 60;
-
-function demoStream(text: string) {
-  const id = crypto.randomUUID();
-  return createUIMessageStream<UIMessage>({
-    execute: async ({ writer }) => {
-      writer.write({ type: "text-start", id });
-      for (const word of text.split(" ")) {
-        writer.write({ type: "text-delta", id, delta: `${word} ` });
-        await new Promise((resolve) => setTimeout(resolve, 12));
-      }
-      writer.write({ type: "text-end", id });
-      writer.write({ type: "finish", finishReason: "stop" });
-    },
-  });
-}
-
-export async function POST(request: NextRequest) {
+import { createUIMessageStream,createUIMessageStreamResponse,type UIMessage } from "ai";
+import { conversationSchema,messageText } from "@/lib/credit-chat";
+import { boundedBody } from "@/lib/request-body";
+import { hasAllowedOrigin } from "@/lib/request-origin";
+export const runtime="nodejs";
+export const maxDuration=60;
+export async function POST(request:Request) {
+  if(process.env.NEXT_PUBLIC_DEMO_MODE==="true") return Response.json({error:"Public demo: Azure chat disabled"},{status:503});
+  const requestId=crypto.randomUUID(); const root=process.env.CREDIT_API_URL;
+  if(!root) return Response.json({error:"Verified Java API required"},{status:503});
+  const authorization=request.headers.get("authorization");
+  if(!authorization?.startsWith("Bearer ")) return Response.json({error:"Sign in required"},{status:401});
+  if(!hasAllowedOrigin(request)) return Response.json({error:"Origin not allowed"},{status:403});
   try {
-    const body = (await request.json()) as { messages?: UIMessage[] };
-    if (!Array.isArray(body.messages) || body.messages.length === 0) {
-      return NextResponse.json({ error: "Invalid conversation" }, { status: 400 });
-    }
-    const latest = [...body.messages].reverse().find((message) => message.role === "user");
-    if (!latest) return NextResponse.json({ error: "User message missing" }, { status: 400 });
-    const question = messageText(latest).slice(0, 2_000);
-    const { instructions } = buildCreditInstructions(question);
-    const config = getAzureConfig();
-
-    if (!config) {
-      return createUIMessageStreamResponse({
-        headers: { "Cache-Control": "no-store", "X-AI-Mode": "synthetic-demo" },
-        stream: demoStream(demoAnswer(question)),
-      });
-    }
-
-    const result = streamText({
-      model: createAzureModel(config),
-      instructions,
-      messages: await convertToModelMessages(body.messages.slice(-10)),
-      maxOutputTokens: 700,
-      temperature: 0.15,
-      maxRetries: 0,
-      abortSignal: AbortSignal.any([request.signal, AbortSignal.timeout(40_000)]),
+    let body;
+    try { body=conversationSchema.parse(JSON.parse(new TextDecoder().decode(await boundedBody(request,30_000)))); }
+    catch(error) { return Response.json({error:"Invalid conversation"},{status:error instanceof Error&&error.message==="BODY_LIMIT"?413:400}); }
+    const messages: UIMessage[]=body.messages.map(m=>({...m,parts:m.parts.filter(p=>p.type==="text")}));
+    const latest=[...messages].reverse().find(m=>m.role==="user");
+    if(!latest || !messageText(latest)) return Response.json({error:"Question required"},{status:400});
+    const response=await fetch(`${root.replace(/\/$/,"")}/api/assistant/chat`,{
+      method:"POST",headers:{Authorization:authorization,"Content-Type":"application/json"},
+      body:JSON.stringify({caseId:body.caseId,locale:body.locale,question:messageText(latest)}),
+      cache:"no-store",signal:AbortSignal.any([request.signal,AbortSignal.timeout(45_000)]),
     });
-    return createUIMessageStreamResponse({
-      headers: { "Cache-Control": "no-store", "X-AI-Mode": "azure-oidc" },
-      stream: toUIMessageStream({
-        stream: result.stream,
-        onError: () => "Nova ist gerade nicht erreichbar. Bitte erneut versuchen.",
-      }),
-    });
-  } catch (error) {
-    console.error("credit-chat-error", error instanceof Error ? error.message : "unknown");
-    return NextResponse.json({ error: "Chat request failed" }, { status: 500 });
+    if(!response.ok) return Response.json({error:response.status===429?"Usage limit reached":"AI assistant unavailable"},{status:[400,401,403,404,429].includes(response.status)?response.status:503});
+    const result=await response.json() as {answer:string;mode:string;sources:{id:string;title:string}[]};
+    if(typeof result.answer!=="string"||!Array.isArray(result.sources)) throw new Error("Invalid assistant response");
+    const stream=createUIMessageStream<UIMessage>({execute:async({writer})=>{
+      writer.write({type:"start"});
+      for(const source of result.sources) writer.write({type:"source-document",sourceId:source.id,mediaType:"text/plain",title:source.title});
+      const id=crypto.randomUUID(); writer.write({type:"text-start",id});
+      writer.write({type:"text-delta",id,delta:result.answer});
+      writer.write({type:"text-end",id}); writer.write({type:"finish",finishReason:"stop"});
+    },onError:()=>"AI_UNAVAILABLE"});
+    return createUIMessageStreamResponse({headers:{"Cache-Control":"no-store","X-Request-ID":requestId,"X-AI-Mode":result.mode||"unknown"},stream});
+  } catch {
+    // No prompts, tokens, document contents or provider error payloads enter application logs.
+    console.error("credit-chat-failed",{requestId});
+    return Response.json({error:"Chat unavailable",requestId},{status:503});
   }
 }

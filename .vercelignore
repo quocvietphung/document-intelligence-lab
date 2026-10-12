@@ -1,0 +1,11 @@
+.local
+.env*
+!.env.example
+node_modules
+.next
+.git
+services
+infra
+docker-compose*.yml
+docs
+*.tsbuildinfo

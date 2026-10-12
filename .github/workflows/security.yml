@@ -1,0 +1,45 @@
+name: Dependency and image security
+on:
+  pull_request:
+  push:
+    branches: [master, develop, "codex/**"]
+permissions:
+  contents: read
+jobs:
+  dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm}
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: 21, cache: maven}
+      - name: Generate Java SBOM
+        run: mvn --batch-mode -f services/credit-api/pom.xml org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom
+      - uses: actions/upload-artifact@v4
+        with: {name: java-sbom, path: "services/credit-api/target/bom.*"}
+      - uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+  containers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build local images only
+        run: docker compose build web credit-api
+      - uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: credit-intelligence-lab-credit-api
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+      - uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: credit-intelligence-lab-web
+          severity: HIGH,CRITICAL
+          exit-code: "1"
