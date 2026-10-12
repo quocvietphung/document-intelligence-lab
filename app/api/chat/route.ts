@@ -2,6 +2,7 @@ import { createUIMessageStream,createUIMessageStreamResponse,type UIMessage } fr
 import { conversationSchema,messageText } from "@/lib/credit-chat";
 import { boundedBody } from "@/lib/request-body";
 import { hasAllowedOrigin } from "@/lib/request-origin";
+import {novaLimit} from "@/lib/nova-limits";
 export const runtime="nodejs";
 export const maxDuration=60;
 export async function POST(request:Request) {
@@ -23,7 +24,17 @@ export async function POST(request:Request) {
       body:JSON.stringify({caseId:body.caseId,locale:body.locale,question:messageText(latest)}),
       cache:"no-store",signal:AbortSignal.any([request.signal,AbortSignal.timeout(45_000)]),
     });
-    if(!response.ok) return Response.json({error:response.status===429?"Usage limit reached":"AI assistant unavailable"},{status:[400,401,403,404,429].includes(response.status)?response.status:503});
+    if(!response.ok) {
+      if(response.status===429){
+        // Only known safe limit metadata may cross the proxy; never forward provider errors.
+        const limit=novaLimit(await response.json().catch(()=>undefined));
+        const seconds=response.headers.get("Retry-After");
+        const headers:Record<string,string>={"Cache-Control":"no-store"};
+        if(seconds&&/^\d{1,5}$/.test(seconds)&&Number(seconds)>0&&Number(seconds)<=86400)headers["Retry-After"]=seconds;
+        return Response.json({error:"Usage limit reached",...limit},{status:429,headers});
+      }
+      return Response.json({error:"AI assistant unavailable"},{status:[400,401,403,404].includes(response.status)?response.status:503});
+    }
     const result=await response.json() as {answer:string;mode:string;sources:{id:string;title:string}[]};
     if(typeof result.answer!=="string"||!Array.isArray(result.sources)) throw new Error("Invalid assistant response");
     const stream=createUIMessageStream<UIMessage>({execute:async({writer})=>{

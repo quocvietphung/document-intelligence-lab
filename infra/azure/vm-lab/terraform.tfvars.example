@@ -1,0 +1,6 @@
+subscription_id   = "YOUR_SUBSCRIPTION_ID"
+ssh_public_key    = "ssh-ed25519 YOUR_PUBLIC_KEY credit-lab"
+ssh_source_cidr   = "YOUR_PUBLIC_IPV4/32"
+shutdown_time_utc = "0300"
+# Only change this after reviewing its hourly price and your subscription quota.
+vm_size = "Standard_D2as_v4"

@@ -11,7 +11,6 @@ import dev.langchain4j.service.AiServices;
 import dev.creditlab.platform.PlatformService;
 import dev.creditlab.platform.DistributedLimits;
 import dev.creditlab.platform.RagEngine;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -42,7 +41,7 @@ public class CreditAssistantService {
     long start=System.nanoTime();
     var plan=platform==null?null:platform.plan(question);
     if(plan!=null&&plan.blocked())return new AssistantResponse(switch(request.locale()){case "de"->"Diese Anfrage wurde durch die Schutzregeln blockiert. Frage nach den Belegen oder dem Prüfprozess.";case "vi"->"Yêu cầu bị chặn do ghi đè hướng dẫn hoặc hỏi thông tin bí mật. Hãy hỏi về chứng cứ và quy trình kiểm tra.";default->"This request was blocked by the evidence guard. Ask about evidence or the review workflow.";},"guard-blocked",List.of(),UUID.randomUUID().toString());
-    if(limits!=null)limits.reserve(tenant,actor,"chat",6);
+    if(limits!=null)limits.reserve(tenant,actor,"chat",cases.quotaPolicy().requestsPerMinute());
     var retrieval=platform==null?null:platform.retrieve(item,question);
     List<Source> sources=sources(question,item);
     if(retrieval!=null){var context=new ArrayList<>(retrieval.hits().stream().map(h->new Source(h.id(),h.title(),h.text())).toList());for(var s:sources)if((s.id().equals("case-summary")||s.id().equals("policy"))&&context.stream().noneMatch(c->c.id().equals(s.id())))context.add(s);sources=List.copyOf(context);}
@@ -65,8 +64,7 @@ public class CreditAssistantService {
       if(platform!=null)platform.record(tenant,item.id(),requestId,"synthetic-demo",plan,answer,evidenceHits(sources),(System.nanoTime()-start)/1_000_000);
       return new AssistantResponse(answer,"synthetic-demo",sources,requestId);
     }
-    int budget=question.getBytes(StandardCharsets.UTF_8).length+sources.stream().mapToInt(s->s.text().getBytes(StandardCharsets.UTF_8).length).sum()+1000;
-    cases.reserve(tenant,item.id(),actor,Math.min(30_000,budget));
+    cases.reserve(tenant,item.id(),actor,AssistantBudget.reserve(question,sources));
     var builder=AiServices.builder(CreditAssistantModel.class).chatModel(model.get()).maxSequentialToolsInvocations(4);
     var allowedTools=new ArrayList<Object>();allowedTools.add(new AppGuideTools(request.locale()));
     if(platform!=null) {

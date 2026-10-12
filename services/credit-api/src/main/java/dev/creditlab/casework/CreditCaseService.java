@@ -91,6 +91,7 @@ public class CreditCaseService {
     ((SqlCaseStore)store).expire(updated,old.version(),docId);
   }
   public void reserve(String tenant,String id,String actor,int tokens) { require(tenant,id); store.reserve(tenant,actor,tokens); }
+  public dev.creditlab.assistant.AiQuotaPolicy quotaPolicy(){return store.quotaPolicy();}
   public void recordAiUse(String requestId,String tenant,String id,String actor,String mode) {
     require(tenant,id); store.recordAiUse(requestId,tenant,id,actor,mode);
   }

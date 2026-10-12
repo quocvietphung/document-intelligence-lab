@@ -14,6 +14,8 @@ export function novaGuideFor(question:string,current?:WorkspaceTab):NovaGuide|un
   if(/ignore.*instruction|reveal.*secret|system prompt|bo qua.*huong dan|javascript:/.test(q))return;
   const ids=catalog.filter(f=>f.aliases.some(a=>q.includes(normalize(a)))).map(f=>f.id as WorkspaceTab);
   if(current&&!ids.length&&/this (page|section)|muc nay|trang nay|dieser bereich|diese seite/.test(q))return {features:[current],query:question};
+  // Location questions about payroll AI are product help, not a cloud extraction request.
+  if(/phan nao|muc nao|o dau|where|wo .*|welcher bereich/.test(q)&&/ai|chuc nang|tinh nang|itnsh nang|feature|funktion/.test(q)&&/bang luong|payroll|payslip|gehaltsabrechnung|datev/.test(q))return {features:["documents","pipeline","controls"],query:question};
   const help=/what.*(can|does|is|feature)|how.*(use|open|upload)|show|open|where|guide|help|features|search|co.*gi|cach|huong dan|o dau|chuc nang|mo |dieu huong|tim |was.*(kann|ist|gibt)|wie|offne|funktion|zeig|suchen/.test(q);
   if(ids.length&&help)return {features:ids,query:question};
   if(/all.*features|app.*(can|features)|tat ca.*chuc nang|app.*co.*gi|ung dung.*co.*gi|alle.*funktion/.test(q))return {features:[...workspaceTabs],query:question};

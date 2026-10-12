@@ -15,7 +15,12 @@ public class SqlCaseStore extends CaseStore {
   private final ObjectMapper mapper;
   private final TransactionTemplate tx;
   private final boolean h2;
+  private final dev.creditlab.assistant.AiQuotaPolicy quota;
   public SqlCaseStore(DataSource source, ObjectMapper mapper) {
+    this(source,mapper,dev.creditlab.assistant.AiQuotaPolicy.defaults());
+  }
+  public SqlCaseStore(DataSource source,ObjectMapper mapper,dev.creditlab.assistant.AiQuotaPolicy quota) {
+    this.quota=quota;
     this.db = new JdbcTemplate(source); this.mapper = mapper;
     this.tx = new TransactionTemplate(new DataSourceTransactionManager(source));
     try (var connection=source.getConnection()) { this.h2=connection.getMetaData().getDatabaseProductName().equalsIgnoreCase("H2"); }
@@ -62,19 +67,21 @@ public class SqlCaseStore extends CaseStore {
       db.update("DELETE FROM credit_files WHERE tenant=? AND case_id=? AND id=?",item.tenantId(),item.id(),docId);});
   }
   @Override public void reserve(String tenant,String actor,int tokens) {
+    if(tokens<1||tokens>30_000)throw new IllegalArgumentException("Invalid reservation size");
     var now=Instant.now(); var minute=now.getEpochSecond()/60; var day=LocalDate.now(ZoneOffset.UTC);
     tx.executeWithoutResult(status -> {
       // Always lock tenant first. All instances share these counters; failed reservations roll back.
-      charge("tenant:"+tenant+":m:"+minute,1,60);
-      charge("actor:"+tenant+":"+actor+":m:"+minute,1,6);
-      charge("budget:"+tenant+":d:"+day,tokens,100_000);
-      charge("budget:"+tenant+":"+actor+":d:"+day,tokens,30_000);
+      charge("tenant:"+tenant+":m:"+minute,1,quota.tenantRequestsPerMinute(),"AI_MINUTE_LIMIT",now,false);
+      charge("actor:"+tenant+":"+actor+":m:"+minute,1,quota.requestsPerMinute(),"AI_MINUTE_LIMIT",now,false);
+      charge("budget:"+tenant+":d:"+day,tokens,quota.dailyTenantBudget(),"AI_DAILY_TENANT_LIMIT",now,true);
+      charge("budget:"+tenant+":"+actor+":d:"+day,tokens,quota.dailyAccountBudget(),"AI_DAILY_ACCOUNT_LIMIT",now,true);
     });
   }
-  private void charge(String bucket,int amount,int limit) {
+  @Override public dev.creditlab.assistant.AiQuotaPolicy quotaPolicy(){return quota;}
+  private void charge(String bucket,int amount,int limit,String code,Instant now,boolean daily) {
     db.update(h2?"MERGE INTO ai_quota(bucket,used) KEY(bucket) VALUES(?,COALESCE((SELECT used FROM ai_quota WHERE bucket=?),0))":"INSERT INTO ai_quota(bucket,used) VALUES(?,0) ON CONFLICT(bucket) DO NOTHING",h2?new Object[]{bucket,bucket}:new Object[]{bucket});
     long used=db.queryForObject("SELECT used FROM ai_quota WHERE bucket=? FOR UPDATE",Long.class,bucket);
-    if(used+amount>limit) throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,"AI usage limit reached");
+    if(used+amount>limit) throw new dev.creditlab.assistant.AiUsageLimitException(code,now,daily);
     db.update("UPDATE ai_quota SET used=used+? WHERE bucket=?",amount,bucket);
   }
   @Override public void recordAiUse(String requestId,String tenant,String caseId,String actor,String mode) {

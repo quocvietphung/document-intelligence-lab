@@ -29,6 +29,10 @@ app:
     credential: ${AZURE_DOCUMENT_INTELLIGENCE_CREDENTIAL:default}
     token-file: ${AZURE_DOCUMENT_INTELLIGENCE_TOKEN_FILE:}
   ai:
+    requests-per-minute: ${AI_REQUESTS_PER_MINUTE:6}
+    tenant-requests-per-minute: ${AI_TENANT_REQUESTS_PER_MINUTE:60}
+    daily-account-budget: ${AI_DAILY_ACCOUNT_BUDGET:30000}
+    daily-tenant-budget: ${AI_DAILY_TENANT_BUDGET:100000}
     endpoint: ${AZURE_OPENAI_ENDPOINT:}
     deployment: ${AZURE_OPENAI_DEPLOYMENT:}
     credential: ${AZURE_OPENAI_CREDENTIAL:default}

@@ -21,5 +21,6 @@ public class CaseStore {
   public void saveFile(String tenant, String caseId, String id, byte[] bytes) { files.put(tenant+":"+caseId+":"+id, bytes); }
   public Optional<byte[]> file(String tenant, String caseId, String id) { return Optional.ofNullable(files.get(tenant+":"+caseId+":"+id)); }
   public void reserve(String tenant, String actor, int tokens) { throw new IllegalStateException("Persistent quota storage required"); }
+  public dev.creditlab.assistant.AiQuotaPolicy quotaPolicy(){return dev.creditlab.assistant.AiQuotaPolicy.defaults();}
   public void recordAiUse(String requestId,String tenant,String caseId,String actor,String mode) { }
 }
