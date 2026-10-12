@@ -1,145 +1,188 @@
 # Credit Intelligence Lab
 
-A production-minded banking AI engineering portfolio built from an earlier finance prototype. The lab demonstrates document intelligence, tenant isolation, human review, measurable AI quality and keyless Azure OpenAI access.
+An independent banking-AI engineering lab: **inspect the evidence, explain uncertainty, keep a human in control**.
 
-> All names, documents, amounts and metrics are synthetic. This independent project is not affiliated with apoBank or any lender. It does not provide financial advice or make credit decisions.
+[Open the public demo](https://credit-intelligence-lab.vercel.app/en) · [Local verification](docs/PLATFORM_VERIFICATION.md) · [Azure setup](docs/AZURE_AI.md) · [Reliability runbook](docs/RELIABILITY_LAB.md)
 
-## What the lab demonstrates
+> Synthetic data only. Not affiliated with apoBank, Microsoft or a lender. No financial advice, automated credit decisions, real bank connections or real payments.
 
-- Credit intake inspired by real document-collection workflows: applicant, co-applicant, checklist, save/resume model and missing-document status.
-- Document AI concepts: classification, OCR field extraction, per-field confidence, missing-field checks and contradiction detection.
-- Human-in-the-loop control: low-confidence or conflicting evidence is escalated; there is no approval/rejection endpoint.
-- AI evaluation: labelled reference-set metrics are shown separately from technical availability.
-- Explainable AI copilot: Nova answers questions about the synthetic case and cites the current workflow context.
-- OAuth 2.0/OIDC with Keycloak and PKCE for the browser.
-- Tenant and role enforcement in a Java 21/Spring Boot resource server.
-- Azure OpenAI via Microsoft Entra workload identity / Vercel OIDC—no long-lived Azure API key.
-- Docker Compose for the full local platform and CI for both TypeScript and Java.
+## Two ways to explore
+
+| | Public Vercel demo | Full local Docker platform |
+| --- | --- | --- |
+| Access | No login or external API required | Keycloak Authorization Code + PKCE |
+| Cases and documents | Read-only synthetic fixtures; real sample PDF viewer | PostgreSQL intake, upload, extraction and evidence review |
+| Nova | Deterministic browser replies, **not an LLM** | Java/LangChain4j; optional real Azure OpenAI |
+| AI Studio | Local keyword lookup over bundled evidence | ONNX embeddings + Qdrant + BM25 + feature reranking |
+| Pipeline and controls | Illustrative snapshots; no background processing | Durable queue, ClamAV, retention, human review and audit |
+| Quality | Dataset explanation; no fabricated accuracy scores | Runnable benchmark with 40 labelled synthetic text references |
+| Banking lab | Account cards, filters, CSV and invoice inspection | Persistent mock workflow with explicit human confirmation |
+| Azure | Not called; no API keys needed | Entra short-lived tokens; no Azure API-key code path |
+
+Languages: **English, Deutsch, Tiếng Việt**. All sample names and amounts are fictional. The public demo cannot create cases, upload files, confirm reviews or prepare payments.
+
+## Screenshots
+
+### Public workspace — no API required
+
+![Public read-only Credit Intelligence workspace](docs/screenshots/public-workspace.jpg)
+
+### Document evidence — synthetic German payroll
+
+![Synthetic PDF and hand-labelled fields in the public demo](docs/screenshots/public-document.jpg)
+
+### Nova — full local Azure integration
+
+The screenshot below is from the **authenticated local Docker platform**, not the public Vercel demo. It shows an Entra-authenticated Azure answer with named source links; it is not an accuracy benchmark.
+
+![Local Azure Nova answer with source citations](docs/screenshots/audit-nova-2026-10-12.jpg)
+
+### Measured local quality
+
+![Local 40-reference synthetic text benchmark](docs/screenshots/reliability-quality.jpg)
+
+## Workspaces
+
+- **Overview:** selected-case context, missing evidence and contradictions.
+- **AI Studio:** evidence retrieval, transparent routing, allowed read-only tools and source inspection.
+- **Documents & review:** PDF/image viewer, extracted text/tables, net income versus payout, source-linked fields.
+- **Document pipeline:** bounded asynchronous upload, scanning, retries, duplicate rejection and expiry.
+- **Review & insights:** balanced teaching journal, amount-only payroll matching and review notes.
+- **Banking lab:** synthetic accounts, transactions, filters, CSV, invoice evidence and duplicate checks.
+- **AI quality:** field precision/recall/F1, document-type confusion and retrieval Recall@5.
+- **Operations:** configured infrastructure, tracing hooks, shared quotas, migrations and backup/restore.
+- **Activity log:** case edits, extraction and manual-review events.
+
+No real payment integration exists. ISO 20022 examples are deliberately non-submittable, with invalid demo identifiers. Nova cannot approve credit or execute a payment.
 
 ## Architecture
 
 ```text
-Browser / Next.js 16
-  ├─ Keycloak OAuth 2.0 + OIDC + PKCE
-  ├─ Credit workspace and human review
-  └─ Nova streaming chat
-         │
-         ├─ Next.js AI route ── Vercel OIDC ── Azure OpenAI
-         │                        (short-lived Entra token)
-         │
-         └─ Java 21 / Spring Boot API
-              ├─ JWT signature and role validation
-              ├─ tenant_id derived from verified token
-              ├─ case/document workflow
-              └─ health and audit-safe operations
+PUBLIC DEMO
+Browser → Next.js on Vercel → bundled fixtures + sample PDFs
+         No Java API, Keycloak login, Azure calls or database writes
+
+FULL LOCAL PLATFORM
+Browser → Keycloak OIDC/PKCE → Next.js authenticated transport
+                                      ↓
+                              Java 21 / Spring Boot
+                               ├─ verified JWT → tenant + roles
+                               ├─ PostgreSQL cases, jobs and audit
+                               ├─ PDFBox / Tesseract, or Azure Document Intelligence
+                               ├─ ONNX + Qdrant + BM25 retrieval
+                               ├─ LangChain4j → Azure OpenAI via Entra
+                               ├─ Redis quotas + ClamAV + private document volume
+                               └─ Flyway + Prometheus + OpenTelemetry
 ```
 
-The same word “tenant” appears in two independent security boundaries:
+Business tenant isolation (`tenant_id` in a verified Keycloak JWT) is separate from the Microsoft Entra tenant used to authenticate to Azure.
 
-1. **Business tenant**: `tenant_id` in the Keycloak JWT isolates customer organisations.
-2. **Azure tenant**: Microsoft Entra tenant used to exchange Vercel’s OIDC assertion for a short-lived Azure token.
+## Quick start: standalone browser demo
 
-## Run the web app
-
-Requirements: Node.js 22+.
+Requirements: Node.js 22 or 24 and npm.
 
 ```bash
+git clone https://github.com/quocvietphung/credit-intelligence-lab.git
+cd credit-intelligence-lab
 npm ci
-npm run dev
+NEXT_PUBLIC_DEMO_MODE=true npm run dev
 ```
 
-Open `http://localhost:3000`. Without Keycloak or Azure configuration the UI starts in a clearly labelled synthetic demo mode and Nova uses deterministic demo answers.
+Open [localhost:3000/en](http://localhost:3000/en). No Azure subscription, API key, Docker or login is required. If port 3000 is occupied, append `-- --port 3100`.
 
-## AI Solution Engineer practice map
+## Full local platform with Docker
 
-| Capability | Demonstrated here |
-|---|---|
-| Document AI | Classification, OCR-style extracted fields, confidence and evidence review |
-| LLM/RAG | Case-scoped retrieval, multilingual streaming answers and deterministic fallback |
-| Evaluation | Labelled synthetic reference metrics kept separate from service uptime |
-| Java integration | Spring Boot REST resource server with validation and tests |
-| Identity | OAuth 2.0/OIDC, PKCE, roles and verified `tenant_id` claims |
-| Azure security | Workload identity and short-lived tokens instead of a stored API key |
-| Operations | Health endpoint, audit-safe events, Docker Compose and CI |
-| Responsible AI | Human review, uncertainty handling and no automated lending decision |
-
-## Run the complete OAuth platform
-
-Requirements: Docker Desktop with Docker Compose.
+Requirements: Docker Desktop, Compose and enough available memory. The optional ClamAV service is heavier on Apple Silicon because its image is emulated.
 
 ```bash
-docker compose up --build
+docker compose up --build -d --wait --wait-timeout 300
 ```
 
-| Service | URL |
-|---|---|
-| Next.js workspace | `http://localhost:3000` |
-| Keycloak | `http://localhost:8080` |
-| Java API | `http://localhost:8081/actuator/health` |
+| Service | Local address |
+| --- | --- |
+| Workspace | http://localhost:3000/en |
+| Keycloak | http://localhost:8080 |
+| Java health | http://localhost:8081/actuator/health |
 
-Local-only demo login:
+Local-only advisor: `advisor.demo` / `demo-password`, roles `ADVISOR` and `REVIEWER`. Local-only Keycloak admin: `admin` / `local-admin-only`. Never use these lab credentials or Compose example passwords outside the isolated local environment.
 
-- User: `advisor.demo`
-- Password: `demo-password`
-- Roles: `ADVISOR`, `REVIEWER`
-- Business tenant: `praxisbank-demo`
-
-The checked-in account is deliberately limited to local development. Do not reuse these credentials outside the lab.
-
-## Run and test the Java API
+### Include the reliability services
 
 ```bash
-cd services/credit-api
-mvn spring-boot:run -Dspring-boot.run.arguments="--app.security.enabled=false"
+docker compose -f docker-compose.yml \
+  -f docker-compose.platform.yml \
+  -f docker-compose.observability.yml \
+  up --build -d --wait --wait-timeout 600
 ```
+
+This adds Qdrant, Redis, ClamAV, private document storage and the OTLP collector. `storage-init` is a one-shot permissions initializer: **exit code 0 is success**, not a service failure. Named database/document volumes survive ordinary container restarts. Do not use `down -v` unless you intentionally want to erase lab data.
+
+### Connect existing Azure AI without an API key
+
+Configure the resource endpoints in the Azure override for your own tenant. The bundled endpoint names refer to the owner's shared lab resources; they do not grant access.
 
 ```bash
-curl -H "X-Demo-Tenant: praxisbank-demo" http://localhost:8080/api/cases
+az login
+node scripts/docker-azure.mjs up
 ```
 
-In the secured Docker profile the demo header is not an authentication mechanism: the API derives `tenant_id` from the verified Keycloak token. The header exists only for the isolated, security-disabled Java test profile.
+Keep the helper running so its short-lived Entra token can be refreshed. The verified local implementation uses a restricted token-file mount; it is **not cloud Managed Identity**. Supported Azure compute can use `DefaultAzureCredential`/Managed Identity. See the [Azure runbook](docs/AZURE_AI.md) for role scopes, F0 two-page limits and failure handling. No Azure resources are created by these commands.
 
-## Azure OpenAI without an API key
+### Try a complete local evidence flow
 
-Copy `.env.example` to `.env.local` and set endpoint, deployment, Azure tenant ID and client ID. Locally, `DefaultAzureCredential` can use `az login`. On Vercel, configure workload identity federation and grant the application the minimum Azure OpenAI role. The route exchanges Vercel’s signed OIDC assertion through `ClientAssertionCredential`.
+1. Sign in and create a fictional case.
+2. Preview/import a payroll from the three generated sample PDFs.
+3. Compare the extracted fields and tables with the original PDF.
+4. Correct/confirm fields as a reviewer; inspect the updated activity log.
+5. Ask Nova a complete question about the selected case.
+6. Run evidence retrieval and the synthetic benchmark; inspect failures, not just aggregate scores.
 
-Never commit an Azure API key. The project intentionally has no API-key code path.
+Public third-party DATEV PDFs are **not redistributed**. The repository contains only its own generated payroll assets. Historical source/consent details: [Public payroll tests](docs/PUBLIC_PAYROLL_TESTS.md).
 
-## Production topology on Vercel
-
-The Git repository can be connected to three Vercel projects so each workload has an independent release boundary:
-
-| Project | Root directory | Runtime |
-|---|---|---|
-| `credit-intelligence-lab` | `/` | Native Next.js |
-| `credit-intelligence-api` | `services/credit-api` | OCI container from `Dockerfile.vercel` |
-| `credit-intelligence-auth` | `infra/keycloak` | OCI container from `Dockerfile.vercel` |
-
-Keycloak uses an external PostgreSQL database provisioned through the Vercel Marketplace. This is required because Vercel containers are stateless and scale to zero. The database preserves the realm, users, sessions and signing material across container restarts.
-
-Production environment boundaries:
-
-- The browser uses OAuth 2.0 Authorization Code with PKCE and never receives a client secret.
-- The Java API validates the Keycloak issuer and signing keys before deriving roles and `tenant_id`.
-- The Next.js chat route exchanges Vercel OIDC for a short-lived Microsoft Entra token; no Azure OpenAI key is stored.
-- All public portfolio records are synthetic. The shared demo account is intentionally restricted to synthetic read-only data.
-
-Vercel container support is suitable here as a portfolio lab. A regulated production bank deployment should run Keycloak in an always-on, multi-replica environment with managed PostgreSQL, backups, private networking and operational ownership.
-
-## Verification
+## Verification and honest limits
 
 ```bash
 npm run verify
-cd services/credit-api && mvn verify
+cd services/credit-api
+mvn --batch-mode verify
 ```
 
-The GitHub Actions workflow runs lint, TypeScript checks, unit tests, Next.js production build and Maven tests on every pull request.
+Local release checks: **40 frontend tests passed**; lint, TypeScript and production build were checked. Java: **115 passed**, one opt-in live test skipped. The separately verified Docker integration exercised real Azure extraction/chat, authorization, uploads, scanner rejection, review refresh and optimistic concurrency. Full evidence and dated results are in [PLATFORM_VERIFICATION.md](docs/PLATFORM_VERIFICATION.md).
 
-## Safety boundaries
+The measured 40-reference **synthetic text** run reported precision 100%, recall 90.5%, field F1 95.0% and retrieval Recall@5 54.7%. These numbers are **not** image-OCR accuracy, Azure LLM accuracy, credit suitability or general banking correctness. Retrieval still needs improvement.
 
-- Synthetic portfolio data only.
-- AI output is explanatory, not a lending decision.
-- Confidence values are model signals, not factual certainty.
-- Contradictions and confidence below policy thresholds require human review.
-- Logs should contain IDs and status codes, not raw document text or identity numbers.
-- A production deployment still needs persistent encrypted storage, distributed rate limiting, complete audit retention, DPIA/legal review and independent model validation.
+Other limits:
+
+- Feature reranking and lexical source support are heuristics, not a trained cross-encoder or calibrated groundedness score.
+- Payroll reconciliation matches amounts only; it does not verify identity, period or document authenticity.
+- Cloud Blob Storage/Application Insights are optional configurations, not provisioned production services.
+- Security/signing workflows and SBOM are included; their presence alone does not prove a released image is signed.
+- No real customer data, financial advice or automated lending decision is permitted.
+
+## Deployment and branches
+
+- **master:** reviewed releases.
+- **develop:** development baseline.
+- Feature upgrades are squash-merged into master. Existing history and real commit timestamps are preserved.
+- Vercel project/domain: **credit-intelligence-lab** / [credit-intelligence-lab.vercel.app](https://credit-intelligence-lab.vercel.app/en).
+- Vercel is configured with `NEXT_PUBLIC_DEMO_MODE=true`; server proxies fail closed in this mode, even if an old API URL remains configured.
+- Java, databases, Keycloak and workers remain a separate local platform. They are not deployed by this public frontend release.
+
+## Repository map
+
+```text
+app/                     Next.js pages and authenticated transport routes
+components/workspace/    workspace, Nova and document viewers
+lib/                     schemas, helpers, language tables and public fixtures
+services/credit-api/     Java/Spring Boot, LangChain4j, extraction and tests
+infra/                   Keycloak, Azure templates and observability
+public/demo/             generated synthetic payroll PDFs
+scripts/                 OAuth checks, Azure token helper, backups and PDF assets
+docs/                    runbooks, verification and screenshots
+```
+
+## References and license
+
+Inspired by the [Microsoft Java Banking Assistant sample](https://github.com/Azure-Samples/agent-openai-java-banking-assistant); not a copy of a production bank platform.
+
+[MIT license](LICENSE). Third-party components retain their own licenses.

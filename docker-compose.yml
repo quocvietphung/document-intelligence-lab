@@ -1,15 +1,52 @@
 name: credit-intelligence-lab
 services:
+  case-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: credit_cases
+      POSTGRES_USER: credit_lab
+      POSTGRES_PASSWORD: local-cases-only
+    volumes:
+      - credit_cases:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U credit_lab -d credit_cases"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+  identity-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: local-database-only
+    volumes:
+      - identity_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
   keycloak:
-    image: quay.io/keycloak/keycloak:26.4
-    command: start-dev --import-realm
+    image: quay.io/keycloak/keycloak:26.8.0
+    command: start-dev --cache=ispn --import-realm
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: local-admin-only
       KC_HOSTNAME: http://localhost:8080
       KC_HEALTH_ENABLED: "true"
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://identity-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: local-database-only
+      KC_FEATURES: stateless
+      KC_CACHE_EMBEDDED_CLUSTER_NAME: credit-local
+      KC_CACHE_EMBEDDED_NETWORK_BIND_ADDRESS: LOOPBACK
     volumes:
       - ./infra/keycloak/credit-intelligence-realm.json:/opt/keycloak/data/import/realm.json:ro
+    depends_on:
+      identity-db:
+        condition: service_healthy
     ports:
       - "8080:8080"
     healthcheck:
@@ -24,9 +61,18 @@ services:
       KEYCLOAK_ISSUER: http://localhost:8080/realms/credit-intelligence
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/credit-intelligence/protocol/openid-connect/certs
       SECURITY_ENABLED: "true"
+      CASE_PERSISTENCE_ENABLED: "true"
+      CASE_WRITES_ENABLED: "true"
+      CASE_DATABASE_URL: jdbc:postgresql://case-db:5432/credit_cases
+      CASE_DATABASE_USER: credit_lab
+      CASE_DATABASE_PASSWORD: local-cases-only
+      OCR_ENABLED: "true"
+      DOCUMENT_ANALYSIS_MODE: local
     ports:
       - "8081:8080"
     depends_on:
+      case-db:
+        condition: service_healthy
       keycloak:
         condition: service_healthy
     healthcheck:
@@ -49,3 +95,9 @@ services:
     depends_on:
       credit-api:
         condition: service_healthy
+
+volumes:
+  credit_cases:
+  identity_postgres:
+  # Retained for recovery of the earlier local H2 demo; not mounted by new runs.
+  keycloak_data:

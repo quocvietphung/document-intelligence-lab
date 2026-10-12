@@ -1,0 +1,6 @@
+using './ai-services.bicep'
+
+param prefix = 'creditlabYOURSUFFIX'
+param location = 'germanywestcentral'
+// Keep false when reusing an existing Azure OpenAI account/deployment.
+param deployOpenAi = false

@@ -1,0 +1,32 @@
+# scripts/docker-azure.mjs supplies these bind-mount settings and refreshes the
+# short-lived token. All five application services run in Docker.
+services:
+  credit-api:
+    user: "${CREDIT_LOCAL_UID:?Run node scripts/docker-azure.mjs}:${CREDIT_LOCAL_GID:?Run node scripts/docker-azure.mjs}"
+    restart: unless-stopped
+    environment:
+      DOCUMENT_ANALYSIS_MODE: azure
+      AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT: https://vietphung-documents-shared.cognitiveservices.azure.com/
+      AZURE_DOCUMENT_INTELLIGENCE_MODEL: prebuilt-layout
+      AZURE_DOCUMENT_INTELLIGENCE_MAX_PAGES: "2"
+      AZURE_DOCUMENT_INTELLIGENCE_CREDENTIAL: token-file
+      AZURE_DOCUMENT_INTELLIGENCE_TOKEN_FILE: /run/azure-auth/token.json
+      AZURE_OPENAI_ENDPOINT: https://vietphung-ai-shared.openai.azure.com/
+      AZURE_OPENAI_DEPLOYMENT: gpt-4.1-mini
+      AZURE_OPENAI_CREDENTIAL: token-file
+      AZURE_OPENAI_TOKEN_FILE: /run/azure-auth/token.json
+      AZURE_AI_REQUIRED: "true"
+      JAVA_TOOL_OPTIONS: -Xmx384m -XX:ActiveProcessorCount=2
+    volumes:
+      - type: bind
+        source: ${CREDIT_AZURE_TOKEN_DIR:?Run node scripts/docker-azure.mjs}
+        target: /run/azure-auth
+        read_only: true
+  web:
+    restart: unless-stopped
+  keycloak:
+    restart: unless-stopped
+  case-db:
+    restart: unless-stopped
+  identity-db:
+    restart: unless-stopped

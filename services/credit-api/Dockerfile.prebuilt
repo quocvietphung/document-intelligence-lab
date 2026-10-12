@@ -1,0 +1,12 @@
+# Build the JAR with Maven first. Optional RUNTIME_IMAGE reuses a trusted local
+# Java/Tesseract runtime when registry or Maven downloads are interrupted.
+ARG RUNTIME_IMAGE=eclipse-temurin:21-jre-jammy
+FROM ${RUNTIME_IMAGE}
+USER root
+RUN if ! command -v tesseract >/dev/null || ! command -v wget >/dev/null; then apt-get update && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng wget && rm -rf /var/lib/apt/lists/*; fi
+RUN id app >/dev/null 2>&1 || useradd -m app
+WORKDIR /app
+COPY --chown=app:app target/credit-api-0.1.0.jar app.jar
+USER app
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

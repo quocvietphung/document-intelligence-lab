@@ -1,0 +1,35 @@
+"use client";
+import {useRef,useState,useEffect,type FormEvent} from "react";
+import {MessageSquareText,Send,ShieldCheck} from "lucide-react";
+import type {WorkspaceCase} from "@/lib/credit-api";
+import {publicDemoAnswer,publicDemoCase} from "@/lib/public-demo";
+import {publicDemoText} from "@/lib/public-demo-language";
+import {workspaceText} from "@/lib/workspace-language";
+import {ModalSurface} from "./ModalSurface";
+
+export function DemoCopilot({item,locale,close,initialQuestion,openSource}:{item:WorkspaceCase;locale:string;close:()=>void;initialQuestion?:string;openSource:(id:string)=>void}) {
+  const t=workspaceText(locale),d=publicDemoText(locale);
+  const [text,setText]=useState(initialQuestion||"");
+  const [messages,setMessages]=useState<{id:string;role:"user"|"assistant";text:string}[]>([]);
+  const bottom=useRef<HTMLDivElement>(null);
+  useEffect(()=>{bottom.current?.scrollIntoView({block:"nearest"});},[messages]);
+  function send(event?:FormEvent,question=text) {
+    event?.preventDefault();if(!question.trim())return;
+    setMessages(previous=>[...previous.slice(-18),{id:crypto.randomUUID(),role:"user",text:question.trim()},
+      {id:crypto.randomUUID(),role:"assistant",text:publicDemoAnswer(question.trim(),locale)}]);setText("");
+  }
+  return <ModalSurface title={t("nova")} close={close} label={t("close")}>
+    <p className="notice-lab"><ShieldCheck size={16}/>{d("badge")}</p>
+    <p className="mt-3 text-sm leading-relaxed text-slate-600">{d("notice")}</p>
+    <div className="chat-history" role="log" aria-label={t("nova")}>
+      {!messages.length?<div className="chat-welcome"><MessageSquareText size={32}/><h3>{t("chatReady")}</h3><button className="button-secondary" onClick={()=>send(undefined,t("question"))}>{t("question")}</button></div>:messages.map(m=><article key={m.id} className={`chat-bubble ${m.role==="user"?"chat-user":"chat-assistant"}`}>
+        <div className="whitespace-pre-wrap">{m.text}</div>
+        {m.role==="assistant"?<details className="mt-4 text-xs"><summary>{t("sources")}</summary>
+          {publicDemoCase.documents.filter(doc=>doc.pages?.length).map(doc=><button key={doc.id} className="button-link block mt-2" onClick={()=>openSource(`${doc.id}:p1`)}>{doc.name} →</button>)}
+          <span className="block mt-2">{item.id} · bundled synthetic data</span></details>:null}
+      </article>)}<div ref={bottom}/>
+    </div>
+    <form onSubmit={send} className="chat-composer"><label className="sr-only" htmlFor="nova-demo-question">{t("ask")}</label><textarea id="nova-demo-question" rows={2} maxLength={2000} value={text} onChange={e=>setText(e.target.value)} placeholder={t("ask")}/><button className="button-primary" disabled={!text.trim()}><Send size={17}/>{t("send")}</button></form>
+    <button className="button-link mt-3" onClick={()=>setMessages([])}>{t("clear")}</button>
+  </ModalSurface>;
+}

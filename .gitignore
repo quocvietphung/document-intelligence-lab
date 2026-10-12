@@ -1,4 +1,10 @@
 # Logs
+.local/
+.local/azure-auth/
+.local/*.pdf
+.local/reference-pdfs/
+/public/pdfjs/
+/tmp/pdfs/
 logs
 .idea
 ERGO_products_data

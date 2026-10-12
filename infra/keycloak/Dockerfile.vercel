@@ -1,17 +1,27 @@
-FROM quay.io/keycloak/keycloak:26.4 AS builder
+FROM golang:1.25-alpine AS proxy
+WORKDIR /proxy
+COPY proxy/ .
+RUN go test main.go main_test.go && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /startup-proxy main.go
+
+FROM quay.io/keycloak/keycloak:26.8.0 AS builder
 ENV KC_DB=postgres
 ENV KC_HEALTH_ENABLED=true
+ENV KC_FEATURES=stateless
 RUN /opt/keycloak/bin/kc.sh build
 
-FROM quay.io/keycloak/keycloak:26.4
+FROM quay.io/keycloak/keycloak:26.8.0
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
+COPY --from=proxy /startup-proxy /opt/keycloak/bin/startup-proxy
 COPY credit-intelligence-production-realm.json.template /opt/keycloak/data/import/credit-intelligence-production-realm.json.template
 COPY start-vercel.sh /opt/keycloak/bin/start-vercel.sh
 USER root
 RUN chmod 0755 /opt/keycloak/bin/start-vercel.sh && chown -R keycloak:keycloak /opt/keycloak/data/import
 USER keycloak
 ENV KC_DB=postgres
-ENV KC_CACHE=local
+ENV KC_CACHE=ispn
+ENV KC_CACHE_EMBEDDED_NETWORK_BIND_ADDRESS=LOOPBACK
+ENV KC_FEATURES=stateless
+ENV JAVA_OPTS_KC_HEAP="-Xms64m -Xmx512m"
 ENV KC_HEALTH_ENABLED=true
 ENV KC_HTTP_ENABLED=true
 ENV KC_PROXY_HEADERS=xforwarded

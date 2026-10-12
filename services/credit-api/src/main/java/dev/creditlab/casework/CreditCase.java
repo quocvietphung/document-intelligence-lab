@@ -11,6 +11,24 @@ public record CreditCase(
     int completeness,
     String status,
     List<String> missingDocuments,
-    List<ValidationIssue> validationIssues) {
+    List<ValidationIssue> validationIssues,
+    String coApplicant,
+    String submittedAt,
+    List<Document> documents,
+    List<List<String>> audit,
+    long version) {
   public record ValidationIssue(String code, String severity, String message, boolean humanReviewRequired) {}
+  public record Field(String label, String value, Integer confidence, int page, String evidence) {}
+  public record Page(int number, String text, String method) {}
+  public record TableCell(int row,int column,String text) {}
+  public record Table(int page,int rows,int columns,List<TableCell> cells) {}
+  public record Document(String id, String name, String type, String status, Integer confidence,
+      List<Field> fields, List<Page> pages, boolean originalAvailable, String analysisProvider,
+      String modelId, String contentType,List<Table> tables) {
+    public Document { tables=tables==null?List.of():List.copyOf(tables); }
+    public Document(String id,String name,String type,String status,Integer confidence,List<Field> fields,List<Page> pages,
+        boolean originalAvailable,String analysisProvider,String modelId,String contentType) {
+      this(id,name,type,status,confidence,fields,pages,originalAvailable,analysisProvider,modelId,contentType,List.of());
+    }
+  }
 }

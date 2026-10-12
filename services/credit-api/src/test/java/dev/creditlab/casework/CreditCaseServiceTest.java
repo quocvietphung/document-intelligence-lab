@@ -11,7 +11,7 @@ class CreditCaseServiceTest {
   void isolatesCasesByTenant() {
     assertThat(service.findAll("praxisbank-demo"))
         .extracting(CreditCase::id)
-        .containsExactly("CR-2026-1048");
+        .containsExactly("CR-2026-1048","CR-2026-1049");
     assertThat(service.findAll("other-tenant")).isEmpty();
   }
 

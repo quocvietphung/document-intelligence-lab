@@ -1,0 +1,9 @@
+# Endpoint is public configuration, not a credential. Authentication uses az login
+# on the host, or a Managed Identity attached to an Azure runtime.
+app:
+  document-intelligence:
+    mode: azure
+    endpoint: ${AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT:https://vietphung-documents-shared.cognitiveservices.azure.com/}
+    model-id: ${AZURE_DOCUMENT_INTELLIGENCE_MODEL:prebuilt-layout}
+    max-pages: ${AZURE_DOCUMENT_INTELLIGENCE_MAX_PAGES:2}
+    credential: ${AZURE_DOCUMENT_INTELLIGENCE_CREDENTIAL:azure-cli}

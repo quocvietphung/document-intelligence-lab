@@ -3,8 +3,14 @@ export type CreditDocument = {
   name: string;
   type: string;
   status: "verified" | "review" | "missing";
-  confidence?: number;
-  fields?: { label: string; value: string; confidence: number }[];
+  confidence?: number | null;
+  fields?: { label: string; value: string; confidence: number | null; page?: number; evidence?: string }[];
+  pages?: { number: number; text: string; method: string }[];
+  originalAvailable?: boolean;
+  analysisProvider?: string | null;
+  modelId?: string | null;
+  contentType?: string | null;
+  tables?: {page:number;rows:number;columns:number;cells:{row:number;column:number;text:string}[]}[];
 };
 
 export const demoCase = {

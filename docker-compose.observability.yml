@@ -1,0 +1,15 @@
+# Optional local trace collector. Does not send traces to Azure.
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.136.0
+    command: ["--config=/etc/otelcol/config.yml"]
+    volumes:
+      - ./infra/observability/otel.yml:/etc/otelcol/config.yml:ro
+    restart: unless-stopped
+  credit-api:
+    environment:
+      OTEL_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
+    depends_on:
+      otel-collector:
+        condition: service_started

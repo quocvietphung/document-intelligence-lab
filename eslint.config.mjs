@@ -9,6 +9,7 @@ const config = [
       ".next/**",
       "node_modules/**",
       "out/**",
+      "public/pdfjs/**",
       "services/credit-api/target/**",
     ],
   },

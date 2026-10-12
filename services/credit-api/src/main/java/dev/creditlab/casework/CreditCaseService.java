@@ -1,31 +1,97 @@
 package dev.creditlab.casework;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.Instant;
+import java.util.*;
+import jakarta.validation.constraints.*;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class CreditCaseService {
-  private final CreditCase demo = new CreditCase(
-      "CR-2026-1048",
-      "praxisbank-demo",
-      "Dr. Lea Hoffmann",
-      "Praxisübernahme",
-      480_000,
-      78,
-      "HUMAN_REVIEW",
-      List.of("Praxisbewertung"),
-      List.of(new CreditCase.ValidationIssue(
-          "MONTHLY_RATE_CONFLICT",
-          "MEDIUM",
-          "Kontoauszug: 1250 EUR; Selbstauskunft: 980 EUR",
-          true)));
-
-  public List<CreditCase> findAll(String tenantId) {
-    return demo.tenantId().equals(tenantId) ? List.of(demo) : List.of();
+  private final CaseStore store;
+  @Value("${app.writes-enabled:false}") private boolean writesEnabled;
+  public CreditCaseService() { this(new CaseStore()); }
+  @Autowired public CreditCaseService(CaseStore store) {
+    this.store=store;
+    store.insert(new CreditCase("CR-2026-1048","praxisbank-demo","Dr. Lea Hoffmann","Praxisübernahme",480_000,78,"HUMAN_REVIEW",
+      List.of("Praxisbewertung"), List.of(new CreditCase.ValidationIssue("MONTHLY_RATE_CONFLICT","MEDIUM","Kontoauszug: 1250 EUR; Selbstauskunft: 980 EUR",true)),
+      "Jonas Hoffmann","2026-10-08T14:32:00Z",List.of(
+        fixture("doc-1","Gehaltsabrechnung_09-2026.pdf","income","verified",List.of(new CreditCase.Field("netIncome","6240 EUR",null,1,"Synthetic fixture: Nettoeinkommen 6240 EUR"))),
+        fixture("doc-2","Kontoauszug_Q3.pdf","statement","review",List.of(new CreditCase.Field("monthlyRate","1250 EUR",null,1,"Synthetic fixture: Monatliche Rate 1250 EUR"))),
+        fixture("doc-3","Identitätsnachweis","identity","verified",List.of()),
+        fixture("doc-4","Praxisbewertung","valuation","missing",List.of())),List.of(event("FIXTURE_CREATED","synthetic-seed")),0));
+    store.insert(new CreditCase("CR-2026-1049","praxisbank-demo","Dr. Felix Weber","Modernisierung",120_000,0,"DRAFT",List.of("income","statement"),List.of(),"","2026-10-09T10:00:00Z",List.of(),List.of(event("FIXTURE_CREATED","synthetic-seed")),0));
   }
-
-  public Optional<CreditCase> findById(String tenantId, String id) {
-    return demo.tenantId().equals(tenantId) && demo.id().equals(id) ? Optional.of(demo) : Optional.empty();
+  private CreditCase.Document fixture(String id,String name,String type,String status,List<CreditCase.Field> fields) {
+    return new CreditCase.Document(id,name,type,status,null,fields,List.of(new CreditCase.Page(1,"Synthetic fixture; no original uploaded.","fixture")),false,
+        "synthetic","fixture-v1","text/plain");
+  }
+  public List<CreditCase> findAll(String tenant) { return store.list(tenant); }
+  public Optional<CreditCase> findById(String tenant,String id) { return store.get(tenant,id); }
+  public CreditCase require(String tenant,String id) { return findById(tenant,id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND)); }
+  public record Draft(@NotBlank @Size(max=120) String applicant,@NotBlank @Size(max=160) String purpose,
+      @Min(1) @Max(10_000_000) long amountEuro,@Size(max=120) String coApplicant,@Min(0) long version) {}
+  public void allowWrite() {
+    if(!writesEnabled || !(store instanceof SqlCaseStore)) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Persistent writing is not configured");
+  }
+  public CreditCase create(String tenant,String actor,Draft draft) {
+    allowWrite();
+    var item=new CreditCase("CR-"+UUID.randomUUID().toString().substring(0,12),tenant,draft.applicant().strip(),draft.purpose().strip(),draft.amountEuro(),0,"DRAFT",List.of("income","statement"),List.of(),Objects.requireNonNullElse(draft.coApplicant(),""),Instant.now().toString(),List.of(),List.of(event("CASE_CREATED",actor)),0);
+    store.insert(item); return item;
+  }
+  public CreditCase edit(String tenant,String id,String actor,Draft draft) {
+    allowWrite(); var old=require(tenant,id); checkVersion(old,draft.version());
+    var item=new CreditCase(id,tenant,draft.applicant().strip(),draft.purpose().strip(),draft.amountEuro(),old.completeness(),old.status(),old.missingDocuments(),old.validationIssues(),Objects.requireNonNullElse(draft.coApplicant(),""),old.submittedAt(),old.documents(),audit(old,"CASE_EDITED",actor),old.version()+1);
+    save(item,old.version()); return item;
+  }
+  public CreditCase attach(String tenant,String id,String actor,byte[] bytes,CreditCase.Document doc,long version) {
+    allowWrite(); var old=require(tenant,id); checkVersion(old,version);
+    if(old.documents().size()>=12) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,"Document limit reached");
+    var docs=new ArrayList<>(old.documents()); docs.add(doc);
+    var updated=rebuild(old,docs,"DOCUMENT_EXTRACTED",actor);
+    ((SqlCaseStore)store).attach(updated,old.version(),doc.id(),bytes); return updated;
+  }
+  public record Review(@Min(0) long version,@Size(max=20) List<@NotBlank @Size(max=300) String> values) {}
+  public CreditCase review(String tenant,String id,String docId,String actor,Review review) {
+    allowWrite(); var old=require(tenant,id); checkVersion(old,review.version());
+    var doc=old.documents().stream().filter(d->d.id().equals(docId)).findFirst().orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
+    if(!doc.originalAvailable() || doc.fields().isEmpty() || review.values()==null || review.values().size()!=doc.fields().size()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Evidence-backed fields required");
+    var fields=new ArrayList<CreditCase.Field>();
+    for(int i=0;i<doc.fields().size();i++) { var f=doc.fields().get(i); fields.add(new CreditCase.Field(f.label(),review.values().get(i).strip(),f.confidence(),f.page(),f.evidence())); }
+    var revised=new CreditCase.Document(doc.id(),doc.name(),doc.type(),"verified",doc.confidence(),fields,doc.pages(),true,
+        doc.analysisProvider(),doc.modelId(),doc.contentType(),doc.tables());
+    var docs=old.documents().stream().map(d->d.id().equals(docId)?revised:d).toList();
+    var updated=rebuild(old,docs,"DOCUMENT_REVIEWED",actor); save(updated,old.version()); return updated;
+  }
+  private CreditCase rebuild(CreditCase old,List<CreditCase.Document> docs,String action,String actor) {
+    var issues=new ArrayList<CreditCase.ValidationIssue>(); var values=new HashSet<String>();
+    for(var doc:docs) {
+      if(doc.status().equals("review")) issues.add(new CreditCase.ValidationIssue("UNREVIEWED_DOCUMENT","MEDIUM",doc.id(),true));
+      for(var f:doc.fields()) if(f.label().equals("monthlyRate")) values.add(FieldValueNormalizer.normalize(f.label(),f.value()));
+    }
+    if(values.size()>1) issues.add(new CreditCase.ValidationIssue("MONTHLY_RATE_CONFLICT","HIGH","Different monthlyRate values in documents",true));
+    var missing=new ArrayList<String>();
+    for(String type:List.of("income","statement")) if(docs.stream().noneMatch(d->d.type().equals(type))) missing.add(type);
+    long reviewed=docs.stream().filter(d->d.originalAvailable()&&d.status().equals("verified")).count();
+    int progress=docs.isEmpty()?0:(int)(100*reviewed/Math.max(2,docs.size()));
+    return new CreditCase(old.id(),old.tenantId(),old.applicant(),old.purpose(),old.amountEuro(),progress,issues.isEmpty()&&missing.isEmpty()?"REVIEW_COMPLETE":"HUMAN_REVIEW",missing,issues,old.coApplicant(),old.submittedAt(),docs,audit(old,action,actor),old.version()+1);
+  }
+  private void checkVersion(CreditCase old,long expected) { if(old.version()!=expected) throw new ResponseStatusException(HttpStatus.CONFLICT,"Reload latest case version"); }
+  private void save(CreditCase item,long previous) { if(!store.update(item,previous)) throw new ResponseStatusException(HttpStatus.CONFLICT,"Concurrent change; reload case"); }
+  private List<String> event(String action,String actor) { return List.of(Instant.now().toString(),action,actor); }
+  private List<List<String>> audit(CreditCase old,String action,String actor) { var rows=new ArrayList<>(old.audit()); rows.add(event(action,actor)); return rows; }
+  public Optional<byte[]> file(String tenant,String id,String doc) { require(tenant,id); return store.file(tenant,id,doc); }
+  public void expirePipelineDocument(String tenant,String id,String docId) {
+    allowWrite();var old=require(tenant,id);
+    if(old.documents().stream().noneMatch(d->d.id().equals(docId)))return;
+    var docs=old.documents().stream().filter(d->!d.id().equals(docId)).toList();
+    var updated=rebuild(old,docs,"PIPELINE_DOCUMENT_EXPIRED","retention-worker");
+    ((SqlCaseStore)store).expire(updated,old.version(),docId);
+  }
+  public void reserve(String tenant,String id,String actor,int tokens) { require(tenant,id); store.reserve(tenant,actor,tokens); }
+  public void recordAiUse(String requestId,String tenant,String id,String actor,String mode) {
+    require(tenant,id); store.recordAiUse(requestId,tenant,id,actor,mode);
   }
 }

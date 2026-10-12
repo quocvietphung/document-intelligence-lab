@@ -1,205 +1,171 @@
 "use client";
+import {useCallback,useEffect,useMemo,useRef,useState, type FormEvent} from "react";
+import {Activity,ArrowUpRight,CheckCircle2,FileSearch,ClipboardCheck,Gauge,LayoutDashboard,LogIn,Menu,MessageSquareText,Plus,RefreshCw,Search,Send,ShieldCheck,Upload,X} from "lucide-react";
+import {useChat} from "@ai-sdk/react";
+import {DefaultChatTransport} from "ai";
+import {useAuth} from "@/components/auth/KeycloakProvider";
+import {type CreditDocument} from "@/lib/credit-data";
+import {publicDemoCase} from "@/lib/public-demo";
+import {publicDemoText} from "@/lib/public-demo-language";
+import {DemoCopilot} from "./DemoCopilot";
+import {toWorkspaceCase,type WorkspaceCase} from "@/lib/credit-api";
+import {workspaceText} from "@/lib/workspace-language";
+import {useRouter} from "@/routing";
+import {ModalSurface} from "./ModalSurface";
+import {PlatformWorkbench} from "./PlatformWorkbench";
+import {platformText} from "@/lib/platform-language";
+import {FlaskConical,Layers3,GitBranch,ScanSearch} from "lucide-react";
+import {BankingWorkbench} from "./BankingWorkbench";
+import {bankingText} from "@/lib/banking-language";
+import {WalletCards} from "lucide-react";
+import {PayrollSamples} from "./PayrollSamples";
+import {DocumentEvidence} from "./DocumentEvidence";
+import {documentText} from "@/lib/document-language";
+import {caseChatPayload,assistantModeKey} from "@/lib/credit-chat";
+type Tab="overview"|"banking"|"documents"|"studio"|"pipeline"|"controls"|"operations"|"evaluation"|"audit";
+const navigation=[["overview",LayoutDashboard],["studio",FlaskConical],["documents",FileSearch],["pipeline",Layers3],["controls",ScanSearch],["banking",WalletCards],["evaluation",Gauge],["operations",GitBranch],["audit",ClipboardCheck]] as const;
 
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type UIMessage } from "ai";
-import {
-  Activity,
-  AlertTriangle,
-  ArrowRight,
-  BriefcaseBusiness,
-  Check,
-  CheckCircle2,
-  ChevronDown,
-  CircleUserRound,
-  ClipboardCheck,
-  Clock3,
-  FileCheck2,
-  FileSearch,
-  Gauge,
-  LayoutDashboard,
-  LockKeyhole,
-  LogIn,
-  Menu,
-  MessageSquareText,
-  PanelLeftClose,
-  Search,
-  Send,
-  ShieldCheck,
-  Sparkles,
-  Upload,
-  Users,
-  X,
-} from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
-import { useAuth } from "@/components/auth/KeycloakProvider";
-import { demoCase, type CreditDocument } from "@/lib/credit-data";
-
-const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
-type Tab = "overview" | "documents" | "evaluation" | "audit";
-
-const tabItems = [
-  ["overview", "Overview", LayoutDashboard],
-  ["documents", "Document AI", FileSearch],
-  ["evaluation", "AI evaluation", Gauge],
-  ["audit", "Audit trail", ClipboardCheck],
-] as const;
-
-const quickQuestions = [
-  "Welche Unterlagen fehlen?",
-  "Erkläre den erkannten Konflikt.",
-  "Wie ist der Tenant geschützt?",
-];
-
-function messageText(message: UIMessage) {
-  return message.parts
-    .filter((part) => part.type === "text")
-    .map((part) => part.text)
-    .join("");
-}
-
-function BrandMark() {
-  return (
-    <div className="grid h-10 w-10 place-items-center rounded-[14px] bg-[#0a625d] text-white shadow-[0_8px_24px_rgba(9,107,101,.25)]">
-      <Activity size={21} strokeWidth={2.4} />
+function Copilot({item,locale,close,initialQuestion,openSource}:{item:WorkspaceCase;locale:string;close:()=>void;initialQuestion?:string;openSource:(id:string)=>void}) {
+  const auth=useAuth(); const base=workspaceText(locale),d=documentText(locale); const t=(key:string)=>key==="chatReady"?d("greeting"):key==="sources"?d("sources"):base(key); const [text,setText]=useState(initialQuestion||""); const [mode,setMode]=useState<string>();
+  const bottom=useRef<HTMLDivElement>(null);
+  const transport=useMemo(()=>new DefaultChatTransport({api:"/api/chat",headers:()=>({Authorization:`Bearer ${auth.token}`}),body:{caseId:item.id,locale},fetch:async(input,init)=>{
+    const response=await fetch(input,init); setMode(response.headers.get("X-AI-Mode")||undefined);return response;
+  },prepareSendMessagesRequest:({messages})=>({body:caseChatPayload(messages,item.id,locale)})}),[auth.token,item.id,locale,setMode]);
+  const {messages,sendMessage,status,error,stop,setMessages,clearError}=useChat({transport});
+  const busy=status==="submitted"||status==="streaming";
+  useEffect(()=>{bottom.current?.scrollIntoView({block:"nearest"});},[messages]);
+  function send(event?:FormEvent) { event?.preventDefault();if(!text.trim()||busy)return;void sendMessage({text:text.trim()});setText(""); }
+  return <ModalSurface title={t("nova")} close={()=>{void stop();close();}} label={t("close")}>
+    <div className="flex items-center gap-2 text-xs font-semibold text-teal-700"><ShieldCheck size={15}/>{item.id} · {t("chatHint")}</div>
+    <div className="chat-history scrollbar-thin" role="log" aria-label={t("nova")}>
+      {!messages.length?<div className="chat-welcome"><MessageSquareText size={32}/><h3>{t("chatReady")}</h3><button className="button-secondary" disabled={!auth.token} onClick={()=>void sendMessage({text:t("question")})}>{t("question")} <ArrowUpRight size={16}/></button></div>:messages.map(message=><article key={message.id} className={`chat-bubble ${message.role==="user"?"chat-user":"chat-assistant"}`}>
+        <div className="whitespace-pre-wrap">{message.parts.filter(p=>p.type==="text").map(p=>p.text).join("")}</div>
+        {message.parts.some(p=>p.type==="source-document")?<details className="mt-4 border-t border-slate-200 pt-3 text-xs"><summary>{t("sources")}</summary><ul className="mt-2 space-y-2">{message.parts.filter(p=>p.type==="source-document").map(p=><li key={p.sourceId}>{item.documents.some(doc=>p.sourceId.startsWith(doc.id+":"))?<button className="button-link" onClick={()=>{void stop();openSource(p.sourceId);}}>{p.title||p.sourceId} → {d("preview")}</button>:<span>{p.title||p.sourceId} <code>[{p.sourceId}]</code></span>}</li>)}</ul></details>:null}
+      </article>)}
+      {busy?<p className="p-3 text-sm text-slate-500" role="status">{t("loading")}</p>:null}
+      {error?<p className="notice-error" role="alert">{error.message.includes("limit")?t("limit"):t("error")}</p>:null}<div ref={bottom}/>
     </div>
-  );
+    <form onSubmit={send} className="chat-composer"><label className="sr-only" htmlFor="nova-question">{t("ask")}</label><textarea id="nova-question" value={text} onChange={e=>setText(e.target.value)} maxLength={2000} placeholder={t("ask")} rows={2}/><button className="button-primary" disabled={busy||!text.trim()||!auth.token} type="submit"><Send size={17}/>{t("send")}</button></form>
+    <div className="mt-3 flex flex-wrap gap-2"><button className="button-link" onClick={()=>{void stop();}} disabled={!busy}>{t("stop")}</button><button className="button-link" onClick={()=>{setMessages([]);clearError();setMode(undefined);}} disabled={busy}>{t("clear")}</button></div>
+    {mode?<p className="mt-3 text-xs font-semibold text-teal-800">{d(assistantModeKey(mode))}</p>:null}<p className="mt-2 text-xs leading-relaxed text-slate-500">{d("singleQuestion")}</p><p className="mt-2 text-xs leading-relaxed text-slate-500">{t("quota")}</p>
+  </ModalSurface>;
 }
 
-function StatusPill({ children, tone = "mint" }: { children: React.ReactNode; tone?: "mint" | "gold" | "red" | "slate" }) {
-  const colors = {
-    mint: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    gold: "bg-amber-50 text-amber-800 border-amber-200",
-    red: "bg-red-50 text-red-700 border-red-200",
-    slate: "bg-slate-50 text-slate-600 border-slate-200",
-  };
-  return <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${colors[tone]}`}>{children}</span>;
-}
-
-function Confidence({ value }: { value: number }) {
-  const tone = value >= 90 ? "bg-emerald-500" : value >= 80 ? "bg-amber-500" : "bg-red-500";
-  return (
-    <div className="flex items-center gap-2">
-      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100"><div className={`h-full ${tone}`} style={{ width: `${value}%` }} /></div>
-      <span className="text-xs font-semibold tabular-nums text-slate-600">{value}%</span>
-    </div>
-  );
-}
-
-function DocumentRow({ document }: { document: CreditDocument }) {
-  return (
-    <div className="group grid gap-4 border-b border-slate-100 px-5 py-4 last:border-0 hover:bg-[#fbfdfc] md:grid-cols-[1.3fr_.8fr_.6fr_auto] md:items-center">
-      <div className="flex min-w-0 items-center gap-3">
-        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${document.status === "missing" ? "bg-red-50 text-red-500" : "bg-[#e8f5f1] text-[#096b65]"}`}>
-          {document.status === "missing" ? <AlertTriangle size={19} /> : <FileCheck2 size={19} />}
-        </div>
-        <div className="min-w-0"><p className="truncate text-sm font-semibold text-[#17383a]">{document.name}</p><p className="mt-0.5 text-xs text-slate-500">{document.type}</p></div>
+export function CreditWorkspace({locale}:{locale:string}) {
+  const d=publicDemoText(locale); const baseText=workspaceText(locale); const t=(key:string)=>["studio","pipeline","controls","operations","evaluation"].includes(key)?platformText(locale)(key):key==="banking"?bankingText(locale)(key):baseText(key); const auth=useAuth();
+  const router=useRouter();
+  const [tab,setTab]=useState<Tab>("overview"); const [cases,setCases]=useState<WorkspaceCase[]>(()=>auth.mode==="demo"?[publicDemoCase]:[]);const [selected,setSelected]=useState("");
+  const [loading,setLoading]=useState(false); const [error,setError]=useState("");const [success,setSuccess]=useState(false);
+  const [analysis,setAnalysis]=useState<{mode:string;maxPages:number}|null>(null);
+  const [query,setQuery]=useState("");const [menu,setMenu]=useState(false);const [chat,setChat]=useState(false);
+  const [chatQuestion,setChatQuestion]=useState<string>();
+  const [editor,setEditor]=useState<"new"|"edit"|null>(null);const [inspected,setInspected]=useState<CreditDocument|null>(null);const [reviewValues,setReviewValues]=useState<string[]>([]);const [busy,setBusy]=useState(false);
+  const inputFile=useRef<HTMLInputElement>(null);
+  const sampleInFlight=useRef(false);
+  const writeInFlight=useRef(false);
+  const [uploading,setUploading]=useState(false);
+  const item=auth.authenticated?(cases.find(c=>c.id===selected)||cases[0]):undefined;
+  const Chat=auth.mode==="demo"?DemoCopilot:Copilot;
+  const canWrite=auth.mode==="keycloak"&&auth.roles.some(r=>r==="ADVISOR"||r==="ADMIN");
+  const canReview=auth.roles.some(r=>r==="REVIEWER"||r==="ADMIN");
+  const refresh=useCallback(async(signal?:AbortSignal)=>{
+    if(!auth.ready||!auth.authenticated)return;
+    if(auth.mode==="demo") {setCases([publicDemoCase]);setAnalysis(null);setLoading(false);return;}
+    setLoading(true);setError("");
+    try {
+      const response=await fetch("/api/cases",{headers:{Authorization:`Bearer ${auth.token}`},cache:"no-store",signal});
+      if(!response.ok)throw new Error("Unavailable");
+      const json=await response.json(); if(!Array.isArray(json))throw new Error("Invalid API response");
+      setCases(json.map(toWorkspaceCase));
+      try {
+        const statusResponse=await fetch("/api/cases/document-analysis/status",{headers:{Authorization:`Bearer ${auth.token}`},cache:"no-store",signal});
+        if(statusResponse.ok) {
+          const result=await statusResponse.json();
+          if(typeof result.mode==="string"&&Number.isInteger(result.maxPages)&&result.maxPages>=1&&result.maxPages<=4)
+            setAnalysis({mode:result.mode,maxPages:result.maxPages});
+        } else if(!signal?.aborted) setAnalysis(null);
+      } catch { if(!signal?.aborted) setAnalysis(null); }
+    } catch {if(!signal?.aborted){setError("error");setCases([]);}} finally {if(!signal?.aborted)setLoading(false);}
+  },[auth.ready,auth.authenticated,auth.mode,auth.token]);
+  useEffect(()=>{
+    const controller=new AbortController();
+    const run=()=>void refresh(controller.signal);
+    const task=window.setTimeout(run,0);
+    return()=>{window.clearTimeout(task);controller.abort();};
+  },[refresh]);
+  function select(id:string) {if(writeInFlight.current||sampleInFlight.current)return;setSelected(id);setInspected(null);setEditor(null);setChat(false);setChatQuestion(undefined);setSuccess(false);setError("");}
+  async function request(path:string,method:string,body:BodyInit,isForm=false) {
+    if(writeInFlight.current)return;writeInFlight.current=true;setBusy(true);setError("");setSuccess(false);
+    try {
+      const response=await fetch(path,{method,headers:{Authorization:`Bearer ${auth.token}`,...(isForm?{}:{"Content-Type":"application/json"})},body});
+      if(!response.ok) {setError(response.status===409?"conflict":response.status===429?"limit":response.status===422?"fileRejected":"error");return;}
+      const updated=toWorkspaceCase(await response.json());
+      setCases(list=>list.some(c=>c.id===updated.id)?list.map(c=>c.id===updated.id?updated:c):[...list,updated]);
+      setSelected(updated.id);setInspected(null);setEditor(null);setSuccess(true);
+    } catch {setError("error");} finally {writeInFlight.current=false;setBusy(false);}
+  }
+  async function uploadFile(file:File) {
+    if(!item||writeInFlight.current||!canWrite)return;
+    const supported=analysis&&analysis.mode!=="local"?/\.(pdf|png|jpe?g)$/i:/\.(pdf|png|jpe?g|txt)$/i;
+    if(!file.size||file.size>3_000_000||!supported.test(file.name)){setError("fileRejected");return;}
+    const form=new FormData();form.set("file",file);form.set("version",String(item.version||0));
+    setUploading(true);
+    try {await request(`/api/cases/${item.id}/documents`,"POST",form,true);} finally {setUploading(false);}
+  }
+  async function uploadSample(fileName="synthetic-payroll.pdf") {
+    if(!item||busy||!canWrite||sampleInFlight.current)return;
+    sampleInFlight.current=true;
+    try {
+      const response=await fetch(`/demo/${fileName}`,{cache:"no-store"});
+      if(!response.ok)throw new Error("Sample unavailable");
+      await uploadFile(new File([await response.blob()],fileName,{type:"application/pdf"}));
+    } catch {setError("error");} finally {sampleInFlight.current=false;}
+  }
+  function saveDraft(event:FormEvent<HTMLFormElement>) {
+    event.preventDefault();const data=new FormData(event.currentTarget);
+    const body=JSON.stringify({applicant:data.get("applicant"),coApplicant:data.get("coApplicant"),purpose:data.get("purpose"),amountEuro:Number(data.get("amountEuro")),version:item?.version||0});
+    void request(editor==="new"?"/api/cases":`/api/cases/${item!.id}`,editor==="new"?"POST":"PATCH",body);
+  }
+  function inspect(doc:CreditDocument) {setInspected(doc);setReviewValues((doc.fields||[]).map(f=>f.value));setError("");}
+  async function original(doc:CreditDocument) {
+    if(!item)return;
+    try {const response=await fetch(`/api/cases/${item.id}/documents/${doc.id}/original`,{headers:{Authorization:`Bearer ${auth.token}`}});if(!response.ok)throw new Error();
+      const url=URL.createObjectURL(await response.blob());const anchor=document.createElement("a");anchor.href=url;anchor.download=doc.name;anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    } catch {setError("error");}
+  }
+  const status=(c:WorkspaceCase)=>t(c.status==="DRAFT"?"draft":c.status==="REVIEW_COMPLETE"?"complete":"humanReview");
+  const shown=cases.filter(c=>`${c.applicant} ${c.id}`.toLowerCase().includes(query.toLowerCase()));
+  return <div className="workspace-shell">
+    <aside className={`workspace-sidebar ${menu?"sidebar-open":""}`}><a href={`/${locale}`} className="brand"><span className="brand-icon"><Activity size={23}/></span><span>Credit Intelligence<small>{t("lab")}</small></span></a>
+      <button className="icon-button sidebar-close" onClick={()=>setMenu(false)} aria-label={t("close")}><X/></button>
+      <div className="mt-10 space-y-2">{navigation.map(([id,Icon])=><button key={id} className={`nav-button ${tab===id?"nav-active":""}`} aria-current={tab===id?"page":undefined} onClick={()=>{setTab(id);setMenu(false);window.scrollTo({top:0,behavior:"instant"});}}><Icon size={19}/>{t(id)}</button>)}</div>
+      <div className="sidebar-footer"><ShieldCheck size={22}/><strong>{auth.mode==="demo"?d("badge"):t("security")}</strong><p>{t("notice")}</p><label htmlFor="workspace-language">{t("language")}</label><select id="workspace-language" value={locale} onChange={event=>router.replace("/",{locale:event.target.value})}><option value="en">English</option><option value="de">Deutsch</option><option value="vi">Tiếng Việt</option></select></div>
+    </aside>
+    <main className="workspace-main"><header className="workspace-header"><div className="flex items-center gap-3"><button className="icon-button mobile-menu" onClick={()=>setMenu(true)} aria-label={t("workspace")}><Menu size={21}/></button><span className="text-sm font-semibold">{t("workspace")}</span></div><div className="flex items-center gap-3"><span className="hidden text-xs text-slate-500 sm:inline">{auth.authenticated?auth.displayName:t("noSession")}</span>{auth.mode==="demo"?<span className="lab-badge">{d("badge")}</span>:<button className="button-secondary" disabled={!auth.ready} onClick={auth.authenticated&&auth.mode==="keycloak"?auth.logout:auth.login}><LogIn size={16}/>{t(auth.authenticated&&auth.mode==="keycloak"?"signOut":"signIn")}</button>}</div></header>
+      <div className="workspace-content"><div className="notice-lab"><ShieldCheck size={17}/>{auth.mode==="demo"?d("notice"):t("notice")}</div>
+        {!["studio","pipeline","controls","operations","evaluation"].includes(tab)?<section className="workspace-hero"><div><p className="eyebrow">{t(tab)}</p><h1>{t("welcome")}</h1><p>{t("subtitle")}</p></div><div className="hero-mark" aria-hidden="true"><FileSearch size={55}/><span>01 / AI LAB</span></div></section>:null}
+        {auth.error?<p className="notice-error" role="alert">{t("error")}</p>:null}
+        {!auth.authenticated?<section className="surface p-8"><h2 className="text-lg font-bold">{t("noSession")}</h2><p className="my-4 text-sm leading-relaxed text-slate-600">{t("publicLogin")}</p><button className="button-primary" onClick={auth.login} disabled={!auth.ready}>{t(auth.ready?"signIn":"loading")}</button></section>:<>
+          <div className="case-toolbar"><div className="search-input"><Search size={17}/><input aria-label={t("search")} placeholder={t("search")} value={query} onChange={e=>setQuery(e.target.value)}/></div><button className="button-secondary" disabled={loading||busy} onClick={()=>void refresh()}><RefreshCw size={16}/>{t("refresh")}</button><button className="button-primary" disabled={!canWrite||busy} onClick={()=>{setEditor("new");setError("");}}><Plus size={17}/>{t("newCase")}</button></div>
+          {error?<p className="notice-error" role="alert">{t(error)}</p>:null}{success?<p className="notice-success" role="status">{t("saved")}</p>:null}
+          {loading?<p className="p-4" role="status">{t("loading")}</p>:<div className="case-strip" aria-label={t("selectCase")}>{shown.map(c=><button key={c.id} className={`case-card ${item?.id===c.id?"case-selected":""}`} aria-pressed={item?.id===c.id} onClick={()=>select(c.id)}><small>{c.id}</small><strong>{c.applicant}</strong><span>{status(c)}</span></button>)}{!shown.length?<p className="p-4 text-slate-600">{t("noCases")}</p>:null}</div>}
+          {item?<><div className="selected-heading"><div><span className="eyebrow">{item.id} · {t("version")} {item.version||0}</span><h2>{item.applicant}</h2><p>{item.purpose} · {item.amount}</p></div><div className="flex flex-wrap gap-2"><button className="button-secondary" disabled={!canWrite||busy} onClick={()=>setEditor("edit")}>{t("editCase")}</button><button className="button-primary" onClick={()=>setChat(true)} disabled={!auth.authenticated}><MessageSquareText size={17}/>{t("askNova")}</button></div></div>
+            {tab==="overview"?<><div className="metrics-grid">{[[t("progress"),`${item.progress}%`],[t("documentsCount"),item.documents.filter(d=>d.status!=="missing").length],[t("issues"),item.issues.length]].map(([label,value])=><div className="surface metric" key={label}><span>{label}</span><strong>{value}</strong></div>)}</div><section className="surface p-6"><h3 className="section-heading">{t("issues")}</h3>{item.issues.length?item.issues.map((issue,i)=><div className="review-item" key={i}><span className="review-dot"/><div><strong>{t(issue.title.includes("Missing")?"missingDocument":issue.title.replaceAll(" ","_"))}</strong><p>{t(issue.detail)}</p></div><button className="button-link" onClick={()=>{const doc=item.documents.find(d=>d.id===issue.documentId);if(doc)inspect(doc);else setTab("documents");}}>{t("inspect")} →</button></div>):<p className="mt-4 text-slate-500">{t("noIssues")}</p>}</section></>:null}
+            {tab==="documents"?<section className="surface"><header className="section-toolbar"><div><h3 className="section-heading">{t("documents")}</h3><p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-500">{analysis&&analysis.mode!=="local"?t("uploadHintAzure").replace("{pages}",String(analysis.maxPages)):t("uploadHint")}</p></div><input ref={inputFile} type="file" className="hidden" accept={analysis&&analysis.mode!=="local"?".pdf,.png,.jpg,.jpeg":".pdf,.png,.jpg,.jpeg,.txt"} onChange={event=>{const file=event.target.files?.[0];event.target.value="";if(file)uploadFile(file);}}/><div className="flex flex-wrap gap-2"><button className="button-secondary" disabled={!canWrite||busy} onClick={()=>void uploadSample()}><FileSearch size={16}/>{t("uploadSample")}</button><button className="button-primary" disabled={!canWrite||busy} onClick={()=>inputFile.current?.click()}><Upload size={16}/>{t(busy?"loading":"upload")}</button></div></header>
+              {uploading?<p className="notice-lab notice-processing" role="status" aria-live="polite">{documentText(locale)("processing")}</p>:null}
+              <p className="px-6 py-3 text-xs leading-relaxed text-slate-600">{documentText(locale)("policy")}</p>
+              <PayrollSamples locale={locale} busy={busy} canImport={canWrite&&!!analysis} azure={!!analysis&&analysis.mode!=="local"} importSample={file=>uploadSample(file)}/>
+              {item.documents.map(doc=><div className="document-row" key={doc.id}><div className="document-icon"><FileSearch size={21}/></div><div className="min-w-0 flex-1"><strong className="block truncate">{doc.name}</strong><span className="text-xs text-slate-500">{t(doc.type)} · {!doc.originalAvailable?t("fixture"):t(doc.status)}</span></div>{doc.confidence!=null?<span className="text-xs">{t("ocrConfidence")}: {doc.confidence}%</span>:null}<button className="button-secondary" onClick={()=>inspect(doc)}>{t("inspect")}</button></div>)}{!item.documents.length?<p className="p-7 text-slate-500">{t("noDocuments")}</p>:null}</section>:null}
+            {(["studio","pipeline","controls","operations","evaluation"] as string[]).includes(tab)?<PlatformWorkbench key={item.id} caseId={item.id} locale={locale} view={tab as "studio"|"pipeline"|"controls"|"operations"|"evaluation"} changed={refresh} ask={question=>{setChatQuestion(question);setChat(true);}} inspect={id=>{const doc=item.documents.find(d=>d.id===id);if(doc)inspect(doc);else setTab("documents");}}/>:null}
+            {tab==="audit"?<section className="surface p-6"><h3 className="section-heading">{t("activity")}</h3><div className="overflow-x-auto"><table className="audit-table"><thead><tr><th>{t("time")}</th><th>{t("event")}</th><th>{t("actor")}</th></tr></thead><tbody>{item.audit.toReversed().map(([time,event,actor],i)=><tr key={i}><td>{time}</td><td>{t(event)}</td><td><code>{actor}</code></td></tr>)}</tbody></table></div></section>:null}
+          </>:null}</>}
+        {tab==="banking"&&item?<BankingWorkbench key={item.id} caseId={item.id} locale={locale} ask={question=>{setChatQuestion(question);setChat(true);}}/>:null}
+        <footer className="mt-8 border-t border-slate-200 pt-5 text-xs leading-relaxed text-slate-500">{auth.mode==="demo"?d("badge"):t(canWrite?"labWrites":"readonly")}</footer>
       </div>
-      <div>{document.status === "verified" ? <StatusPill><CheckCircle2 size={12} /> Verified</StatusPill> : document.status === "review" ? <StatusPill tone="gold"><Clock3 size={12} /> Review</StatusPill> : <StatusPill tone="red">Missing</StatusPill>}</div>
-      <div>{document.confidence ? <Confidence value={document.confidence} /> : <span className="text-xs text-slate-400">—</span>}</div>
-      <button className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-[#70a9a3] hover:text-[#096b65]">Inspect</button>
-    </div>
-  );
-}
-
-function Overview() {
-  return (
-    <div className="space-y-5 animate-rise">
-      <section className="grid gap-4 xl:grid-cols-[1.45fr_.8fr]">
-        <div className="rounded-[22px] border border-[#dce8e6] bg-white p-5 shadow-[0_12px_40px_rgba(24,65,62,.05)] md:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div><p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#6d8584]">Active application</p><h2 className="mt-2 text-2xl font-bold tracking-[-.03em] text-[#123537]">{demoCase.purpose}</h2><p className="mt-1 text-sm text-slate-500">{demoCase.id} · submitted {demoCase.submittedAt}</p></div>
-            <StatusPill tone="gold"><Clock3 size={12} /> {demoCase.status}</StatusPill>
-          </div>
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            {[['Applicant', demoCase.applicant], ['Co-applicant', demoCase.coApplicant], ['Requested', demoCase.amount]].map(([label, value]) => <div key={label} className="rounded-2xl bg-[#f4f8f7] p-4"><p className="text-[10px] font-bold uppercase tracking-[.15em] text-slate-400">{label}</p><p className="mt-2 text-sm font-semibold text-[#17383a]">{value}</p></div>)}
-          </div>
-          <div className="mt-6"><div className="mb-2 flex items-center justify-between text-xs font-semibold"><span>Application completeness</span><span className="text-[#096b65]">{demoCase.progress}%</span></div><div className="h-2.5 overflow-hidden rounded-full bg-[#edf2f1]"><div className="h-full rounded-full bg-gradient-to-r from-[#0b625d] to-[#40a58e]" style={{ width: `${demoCase.progress}%` }} /></div></div>
-        </div>
-        <div className="relative overflow-hidden rounded-[22px] bg-[#0b4746] p-6 text-white shadow-[0_16px_40px_rgba(8,58,57,.18)]">
-          <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[#2c8d7d]/30 blur-2xl" />
-          <ShieldCheck className="relative text-[#8de2cb]" size={27} />
-          <p className="relative mt-6 text-[11px] font-bold uppercase tracking-[.18em] text-[#9dd3c8]">Decision boundary</p>
-          <h3 className="relative mt-2 text-xl font-bold">AI prepares. Humans decide.</h3>
-          <p className="relative mt-3 text-sm leading-6 text-[#d6ebe7]">OCR, extraction and validation support the reviewer. No automatic approval, rejection or credit advice.</p>
-          <div className="relative mt-5 flex items-center gap-2 text-xs font-semibold text-[#a9e8d8]"><LockKeyhole size={14} /> Synthetic data only</div>
-        </div>
-      </section>
-
-      <section className="grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
-        <div className="overflow-hidden rounded-[22px] border border-[#dce8e6] bg-white shadow-[0_12px_40px_rgba(24,65,62,.04)]">
-          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4"><div><p className="text-[11px] font-bold uppercase tracking-[.16em] text-slate-400">Document pipeline</p><h3 className="mt-1 font-bold text-[#17383a]">Evidence & extraction</h3></div><button className="flex items-center gap-2 rounded-xl bg-[#e5f3ef] px-3 py-2 text-xs font-bold text-[#096b65]"><Upload size={14} /> Upload demo</button></div>
-          {demoCase.documents.slice(0, 3).map((document) => <DocumentRow document={document} key={document.id} />)}
-        </div>
-        <div className="rounded-[22px] border border-[#dce8e6] bg-white p-5 shadow-[0_12px_40px_rgba(24,65,62,.04)]">
-          <div className="flex items-center justify-between"><div><p className="text-[11px] font-bold uppercase tracking-[.16em] text-slate-400">Review queue</p><h3 className="mt-1 font-bold text-[#17383a]">2 items need attention</h3></div><AlertTriangle className="text-amber-500" size={23} /></div>
-          <div className="mt-4 space-y-3">{demoCase.issues.map((issue) => <div key={issue.title} className="rounded-2xl border border-amber-100 bg-amber-50/60 p-4"><p className="text-sm font-bold text-[#4c3a18]">{issue.title}</p><p className="mt-1 text-xs leading-5 text-[#7a6844]">{issue.detail}</p><button className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#096b65]">Open evidence <ArrowRight size={13} /></button></div>)}</div>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function Documents() {
-  return <div className="animate-rise overflow-hidden rounded-[22px] border border-[#dce8e6] bg-white shadow-[0_12px_40px_rgba(24,65,62,.05)]"><div className="border-b border-slate-100 p-6"><p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#6d8584]">Document intelligence</p><div className="mt-2 flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-bold tracking-[-.03em]">Extraction with evidence</h2><p className="mt-1 text-sm text-slate-500">Every value retains confidence and a path to the source document.</p></div><StatusPill tone="slate">Pipeline v0.1 · synthetic</StatusPill></div></div>{demoCase.documents.map((document) => <DocumentRow document={document} key={document.id} />)}<div className="grid gap-4 border-t border-slate-100 bg-[#f8fbfa] p-5 md:grid-cols-3">{demoCase.documents.filter((d) => d.fields).flatMap((d) => d.fields || []).map((field) => <div key={field.label} className="rounded-xl border border-[#dce8e6] bg-white p-4"><p className="text-[10px] font-bold uppercase tracking-[.14em] text-slate-400">{field.label}</p><p className="mt-2 font-bold">{field.value}</p><div className="mt-3"><Confidence value={field.confidence} /></div></div>)}</div></div>;
-}
-
-function Evaluation() {
-  const metrics = [["Document classification", "94%", "Macro-F1 · 50 labelled samples"], ["Field extraction", "91%", "Exact match · synthetic set"], ["Conflict detection", "88%", "Recall · 24 planted conflicts"], ["Human escalation", "100%", "Low-confidence policy coverage"]];
-  return <div className="space-y-5 animate-rise"><div className="rounded-[22px] border border-[#dce8e6] bg-white p-6"><p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#6d8584]">Reference-set evaluation</p><h2 className="mt-2 text-2xl font-bold tracking-[-.03em]">Quality before capability claims</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">These numbers are demonstrative metrics from a labelled synthetic dataset—not production performance. The lab separates “the API runs” from “the model is correct”.</p><div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{metrics.map(([name, value, detail]) => <div key={name} className="rounded-2xl border border-[#dce8e6] bg-[#f8fbfa] p-4"><p className="text-xs font-semibold text-slate-500">{name}</p><p className="mt-3 text-3xl font-bold tracking-[-.04em] text-[#0b625d]">{value}</p><p className="mt-2 text-[11px] leading-4 text-slate-400">{detail}</p></div>)}</div></div><div className="rounded-[22px] border border-[#dce8e6] bg-white p-6"><h3 className="font-bold">Evaluation gates</h3><div className="mt-4 space-y-3">{["No automated decision endpoint", "Confidence below 90% routes to review", "Missing evidence blocks completion", "Prompts and outputs exclude raw identity documents"].map((text) => <div key={text} className="flex items-center gap-3 rounded-xl bg-[#f4f8f7] px-4 py-3 text-sm font-medium"><Check className="text-emerald-600" size={17} />{text}</div>)}</div></div></div>;
-}
-
-function Audit() {
-  return <div className="animate-rise rounded-[22px] border border-[#dce8e6] bg-white p-6"><div className="flex items-center justify-between"><div><p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#6d8584]">Tamper-aware event log</p><h2 className="mt-2 text-2xl font-bold tracking-[-.03em]">Audit trail</h2></div><StatusPill><ShieldCheck size={12} /> PII-safe logs</StatusPill></div><div className="mt-6">{demoCase.audit.map(([time, event, actor], index) => <div key={event} className="grid grid-cols-[55px_28px_1fr] gap-3 pb-6 last:pb-0"><p className="pt-0.5 text-xs font-semibold tabular-nums text-slate-400">{time}</p><div className="relative flex justify-center"><div className="z-10 mt-1.5 h-2.5 w-2.5 rounded-full bg-[#168175] ring-4 ring-[#e4f2ef]" />{index < demoCase.audit.length - 1 && <div className="absolute top-4 h-[calc(100%+8px)] w-px bg-[#dce8e6]" />}</div><div><p className="text-sm font-bold text-[#17383a]">{event}</p><p className="mt-1 text-xs text-slate-500">{actor}</p></div></div>)}</div></div>;
-}
-
-function Copilot({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [input, setInput] = useState("");
-  const { messages, sendMessage, status, error, stop, setMessages } = useChat({ transport: chatTransport });
-  const busy = status === "submitted" || status === "streaming";
-  const submit = async (text: string) => { const clean = text.trim(); if (!clean || busy) return; setInput(""); await sendMessage({ text: clean }); };
-  const onSubmit = (event: FormEvent) => { event.preventDefault(); void submit(input); };
-  if (!open) return null;
-  return <div className="fixed inset-0 z-50 flex justify-end bg-[#082f2d]/35 p-0 backdrop-blur-sm md:p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section role="dialog" aria-modal="true" aria-label="Nova AI copilot" className="flex h-full w-full flex-col overflow-hidden bg-[#f8fbfa] shadow-2xl md:max-w-[470px] md:rounded-[26px]">
-    <header className="relative overflow-hidden bg-[#0b5551] px-5 pb-5 pt-5 text-white"><div className="absolute -right-14 -top-20 h-48 w-48 rounded-full bg-[#43ac95]/25 blur-2xl" /><div className="relative flex items-center justify-between"><div className="flex items-center gap-3"><div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/12 ring-1 ring-white/20"><Sparkles size={21} /></div><div><div className="flex items-center gap-2"><h2 className="font-bold">Nova</h2><span className="h-2 w-2 rounded-full bg-[#74e4be]" /></div><p className="text-xs text-[#bde1da]">Case copilot · human-in-control</p></div></div><button onClick={onClose} className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 hover:bg-white/15" aria-label="Close"><X size={18} /></button></div><div className="relative mt-4 rounded-xl border border-white/10 bg-black/10 px-3 py-2 text-[11px] leading-4 text-[#cde8e2]">Explains synthetic case evidence. No credit decision or financial advice.</div></header>
-    <div className="scrollbar-thin flex-1 space-y-4 overflow-y-auto px-4 py-5">{messages.length === 0 && <div><div className="rounded-2xl border border-[#dce8e6] bg-white p-4 text-sm leading-6 text-slate-600 shadow-sm"><span className="font-bold text-[#0b625d]">Guten Tag.</span> I can explain the demo case, required documents, OCR confidence, conflicts and the security architecture.</div><div className="mt-4 grid gap-2">{quickQuestions.map((question) => <button key={question} onClick={() => void submit(question)} className="flex items-center justify-between rounded-xl border border-[#dce8e6] bg-white px-4 py-3 text-left text-xs font-semibold text-[#315557] transition hover:border-[#7ab5aa] hover:bg-[#f0f8f5]">{question}<ArrowRight size={13} /></button>)}</div></div>}
-      {messages.map((message) => <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}><div className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === "user" ? "bg-[#0b625d] text-white" : "border border-[#dce8e6] bg-white text-slate-650 shadow-sm"}`}>{messageText(message)}</div></div>)}
-      {status === "submitted" && <div className="flex items-center gap-2 text-xs text-slate-400"><span className="h-2 w-2 animate-pulse rounded-full bg-[#159184]" />Retrieving case evidence…</div>}{error && <p className="rounded-xl bg-red-50 p-3 text-xs text-red-700">{error.message}</p>}
-    </div>
-    <form onSubmit={onSubmit} className="border-t border-[#dce8e6] bg-white p-4"><div className="flex items-end gap-2 rounded-2xl border border-[#cddeda] bg-[#f8fbfa] p-2 focus-within:border-[#4f9e93]"><textarea value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void submit(input); } }} rows={1} placeholder="Ask about this synthetic case…" className="max-h-28 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-slate-400" />{busy ? <button type="button" onClick={stop} className="grid h-10 w-10 place-items-center rounded-xl bg-slate-200 text-slate-700" aria-label="Stop"><X size={16} /></button> : <button type="submit" disabled={!input.trim()} className="grid h-10 w-10 place-items-center rounded-xl bg-[#0b625d] text-white disabled:opacity-40" aria-label="Send"><Send size={16} /></button>}</div><div className="mt-2 flex items-center justify-between text-[10px] text-slate-400"><span>Azure OIDC when configured · local demo fallback</span>{messages.length > 0 && <button type="button" onClick={() => setMessages([])} className="font-semibold text-slate-500">Clear</button>}</div></form>
-  </section></div>;
-}
-
-export function CreditWorkspace({ locale }: { locale: string }) {
-  const [tab, setTab] = useState<Tab>("overview");
-  const [sidebar, setSidebar] = useState(false);
-  const [chat, setChat] = useState(false);
-  const [apiConnected, setApiConnected] = useState(false);
-  const auth = useAuth();
-  useEffect(() => {
-    if (!auth.token) return;
-    const controller = new AbortController();
-    void fetch("/api/cases", {
-      headers: { Authorization: `Bearer ${auth.token}` },
-      signal: controller.signal,
-    }).then((response) => setApiConnected(response.ok)).catch(() => setApiConnected(false));
-    return () => controller.abort();
-  }, [auth.token]);
-  const javaApiConnected = Boolean(auth.token && apiConnected);
-  const content = useMemo(() => tab === "overview" ? <Overview /> : tab === "documents" ? <Documents /> : tab === "evaluation" ? <Evaluation /> : <Audit />, [tab]);
-  return <div className="min-h-screen bg-[#f3f7f6]">
-    <div className="flex min-h-screen">
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[270px] flex-col border-r border-[#dce8e6] bg-[#f9fbfa] p-4 transition-transform lg:static lg:translate-x-0 ${sidebar ? "translate-x-0" : "-translate-x-full"}`}><div className="flex items-center justify-between px-2 py-2"><div className="flex items-center gap-3"><BrandMark /><div><p className="text-sm font-extrabold tracking-[-.02em]">Credit Intelligence</p><p className="text-[10px] font-semibold uppercase tracking-[.16em] text-[#6c8583]">Banking AI Lab</p></div></div><button onClick={() => setSidebar(false)} className="lg:hidden"><PanelLeftClose size={18} /></button></div>
-        <div className="mt-6 rounded-2xl border border-[#dce8e6] bg-white p-3"><div className="flex items-center gap-3"><div className="grid h-9 w-9 place-items-center rounded-xl bg-[#e5f3ef] text-[#0b625d]"><BriefcaseBusiness size={17} /></div><div className="min-w-0"><p className="truncate text-xs font-bold">PraxisBank Demo</p><p className="truncate text-[10px] text-slate-400">Tenant · {auth.tenantId}</p></div><ChevronDown className="ml-auto text-slate-400" size={14} /></div></div>
-        <nav className="mt-6 space-y-1">{tabItems.map(([id, label, Icon]) => <button key={id} onClick={() => { setTab(id); setSidebar(false); }} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition ${tab === id ? "bg-[#dff1ec] text-[#075c57]" : "text-[#5c7474] hover:bg-white hover:text-[#17383a]"}`}><Icon size={17} />{label}{id === "documents" && <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[10px] text-amber-700">1 review</span>}</button>)}</nav>
-        <div className="mt-auto rounded-2xl bg-[#0c4c49] p-4 text-white"><div className="flex items-center gap-2 text-xs font-bold"><LockKeyhole size={14} className="text-[#7bdec5]" /> Security lab</div><p className="mt-2 text-[11px] leading-5 text-[#bddbd5]">OAuth 2.0 · tenant claims · audit-safe events · keyless Azure AI</p></div><p className="mt-3 px-2 text-[9px] leading-4 text-slate-400">Independent portfolio project. Not affiliated with apoBank or any lender.</p>
-      </aside>
-      {sidebar && <button className="fixed inset-0 z-30 bg-[#082f2d]/30 lg:hidden" onClick={() => setSidebar(false)} aria-label="Close navigation" />}
-      <main className="min-w-0 flex-1">
-        <header className="sticky top-0 z-20 border-b border-[#dce8e6] bg-[#f3f7f6]/90 px-4 py-3 backdrop-blur-xl md:px-7"><div className="mx-auto flex max-w-[1500px] items-center gap-3"><button onClick={() => setSidebar(true)} className="grid h-10 w-10 place-items-center rounded-xl border border-[#dce8e6] bg-white lg:hidden" aria-label="Open navigation"><Menu size={18} /></button><div className="relative hidden min-w-0 max-w-md flex-1 md:block"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} /><input className="h-10 w-full rounded-xl border border-[#dce8e6] bg-white pl-9 pr-3 text-sm outline-none focus:border-[#73aca4]" placeholder="Search synthetic cases…" /></div><div className="ml-auto flex items-center gap-2"><StatusPill tone={javaApiConnected ? "mint" : auth.mode === "demo" ? "gold" : "slate"}>{javaApiConnected ? "Java API" : auth.mode === "demo" ? "Demo auth" : "Sign in"}</StatusPill><button onClick={() => auth.authenticated && auth.mode === "keycloak" ? auth.logout() : auth.login()} className="flex h-10 items-center gap-2 rounded-xl border border-[#dce8e6] bg-white px-3 text-xs font-bold text-[#35585a]"><CircleUserRound size={17} /><span className="hidden sm:inline">{auth.displayName}</span>{auth.mode === "keycloak" && !auth.authenticated && <LogIn size={14} />}</button><button onClick={() => setChat(true)} className="flex h-10 items-center gap-2 rounded-xl bg-[#0b625d] px-3 text-xs font-bold text-white shadow-[0_8px_20px_rgba(11,98,93,.18)]"><Sparkles size={16} /><span className="hidden sm:inline">Ask Nova</span></button></div></div></header>
-        <div className="mx-auto max-w-[1500px] p-4 md:p-7"><div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[.18em] text-[#6d8584]"><span className="h-2 w-2 rounded-full bg-emerald-500" />Secure workspace</div><h1 className="mt-2 text-3xl font-extrabold tracking-[-.045em] text-[#123537] md:text-[38px]">Good morning, {auth.displayName.split(" ")[0]}.</h1><p className="mt-2 text-sm text-slate-500">Review the evidence, not just the prediction.</p></div><div className="flex items-center gap-2 rounded-xl border border-[#dce8e6] bg-white px-3 py-2 text-xs text-slate-500"><Users size={15} className="text-[#0b625d]" /><b className="text-[#17383a]">{locale.toUpperCase()}</b> · ADVISOR · REVIEWER</div></div>{content}</div>
-      </main>
-    </div>
-    <button onClick={() => setChat(true)} className="fixed bottom-5 right-5 z-30 grid h-14 w-14 place-items-center rounded-2xl bg-[#0b625d] text-white shadow-[0_14px_34px_rgba(8,72,68,.28)] transition hover:-translate-y-1 md:hidden" aria-label="Open Nova"><MessageSquareText size={22} /></button>
-    <Copilot open={chat} onClose={() => setChat(false)} />
+    </main>
+    {editor&&auth.authenticated?<ModalSurface title={t(editor==="new"?"newCase":"editCase")} label={t("close")} close={()=>{if(!busy)setEditor(null);}}><form key={editor} onSubmit={saveDraft} className="draft-form">{[["applicant","applicant",editor==="edit"?item?.applicant:""],["purpose","purpose",editor==="edit"?item?.purpose:""],["coApplicant","coApplicant",editor==="edit"?item?.coApplicant:""]].map(([name,label,value])=><label key={name}>{t(label!)}<input name={name} required={name!=="coApplicant"} maxLength={name==="purpose"?160:120} defaultValue={value}/></label>)}<label>{t("amount")}<input type="number" name="amountEuro" min={1} max={10000000} step={1} required defaultValue={editor==="edit"?item?.amountEuro:10000}/></label>{error?<p className="notice-error" role="alert">{t(error)}</p>:null}<div className="flex justify-end gap-2"><button type="button" className="button-secondary" disabled={busy} onClick={()=>setEditor(null)}>{t("cancel")}</button><button className="button-primary" disabled={busy}>{t(busy?"loading":"save")}</button></div></form></ModalSurface>:null}
+    {inspected&&item?<ModalSurface wide title={inspected.name} label={t("close")} close={()=>{if(!busy)setInspected(null);}}><p className="notice-lab">{inspected.originalAvailable?documentText(locale)("review"):t("fixture")} · {inspected.analysisProvider||"local"} · {inspected.modelId||"transparent-rules"}</p><DocumentEvidence key={inspected.id} doc={inspected} caseId={item.id} locale={locale} editable={canReview&&!!inspected.originalAvailable&&!busy} values={reviewValues} onChange={(index,value)=>setReviewValues(v=>v.map((previous,i)=>i===index?value:previous))}/>
+      {error?<p className="notice-error" role="alert">{t(error)}</p>:null}<div className="mt-6 flex flex-wrap justify-end gap-2">{inspected.originalAvailable?<button className="button-secondary" onClick={()=>void original(inspected)}>{t("original")}</button>:null}<button className="button-primary" disabled={!canReview||!inspected.originalAvailable||!inspected.fields?.length||reviewValues.some(v=>!v.trim())||busy} onClick={()=>void request(`/api/cases/${item.id}/documents/${inspected.id}/review`,"POST",JSON.stringify({version:item.version||0,values:reviewValues}))}><CheckCircle2 size={17}/>{t(busy?"loading":"confirm")}</button></div></ModalSurface>:null}
+    {chat&&item&&auth.authenticated?<Chat key={`${item.id}:${item.version}:${auth.tenantId}:${auth.displayName}`} item={item} locale={locale} openSource={id=>{const doc=item.documents.find(d=>id.startsWith(d.id+":"));if(doc){setChat(false);inspect(doc);}}} initialQuestion={chatQuestion} close={()=>{setChat(false);setChatQuestion(undefined);}}/>:null}
   </div>;
 }
