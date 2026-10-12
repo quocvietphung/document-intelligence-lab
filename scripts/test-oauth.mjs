@@ -342,11 +342,16 @@ if(process.env.TEST_PAYROLL==="1") {
 
 if(process.env.TEST_DATEV==="1") {
   assert.equal(new URL(web).hostname,"localhost","Public DATEV reference test is local-only");
+  check((await request(`${web}/api/payroll-references?sample=robert`)).status===401,"Private DATEV library requires authentication");
+  const references=await request(`${web}/api/payroll-references`,{headers:bearer});
+  check(references.status===200&&(await references.json()).references.every(r=>r.available),"Both official local DATEV references are available");
   const response=await request(`${web}/api/cases`,{method:"POST",headers:{...bearer,"Content-Type":"application/json"},body:JSON.stringify({applicant:"Public DATEV Muster References",coApplicant:"",purpose:"Approved public fictional payroll extraction test",amountEuro:10000,version:0})});
   check(response.status===201,"Public reference verification case created");
   let item=await response.json();datevCaseId=item.id;
   for(const [file,net,payout] of [["datev-lodas-2025-robert-muster.pdf","2.967,11","2.882,11"],["datev-lodas-2025-melanie-muster.pdf","4.212,90","3.069,93"]]) {
     const bytes=readFileSync(`.local/reference-pdfs/${file}`);
+    const sample=await request(`${web}/api/payroll-references?sample=${file}`,{headers:bearer});
+    check(sample.status===200&&sample.headers.get("cache-control").includes("no-store")&&createHash("sha256").update(Buffer.from(await sample.arrayBuffer())).digest("hex")===createHash("sha256").update(bytes).digest("hex"),"Private DATEV preview is authenticated, not cached and byte-identical");
     const form=new FormData();form.set("file",new Blob([bytes],{type:"application/pdf"}),file);form.set("version",String(item.version));
     const upload=await request(`${web}/api/cases/${item.id}/documents`,{method:"POST",headers:bearer,body:form});
     check(upload.status===200,`Approved public DATEV page analyzed (HTTP ${upload.status})`);

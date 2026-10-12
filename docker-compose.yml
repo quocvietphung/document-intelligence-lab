@@ -90,6 +90,11 @@ services:
         NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: credit-intelligence-web
     environment:
       CREDIT_API_URL: http://credit-api:8080
+    volumes:
+      - type: bind
+        source: ./.local/reference-pdfs
+        target: /app/.local/reference-pdfs
+        read_only: true
     ports:
       - "3000:3000"
     depends_on:
