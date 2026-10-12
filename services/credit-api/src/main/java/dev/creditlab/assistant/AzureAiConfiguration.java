@@ -40,6 +40,7 @@ public class AzureAiConfiguration {
         .tokenCredential(credential(type,file))
         .deploymentName(deployment)
         .temperature(0.1)
+        .maxTokens(1500)
         .timeout(Duration.ofSeconds(35))
         .maxRetries(0)
         .logRequestsAndResponses(false)

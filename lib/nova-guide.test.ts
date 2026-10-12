@@ -6,6 +6,7 @@ import {datevLabels,datevReferences,datevReference,officialPayrollReference} fro
 import {GET} from "../app/api/payroll-references/route";
 afterEach(()=>{vi.unstubAllEnvs();vi.unstubAllGlobals();});
 describe("Nova application guide",()=>{
+ it("answers payroll-AI location questions locally, including the observed typo",()=>{expect(novaGuideFor("xem phần nào có itnsh năng AI cho bảng lương")?.features).toEqual(["documents","pipeline","controls"]);expect(novaGuideFor("Where is the payslip AI feature?")?.features).toContain("documents");expect(novaGuideFor("Explain the net income in my payslip")).toBeUndefined();});
  it("understands the current workspace without sending UI preferences to Azure",()=>{expect(novaGuideFor("Mục này có gì?","pipeline")?.features).toEqual(["pipeline"]);expect(novaGuideFor("What does this section do?","documents")?.features).toEqual(["documents"]);});
  it("knows every actual section in all three languages",()=>{for(const id of workspaceTabs)for(const locale of ["en","de","vi"]){const f=novaFeature(id,locale);expect(f.title.length).toBeGreaterThan(2);expect(f.steps).toHaveLength(3);expect(workspaceTarget(featureHref(locale,id).split("#")[1])).toBe(id);}});
  it("answers Studio help with real tools and honest demo limits",()=>{expect(novaGuideFor("AI Studio có những gì?")?.features).toEqual(["studio"]);expect(novaFeature("studio","vi").description).toContain("demo công khai");expect(novaGuideFor("Was kann AI Studio?")?.features).toEqual(["studio"]);});

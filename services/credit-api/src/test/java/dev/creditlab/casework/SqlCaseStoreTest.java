@@ -30,4 +30,18 @@ class SqlCaseStoreTest {
     for(int i=0;i<6;i++)store.reserve("tenant-a","actor-a",1);
     assertThatThrownBy(()->store.reserve("tenant-a","actor-a",1)).isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
   }
+  @Test void configurableLocalPolicyAllowsMoreThanTheOldDailyBudget(){
+    var source=new DriverManagerDataSource("jdbc:h2:mem:local"+System.nanoTime()+";MODE=PostgreSQL;DB_CLOSE_DELAY=-1","sa","");
+    var local=new SqlCaseStore(source,new ObjectMapper(),new dev.creditlab.assistant.AiQuotaPolicy(12,60,150_000,300_000));
+    for(int i=0;i<5;i++)local.reserve("t","a",30_000);
+    assertThatThrownBy(()->local.reserve("t","a",1)).isInstanceOf(dev.creditlab.assistant.AiUsageLimitException.class).satisfies(e->assertThat(((dev.creditlab.assistant.AiUsageLimitException)e).code()).isEqualTo("AI_DAILY_ACCOUNT_LIMIT"));
+    var db=new org.springframework.jdbc.core.JdbcTemplate(source);
+    assertThat(db.queryForObject("SELECT used FROM ai_quota WHERE bucket=?",Long.class,"budget:t:d:"+java.time.LocalDate.now(java.time.ZoneOffset.UTC))).isEqualTo(150_000L);
+    local.reserve("t","other",1); // Failed reservations rolled back the shared charge.
+  }
+  @Test void twelveRequestsAreAllowedButThirteenthIsMinuteLimited(){
+    var local=new SqlCaseStore(new DriverManagerDataSource("jdbc:h2:mem:minute"+System.nanoTime()+";MODE=PostgreSQL;DB_CLOSE_DELAY=-1","sa",""),new ObjectMapper(),new dev.creditlab.assistant.AiQuotaPolicy(12,60,150_000,300_000));
+    for(int i=0;i<12;i++)local.reserve("t","a",1);
+    assertThatThrownBy(()->local.reserve("t","a",1)).isInstanceOf(dev.creditlab.assistant.AiUsageLimitException.class).satisfies(e->assertThat(((dev.creditlab.assistant.AiUsageLimitException)e).code()).isEqualTo("AI_MINUTE_LIMIT"));
+  }
 }

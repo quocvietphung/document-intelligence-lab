@@ -20,7 +20,11 @@ public class StoreConfiguration {
   }
   @Bean
   @ConditionalOnProperty(name="app.persistence.enabled", havingValue="true")
-  CaseStore sqlStore(DataSource caseDataSource, com.fasterxml.jackson.databind.ObjectMapper mapper) {
-    return new SqlCaseStore(caseDataSource, mapper);
+  CaseStore sqlStore(DataSource caseDataSource, com.fasterxml.jackson.databind.ObjectMapper mapper,
+      @Value("${app.ai.requests-per-minute:6}") int minute,
+      @Value("${app.ai.tenant-requests-per-minute:60}") int tenantMinute,
+      @Value("${app.ai.daily-account-budget:30000}") int accountBudget,
+      @Value("${app.ai.daily-tenant-budget:100000}") int tenantBudget) {
+    return new SqlCaseStore(caseDataSource, mapper,new dev.creditlab.assistant.AiQuotaPolicy(minute,tenantMinute,accountBudget,tenantBudget));
   }
 }

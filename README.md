@@ -1,12 +1,29 @@
 # Credit Intelligence Lab
 
+## Azure backend deployment (low-cost lab)
+
+Terraform and a dedicated cloud Compose stack are available in `infra/azure/vm-lab/`. Next.js runs on Vercel; Java, Keycloak, PostgreSQL, Qdrant, Redis, ClamAV and the document worker run on one Azure Linux VM, with HTTPS and Managed Identity for shared Azure AI. The production domain was connected and tested on 12 October 2026, including browser login and real Azure document/chat calls. Follow [the deployment, verification and cost-control guide](docs/AZURE_VM_LAB.md). Local databases and private PDF references are never migrated automatically.
+
 An independent banking-AI engineering lab: **inspect the evidence, explain uncertainty, keep a human in control**.
 
-[Open the public demo](https://credit-intelligence-lab.vercel.app/en) · [Local verification](docs/PLATFORM_VERIFICATION.md) · [Azure setup](docs/AZURE_AI.md) · [Reliability runbook](docs/RELIABILITY_LAB.md)
+[Open the authenticated cloud lab](https://credit-intelligence-lab.vercel.app/en) · [Cloud verification](docs/AZURE_VM_LAB.md) · [Local verification](docs/PLATFORM_VERIFICATION.md) · [Reliability runbook](docs/RELIABILITY_LAB.md)
 
 > Synthetic data only. Not affiliated with apoBank, Microsoft or a lender. No financial advice, automated credit decisions, real bank connections or real payments.
 
-## Two ways to explore
+## Three ways to explore
+
+The current production URL is the **authenticated Azure-backed lab**, not the standalone browser demo. Use the operator's private cloud credentials; `demo-password` is local-only. The VM has a daily cost-control shutdown; after it is deallocated, frontend pages can load but cloud login/API/AI are unavailable until it is started again. The historical public-demo screenshots below remain labelled as such.
+
+| Authenticated cloud lab | Implementation |
+| --- | --- |
+| Sign-in | Keycloak on Azure, Authorization Code + PKCE, tenant/role claims |
+| Cases / documents | Persistent PostgreSQL and private VM disk; uploads, extraction and review |
+| Nova / Document AI | Existing shared Azure resources through VM Managed Identity; no API key on Vercel |
+| Retrieval / jobs | Qdrant + local ONNX, Redis limits, ClamAV and durable Java worker |
+| Operator access | Private SSH key, no public database/vector/scanner ports |
+| Lab boundary | Fresh synthetic cloud records; no local users or private DATEV PDFs migrated |
+
+The two alternatives below remain available for local exploration:
 
 | | Public Vercel demo | Full local Docker platform |
 | --- | --- | --- |
@@ -19,9 +36,15 @@ An independent banking-AI engineering lab: **inspect the evidence, explain uncer
 | Banking lab | Account cards, filters, CSV and invoice inspection | Persistent mock workflow with explicit human confirmation |
 | Azure | Not called; no API keys needed | Entra short-lived tokens; no Azure API-key code path |
 
-Languages: **English, Deutsch, Tiếng Việt**. All sample names and amounts are fictional. The public demo cannot create cases, upload files, confirm reviews or prepare payments.
+Languages: **English, Deutsch, Tiếng Việt**. All sample names and amounts are fictional. The standalone browser demo cannot create cases, upload files, confirm reviews or prepare payments; authorized cloud/local lab accounts can edit synthetic records.
 
 ## Screenshots
+
+### Authenticated Azure-backed production
+
+Tested on 12 October 2026. The workspace's **Sign out** button, persisted synthetic case and enabled edit controls show the authenticated cloud flow. See the [full cloud verification and PDF screenshot](docs/AZURE_VM_LAB.md#production-screenshots).
+
+<img src="docs/screenshots/azure-production-login.png" alt="Authenticated Azure-backed production workspace" width="360" />
 
 ### Public workspace — no API required
 
@@ -58,11 +81,11 @@ No real payment integration exists. ISO 20022 examples are deliberately non-subm
 ## Architecture
 
 ```text
-PUBLIC DEMO
-Browser → Next.js on Vercel → bundled fixtures + sample PDFs
+STANDALONE BROWSER DEMO (optional local mode)
+Browser → Next.js → bundled fixtures + sample PDFs
          No Java API, Keycloak login, Azure calls or database writes
 
-FULL LOCAL PLATFORM
+AUTHENTICATED PLATFORM (Azure VM or local Docker)
 Browser → Keycloak OIDC/PKCE → Next.js authenticated transport
                                       ↓
                               Java 21 / Spring Boot
@@ -150,6 +173,14 @@ Ask “What does AI Studio do?”, “AI Studio có những gì?” or “Was ka
 
 See [Nova guide implementation and checks](docs/NOVA_WORKSPACE_GUIDE.md).
 
+### Nova local chat allowance
+
+The Azure **local Compose profile** permits 12 chat requests/minute/account, 150,000 daily reservation units/account and 300,000/day/tenant. Plain deployments retain conservative defaults (6/minute, 30,000/account/day, 100,000/tenant/day). Configure these in the Java service using `AI_REQUESTS_PER_MINUTE`, `AI_TENANT_REQUESTS_PER_MINUTE`, `AI_DAILY_ACCOUNT_BUDGET` and `AI_DAILY_TENANT_BUDGET`; do not publish secrets to browser variables.
+
+Reservations count Unicode characters plus overhead, not UTF-8 bytes, so accented Vietnamese is not charged multiple bytes per character. These estimates are **not actual model-token metering, a monetary spending cap, or a guarantee of a fixed number of conversations**. Model responses are capped at 1,500 output tokens per model call and tool loops remain bounded. Azure usage is still chargeable under the resource's plan.
+
+PostgreSQL retains existing counters across restarts; raising a configured ceiling does not reset history. Failed SQL reservations roll back atomically. Account/tenant daily limits reset at 00:00 UTC; short-window limits reset at the next UTC minute. Nova distinguishes those limits and shows the reset in the user's local timezone. Failed questions remain editable; there is no automatic retry. Payroll-AI location questions use the local app guide without consuming Azure generation budget.
+
 ## Verification and honest limits
 
 ```bash
@@ -158,7 +189,7 @@ cd services/credit-api
 mvn --batch-mode verify
 ```
 
-Local release checks: **40 frontend tests passed**; lint, TypeScript and production build were checked. Java: **115 passed**, one opt-in live test skipped. The separately verified Docker integration exercised real Azure extraction/chat, authorization, uploads, scanner rejection, review refresh and optimistic concurrency. Full evidence and dated results are in [PLATFORM_VERIFICATION.md](docs/PLATFORM_VERIFICATION.md).
+Latest release checks (12 October 2026): **70 frontend tests passed**, lint and TypeScript passed, Vercel production build passed. Java: **126 passed**, one opt-in live test skipped. Separate Azure backend and Vercel-proxy checks each passed 26 boundaries, including PKCE, tenant-scoped SQL, PDF extraction/review, actual antivirus scanning, Qdrant, real Azure Nova, token refresh and logout. See [cloud results](docs/AZURE_VM_LAB.md) and the earlier [local verification](docs/PLATFORM_VERIFICATION.md).
 
 The measured 40-reference **synthetic text** run reported precision 100%, recall 90.5%, field F1 95.0% and retrieval Recall@5 54.7%. These numbers are **not** image-OCR accuracy, Azure LLM accuracy, credit suitability or general banking correctness. Retrieval still needs improvement.
 
@@ -174,10 +205,12 @@ Other limits:
 
 - **master:** reviewed releases.
 - **develop:** development baseline.
-- Feature upgrades are squash-merged into master. Existing history and real commit timestamps are preserved.
+- Completed feature upgrades are integrated into master; existing history and real commit timestamps are preserved. After the October 2026 consolidation, only `master` and `develop` remain, synchronized at the release commit.
 - Vercel project/domain: **credit-intelligence-lab** / [credit-intelligence-lab.vercel.app](https://credit-intelligence-lab.vercel.app/en).
-- Vercel is configured with `NEXT_PUBLIC_DEMO_MODE=true`; server proxies fail closed in this mode, even if an old API URL remains configured.
-- Java, databases, Keycloak and workers remain a separate local platform. They are not deployed by this public frontend release.
+- Production Vercel uses `NEXT_PUBLIC_DEMO_MODE=false`, the Azure Keycloak URL and `CREDIT_API_URL`. Anonymous case access is rejected; Java validates every user token.
+- Java, databases, Keycloak and workers run on the dedicated Azure VM, not in Vercel Functions. Local Docker remains a separate environment.
+- Nova workspace/DATEV improvements, chat limits and Azure Terraform deployment are now included in the release source, not left as uncommitted feature-branch changes. Vercel is redeployed from `master`.
+- Retired work is recoverable from `archive/finance-refactor-2026-10-12` and `archive/apobank-platform-2026-10-12` tags. The old Finance prototype is archived, not merged back into the banking lab. No cloud/database resources are deleted by branch cleanup.
 
 ## Repository map
 

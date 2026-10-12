@@ -8,4 +8,11 @@ describe("workspace translations",()=>{
       expect(Object.values(table).every(value=>value.trim().length>0)).toBe(true);
     }
   });
+  it("does not suggest local default passwords on a cloud sign-in screen",()=>{
+    for(const table of Object.values(languageTables)) {
+      expect(table.publicLogin).not.toContain("demo-password");
+      expect(table.publicLogin).not.toContain("advisor.demo /");
+      expect(table.readonly).not.toContain("Production remains gated");
+    }
+  });
 });

@@ -66,7 +66,7 @@ public class CreditCaseController {
   }
   public record Reservation(@jakarta.validation.constraints.Min(1) @jakarta.validation.constraints.Max(30000) int tokens) {}
   @PostMapping("/{id}/ai-reservations") public java.util.Map<String,Object> reserve(@PathVariable String id,@Valid @RequestBody Reservation reservation,Authentication auth) {
-    service.reserve(resolveTenant(auth,null),id,actor(auth),reservation.tokens()); return java.util.Map.of("reservedTokens",reservation.tokens(),"dailyUserBudget",30000,"requestsPerMinute",6);
+    service.reserve(resolveTenant(auth,null),id,actor(auth),reservation.tokens()); return java.util.Map.of("reservedTokens",reservation.tokens(),"dailyUserBudget",service.quotaPolicy().dailyAccountBudget(),"requestsPerMinute",service.quotaPolicy().requestsPerMinute());
   }
 
   @GetMapping

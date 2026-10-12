@@ -16,6 +16,10 @@ services:
       AZURE_OPENAI_CREDENTIAL: token-file
       AZURE_OPENAI_TOKEN_FILE: /run/azure-auth/token.json
       AZURE_AI_REQUIRED: "true"
+      # Local interactive testing only; finite reservations, not billed token counts.
+      AI_REQUESTS_PER_MINUTE: "12"
+      AI_DAILY_ACCOUNT_BUDGET: "150000"
+      AI_DAILY_TENANT_BUDGET: "300000"
       JAVA_TOOL_OPTIONS: -Xmx384m -XX:ActiveProcessorCount=2
     volumes:
       - type: bind

@@ -1,0 +1,16 @@
+import {z} from "zod";
+const codes=["AI_MINUTE_LIMIT","AI_DAILY_ACCOUNT_LIMIT","AI_DAILY_TENANT_LIMIT"] as const;
+const schema=z.object({code:z.enum(codes),resetAt:z.iso.datetime().optional()});
+export type NovaLimit=z.infer<typeof schema>;
+export function novaQuotaNotice(locale:string){return locale==="vi"?"Có giới hạn phút và ngân sách ngày hữu hạn, cấu hình tại dịch vụ Java. Ngân sách dự trù không phải token Azure đã tính phí hoặc hạn mức tiền EUR. Hướng dẫn chức năng app không gọi Azure. Không tự động gửi lại khi lỗi.":locale==="de"?"Minutenlimits und endliche Tagesbudgets werden im Java-Dienst konfiguriert. Reservierungen sind weder abgerechnete Azure-Tokens noch ein EUR-Kostenlimit. App-Anleitungen benötigen keinen Azure-Aufruf. Keine automatischen Wiederholungen bei Fehlern.":"Minute limits and finite daily budgets are configured in the Java service. Reservations are neither billed Azure tokens nor a EUR spending cap. App guides need no Azure request. Failed requests are not retried automatically.";}
+export function novaLimit(value:unknown):NovaLimit|undefined{const result=schema.safeParse(value);return result.success?result.data:undefined;}
+export function novaLimitMessage(limit:NovaLimit|undefined,locale:string){
+  const language=locale==="vi"?"vi":locale==="de"?"de":"en";
+  const text={
+    vi:{minute:"Bạn gửi khá nhanh. Hãy thử lại sau khi hạn mức phút được làm mới.",account:"Đã đạt ngân sách AI dự trù trong ngày của tài khoản. Đợi lần làm mới bên dưới; đây không phải số token Azure đã tính phí.",tenant:"Đã đạt ngân sách AI dùng chung trong ngày của workspace. Đợi lần làm mới bên dưới.",unknown:"Tạm đạt giới hạn dịch vụ. Hãy thử lại sau; chưa xác định được giới hạn phút hay ngày.",reset:"Có thể thử lại lúc"},
+    en:{minute:"You're sending quickly. Try again when the minute allowance resets.",account:"Your account's daily AI reservation budget has been reached. Wait for the reset below; this is not billed Azure token usage.",tenant:"The workspace's shared daily AI reservation budget has been reached. Wait for the reset below.",unknown:"A service limit was reached. Try again later; the minute or daily limit is not yet identified.",reset:"Try again at"},
+    de:{minute:"Du sendest sehr schnell. Nach dem Minutenreset kannst du es erneut versuchen.",account:"Das tägliche KI-Reservierungsbudget deines Kontos ist erreicht. Warte auf den unten angegebenen Reset; dies sind keine abgerechneten Azure-Tokens.",tenant:"Das gemeinsame tägliche KI-Reservierungsbudget des Arbeitsbereichs ist erreicht. Warte auf den unten angegebenen Reset.",unknown:"Ein Dienstlimit wurde erreicht. Später erneut versuchen; Minuten- oder Tageslimit ist noch nicht bestimmt.",reset:"Erneut versuchen ab"},
+  }[language];
+  const message=!limit?text.unknown:limit.code==="AI_MINUTE_LIMIT"?text.minute:limit.code==="AI_DAILY_ACCOUNT_LIMIT"?text.account:text.tenant;
+  return limit?.resetAt?`${message} ${text.reset}: ${new Intl.DateTimeFormat(language,{dateStyle:"short",timeStyle:"short"}).format(new Date(limit.resetAt))}.`:message;
+}

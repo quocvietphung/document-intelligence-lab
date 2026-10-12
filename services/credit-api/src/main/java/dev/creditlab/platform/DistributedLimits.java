@@ -18,7 +18,7 @@ public class DistributedLimits {
   public void reserve(String tenant,String actor,String purpose,int limit) {
     if(!enabled)return;
     String key="lab-limit:"+RagEngine.hash(tenant+"|"+actor+"|"+purpose)+":"+Instant.now().getEpochSecond()/60;
-    try { if(!Long.valueOf(1).equals(redis.execute(SCRIPT,List.of(key),String.valueOf(limit))))throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,"Shared request limit reached"); }
+    try { if(!Long.valueOf(1).equals(redis.execute(SCRIPT,List.of(key),String.valueOf(limit))))throw new dev.creditlab.assistant.AiUsageLimitException("AI_MINUTE_LIMIT",Instant.now(),false); }
     catch(ResponseStatusException e){throw e;}
     catch(RuntimeException e){throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Shared limit service unavailable");}
   }

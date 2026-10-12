@@ -1,0 +1,30 @@
+{$BACKEND_HOST} {
+  header {
+    X-Content-Type-Options nosniff
+    Referrer-Policy no-referrer
+    -Server
+  }
+  # No access log: OAuth codes and document URLs must not enter logs.
+  # Admin console is available only through a private SSH port-forward.
+  @admin path /auth/admin /auth/admin/* /auth/realms/master /auth/realms/master/*
+  handle @admin {
+    respond "Not found" 404
+  }
+  @auth path /auth /auth/*
+  handle @auth {
+    reverse_proxy keycloak:8080
+  }
+  handle /api/* {
+    request_body {
+      max_size 4MB
+    }
+    reverse_proxy credit-api:8080
+  }
+  handle /health {
+    rewrite * /actuator/health
+    reverse_proxy credit-api:8080
+  }
+  handle {
+    respond "Credit Intelligence Lab backend. Use the Vercel frontend." 200
+  }
+}

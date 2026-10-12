@@ -1,0 +1,12 @@
+#cloud-config
+package_update: true
+packages:
+  - docker.io
+  - docker-compose-v2
+  - python3
+  - openssl
+runcmd:
+  - [systemctl, enable, --now, docker]
+  - [install, -d, -m, '0750', -o, labadmin, -g, labadmin, /opt/credit-lab]
+  - [install, -d, -m, '0700', /opt/credit-lab/secrets]
+  - [sh, -c, 'printf "vm.max_map_count=262144\n" > /etc/sysctl.d/60-credit-lab.conf && sysctl --system']
