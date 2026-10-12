@@ -6,11 +6,13 @@ import {publicDemoAnswer,publicDemoCase} from "@/lib/public-demo";
 import {publicDemoText} from "@/lib/public-demo-language";
 import {workspaceText} from "@/lib/workspace-language";
 import {ModalSurface} from "./ModalSurface";
+import {novaGreeting} from "@/lib/nova-welcome";
 
 export function DemoCopilot({item,locale,close,initialQuestion,openSource}:{item:WorkspaceCase;locale:string;close:()=>void;initialQuestion?:string;openSource:(id:string)=>void}) {
   const t=workspaceText(locale),d=publicDemoText(locale);
   const [text,setText]=useState(initialQuestion||"");
-  const [messages,setMessages]=useState<{id:string;role:"user"|"assistant";text:string}[]>([]);
+  const welcome={id:"nova-welcome",role:"assistant" as const,text:novaGreeting(locale)};
+  const [messages,setMessages]=useState<{id:string;role:"user"|"assistant";text:string}[]>(()=>[welcome]);
   const bottom=useRef<HTMLDivElement>(null);
   useEffect(()=>{bottom.current?.scrollIntoView({block:"nearest"});},[messages]);
   function send(event?:FormEvent,question=text) {
@@ -24,12 +26,13 @@ export function DemoCopilot({item,locale,close,initialQuestion,openSource}:{item
     <div className="chat-history" role="log" aria-label={t("nova")}>
       {!messages.length?<div className="chat-welcome"><MessageSquareText size={32}/><h3>{t("chatReady")}</h3><button className="button-secondary" onClick={()=>send(undefined,t("question"))}>{t("question")}</button></div>:messages.map(m=><article key={m.id} className={`chat-bubble ${m.role==="user"?"chat-user":"chat-assistant"}`}>
         <div className="whitespace-pre-wrap">{m.text}</div>
-        {m.role==="assistant"?<details className="mt-4 text-xs"><summary>{t("sources")}</summary>
+        {m.id==="nova-welcome"?<button className="button-secondary mt-4" onClick={()=>send(undefined,t("question"))}>{t("question")}</button>:null}
+        {m.role==="assistant"&&m.id!=="nova-welcome"?<details className="mt-4 text-xs"><summary>{t("sources")}</summary>
           {publicDemoCase.documents.filter(doc=>doc.pages?.length).map(doc=><button key={doc.id} className="button-link block mt-2" onClick={()=>openSource(`${doc.id}:p1`)}>{doc.name} →</button>)}
           <span className="block mt-2">{item.id} · bundled synthetic data</span></details>:null}
       </article>)}<div ref={bottom}/>
     </div>
     <form onSubmit={send} className="chat-composer"><label className="sr-only" htmlFor="nova-demo-question">{t("ask")}</label><textarea id="nova-demo-question" rows={2} maxLength={2000} value={text} onChange={e=>setText(e.target.value)} placeholder={t("ask")}/><button className="button-primary" disabled={!text.trim()}><Send size={17}/>{t("send")}</button></form>
-    <button className="button-link mt-3" onClick={()=>setMessages([])}>{t("clear")}</button>
+    <button className="button-link mt-3" onClick={()=>setMessages([welcome])}>{t("clear")}</button>
   </ModalSurface>;
 }
