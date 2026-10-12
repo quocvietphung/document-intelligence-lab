@@ -22,6 +22,7 @@ import {PayrollSamples} from "./PayrollSamples";
 import {DocumentEvidence} from "./DocumentEvidence";
 import {documentText} from "@/lib/document-language";
 import {caseChatPayload,assistantModeKey} from "@/lib/credit-chat";
+import {novaWelcomeMessage,welcomeSessionKey} from "@/lib/nova-welcome";
 type Tab="overview"|"banking"|"documents"|"studio"|"pipeline"|"controls"|"operations"|"evaluation"|"audit";
 const navigation=[["overview",LayoutDashboard],["studio",FlaskConical],["documents",FileSearch],["pipeline",Layers3],["controls",ScanSearch],["banking",WalletCards],["evaluation",Gauge],["operations",GitBranch],["audit",ClipboardCheck]] as const;
 
@@ -31,7 +32,7 @@ function Copilot({item,locale,close,initialQuestion,openSource}:{item:WorkspaceC
   const transport=useMemo(()=>new DefaultChatTransport({api:"/api/chat",headers:()=>({Authorization:`Bearer ${auth.token}`}),body:{caseId:item.id,locale},fetch:async(input,init)=>{
     const response=await fetch(input,init); setMode(response.headers.get("X-AI-Mode")||undefined);return response;
   },prepareSendMessagesRequest:({messages})=>({body:caseChatPayload(messages,item.id,locale)})}),[auth.token,item.id,locale,setMode]);
-  const {messages,sendMessage,status,error,stop,setMessages,clearError}=useChat({transport});
+  const {messages,sendMessage,status,error,stop,setMessages,clearError}=useChat({transport,messages:[novaWelcomeMessage(locale)]});
   const busy=status==="submitted"||status==="streaming";
   useEffect(()=>{bottom.current?.scrollIntoView({block:"nearest"});},[messages]);
   function send(event?:FormEvent) { event?.preventDefault();if(!text.trim()||busy)return;void sendMessage({text:text.trim()});setText(""); }
@@ -46,7 +47,7 @@ function Copilot({item,locale,close,initialQuestion,openSource}:{item:WorkspaceC
       {error?<p className="notice-error" role="alert">{error.message.includes("limit")?t("limit"):t("error")}</p>:null}<div ref={bottom}/>
     </div>
     <form onSubmit={send} className="chat-composer"><label className="sr-only" htmlFor="nova-question">{t("ask")}</label><textarea id="nova-question" value={text} onChange={e=>setText(e.target.value)} maxLength={2000} placeholder={t("ask")} rows={2}/><button className="button-primary" disabled={busy||!text.trim()||!auth.token} type="submit"><Send size={17}/>{t("send")}</button></form>
-    <div className="mt-3 flex flex-wrap gap-2"><button className="button-link" onClick={()=>{void stop();}} disabled={!busy}>{t("stop")}</button><button className="button-link" onClick={()=>{setMessages([]);clearError();setMode(undefined);}} disabled={busy}>{t("clear")}</button></div>
+    <div className="mt-3 flex flex-wrap gap-2"><button className="button-link" onClick={()=>{void stop();}} disabled={!busy}>{t("stop")}</button><button className="button-link" onClick={()=>{setMessages([novaWelcomeMessage(locale)]);clearError();setMode(undefined);}} disabled={busy}>{t("clear")}</button></div>
     {mode?<p className="mt-3 text-xs font-semibold text-teal-800">{d(assistantModeKey(mode))}</p>:null}<p className="mt-2 text-xs leading-relaxed text-slate-500">{d("singleQuestion")}</p><p className="mt-2 text-xs leading-relaxed text-slate-500">{t("quota")}</p>
   </ModalSurface>;
 }
@@ -65,6 +66,15 @@ export function CreditWorkspace({locale}:{locale:string}) {
   const writeInFlight=useRef(false);
   const [uploading,setUploading]=useState(false);
   const item=auth.authenticated?(cases.find(c=>c.id===selected)||cases[0]):undefined;
+  const welcomeKey=welcomeSessionKey(auth),hasCase=Boolean(item);
+  const welcomedSession=useRef<string|undefined>(undefined);
+  useEffect(()=>{
+    if(!welcomeKey){welcomedSession.current=undefined;return;}
+    if(!hasCase||welcomedSession.current===welcomeKey)return;
+    // Set the marker inside the timer so StrictMode cleanup cannot swallow the greeting.
+    const timer=window.setTimeout(()=>{welcomedSession.current=welcomeKey;setChat(true);},0);
+    return()=>window.clearTimeout(timer);
+  },[welcomeKey,hasCase]);
   const Chat=auth.mode==="demo"?DemoCopilot:Copilot;
   const canWrite=auth.mode==="keycloak"&&auth.roles.some(r=>r==="ADVISOR"||r==="ADMIN");
   const canReview=auth.roles.some(r=>r==="REVIEWER"||r==="ADMIN");
