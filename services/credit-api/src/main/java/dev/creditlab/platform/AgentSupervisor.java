@@ -21,6 +21,7 @@ public class AgentSupervisor {
       case "Risk","Compliance"->List.of("caseSummary","retrievedEvidence");
       default->List.of("caseSummary","retrievedEvidence");
     };
+    tools=new ArrayList<>(tools);tools.addAll(List.of("appFeatures","appFeature"));
     return new Plan(specialist,List.of(new Step("Supervisor","Classify intent and enforce tenant scope",List.of(),"COMPLETE"),
       new Step(specialist,"Read evidence and explain findings",tools,"READY"),
       new Step("Evidence verifier","Check source IDs and lexical support",List.of("verifyCitations"),"READY")),false,"");

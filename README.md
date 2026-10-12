@@ -131,13 +131,24 @@ Keep the helper running so its short-lived Entra token can be refreshed. The ver
 ### Try a complete local evidence flow
 
 1. Sign in and create a fictional case.
-2. Preview/import a payroll from the three generated sample PDFs.
+2. Preview an official fictional DATEV page in the private local library, then explicitly confirm import/processing.
 3. Compare the extracted fields and tables with the original PDF.
 4. Correct/confirm fields as a reviewer; inspect the updated activity log.
 5. Ask Nova a complete question about the selected case.
 6. Run evidence retrieval and the synthetic benchmark; inspect failures, not just aggregate scores.
 
-Public third-party DATEV PDFs are **not redistributed**. The repository contains only its own generated payroll assets. Historical source/consent details: [Public payroll tests](docs/PUBLIC_PAYROLL_TESTS.md).
+Public third-party DATEV PDFs are **not redistributed**. The library contains two official fictional LODAS 2025 references, served only after Java verifies the local session. Prepare them in ignored `.local/reference-pdfs/` using the documented splitter; Compose mounts this folder read-only. Historical source/consent details: [Public payroll tests](docs/PUBLIC_PAYROLL_TESTS.md). The self-made PDFs remain legacy synthetic regression/demo fixtures, clearly separate from DATEV; existing case evidence is never silently replaced.
+
+### Nova workspace guide
+
+Ask “What does AI Studio do?”, “AI Studio có những gì?” or “Was kann AI Studio?”. Nova offers steps and real links for all nine sections, with English/German/Vietnamese text from a shared versioned catalog. Use **Explore app features** to list everything.
+
+- Click **Open section** to navigate without leaving the widget. Links such as `/en#studio` can be bookmarked; back/forward restores the section.
+- **Show current data here** reads selected-case data inside chat; **Search evidence here** runs the existing authorized evidence-search endpoint. Results distinguish browser fixtures from live local service data.
+- The Java LLM has read-only `appFeatures`/`appFeature` tools using the same catalog. App-guide replies from the browser are explicitly not Azure generations.
+- Only allowlisted navigation is executable. Model/document text cannot trigger arbitrary URLs, uploads, writes, deletions, credit decisions or payments. Official reference imports require an explicit processing confirmation.
+
+See [Nova guide implementation and checks](docs/NOVA_WORKSPACE_GUIDE.md).
 
 ## Verification and honest limits
 

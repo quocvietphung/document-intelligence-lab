@@ -266,6 +266,23 @@ button:disabled { cursor:not-allowed; opacity:.5; }
   .nova-chat-content {padding:12px;}
   .nova-chat-launcher {height:50px;border-radius:16px;}
 }
+.nova-guide {margin-top:12px;display:grid;gap:9px;}
+.nova-guide > details {padding:11px;border:1px solid #cce0d6;background:#fff;border-radius:12px;}
+.nova-guide summary {font-size:12px;font-weight:750;display:flex;align-items:center;gap:7px;cursor:pointer;color:#155348;}
+.nova-guide p,.nova-guide li {font-size:12px;line-height:1.75;margin-top:8px;}
+.nova-guide ol {padding-left:17px;list-style:decimal;}
+.nova-guide-actions {display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.nova-guide-actions a,.nova-guide button {display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;border:1px solid #b8d5c7;border-radius:8px;padding:8px;background:#eff7f2;color:#145c4e;cursor:pointer;}
+.nova-guide form {display:grid;gap:8px;margin-top:12px;}
+.nova-guide label {font-size:11px;font-weight:650;}
+.nova-guide input {display:block;width:100%;border:1px solid #bbd3c8;border-radius:8px;padding:9px;margin-top:5px;background:#fff;font-size:13px;}
+.nova-tool-result {border-top:1px solid #c4dacc;padding-top:12px;}
+.nova-tool-result strong {font-size:11px;}
+.nova-tool-result details {margin-top:9px;}
+.nova-inline-link {font-weight:700;text-decoration:underline;text-underline-offset:3px;}
+.payroll-samples dl {display:grid;grid-template-columns:1fr auto;gap:8px;margin:15px 0;font-size:12px;}
+.payroll-samples dd {font-weight:750;}
+.payroll-samples small {font-size:11px;color:#566d63;line-height:1.7;}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; }
 }

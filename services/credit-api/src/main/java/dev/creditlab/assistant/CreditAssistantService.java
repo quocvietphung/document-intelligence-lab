@@ -55,6 +55,9 @@ public class CreditAssistantService {
       context.add(new Source("bank-invoices","Sample invoices and duplicate checks",tools.bankInvoices()));
       sources=List.copyOf(context);
     }
+    if(question.toLowerCase(Locale.ROOT).matches("(?s).*(software|interface|app feature|app section|oberfläche|ansichten|funktion|giao diện|chức năng|mục này).*")){
+      var context=new ArrayList<>(sources);context.add(new Source("app-guide","Application guide",new AppGuideTools(request.locale()).appFeatures()));sources=List.copyOf(context);
+    }
     String requestId=UUID.randomUUID().toString();
     if(model.isEmpty()) {
       cases.recordAiUse(requestId,tenant,item.id(),actor,"synthetic-demo");
@@ -65,12 +68,14 @@ public class CreditAssistantService {
     int budget=question.getBytes(StandardCharsets.UTF_8).length+sources.stream().mapToInt(s->s.text().getBytes(StandardCharsets.UTF_8).length).sum()+1000;
     cases.reserve(tenant,item.id(),actor,Math.min(30_000,budget));
     var builder=AiServices.builder(CreditAssistantModel.class).chatModel(model.get()).maxSequentialToolsInvocations(4);
+    var allowedTools=new ArrayList<Object>();allowedTools.add(new AppGuideTools(request.locale()));
     if(platform!=null) {
-      if(plan.specialist().equals("Banking")&&bank!=null)builder.tools(new BankingTools(bank,mapper));
-      else if(plan.specialist().equals("Document"))builder.tools(new CaseTools(item,mapper),new RetrievedTools(retrieval.hits()));
-      else builder.tools(new RetrievedTools(retrieval.hits()));
-    } else if(bank==null) builder.tools(new CaseTools(item,mapper));
-    else builder.tools(new CaseTools(item,mapper),new BankingTools(bank,mapper));
+      if(plan.specialist().equals("Banking")&&bank!=null)allowedTools.add(new BankingTools(bank,mapper));
+      else if(plan.specialist().equals("Document")){allowedTools.add(new CaseTools(item,mapper));allowedTools.add(new RetrievedTools(retrieval.hits()));}
+      else allowedTools.add(new RetrievedTools(retrieval.hits()));
+    } else if(bank==null) allowedTools.add(new CaseTools(item,mapper));
+    else {allowedTools.add(new CaseTools(item,mapper));allowedTools.add(new BankingTools(bank,mapper));}
+    builder.tools(allowedTools.toArray());
     var assistant=builder.build();
     String prompt="Reply in "+language(request.locale())+". Question: "+question+"\nAvailable source IDs: "+
         sources.stream().map(Source::id).toList()+". Use tools when needed.";

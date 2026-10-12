@@ -7,6 +7,11 @@ import org.junit.jupiter.api.Test;
 import java.util.Optional;
 
 class CreditAssistantServiceTest {
+  @Test void softwareHelpHasItsOwnEvidenceInsteadOfUnrelatedPayrollCitations(){
+    var service=new CreditAssistantService(new CreditCaseService(),new ObjectMapper(),Optional.empty());
+    var response=service.answer("praxisbank-demo","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048","vi","Describe the software interface"));
+    assertThat(response.sources()).filteredOn(s->s.id().equals("app-guide")).extracting(CreditAssistantService.Source::text).anySatisfy(text->assertThat(text).contains("/vi#studio","Qdrant"));
+  }
   @Test void bankingQuestionUsesReadOnlySyntheticSources() {
     var cases=new CreditCaseService();var mapper=new ObjectMapper();
     var bank=new dev.creditlab.banking.BankingLabService(cases,mapper,Optional.empty());
