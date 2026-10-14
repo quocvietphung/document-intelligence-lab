@@ -43,6 +43,13 @@ r=await request(root+'/api/cases',{headers:bearer});check(r.status===200&&Array.
 r=await request(root+'/api/cases',{method:'POST',headers:{...bearer,'Content-Type':'application/json'},body:JSON.stringify({applicant:'Synthetic Azure VM Verification',coApplicant:'',purpose:'Generated lab evidence only',amountEuro:10000,version:0})});
 check(r.status===201,'New synthetic case persisted');
 let item=await r.json();const caseId=item.id,base=root+'/api/cases/'+caseId+'/platform';
+for(const suffix of ['', '/documents/not-a-document/original','/platform','/banking','/research','/trust']){
+  for(const headers of [{},{Authorization:'Bearer invalid'}]){r=await request(root+'/api/cases/'+caseId+suffix,{headers});check(r.status===401,'Protected data rejects missing/invalid Bearer: '+(suffix||'case'));}
+}
+for(const suffix of ['/platform/search','/platform/jobs','/trust/prompt','/documents/not-a-document/review']){
+  r=await request(root+'/api/cases/'+caseId+suffix,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});check(r.status===401,'Protected action rejects missing Bearer: '+suffix);
+}
+r=await request(root+(throughFrontend?'/api/chat':'/api/assistant/chat'),{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});check(r.status===401,'Nova rejects missing Bearer');
 r=await request(base,{headers:bearer});let snapshot=await r.json();
 check(r.status===200&&snapshot.persistent&&snapshot.documentPipeline.storage==='local volume','SQL and VM disk persistence configured');
 check(snapshot.limits==='redis connected'&&snapshot.documentPipeline.scanner==='ClamAV INSTREAM','Redis and ClamAV configured');
