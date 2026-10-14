@@ -6,7 +6,27 @@ An independent banking-AI engineering lab: **inspect the evidence, explain uncer
 
 > AI bank-document analysis using synthetic data only. Not affiliated with apoBank, Microsoft or a lender. No financial advice, automated credit decisions, real bank connections or payment functionality — including mock payments.
 
-**Stack:** Next.js / TypeScript · Java 21 / Spring Boot / LangChain4j · Keycloak OIDC + PKCE · PostgreSQL · Azure OpenAI & Document Intelligence · Qdrant / ONNX / BM25 · Docker Compose · Terraform.
+**Stack:** Next.js / TypeScript · Java 21 / Spring Boot 4.1 / LangChain4j · Keycloak OIDC + PKCE · PostgreSQL · Azure OpenAI & Document Intelligence · Qdrant / ONNX / BM25 · Docker Compose · Terraform.
+
+## Latest production release — 14 October 2026
+
+The `master` release runs Next.js on **Vercel** and the authenticated Java/Keycloak/data stack on **Azure**. Business data and AI calls require a verified Bearer token; public sign-in pages and health checks are intentional exceptions. Azure AI uses the VM's Managed Identity, not an API key stored on Vercel.
+
+Verification: **190 frontend tests**, **175 Java tests (174 passed, one opt-in live test skipped)**, **113 local full-stack checks** and **61 Azure-backed Vercel checks**. CI separately checks dependencies, secrets and both application images at HIGH/CRITICAL severity. These checks are engineering evidence, not calibrated OCR accuracy or banking-production certification.
+
+### Nova with live DATEV evidence
+
+Real production response in Vietnamese, including separate net/payout amounts and links back to the private uploaded original. Structured field context supplements ranked passages so the model need not infer missing numbers from a truncated page excerpt. Azure safety refusals are labelled separately from connectivity failures; filters are not disabled and requests are not retried automatically.
+
+![Nova on production, with DATEV amounts and evidence links](docs/screenshots/production-nova-2026-10-14.jpg)
+
+### Azure extraction results and page-specific guidance
+
+These production captures show app results and controls, not a redistribution of the publisher's PDF. The originals remain private and outside Git.
+
+![Azure DATEV results above the sample library](docs/screenshots/production-results-2026-10-14.jpg)
+
+![AI Studio production tour highlights the real question field](docs/screenshots/production-tour-2026-10-14.jpg)
 
 ## What the AI actually does
 

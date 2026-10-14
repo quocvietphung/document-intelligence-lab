@@ -105,7 +105,7 @@ export async function auditDocuments({ request, check, bearer, web, api }) {
     check(r.ok && (await r.json()).automaticSend === false, `${locale}/${taskId} prepares controlled unsent prompt`);
   }
   r = await send(`${web}/api/chat`, { caseId: item.id, locale: "en", caseVersion: item.version,
-    messages: [{ id: randomUUID(), role: "user", parts: [{ type: "text", text: "From the uploaded Robert-Muster DATEV payroll, give net earnings and payout separately. Cite the document and require human review; do not make a credit decision." }] }] });
+    messages: [{ id: randomUUID(), role: "user", parts: [{ type: "text", text: "Which Netto-Verdienst and Auszahlungsbetrag values are present in the uploaded Robert-Muster DATEV PDF? Include their page sources." }] }] });
   check(r.ok && r.headers.get("x-ai-mode") === "azure-entra", `Nova uses keyless Azure (HTTP ${r.status})`);
   const events = (await r.text()).split("\n").filter((l) => l.startsWith("data: ") && l !== "data: [DONE]").map((l) => JSON.parse(l.slice(6)));
   const answer = events.filter((e) => e.type === "text-delta").map((e) => e.delta).join("");
