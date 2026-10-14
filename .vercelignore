@@ -14,6 +14,7 @@ services/credit-api/src/main/*
 !services/credit-api/src/main/resources
 services/credit-api/src/main/resources/*
 !services/credit-api/src/main/resources/nova-features.json
+!services/credit-api/src/main/resources/datev-reference-hashes.json
 infra
 docker-compose*.yml
 docs

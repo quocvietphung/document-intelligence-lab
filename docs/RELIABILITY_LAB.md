@@ -1,8 +1,8 @@
 # Reliability & evidence lab
 
-This is a **synthetic banking engineering simulation**, not a bank platform.
-No real payment submission, bank connection, automatic credit decision or fraud verdict exists.
-Existing payment screens remain local simulations; new specialists have read-only tools.
+This is an **AI bank-document analysis lab**, not a transactional bank platform.
+No payment functionality (including simulations), bank connection, automatic credit decision or fraud verdict exists.
+Statement and invoice fixtures are read-only evidence. Legacy payment APIs and payment-order XML exports have been removed; stored historical fixtures are preserved.
 
 ## Five new workspaces
 

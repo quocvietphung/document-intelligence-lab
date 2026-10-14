@@ -1,11 +1,14 @@
-"""Create clearly marked, fictitious German payslips for Document AI testing."""
+"""Create TEST-ONLY legacy extraction fixtures; never DATEV or public app assets.
+
+The app's salary sample library uses the unchanged official DATEV references.
+"""
 from pathlib import Path
 from reportlab.pdfgen import canvas
 from reportlab.lib.colors import HexColor
 from reportlab.lib.pagesizes import A4
 
 ROOT=Path(__file__).resolve().parents[1]
-OUT=ROOT/"public"/"demo"
+OUT=ROOT/"services"/"credit-api"/"src"/"test"/"resources"/"legacy-payroll"
 CASES=[
     ("gehaltsabrechnung-2026-09-muster.pdf","September 2026","30.09.2026","Dr. Lea Muster","9200","2960","6240"),
     ("gehaltsabrechnung-2026-10-muster.pdf","Oktober 2026","31.10.2026","Dr. Lea Muster","9400","3020","6380"),

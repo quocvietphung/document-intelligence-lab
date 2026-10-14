@@ -42,6 +42,31 @@ public class DocumentJobs {
     catch(RuntimeException e){objects.delete(key);throw e;}
     return Map.of("id",job,"status","QUEUED","expiresAt",now.plus(retention,java.time.temporal.ChronoUnit.DAYS).toString());
   }
+  static boolean retryableCode(String code){return Set.of("AZURE_AUTH_UNAVAILABLE","AZURE_ACCESS_DENIED","AZURE_SERVICE_UNAVAILABLE","ANALYSIS_HTTP_503","ANALYSIS_HTTP_429","PROCESSING_UNAVAILABLE").contains(Objects.requireNonNullElse(code,""));}
+  public Map<String,Object> retry(String tenant,String id,String actor,String sourceJob) {
+    cases.require(tenant,id);cases.allowWrite();
+    var rows=store.database().queryForList("SELECT * FROM lab_jobs WHERE tenant=? AND case_id=? AND id=?",tenant,id,sourceJob);
+    if(rows.isEmpty())throw fail(404,"Job unavailable");
+    var row=rows.getFirst();
+    if(!"FAILED".equals(row.get("status"))||!retryableCode((String)row.get("error_code")))throw fail(409,"This job cannot be retried");
+    if(!((java.sql.Timestamp)row.get("expires_at")).toInstant().isAfter(Instant.now()))throw fail(410,"Stored file has expired");
+    String name=(String)row.get("name");
+    if(!ApprovedDatevSamples.matchesDigest(name,(String)row.get("sha256")))throw fail(403,"Only approved DATEV references may be retried");
+    byte[] bytes=objects.read((String)row.get("object_key"));
+    if(!ApprovedDatevSamples.matches(name,bytes))throw fail(403,"Stored reference no longer matches approved bytes");
+    // A new bounded job preserves the failure history and repeats all scan checks.
+    var result=new LinkedHashMap<String,Object>(enqueue(tenant,id,actor,name,(String)row.get("content_type"),bytes));
+    result.put("retryOf",sourceJob);return result;
+  }
+  static String errorCode(Exception error){
+    if(error instanceof IllegalArgumentException)return Set.of("MALWARE_BLOCKED","ACTIVE_CONTENT_BLOCKED","INJECTION_QUARANTINED").contains(Objects.requireNonNullElse(error.getMessage(),""))?error.getMessage():"DOCUMENT_REJECTED";
+    if(error instanceof ResponseStatusException response){
+      String reason=response.getReason();
+      if(Set.of("AZURE_AUTH_UNAVAILABLE","AZURE_ACCESS_DENIED","AZURE_SERVICE_UNAVAILABLE").contains(Objects.requireNonNullElse(reason,"")))return reason;
+      return "ANALYSIS_HTTP_"+response.getStatusCode().value();
+    }
+    return "PROCESSING_UNAVAILABLE";
+  }
   @Scheduled(fixedDelay=3000,initialDelay=10000)
   public void work() {
     if(!worker||!store.persistent())return;var db=store.database();
@@ -50,7 +75,7 @@ public class DocumentJobs {
     if(rows.isEmpty())return;var row=rows.getFirst();String job=(String)row.get("id"),tenant=(String)row.get("tenant"),id=(String)row.get("case_id"),actor=(String)row.get("actor"),object=(String)row.get("object_key");
     try {
       byte[] bytes=objects.read(object);String scan=scanner.scan(bytes);db.update("UPDATE lab_jobs SET stage='EXTRACT',scan_result=? WHERE id=?",scan,job);
-      var saved=store.list(tenant,id,"job-analysis").stream().filter(v->job.equals(v.get("id"))).findFirst();
+      var saved=store.find(tenant,id,"job-analysis",job);
       CreditCase.Document document;
       if(saved.isPresent())document=new com.fasterxml.jackson.databind.ObjectMapper().readValue((String)saved.get().get("document"),CreditCase.Document.class);
       else {document=analysis.analyze((String)row.get("name"),(String)row.get("content_type"),bytes);store.save(tenant,id,"job-analysis",job,Map.of("id",job,"document",store.encode(document)));}
@@ -66,7 +91,7 @@ public class DocumentJobs {
       db.update("UPDATE lab_jobs SET status='COMPLETE',stage='HUMAN_REVIEW',document_id=?,error_code=NULL,updated_at=CURRENT_TIMESTAMP WHERE id=?",document.id(),job);
     } catch(Exception error) {
       boolean retry=!(error instanceof IllegalArgumentException)&&((Number)row.get("attempt")).intValue()<3;
-      String code=error instanceof IllegalArgumentException?error.getMessage():error instanceof ResponseStatusException r?"ANALYSIS_HTTP_"+r.getStatusCode().value():"PROCESSING_UNAVAILABLE";
+      String code=errorCode(error);
       db.update("UPDATE lab_jobs SET status=?,stage='STOPPED',error_code=?,updated_at=CURRENT_TIMESTAMP WHERE id=?",retry?"RETRY":"FAILED",code,job);
     }
   }

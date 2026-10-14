@@ -1,6 +1,16 @@
 .git
 .local
 .next
+.vercel
+.idea
+**/.terraform
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfplan
+**/*.auto.tfvars*
+**/*.tfvars
+**/terraform.tfvars.json
+docs
 node_modules
 npm-debug.log
 services/credit-api/target

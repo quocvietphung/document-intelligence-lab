@@ -7,6 +7,8 @@ import com.azure.ai.documentintelligence.models.AnalyzeResult;
 import com.azure.ai.documentintelligence.models.DocumentAnalysisFeature;
 import com.azure.ai.documentintelligence.models.DocumentField;
 import com.azure.core.exception.HttpResponseException;
+import com.azure.core.exception.ClientAuthenticationException;
+import com.azure.identity.CredentialUnavailableException;
 import com.azure.core.util.BinaryData;
 import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.azure.identity.AzureCliCredentialBuilder;
@@ -114,12 +116,20 @@ public class AzureDocumentIntelligenceProvider implements DocumentAnalysisProvid
           "Azure rejected the document format or content");
       if(status==429) throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
           "Azure Document Intelligence quota is busy; retry later");
+      if(status==401||status==403) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"AZURE_ACCESS_DENIED");
       throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
-          "Azure Document Intelligence is temporarily unavailable");
+          "AZURE_SERVICE_UNAVAILABLE");
     } catch (RuntimeException error) {
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
-          "Azure Document Intelligence is temporarily unavailable");
+      throw unavailable(error);
     } finally { slots.release(); }
+  }
+
+  static ResponseStatusException unavailable(RuntimeException error) {
+    Throwable cause=error;
+    for(int i=0;cause!=null&&i<8;i++,cause=cause.getCause())
+      if(cause instanceof CredentialUnavailableException||cause instanceof ClientAuthenticationException)
+        return new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"AZURE_AUTH_UNAVAILABLE");
+    return new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"AZURE_SERVICE_UNAVAILABLE");
   }
 
   private String bounded(String value) {

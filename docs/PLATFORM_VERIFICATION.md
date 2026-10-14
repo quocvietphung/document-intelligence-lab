@@ -1,5 +1,13 @@
 # Platform verification
 
+> Current local scope: [AI document analysis only](ANALYSIS_ONLY.md), with no payment features, including simulations. Current cloud architecture: [Azure VM lab](AZURE_VM_LAB.md). Sections below are historical increments; earlier payment-simulation checks, branch names, release gates and quota blockers are not current deployment instructions.
+
+## DATEV document recovery (2026-10-13)
+
+The failed Robert pipeline job was caused by an expired local Entra access token, not by malware or an invalid PDF. The host renewal helper is now running as a user LaunchAgent. Rebuilt Docker web/API images passed health checks, **106 frontend tests**, lint/typecheck, **134 Java tests plus one opt-in skip**, and **29 OAuth/reference checks**.
+
+Through the authenticated Vietnamese UI, an explicit retry confirmation sent only the previously approved official fictional Robert page to Azure. The new job completed on attempt 1 with ClamAV clean, `azure-document-intelligence` / `prebuilt-layout`, nine extracted tables, net income `2.967,11` and payout `2.882,11`. The original PDF rendered. No fields were auto-approved, no failure history was erased, and no commit, push, Vercel deployment, VM start or permission change was performed. [Detailed recovery report](DATEV_RECOVERY.md).
+
 Verified locally on 11 October 2026. This records technical checks, not AI accuracy or lending suitability.
 
 ## Public-demo release verification (2026-10-12)

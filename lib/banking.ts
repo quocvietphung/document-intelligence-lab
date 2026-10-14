@@ -1,11 +1,12 @@
 import { z } from "zod";
 const cents=z.number().int().safe();
 export const bankingSchema=z.object({
-  caseId:z.string(),tenantId:z.string(),synthetic:z.literal(true),persistent:z.boolean(),version:z.number().int().nonnegative(),
+  caseId:z.string(),tenantId:z.string(),synthetic:z.boolean(),persistent:z.boolean(),version:z.number().int().nonnegative(),
   accounts:z.array(z.object({id:z.string(),label:z.string(),maskedReference:z.string(),openingCents:cents,currency:z.literal("EUR")})),
   transactions:z.array(z.object({id:z.string(),accountId:z.string(),date:z.string(),counterparty:z.string(),reference:z.string(),category:z.string(),amountCents:cents,invoiceId:z.string()})),
   beneficiaries:z.array(z.object({id:z.string(),name:z.string(),maskedReference:z.string(),verified:z.boolean()})),
   invoices:z.array(z.object({id:z.string(),beneficiaryId:z.string(),number:z.string(),dueDate:z.string(),amountCents:cents.positive(),currency:z.literal("EUR"),description:z.string(),status:z.enum(["NEEDS_REVIEW","ALREADY_PAID","BLOCKED","SIMULATED_PAID"]),evidence:z.string()})),
+  // Retain legacy snapshot compatibility without exposing any payment actions.
   payments:z.array(z.object({id:z.string(),requestId:z.string(),accountId:z.string(),invoiceId:z.string(),amountCents:cents.positive(),status:z.enum(["AWAITING_CONFIRMATION","SIMULATED"]),createdBy:z.string(),confirmedBy:z.string(),createdAt:z.string()})),
   events:z.array(z.object({id:z.string(),time:z.string(),action:z.string(),actor:z.string(),reference:z.string()})),
 });

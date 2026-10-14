@@ -3,11 +3,14 @@ import {useEffect,useRef,useState} from "react";
 import {ChevronLeft,ChevronRight,ZoomIn,ZoomOut,RefreshCw} from "lucide-react";
 import type {PDFDocumentLoadingTask,PDFDocumentProxy,RenderTask} from "pdfjs-dist";
 import {documentText} from "@/lib/document-language";
+import {uniqueTextRegion} from "@/lib/pdf-evidence";
+import {trustText} from "@/lib/nova-trust-language";
 
 /** Fetch once with the caller's JWT; render locally. No bearer token in URL or persistent cache. */
-export function PdfPreview({url,token,locale,requestedPage=1}:{url:string;token?:string;locale:string;requestedPage?:number}) {
+export function PdfPreview({url,token,locale,requestedPage=1,highlightText}:{url:string;token?:string;locale:string;requestedPage?:number;highlightText?:string}) {
   const t=documentText(locale),canvas=useRef<HTMLCanvasElement>(null),container=useRef<HTMLDivElement>(null);
   const [pdf,setPdf]=useState<PDFDocumentProxy|null>(null),[page,setPage]=useState(1),[zoom,setZoom]=useState(1),[width,setWidth]=useState(360),[failed,setFailed]=useState(false),[rendered,setRendered]=useState(false),[retry,setRetry]=useState(0);
+  const [region,setRegion]=useState<ReturnType<typeof uniqueTextRegion>>();
   useEffect(()=>{
     let disposed=false;let task:PDFDocumentLoadingTask|undefined;const abort=new AbortController();
     const timer=window.setTimeout(()=>{void (async()=>{
@@ -51,14 +54,25 @@ export function PdfPreview({url,token,locale,requestedPage=1}:{url:string;token?
         node.width=Math.ceil(viewport.width*density);node.height=Math.ceil(viewport.height*density);
         node.style.width=`${viewport.width}px`;node.style.height=`${viewport.height}px`;
         render=source.render({canvas:node,viewport,transform:[density,0,0,density,0,0],annotationMode:0});
-        await render.promise;if(!disposed)setRendered(true);
+        await render.promise;
+        if(!disposed){
+          setRendered(true);setRegion(undefined);
+          if(highlightText)try{
+            const text=await source.getTextContent();
+            if(!disposed)setRegion(uniqueTextRegion(text.items,highlightText,box=>[
+              ...viewport.convertToViewportPoint(box[0],box[1]),
+              ...viewport.convertToViewportPoint(box[2],box[3])
+            ]));
+          }catch{/* A missing text region must not hide an otherwise readable PDF. */}
+        }
       } catch {if(!disposed)setFailed(true);}
     })();
     return()=>{disposed=true;render?.cancel();};
-  },[pdf,page,zoom,width]);
+  },[pdf,page,zoom,width,highlightText]);
   return <section className="pdf-preview" aria-label={t("pdf")}>
     <div className="pdf-controls"><button type="button" className="icon-button" aria-label={t("previous")} disabled={!pdf||page<=1} onClick={()=>setPage(p=>p-1)}><ChevronLeft size={17}/></button><span>{t("page")} {pdf?`${page} / ${pdf.numPages}`:"—"}</span><button type="button" className="icon-button" aria-label={t("next")} disabled={!pdf||page>=pdf.numPages} onClick={()=>setPage(p=>p+1)}><ChevronRight size={17}/></button><button type="button" className="icon-button" aria-label={t("zoomOut")} disabled={zoom<=0.75} onClick={()=>setZoom(v=>v-0.25)}><ZoomOut size={17}/></button><button type="button" className="icon-button" aria-label={t("zoomIn")} disabled={zoom>=2} onClick={()=>setZoom(v=>v+0.25)}><ZoomIn size={17}/></button></div>
-    <div ref={container} className="pdf-canvas-wrap">{failed?<div className="pdf-state" role="alert"><p>{t("failed")}</p><button className="button-secondary" onClick={()=>setRetry(v=>v+1)}><RefreshCw size={16}/>{t("retry")}</button></div>:<>{!rendered?<p className="pdf-state" role="status">{t("loading")}</p>:null}<canvas ref={canvas} aria-label={`${t("pdf")} · ${t("page")} ${page}`}/></>}</div>
+    <div ref={container} className="pdf-canvas-wrap">{failed?<div className="pdf-state" role="alert"><p>{t("failed")}</p><button className="button-secondary" onClick={()=>setRetry(v=>v+1)}><RefreshCw size={16}/>{t("retry")}</button></div>:<>{!rendered?<p className="pdf-state" role="status">{t("loading")}</p>:null}<div className="pdf-evidence-canvas"><canvas ref={canvas} aria-label={`${t("pdf")} · ${t("page")} ${page}`}/>{region&&rendered&&highlightText?<span className="pdf-evidence-region" aria-label={trustText(locale).region} style={{left:region.left,top:region.top,width:region.width,height:region.height}}/>:null}</div></>}</div>
+    {highlightText&&rendered?<p className="pdf-render-status" role="status">{region?trustText(locale).region:trustText(locale).regionMissing}</p>:null}
     {rendered&&!failed?<p className="pdf-render-status" role="status">{t("rendered")} · {Math.round(zoom*100)}%</p>:null}
   </section>;
 }

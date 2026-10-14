@@ -3,6 +3,11 @@ import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 const read=(file:string)=>readFileSync(resolve('infra/azure/vm-lab',file),'utf8');
 describe('Azure VM lab deployment safety',()=>{
+  it('keeps local Terraform state and private operator files out of Docker builds',()=>{
+    const rules=readFileSync(resolve('.dockerignore'),'utf8');
+    for(const rule of ['.local','.vercel','**/.terraform','**/*.tfstate','**/*.tfstate.*','**/*.tfplan','**/*.auto.tfvars*','**/terraform.tfvars.json'])
+      expect(rules).toContain(rule);
+  });
   it('uses dedicated resources, a bounded VM and existing AI IDs without reading keys',()=>{
     expect(read('variables.tf')).toContain('default = "Standard_D2as_v4"');
     const main=read('main.tf');

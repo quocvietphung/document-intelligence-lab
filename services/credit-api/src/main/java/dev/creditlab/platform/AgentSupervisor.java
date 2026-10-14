@@ -16,7 +16,7 @@ public class AgentSupervisor {
       q.matches("(?s).*(document|salary|payroll|pdf|gehalt|beleg|dokument|netto|tài liệu|lương).*" )?"Document":
       q.matches("(?s).*(account|transaction|invoice|konto|umsatz|rechnung|giao dịch|tài khoản).*" )?"Banking":"Explanation";
     List<String> tools=switch(specialist) {
-      case "Banking"->List.of("caseSummary","bankAccounts","bankTransactions","bankInvoices");
+      case "Banking"->List.of("caseSummary","documentEvidence","retrievedEvidence");
       case "Document"->List.of("caseSummary","documentEvidence","retrievedEvidence");
       case "Risk","Compliance"->List.of("caseSummary","retrievedEvidence");
       default->List.of("caseSummary","retrievedEvidence");

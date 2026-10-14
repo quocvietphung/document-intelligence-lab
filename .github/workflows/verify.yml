@@ -2,7 +2,7 @@ name: Verify platform
 on:
   pull_request:
   push:
-    branches: [master, develop, "codex/**"]
+    branches: [master, develop, "codex/**", "feature/**"]
 jobs:
   web:
     runs-on: ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - run: docker compose up --build --wait --wait-timeout 180
-      - run: TEST_CHAT=demo TEST_WRITE=1 TEST_RESTART_KEYCLOAK=1 TEST_RESTART_API=1 node scripts/test-oauth.mjs
+      - run: TEST_LOCAL_AI_UNAVAILABLE=1 TEST_WRITE=1 TEST_RESTART_KEYCLOAK=1 TEST_RESTART_API=1 node scripts/test-oauth.mjs
       - if: failure()
         run: docker compose logs --tail=100
       - if: always()

@@ -16,6 +16,11 @@ public class RagEngine {
   public record Chunk(String id,String documentId,String title,int page,String kind,String text) {}
   public record Hit(String id,String documentId,String title,int page,String kind,String text,double vector,double lexical,double score,boolean suspicious) {}
   public record Search(List<Hit> hits,int chunks,String backend,String embedding,String reranker,List<String> quarantined) {}
+  public enum Strategy { BM25, VECTOR, HYBRID }
+  /** Isolated benchmark corpus: never writes or replaces a live case's Qdrant index. */
+  public Search benchmark(CreditCase item,List<Chunk> chunks,String question,int limit,Strategy strategy) {
+    return search(item,chunks,question,limit,false,strategy);
+  }
   private final boolean semantic;
   private final String qdrant;
   private static org.springframework.http.client.JdkClientHttpRequestFactory requestFactory(){
@@ -28,6 +33,12 @@ public class RagEngine {
   private volatile AllMiniLmL6V2QuantizedEmbeddingModel model;
   private volatile boolean collectionReady;
   public RagEngine(@Value("${app.platform.embeddings:false}") boolean semantic,@Value("${app.platform.qdrant-url:}") String qdrant) { this.semantic=semantic;this.qdrant=qdrant; }
+  /** Reports choices without warming the model or making a Qdrant request. */
+  public Map<String,Object> configuration() {
+    return Map.of("semantic",semantic,"embeddingModel",semantic?"all-MiniLM-L6-v2 quantized (ONNX, 384d)":"lexical-hash (test fallback)",
+        "vectorStore",qdrant.isBlank()?"in-memory":"Qdrant","ranking","BM25 + cosine + query coverage",
+        "languageCoverage",semantic?"English-focused":"lexical only");
+  }
   private synchronized AllMiniLmL6V2QuantizedEmbeddingModel model() { if(model==null)model=new AllMiniLmL6V2QuantizedEmbeddingModel();return model; }
   private float[] vector(String text) {
     String key=hash(text); var existing=cache.get(key);if(existing!=null)return existing;
@@ -40,7 +51,7 @@ public class RagEngine {
   public List<Chunk> chunks(CreditCase item) {
     var out=new ArrayList<Chunk>();
     for(var d:item.documents()) {
-      if(d.status().equals("missing")) continue;
+      if(d.status().equals("missing")||!d.originalAvailable()) continue;
       for(var p:d.pages()) {
         String text=p.text();int index=0;
         for(int start=0;start<text.length();start+=620) {
@@ -49,7 +60,7 @@ public class RagEngine {
           if(start+780>=text.length())break;
         }
       }
-      if(!d.fields().isEmpty()) out.add(new Chunk(d.id()+":fields",d.id(),d.name(),1,"fields",d.fields().stream().map(f->f.label()+": "+f.value()+"; evidence="+f.evidence()).reduce("",(a,b)->a+"\n"+b)));
+      d.fields().stream().collect(java.util.stream.Collectors.groupingBy(CreditCase.Field::page,TreeMap::new,java.util.stream.Collectors.toList())).forEach((page,fields)->out.add(new Chunk(d.id()+":p"+page+":fields",d.id(),d.name(),page,"fields",fields.stream().map(f->f.label()+": "+f.value()+"; evidence="+f.evidence()).reduce("",(a,b)->a+"\n"+b))));
       int tableIndex=0;for(var table:d.tables()){String text=table.cells().stream().map(c->"r"+c.row()+" c"+c.column()+": "+c.text()).reduce("",(a,b)->a+"\n"+b);int part=0;for(int start=0;start<text.length();start+=720){out.add(new Chunk(d.id()+":p"+table.page()+":t"+tableIndex+":c"+(++part),d.id(),d.name(),table.page(),"table",text.substring(start,Math.min(text.length(),start+720))));}tableIndex++;}
     }
     out.add(new Chunk("case-summary","case",item.id(),0,"case","Applicant="+item.applicant()+"; status="+item.status()+"; completeness="+item.completeness()+"; missing="+item.missingDocuments()+"; issues="+item.validationIssues()));
@@ -63,9 +74,12 @@ public class RagEngine {
     return search(item,chunks,question,limit,false);
   }
   private Search search(CreditCase item,List<Chunk> chunks,String question,int limit,boolean indexCase) {
+    return search(item,chunks,question,limit,indexCase,Strategy.HYBRID);
+  }
+  private Search search(CreditCase item,List<Chunk> chunks,String question,int limit,boolean indexCase,Strategy strategy) {
     var quarantine=chunks.stream().filter(c->!c.kind().equals("policy")&&EvidenceGuard.suspicious(c.text())).map(Chunk::id).toList();
     var safe=chunks.stream().filter(c->!quarantine.contains(c.id())).toList();
-    float[] query=vector(question);Map<String,Double> scores=new HashMap<>();String backend="local-vector";
+    float[] query=strategy==Strategy.BM25?new float[384]:vector(question);Map<String,Double> scores=new HashMap<>();String backend=strategy==Strategy.BM25?"local-bm25":"local-vector";
     if(indexCase&&!qdrant.isBlank()) {
       try {
         ensureCollection();sync(item,safe);
@@ -77,15 +91,15 @@ public class RagEngine {
     Set<String> terms=EvidenceGuard.terms(question);double average=safe.stream().mapToInt(c->EvidenceGuard.terms(c.text()).size()).average().orElse(1);
     var hits=new ArrayList<Hit>();
     for(var c:safe) {
-      double cos=scores.getOrDefault(c.id(),cosine(query,vector(c.text())));
+      double cos=strategy==Strategy.BM25?0:scores.getOrDefault(c.id(),cosine(query,vector(c.text())));
       double bm25=bm25(terms,c.text(),safe,average);
       // Query-term evidence wins over broad policy similarity; no learned reranker claimed.
       double coverage=terms.isEmpty()?0:(double)terms.stream().filter(EvidenceGuard.terms(c.text())::contains).count()/terms.size();
-      double rank=.48*Math.max(0,cos)+.32*(bm25/(bm25+2))+.20*coverage;
+      double rank=switch(strategy){case BM25->bm25;case VECTOR->cos;case HYBRID->.48*Math.max(0,cos)+.32*(bm25/(bm25+2))+.20*coverage;};
       hits.add(new Hit(c.id(),c.documentId(),c.title(),c.page(),c.kind(),c.text(),round(cos),round(bm25),round(rank),false));
     }
     hits.sort(Comparator.comparingDouble(Hit::score).reversed().thenComparing(Hit::id));
-    return new Search(hits.stream().limit(Math.min(12,Math.max(1,limit))).toList(),chunks.size(),backend,semantic?"all-MiniLM-L6-v2 quantized (384d, English-focused)":"lexical-hash (test fallback)","BM25 + cosine + query coverage",quarantine);
+    return new Search(hits.stream().limit(Math.min(12,Math.max(1,limit))).toList(),chunks.size(),backend,strategy==Strategy.BM25?"none":semantic?"all-MiniLM-L6-v2 quantized (384d, English-focused)":"lexical-hash (test fallback)",strategy==Strategy.HYBRID?"BM25 + cosine + query coverage":strategy.name(),quarantine);
   }
   private Map<String,Object> filter(CreditCase item) {return Map.of("must",List.of(Map.of("key","tenant","match",Map.of("value",item.tenantId())),Map.of("key","caseId","match",Map.of("value",item.id()))));}
   public synchronized void invalidate(CreditCase item) {

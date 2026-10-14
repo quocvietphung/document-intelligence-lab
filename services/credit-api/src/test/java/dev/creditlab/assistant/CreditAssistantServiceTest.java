@@ -1,32 +1,22 @@
 package dev.creditlab.assistant;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.creditlab.casework.CreditCaseService;
-import org.junit.jupiter.api.Test;
 import java.util.Optional;
-
+import org.junit.jupiter.api.Test;
+import org.springframework.web.server.ResponseStatusException;
 class CreditAssistantServiceTest {
-  @Test void softwareHelpHasItsOwnEvidenceInsteadOfUnrelatedPayrollCitations(){
-    var service=new CreditAssistantService(new CreditCaseService(),new ObjectMapper(),Optional.empty());
-    var response=service.answer("praxisbank-demo","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048","vi","Describe the software interface"));
-    assertThat(response.sources()).filteredOn(s->s.id().equals("app-guide")).extracting(CreditAssistantService.Source::text).anySatisfy(text->assertThat(text).contains("/vi#studio","Qdrant"));
-  }
-  @Test void bankingQuestionUsesReadOnlySyntheticSources() {
-    var cases=new CreditCaseService();var mapper=new ObjectMapper();
-    var bank=new dev.creditlab.banking.BankingLabService(cases,mapper,Optional.empty());
-    var service=new CreditAssistantService(cases,mapper,Optional.empty(),bank);
-    var response=service.answer("praxisbank-demo","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048","en","Summarize accounts, transactions and invoices"));
-    assertThat(response.answer()).contains("Synthetic banking","cannot execute or confirm payments");
-    assertThat(response.sources()).extracting(CreditAssistantService.Source::id).contains("bank-accounts","bank-transactions","bank-invoices");
-  }
-  @Test void localFallbackIsTenantScopedAndRefusesCreditDecision() {
-    var service=new CreditAssistantService(new CreditCaseService(),new ObjectMapper(),Optional.empty());
-    var response=service.answer("praxisbank-demo","tester",
-        new CreditAssistantService.AssistantRequest("CR-2026-1048","de","Welche Unterlagen fehlen?"));
-    assertThat(response.mode()).isEqualTo("synthetic-demo");
-    assertThat(response.answer()).contains("Praxisbewertung").contains("keine Kreditentscheidung");
-    assertThat(response.sources()).extracting(CreditAssistantService.Source::id).contains("case-summary","policy");
-    assertThat(response.answer()).contains("[case-summary]", "[policy]").doesNotContain("[case-summary, policy]");
-  }
+ @Test void missingModelNeverReturnsADemonstrationAnswer(){
+  var service=new CreditAssistantService(new CreditCaseService(),new ObjectMapper(),Optional.empty());
+  for(String locale:new String[]{"de","en","vi"})
+   assertThatThrownBy(()->service.answer("praxisbank-demo","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048",locale,"Summarize this PDF"))).isInstanceOfSatisfying(ResponseStatusException.class,e->assertThat(e.getStatusCode().value()).isEqualTo(503));
+ }
+ @Test void wrongTenantStillCannotReadDocuments(){
+  var service=new CreditAssistantService(new CreditCaseService(),new ObjectMapper(),Optional.empty());
+  assertThatThrownBy(()->service.answer("foreign","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048","en","Show evidence"))).isInstanceOfSatisfying(ResponseStatusException.class,e->assertThat(e.getStatusCode().value()).isEqualTo(404));
+ }
+ @Test void documentToolsExcludePublisherValuesWithoutUploadedOriginal(){
+  var tool=new CaseTools(new CreditCaseService().require("praxisbank-demo","CR-2026-1048"),new ObjectMapper());
+  assertThat(tool.documentEvidence()).isEqualTo("[]");
+ }
 }

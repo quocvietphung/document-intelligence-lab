@@ -1,5 +1,5 @@
 import {afterEach,describe,expect,it,vi} from "vitest";
-import {demoBanking,demoPlatform,demoSearch,demoPdfUrl,publicDemoCase,publicDemoAnswer,demoXml} from "./public-demo";
+import {demoBanking,demoPlatform,demoSearch,demoPdfUrl,publicDemoCase,publicDemoAnswer} from "./public-demo";
 import {bankingSchema,accountBalance} from "./banking";
 import {platformSchema,searchSchema} from "./platform";
 import {publicDemoText} from "./public-demo-language";
@@ -10,7 +10,7 @@ describe("standalone read-only public demo",()=>{
   it("provides valid, non-persistent platform and banking fixtures",()=>{
     expect(platformSchema.parse(demoPlatform()).persistent).toBe(false);
     expect(bankingSchema.parse(demoBanking()).persistent).toBe(false);
-    expect(accountBalance(demoBanking(),"practice")).toBe(1651000);
+    expect(accountBalance(demoBanking(),"practice")).toBe(1315211);
     expect(demoPlatform().evaluations).toEqual([]);
     expect(demoPlatform().documentPipeline.worker).toBe(false);
   });
@@ -24,16 +24,16 @@ describe("standalone read-only public demo",()=>{
   it("shows hand-labelled evidence, not invented OCR confidence",()=>{
     expect(publicDemoCase.documents.every(doc=>doc.confidence==null)).toBe(true);
     expect(publicDemoCase.documents.every(doc=>!doc.originalAvailable)).toBe(true);
-    expect(demoPdfUrl("doc-1")).toMatch(/^\/demo\//);
+    expect(demoPdfUrl("doc-1")).toBeUndefined();
     expect(demoPdfUrl("private-id")).toBeUndefined();
   });
   it("labels Nova replies and demo limitations in every locale",()=>{
     for(const locale of ["en","de","vi"]){
-      expect(publicDemoAnswer("income",locale)).toContain("6240 EUR");
+      expect(publicDemoAnswer("income",locale)).toContain("2.967,11 EUR");
       expect(publicDemoAnswer("balance",locale)).toContain("demo-banking");
       expect(publicDemoText(locale)("notice")).toContain("Docker");
     }
-    expect(demoXml).toContain("NOT A VALID PAYMENT MESSAGE");
+    expect(demoBanking().payments).toEqual([]);
   });
   it("blocks backend access even if stale Vercel settings still contain an API URL",async()=>{
     vi.stubEnv("NEXT_PUBLIC_DEMO_MODE","true");vi.stubEnv("CREDIT_API_URL","http://should-not-call:8080");

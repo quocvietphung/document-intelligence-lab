@@ -21,7 +21,7 @@ public class CaseTools {
 
   @Tool("Read evidence-backed fields and page references from documents in the selected case")
   public String documentEvidence() {
-    return json(item.documents().stream().filter(document->document.pages().stream().noneMatch(p->dev.creditlab.platform.EvidenceGuard.suspicious(p.text()))).map(document -> Map.of(
+    return json(item.documents().stream().filter(document->document.originalAvailable()&&document.pages().stream().noneMatch(p->dev.creditlab.platform.EvidenceGuard.suspicious(p.text()))).map(document -> Map.of(
         "sourceId",document.id(),"name",document.name(),"type",document.type(),"status",document.status(),
         "provider",String.valueOf(document.analysisProvider()),"modelId",String.valueOf(document.modelId()),
         "fields",document.fields(),"pageEvidence",document.pages().stream().limit(4).map(page->Map.of(

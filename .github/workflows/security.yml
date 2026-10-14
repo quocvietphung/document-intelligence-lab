@@ -2,7 +2,7 @@ name: Dependency and image security
 on:
   pull_request:
   push:
-    branches: [master, develop, "codex/**"]
+    branches: [master, develop, "codex/**", "feature/**"]
 permissions:
   contents: read
 jobs:

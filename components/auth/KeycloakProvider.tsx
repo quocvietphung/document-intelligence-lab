@@ -78,16 +78,16 @@ function snapshot(client: Keycloak): Session {
 }
 
 export function KeycloakProvider({ children }: { children: React.ReactNode }) {
-  const configured = process.env.NEXT_PUBLIC_DEMO_MODE !== "true" && Boolean(process.env.NEXT_PUBLIC_KEYCLOAK_URL);
+  const configured = Boolean(process.env.NEXT_PUBLIC_KEYCLOAK_URL);
   const [session, setSession] = useState<Session>(
     configured
       ? signedOut
       : {
           ready: true,
-          authenticated: true,
-          displayName: "Demo visitor",
+          authenticated: false,
+          displayName: "Sign in",
           roles: [],
-          tenantId: "praxisbank-demo",
+          tenantId: "Not signed in",
         },
   );
 
@@ -165,7 +165,7 @@ export function KeycloakProvider({ children }: { children: React.ReactNode }) {
         ...session,
         login,
         logout,
-        mode: configured ? "keycloak" : "demo",
+        mode: "keycloak",
       }}
     >
       {children}

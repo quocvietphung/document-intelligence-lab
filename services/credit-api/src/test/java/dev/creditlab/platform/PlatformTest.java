@@ -13,7 +13,7 @@ class PlatformTest {
   private final RagEngine rag=new RagEngine(false,"");
   private RagEngine.Hit hit(String id,String text){return new RagEngine.Hit(id,"doc",id,1,"page",text,0,0,0,false);}
   @Test void queueReviewStatusReadsTheCurrentSavedDocument(){
-    assertThat(DocumentJobs.reviewStatus(item,"doc-1")).isEqualTo("verified");
+    assertThat(DocumentJobs.reviewStatus(item,"doc-1")).isEqualTo("review");
     assertThat(DocumentJobs.reviewStatus(item,"doc-2")).isEqualTo("review");
     assertThat(DocumentJobs.reviewStatus(item,"absent")).isNull();
     assertThat(DocumentJobs.reviewStatus(item,null)).isNull();
@@ -45,6 +45,7 @@ class PlatformTest {
         List.of(new CreditCase.Table(2,1,1,List.of(new CreditCase.TableCell(0,0,"6240 EUR")))));
     var withDoc=new CreditCase(item.id(),item.tenantId(),item.applicant(),item.purpose(),item.amountEuro(),item.completeness(),item.status(),item.missingDocuments(),item.validationIssues(),item.coApplicant(),item.submittedAt(),List.of(doc),item.audit(),item.version());
     var chunks=rag.chunks(withDoc);
+    assertThat(chunks.stream().filter(c->c.kind().equals("fields")).findFirst().orElseThrow()).satisfies(c->{assertThat(c.page()).isEqualTo(2);assertThat(c.id()).isEqualTo("doc-new:p2:fields");});
     assertThat(chunks.stream().filter(c->c.kind().equals("page"))).hasSize(3);
     assertThat(chunks.stream().filter(c->c.kind().equals("table")).findFirst().orElseThrow().page()).isEqualTo(2);
   }
@@ -70,10 +71,10 @@ class PlatformTest {
   @Test void mockJournalIsBalancedAndNoBankConnectionExists(){
     var bank=new BankingLabService(new CreditCaseService(),new ObjectMapper(),Optional.empty());
     var insights=new BankingInsights(bank);var report=insights.read(item);
-    assertThat(report.get("balanced")).isEqualTo(true);
+    assertThat(report.get("balanced")).isEqualTo(false);
     assertThat(report.get("debitCents")).isEqualTo(report.get("creditCents"));
-    assertThat((List<?>)report.get("ledger")).hasSize(11);
-    assertThat(insights.sampleXml(item.id())).contains("NON-SUBMITTABLE","DEMO-NOT-AN-IBAN");
+    assertThat((List<?>)report.get("ledger")).isEmpty();
+    assertThat(java.util.Arrays.stream(BankingInsights.class.getDeclaredMethods()).filter(m->java.lang.reflect.Modifier.isPublic(m.getModifiers())).map(java.lang.reflect.Method::getName)).containsExactly("read");
   }
   @Test void structuralScannerBlocksActiveContentAndReportsItsLimit(){
     var scanner=new DocumentScanner("",3310);

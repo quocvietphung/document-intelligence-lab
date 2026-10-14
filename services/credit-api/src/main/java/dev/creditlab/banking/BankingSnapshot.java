@@ -2,7 +2,7 @@ package dev.creditlab.banking;
 
 import java.util.List;
 
-/** Synthetic records only; amounts are integer cents, never floating-point money. */
+/** Read-only synthetic evidence; integer cents. Legacy payment records are retained for compatibility only. */
 public record BankingSnapshot(String caseId, String tenantId, boolean synthetic, boolean persistent,
     long version, List<Account> accounts, List<Movement> transactions, List<Beneficiary> beneficiaries,
     List<Invoice> invoices, List<Payment> payments, List<Event> events) {

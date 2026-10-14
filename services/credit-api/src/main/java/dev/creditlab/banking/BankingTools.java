@@ -16,7 +16,7 @@ public class BankingTools {
   }
   @Tool("Read synthetic transactions for the selected case. Integer amounts are cents, negative means outgoing.")
   public String bankTransactions() { return json(Map.of("sourceId","bank-transactions","synthetic",true,"transactions",state.transactions().stream().skip(Math.max(0,state.transactions().size()-30)).toList())); }
-  @Tool("Read sample invoices, beneficiary verification and simulation states; never execute or confirm a payment.")
-  public String bankInvoices() { return json(Map.of("sourceId","bank-invoices","synthetic",true,"invoices",state.invoices(),"beneficiaries",state.beneficiaries(),"payments",state.payments().stream().limit(20).toList())); }
+  @Tool("Read sample invoice evidence and supplier verification for document reconciliation. Analysis only; no payment functionality exists.")
+  public String bankInvoices() { return json(Map.of("sourceId","bank-invoices","synthetic",true,"invoices",state.invoices(),"beneficiaries",state.beneficiaries())); }
   private String json(Object value) {try{return mapper.writeValueAsString(value);}catch(Exception e){throw new IllegalStateException("Tool encoding unavailable");}}
 }
