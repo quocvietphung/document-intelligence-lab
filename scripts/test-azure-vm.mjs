@@ -30,7 +30,7 @@ r=await request(login);check(r.status===200,'Production Keycloak login page');
 const action=(await r.text()).match(/<form[^>]*action="([^"]+)"/i)?.[1]?.replaceAll('&amp;','&');
 check(action&&new URL(action).origin===new URL(backend).origin,'Login action stays on trusted backend');
 r=await request(action,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({...credentials,credentialId:''})});
-check(r.status===302,'Random-password advisor login');
+check(r.status===302,'Advisor Authorization Code + PKCE login');
 const callback=new URL(r.headers.get('location'));check(callback.origin===frontend&&callback.searchParams.get('state')===state,'Exact Vercel redirect and OAuth state');
 r=await request(metadata.token_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',client_id:'credit-intelligence-web',code:callback.searchParams.get('code'),redirect_uri:frontend+'/en',code_verifier:verifier})});
 check(r.status===200,'PKCE authorization-code exchange');
