@@ -147,7 +147,7 @@ check(
 );
 const bearer = { Authorization: `Bearer ${tokens.access_token}` };
 if(process.env.TEST_DOCUMENT_FOCUS==="1"){
-  const caseId="CR-80ee7bb3-b39",base=`${web}/api/cases/${caseId}`;
+  const caseId=process.env.TEST_AUDIT_CASE||"CR-80ee7bb3-b39",base=`${web}/api/cases/${caseId}`;
   const response=await request(base,{headers:bearer});check(response.ok,"Document case available through authenticated web");
   const item=await response.json();
   check(item.documents.length>0&&item.documents.every(d=>d.originalAvailable),"Every live document has an uploaded original");
