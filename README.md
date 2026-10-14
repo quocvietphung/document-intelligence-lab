@@ -2,7 +2,7 @@
 
 An independent banking-AI engineering lab: **inspect the evidence, explain uncertainty, keep a human in control**.
 
-[Open the authenticated cloud lab](https://credit-intelligence-lab.vercel.app/en) · [Cloud verification](docs/AZURE_VM_LAB.md) · [Local verification](docs/PLATFORM_VERIFICATION.md) · [Reliability runbook](docs/RELIABILITY_LAB.md)
+[Open the authenticated cloud lab](https://credit-intelligence-lab.vercel.app/en) · [Latest release checks](docs/RELEASE_2026-10-14.md) · [Cloud verification](docs/AZURE_VM_LAB.md) · [Local verification](docs/PLATFORM_VERIFICATION.md) · [Reliability runbook](docs/RELIABILITY_LAB.md)
 
 > AI bank-document analysis using synthetic data only. Not affiliated with apoBank, Microsoft or a lender. No financial advice, automated credit decisions, real bank connections or payment functionality — including mock payments.
 
@@ -54,7 +54,7 @@ Open **AI transparency & review** above the workspace, or use the shield in Nova
 - Admin-only controls can stop Nova or one task **for the selected case**. The catalog records owner role, prompt/deployment version, boundaries and test suite; these are lab governance records, not compliance certification.
 - Metrics use the latest 60 stored records per category: answer duration, feedback, review tasks, missing citations and field edits. They are not hallucination accuracy, savings or billed costs. PDF retention follows the configured pipeline; answer/feedback history currently has **no automatic purge**.
 
-See [implementation and verification boundaries](docs/NOVA_TRUST.md). These changes are local to `feature/nova-trust-and-review`; they are not a cloud rollout.
+See [implementation and verification boundaries](docs/NOVA_TRUST.md) and [current release status](docs/RELEASE_2026-10-14.md). Earlier screenshots below show local acceptance; cloud validation is recorded separately.
 
 ![Nova transparency and review — authenticated Docker local](docs/screenshots/nova-trust-center-desktop-2026-10-13.png)
 
