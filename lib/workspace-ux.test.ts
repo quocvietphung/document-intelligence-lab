@@ -2,7 +2,7 @@ import {createElement} from "react";
 import {renderToStaticMarkup} from "react-dom/server";
 import {describe, expect, it} from "vitest";
 import {WorkspaceAIOverview} from "@/components/workspace/WorkspaceAIOverview";
-import {showCaseEmpty, workspaceCaseFromSearch, workspaceErrorKey, workspaceLocalePath, workspaceUxTables, workspaceUxText} from "./workspace-ux";
+import {showCaseEmpty, workspaceCaseFromSearch, workspaceErrorKey, workspaceLocalePath, workspaceSectionFromSearch, workspaceUxTables, workspaceUxText} from "./workspace-ux";
 
 describe("workspace guidance and recovery", () => {
   it("does not mistake an unavailable service for an empty case search", () => {
@@ -12,8 +12,8 @@ describe("workspace guidance and recovery", () => {
     expect(showCaseEmpty(1, false, "")).toBe(false);
   });
   it("preserves only allowlisted sections when changing language", () => {
-    expect(workspaceLocalePath("#documents")).toBe("/#documents");
-    expect(workspaceLocalePath("#studio")).toBe("/#studio");
+    expect(workspaceLocalePath("#documents")).toBe("/?section=documents#documents");
+    expect(workspaceLocalePath("#studio")).toBe("/?section=studio#studio");
     expect(workspaceLocalePath("#https://untrusted.test")).toBe("/");
     expect(workspaceLocalePath("#state=secret&code=secret")).toBe("/");
   });
@@ -27,10 +27,15 @@ describe("workspace guidance and recovery", () => {
     expect(workspaceErrorKey(400)).toBe("error");
   });
   it("retains the case on language change without copying OAuth parameters", () => {
-    expect(workspaceLocalePath("#documents", "CR-2026-1048")).toBe("/?case=CR-2026-1048#documents");
+    expect(workspaceLocalePath("#documents", "CR-2026-1048")).toBe("/?case=CR-2026-1048&section=documents#documents");
     expect(workspaceCaseFromSearch("?case=CR-2026-1048&code=private")).toBe("CR-2026-1048");
     expect(workspaceCaseFromSearch("?case=https://untrusted.test")).toBeUndefined();
-    expect(workspaceLocalePath("#documents", "../private")).toBe("/#documents");
+    expect(workspaceLocalePath("#documents", "../private")).toBe("/?section=documents#documents");
+  });
+  it("recovers an allowlisted section if locale/auth navigation consumed its fragment",()=>{
+    expect(workspaceSectionFromSearch("?case=CR-1&section=documents&code=private")).toBe("documents");
+    expect(workspaceSectionFromSearch("?section=javascript:alert(1)")).toBeUndefined();
+    expect(workspaceSectionFromSearch("?section=code%3Dprivate")).toBeUndefined();
   });
   it("has complete EN/DE/VI guidance and safe fallback", () => {
     for (const table of Object.values(workspaceUxTables)) {

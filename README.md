@@ -12,7 +12,7 @@ An independent banking-AI engineering lab: **inspect the evidence, explain uncer
 
 The `master` release runs Next.js on **Vercel** and the authenticated Java/Keycloak/data stack on **Azure**. Business data and AI calls require a verified Bearer token; public sign-in pages and health checks are intentional exceptions. Azure AI uses the VM's Managed Identity, not an API key stored on Vercel.
 
-Verification: **190 frontend tests**, **175 Java tests (174 passed, one opt-in live test skipped)**, **113 local full-stack checks** and **61 Azure-backed Vercel checks**. CI separately checks dependencies, secrets and both application images at HIGH/CRITICAL severity. These checks are engineering evidence, not calibrated OCR accuracy or banking-production certification.
+Verification: **191 frontend tests**, **175 Java tests (174 passed, one opt-in live test skipped)**, **113 local full-stack checks** and **61 Azure-backed Vercel checks**. CI separately checks dependencies, secrets and both application images at HIGH/CRITICAL severity. These checks are engineering evidence, not calibrated OCR accuracy or banking-production certification.
 
 ### Nova with live DATEV evidence
 
