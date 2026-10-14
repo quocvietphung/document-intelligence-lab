@@ -34,7 +34,7 @@ import {NovaGuideCard} from "./NovaGuideCard";
 import {NovaMessageText} from "./NovaMessageText";
 import {datevReference,hasOnlyDatevPayroll,legacyPayroll,datevLibraryUx} from "@/lib/datev-reference";
 import {novaGuideFor,novaGuideIntro,novaGuideLabels,workspaceTabs,workspaceTarget,type WorkspaceTab} from "@/lib/nova-guide";
-import {novaLimit,novaLimitMessage,novaQuotaNotice,type NovaLimit} from "@/lib/nova-limits";
+import {novaLimit,novaLimitMessage,novaQuotaNotice,novaSafetyMessage,type NovaLimit} from "@/lib/nova-limits";
 import {showCaseEmpty,workspaceCaseFromSearch,workspaceErrorKey,workspaceLocalePath,workspaceUxText} from "@/lib/workspace-ux";
 import {WorkspaceAIOverview} from "./WorkspaceAIOverview";
 import {NovaConversation,NovaCopyAnswer,NovaSuggestions} from "./NovaConversation";
@@ -76,7 +76,7 @@ function Copilot({item,locale,open,onOpen,close,initialQuestion,initialOptions,o
         {record.success?<NovaAnswerActions answer={record.data} caseId={item.id} caseVersion={item.version||0} locale={locale} onDraft={onDraft} openSource={openSource}/>:null}
       </article>;})}
       {busy?<p className="p-3 text-sm text-slate-500" role="status">{t("loading")}</p>:null}
-      {error?<div className="notice-error" role="alert"><p>{limit||error.message.toLowerCase().includes("limit")?novaLimitMessage(limit,locale):t("error")}</p><p>{customerUx(locale).question}</p></div>:null}
+      {error?<div className="notice-error" role="alert"><p>{error.message.includes("AI_SAFETY_FILTER")?novaSafetyMessage(locale):limit||error.message.toLowerCase().includes("limit")?novaLimitMessage(limit,locale):t("error")}</p><p>{customerUx(locale).question}</p></div>:null}
       <NovaSuggestions locale={locale} page={currentTab} select={setText} disabled={busy}/>
       <div className="nova-chat-shortcuts"><button className="button-link" onClick={()=>guide(novaGuideLabels(locale).actions,true)} disabled={busy}><Compass size={14}/>{novaGuideLabels(locale).actions}</button></div>
     </NovaConversation>

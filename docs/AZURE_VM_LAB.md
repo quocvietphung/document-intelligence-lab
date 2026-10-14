@@ -125,4 +125,6 @@ node scripts/test-azure-vm.mjs
 node scripts/test-azure-vm.mjs --frontend
 ```
 
-These tests create new synthetic verification cases and send generated one-page PDFs to the existing Azure resource. They never upload local/DATEV private files. Reports are stored privately in `.local/azure-vm/`; no token or password is logged.
+The current tests create new synthetic verification cases and analyze only the two public fictional DATEV pages specifically approved by the operator for Azure. They retrieve the private originals with a Bearer token, verify their hashes, analyze Robert directly and Melanie through the durable queue, and check both extracted values and Nova's citations. Reports are stored privately in `.local/azure-vm/`; no token or password is logged. The earlier generated-PDF checks and screenshots above document the initial 12 October release, not the current DATEV-only acceptance.
+
+The 14 October release uses Spring Boot 4.1.1, preserves the stored evidence JSON contract and reports Azure safety-filter refusals distinctly from service outages. See [current verification and production screenshots](RELEASE_2026-10-14.md).

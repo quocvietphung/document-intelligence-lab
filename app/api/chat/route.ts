@@ -26,6 +26,7 @@ export async function POST(request:Request) {
       cache:"no-store",signal:AbortSignal.any([request.signal,AbortSignal.timeout(45_000)]),
     });
     if(!response.ok) {
+      if(response.status===422)return Response.json({error:"AI_SAFETY_FILTER"},{status:422,headers:{"Cache-Control":"no-store"}});
       if(response.status===429){
         // Only known safe limit metadata may cross the proxy; never forward provider errors.
         const limit=novaLimit(await response.json().catch(()=>undefined));
