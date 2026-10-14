@@ -6,6 +6,10 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
 class CreditAssistantServiceTest {
+ @Test void providerDiagnosticsContainStatusButNeverSensitiveExceptionPayload(){
+  var failure=new RuntimeException("private prompt and Bearer token",new dev.langchain4j.exception.HttpException(429,"provider response secret"));
+  assertThat(CreditAssistantService.safeFailure(failure)).contains("RuntimeException/HttpException","httpStatus=429").doesNotContain("private","Bearer","secret","provider response");
+ }
  @Test void missingModelNeverReturnsADemonstrationAnswer(){
   var service=new CreditAssistantService(new CreditCaseService(),new ObjectMapper(),Optional.empty());
   for(String locale:new String[]{"de","en","vi"})
