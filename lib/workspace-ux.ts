@@ -7,9 +7,17 @@ export function workspaceCaseFromSearch(search: string) {
 
 export function workspaceLocalePath(hash: string, caseId?: string) {
   const target = workspaceTarget(hash);
-  const query = caseId && /^CR-[a-zA-Z0-9-]{1,80}$/.test(caseId)
-    ? `?case=${encodeURIComponent(caseId)}` : "";
+  const params=new URLSearchParams();
+  if(caseId&&/^CR-[a-zA-Z0-9-]{1,80}$/.test(caseId))params.set("case",caseId);
+  // Locale/auth navigation can consume the URL fragment. Keep only the safe
+  // section name in a query fallback; never copy OAuth state/code parameters.
+  if(target)params.set("section",target);
+  const query=params.size?`?${params.toString()}`:"";
   return `/${query}${target ? `#${target}` : ""}`;
+}
+
+export function workspaceSectionFromSearch(search:string){
+  return workspaceTarget(new URLSearchParams(search).get("section")||"");
 }
 
 export function workspaceErrorKey(status: number) {
