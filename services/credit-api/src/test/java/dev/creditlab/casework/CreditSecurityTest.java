@@ -2,7 +2,7 @@ package dev.creditlab.casework;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties="app.demo-seed-enabled=true")
 @org.springframework.test.context.ActiveProfiles("research-fixtures")
 @AutoConfigureMockMvc
-@org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability
+@org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics
 class CreditSecurityTest {
   @Autowired MockMvc mvc;
   @Test void researchIsAuthenticatedTenantScopedAndRejectsUnknownProtocols()throws Exception{
