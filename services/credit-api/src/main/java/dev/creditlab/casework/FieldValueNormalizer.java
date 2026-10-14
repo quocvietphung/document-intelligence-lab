@@ -7,10 +7,10 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
 
-final class FieldValueNormalizer {
+public final class FieldValueNormalizer {
   private FieldValueNormalizer() {}
 
-  static String normalize(String label, String value) {
+  public static String normalize(String label, String value) {
     if (value == null) return "";
     return switch (label) {
       case "netIncome", "monthlyRate", "balance" -> money(value);

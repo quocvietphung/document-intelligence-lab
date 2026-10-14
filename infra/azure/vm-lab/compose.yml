@@ -151,11 +151,12 @@ services:
       CLAMAV_HOST: clamav
       DOCUMENT_STORAGE_ROOT: /app/documents
       DOCUMENT_RETENTION_DAYS: "30"
+      PAYROLL_REFERENCE_ROOT: /app/references
       OTEL_ENABLED: "true"
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
       JAVA_TOOL_OPTIONS: -Xmx768m -XX:ActiveProcessorCount=2
     ports: ["127.0.0.1:8081:8080"]
-    volumes: ["lab_documents:/app/documents"]
+    volumes: ["lab_documents:/app/documents", "./references:/app/references:ro"]
     depends_on:
       case-db: {condition: service_healthy}
       identity-db: {condition: service_healthy}

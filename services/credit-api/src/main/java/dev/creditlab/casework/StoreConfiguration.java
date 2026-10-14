@@ -9,6 +9,10 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 @Configuration
 public class StoreConfiguration {
   @Bean
+  @ConditionalOnProperty(name="app.persistence.enabled",havingValue="true")
+  @org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean(org.springframework.transaction.PlatformTransactionManager.class)
+  org.springframework.transaction.PlatformTransactionManager caseTransactionManager(DataSource caseDataSource){return new org.springframework.jdbc.datasource.DataSourceTransactionManager(caseDataSource);}
+  @Bean
   @ConditionalOnProperty(name="app.persistence.enabled", havingValue="false", matchIfMissing=true)
   CaseStore demoStore() { return new CaseStore(); }
 

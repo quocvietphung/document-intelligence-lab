@@ -8,6 +8,7 @@ export function ModalSurface({title,close,label,children,wide=false}:{title:stri
     const previous=document.activeElement as HTMLElement|null; const overflow=document.body.style.overflow;
     document.body.style.overflow="hidden"; panel.current?.querySelector<HTMLElement>("button,input,textarea")?.focus();
     const key=(event:KeyboardEvent)=>{
+      if(Array.from(document.querySelectorAll('[role="dialog"][aria-modal="true"]')).at(-1)!==panel.current)return;
       if(event.key==="Escape") { event.preventDefault(); callback.current(); }
       if(event.key!=="Tab") return;
       const controls=Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),a[href]')||[]).filter(e=>e.getClientRects().length);

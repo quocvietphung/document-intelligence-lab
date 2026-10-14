@@ -3,6 +3,7 @@ import {execFileSync} from 'node:child_process';
 import {mkdirSync, existsSync, readFileSync, writeFileSync, chmodSync, copyFileSync, mkdtempSync} from 'node:fs';
 import {resolve, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
 const repo=resolve(fileURLToPath(new URL('..',import.meta.url)));
 const infra=join(repo,'infra/azure/vm-lab');
 const privateDir=join(repo,'.local/azure-vm');
@@ -66,6 +67,18 @@ if(action==='prepare'){
   ssh(o,'sudo cloud-init status --wait && sudo test -d /opt/credit-lab && sudo docker compose version',{stdio:'inherit'});
   run('scp',['-i',key,'-o','StrictHostKeyChecking=accept-new','-o',`UserKnownHostsFile=${join(privateDir,'known_hosts')}`,bundle,`${target(o)}:/home/labadmin/backend.tgz`]);
   ssh(o,`sudo tar --no-same-owner -xzf /home/labadmin/backend.tgz -C /opt/credit-lab && sudo tar --no-same-owner -xzf /opt/credit-lab/credit-api.tgz -C /opt/credit-lab && sudo chown root:labadmin /opt/credit-lab && sudo chmod 0750 /opt/credit-lab && sudo bash /opt/credit-lab/bootstrap.sh '${host}' 'https://credit-intelligence-lab.vercel.app'`,{stdio:'inherit'});
+}else if(action==='references'){
+  // Explicit operator action after permission for these two fictional publisher pages.
+  const o=outputs();
+  const hashes=JSON.parse(readFileSync(join(repo,'services/credit-api/src/main/resources/datev-reference-hashes.json'),'utf8'));
+  const files=['datev-lodas-2025-robert-muster.pdf','datev-lodas-2025-melanie-muster.pdf'];
+  for(const file of files){const bytes=readFileSync(join(repo,'.local/reference-pdfs',file));if(bytes.length>3_000_000||createHash('sha256').update(bytes).digest('hex')!==hashes[file])throw new Error('Approved reference bytes required');}
+  ssh(o,'install -d -m 700 /home/labadmin/approved-references && sudo install -d -m 700 -o 1000 -g 1000 /opt/credit-lab/references');
+  for(const file of files){
+    run('scp',['-i',key,'-o','StrictHostKeyChecking=yes','-o',`UserKnownHostsFile=${join(privateDir,'known_hosts')}`,join(repo,'.local/reference-pdfs',file),`${target(o)}:/home/labadmin/approved-references/${file}`]);
+    ssh(o,`sudo mv /home/labadmin/approved-references/${file} /opt/credit-lab/references/${file} && sudo chown 1000:1000 /opt/credit-lab/references/${file} && sudo chmod 0400 /opt/credit-lab/references/${file}`);
+  }
+  console.log('Two approved fictional DATEV references prepared privately on the existing VM. No Git/public upload or AI inference.');
 }else if(action==='status'||action==='stop'||action==='start'){
   const o=outputs(),args=['--ids',value(o,'vm_id')];
   if(action==='status')console.log(run('az',['vm','get-instance-view',...args,'--query','instanceView.statuses[].displayStatus','-o','tsv']));
@@ -77,6 +90,6 @@ if(action==='prepare'){
   writeFileSync(join(privateDir,'advisor.json'),JSON.stringify(credentials,null,2),{mode:0o600});
   console.log('Saved private local credentials to .local/azure-vm/advisor.json (not Git, not logged).');
 }else{
-  console.log('Actions: prepare | plan | apply | deploy | credentials | status | stop | start');
+  console.log('Actions: prepare | plan | apply | deploy | references | credentials | status | stop | start');
   process.exitCode=action?1:0;
 }

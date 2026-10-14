@@ -17,7 +17,7 @@ Azure compute uses `DefaultAzureCredential` / Managed Identity. The local Docker
 
 The signed-in developer identity has **Cognitive Services OpenAI User** on the shared OpenAI resource only, granted after explicit owner approval. Subscription Owner alone did not provide this inference data permission. No new model, key or paid Azure resource was created. Inference on the existing model still follows normal Azure token billing.
 
-The three one-page German payroll samples are clearly fictitious. Open **Documents & review → Payroll sample library**, preview a PDF, then import/analyze it. **Inspect evidence** displays the authenticated original with PDF.js, page/zoom controls and extracted fields. PDF.js worker/font/wasm assets are served by the app itself; no document or bearer token is sent to a PDF-viewer CDN. Original bytes remain in the case database. Source links in Nova can open the selected case's PDF evidence.
+The current payroll library offers only the two official fictional DATEV LODAS 2025 Robert/Melanie references; older self-made fixtures are regression-test resources, not public samples. Open **Documents & review → Payroll sample library**, preview the private prepared PDF, then explicitly confirm import/analysis. **Inspect evidence** displays the authenticated original with PDF.js, page/zoom controls and extracted fields. PDF.js worker/font/wasm assets are served by the app itself; no document or bearer token is sent to a PDF-viewer CDN. Original bytes remain in the case database. Source links in Nova can open the selected case's PDF evidence.
 
 Live integration:
 
@@ -104,6 +104,33 @@ Keep this small host helper running: every five minutes it renews a short-lived 
 
 If the helper stops, containers stay running, but Azure calls fail closed after the token expires. Restart token renewal without rebuilding with `node scripts/docker-azure.mjs watch`. After a reboot, run the normal start command again. `prepare` is only for one-shot setup and does not renew tokens.
 
+### Background token renewal on this Mac
+
+The 13 October local repair installed `dev.creditlab.azure-token-refresh` as a **user** LaunchAgent in `~/Library/LaunchAgents/`. It runs the same `watch` mode, with explicit Node/Azure CLI paths, `RunAtLoad` and `KeepAlive`. It does not start Docker, an Azure VM, or another paid resource. Its process was verified running and renewing tokens after the terminal-based workflow ended.
+
+Check the process without printing credentials:
+
+```bash
+launchctl print gui/$(id -u)/dev.creditlab.azure-token-refresh
+tail -n 3 .local/azure-auth/renewal.log
+```
+
+Logs contain expiry/status only, never access tokens. If the CLI login is revoked or cannot renew, run `az login` on the Mac and restart the helper:
+
+```bash
+launchctl kickstart -k gui/$(id -u)/dev.creditlab.azure-token-refresh
+```
+
+Do not run a second `watch` process concurrently. To stop the background helper deliberately:
+
+```bash
+launchctl bootout gui/$(id -u)/dev.creditlab.azure-token-refresh
+```
+
+Stopping it does not stop Docker; cloud calls will fail once the current token expires. The LaunchAgent's absolute Node/repository paths must be updated if Node or the checkout moves. This is installed on this developer's Mac, not automatically installed by cloning the repository. On another machine, use the documented foreground `watch` mode or configure your own user service. It runs while this Mac user's session is active, not while the Mac is off/asleep.
+
+In **Document pipeline**, a recoverable failed approved DATEV reference can be requeued using **Retry DATEV reference**, followed by the provider confirmation. The new job appears above the old failed history entry. Do not treat a retained old failure as the status of the new extraction. [Verified Robert recovery](DATEV_RECOVERY.md).
+
 If Maven downloads inside Docker fail, build the JAR with your host Maven cache, then use the prebuilt runtime Dockerfile:
 
 ```bash
@@ -149,7 +176,7 @@ NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=credit-intelligence-web \
 npm run dev -- --hostname 127.0.0.1
 ```
 
-Open `http://localhost:3000/en`, sign in as the local `advisor.demo` account, create a synthetic case, then open **Documents & review → Upload sample payroll**. This sends the one-page PDF in `public/demo/synthetic-payroll.pdf` through the same authenticated upload endpoint as a selected file. **Inspect evidence** shows the actual extraction provider/model and the extracted net income, employer and date alongside page evidence. This flow was successfully verified with Azure on 2026-10-11. No real applicant or financial data is included in the sample.
+Open `http://localhost:3000/en`, sign in as the local `advisor.demo` account, create/select a fictional case, then open **Documents & review → Payroll sample library**. Prepare the two private DATEV pages according to [PUBLIC_PAYROLL_TESTS.md](PUBLIC_PAYROLL_TESTS.md); preview the reference and explicitly confirm import/analysis. **Inspect evidence** shows the actual provider/model, net income and payout alongside the PDF and page evidence. The former `public/demo/synthetic-payroll.pdf` action belonged to the 11 October historical test and is no longer offered; that public URL now returns 404. No real applicant or financial data is included in the DATEV references.
 
 An opt-in live test generates a synthetic PDF in memory and verifies real Azure page/field extraction through the application's Java provider:
 

@@ -1,11 +1,363 @@
 [
-  {"id":"overview","aliases":["overview","tổng quan","tong quan","übersicht"],"en":{"title":"Overview","description":"Select a case, see review progress, missing documents and conflicts.","steps":["Select a case card.","Open a flagged issue to inspect its evidence.","Create/edit is available only locally to authorized advisors."]},"de":{"title":"Übersicht","description":"Vorgang auswählen, Prüfstand, fehlende Unterlagen und Widersprüche ansehen.","steps":["Eine Vorgangskarte auswählen.","Einen Hinweis öffnen und die Belege prüfen.","Anlegen/Bearbeiten ist nur lokal mit Beraterberechtigung möglich."]},"vi":{"title":"Tổng quan","description":"Chọn hồ sơ, xem tiến độ kiểm duyệt, tài liệu thiếu và thông tin mâu thuẫn.","steps":["Chọn thẻ hồ sơ cần xem.","Mở mục cảnh báo để xem chứng cứ.","Tạo/sửa hồ sơ chỉ có trong bản local với quyền tư vấn."]}},
-  {"id":"studio","aliases":["ai studio","studio","rag","retrieval","truy xuất","truy xuat","belegsuche"],"en":{"title":"AI Studio","description":"Search case evidence, inspect ranked passages, agent routing and Nova traces. Local: Qdrant + ONNX + BM25. Public demo: keyword fixtures only.","steps":["Enter a complete evidence question or choose a suggestion.","Compare retrieved passages and open their original document.","Ask Nova to explain the evidence; retrieval scores are not accuracy."]},"de":{"title":"AI Studio","description":"Belege suchen, Fundstellen, Agentenrouting und Nova-Traces prüfen. Lokal: Qdrant + ONNX + BM25. Öffentliche Demo: Stichwortsuche in Beispieldaten.","steps":["Eine vollständige Belegfrage eingeben oder einen Vorschlag wählen.","Fundstellen vergleichen und das Original öffnen.","Nova um Erklärung bitten; Suchscores sind keine Genauigkeit."]},"vi":{"title":"AI Studio","description":"Tìm chứng cứ hồ sơ, xem đoạn xếp hạng, điều phối agent và các lượt Nova. Local dùng Qdrant + ONNX + BM25; demo công khai chỉ tìm từ khóa trong mẫu.","steps":["Nhập câu hỏi đầy đủ hoặc chọn câu hỏi gợi ý.","Đối chiếu các đoạn tìm được và mở tài liệu gốc.","Nhờ Nova giải thích; điểm truy xuất không phải độ chính xác."]}},
-  {"id":"documents","aliases":["documents","dokumente","tài liệu","tai lieu","datev","gehaltsabrechnung","bảng lương","bang luong","pdf","ocr"],"en":{"title":"Documents & evidence review","description":"Preview PDFs/images, inspect extracted fields, tables, confidence and page evidence. The DATEV library uses official fictional LODAS references privately, not self-made payslips.","steps":["Open a document to compare the source and extracted fields.","Use the DATEV library to preview official local samples.","Confirm before uploading to Azure. Only reviewers/admins can confirm fields."]},"de":{"title":"Dokumente & Belegprüfung","description":"PDFs/Bilder, extrahierte Felder, Tabellen, Konfidenz und Seitenbelege prüfen. Die DATEV-Bibliothek nutzt offizielle fiktive LODAS-Muster privat, keine selbst erstellten Abrechnungen.","steps":["Dokument öffnen und Quelle mit Feldern vergleichen.","Offizielle lokale Muster in der DATEV-Bibliothek ansehen.","Azure-Upload vorher bestätigen. Nur Prüfer/Admins bestätigen Felder."]},"vi":{"title":"Tài liệu & kiểm duyệt","description":"Xem PDF/ảnh, trường trích xuất, bảng, độ tin cậy và chứng cứ từng trang. Thư viện DATEV dùng mẫu LODAS giả lập chính thức ở local, không phải bảng lương tự tạo.","steps":["Mở tài liệu để so nguồn gốc với các trường.","Xem trước mẫu chính thức trong thư viện DATEV local.","Xác nhận trước khi gửi Azure. Chỉ reviewer/admin được xác nhận trường."]}},
-  {"id":"pipeline","aliases":["pipeline","luồng tài liệu","luong tai lieu","document flow","dokumentenpipeline","queue","hàng đợi","hang doi"],"en":{"title":"Document pipeline","description":"Follow upload jobs through scanning, extraction and human review; inspect retention and provider status.","steps":["Upload a permitted sample locally; Azure processing requires your confirmation.","Watch queued/processing/completed/failed stages.","Open evidence when extraction completes; completed is not human-verified."]},"de":{"title":"Dokumentenpipeline","description":"Upload-Aufträge, Virenprüfung, Extraktion, menschliche Prüfung, Aufbewahrung und Anbieterstatus verfolgen.","steps":["Lokal ein erlaubtes Muster hochladen; Azure-Verarbeitung vorher bestätigen.","Warteschlange, Verarbeitung, Abschluss oder Fehler ansehen.","Danach Belege öffnen; abgeschlossen bedeutet nicht menschlich geprüft."]},"vi":{"title":"Luồng tài liệu","description":"Theo dõi tác vụ tải lên, quét virus, trích xuất, kiểm duyệt; xem lưu trữ và bộ xử lý đang dùng.","steps":["Tải mẫu được phép ở local; xác nhận trước xử lý Azure.","Xem trạng thái chờ/đang xử lý/hoàn tất/lỗi.","Mở chứng cứ sau trích xuất; hoàn tất không đồng nghĩa đã kiểm duyệt."]}},
-  {"id":"controls","aliases":["controls","đối chiếu","doi chieu","reconciliation","abgleich","prüfungen","kiem duyet"],"en":{"title":"Review & reconciliation","description":"Review alerts, compare payroll with statement transactions and inspect balanced teaching ledger entries.","steps":["Inspect the alert and its document source.","Compare name, period, net earnings and payout separately.","An amount-only match is not identity verification. Reviewer notes require permission."]},"de":{"title":"Prüfung & Abgleich","description":"Hinweise prüfen, Gehalt mit Kontoauszügen abgleichen und ausgeglichene Lernbuchungen ansehen.","steps":["Hinweis und Belegquelle prüfen.","Name, Zeitraum, Netto-Verdienst und Auszahlung getrennt vergleichen.","Betragsgleichheit bestätigt keine Identität. Prüfnotizen erfordern Berechtigung."]},"vi":{"title":"Kiểm duyệt & đối chiếu","description":"Xem cảnh báo, so bảng lương với sao kê và bút toán cân bằng dùng để học.","steps":["Xem cảnh báo và tài liệu nguồn.","Đối chiếu tên, kỳ lương, lương ròng và thực chi riêng biệt.","Trùng số tiền chưa xác minh danh tính. Ghi chú kiểm duyệt cần đúng quyền."]}},
-  {"id":"banking","aliases":["banking lab","banking","thực hành ngân hàng","thuc hanh ngan hang","banking-lab"],"en":{"title":"Banking lab","description":"Inspect synthetic accounts, transactions and invoices. No real bank or payment network is connected.","steps":["Choose accounts, transactions or invoices.","Inspect invoice evidence and duplicate warnings.","Use data only for learning. Nova never executes or confirms payments."]},"de":{"title":"Banking-Lab","description":"Synthetische Konten, Umsätze und Rechnungen ansehen. Keine echte Bank oder Zahlungsanbindung.","steps":["Konten, Umsätze oder Rechnungen auswählen.","Rechnungsbelege und Duplikathinweise prüfen.","Nur Lernzwecke. Nova führt keine Zahlungen aus und bestätigt keine."]},"vi":{"title":"Thực hành ngân hàng","description":"Xem tài khoản, giao dịch và hóa đơn giả lập. Không kết nối ngân hàng hay mạng thanh toán thật.","steps":["Chọn tài khoản, giao dịch hoặc hóa đơn.","Xem chứng cứ hóa đơn và cảnh báo trùng.","Chỉ dùng để học. Nova không thực hiện hay xác nhận thanh toán."]}},
-  {"id":"evaluation","aliases":["evaluation","quality","chất lượng ai","chat luong ai","f1","precision","recall","ki-qualität"],"en":{"title":"AI quality","description":"Inspect precision, recall, F1, Recall@5, confusion and failures on the labelled synthetic-text lab dataset; these are not real-world accuracy.","steps":["Run an evaluation locally with the existing explicit button.","Compare field metrics and individual failures.","The public demo does not invent benchmark results."]},"de":{"title":"KI-Qualität","description":"Precision, Recall, F1, Recall@5, Verwechslungen und Fehler auf dem gelabelten synthetischen Textdatensatz ansehen; keine Realwelt-Genauigkeit.","steps":["Die Auswertung lokal über den vorgesehenen Button starten.","Feldmetriken und einzelne Fehler vergleichen.","Die öffentliche Demo erfindet keine Benchmarkwerte."]},"vi":{"title":"Chất lượng AI","description":"Xem precision, recall, F1, Recall@5, ma trận nhầm lẫn và lỗi trên dữ liệu text giả lập có nhãn; không phải độ chính xác thực tế.","steps":["Chạy đánh giá ở local bằng nút riêng của trang.","So chỉ số từng trường và từng lỗi.","Demo công khai không tạo kết quả benchmark giả."]}},
-  {"id":"operations","aliases":["operations","vận hành","van hanh","betrieb","monitoring","metrics","security","bảo mật","bao mat"],"en":{"title":"Operations","description":"Inspect persistence, extraction provider, retention, shared limits, telemetry and recent agent runs.","steps":["Read current service status, not just architecture documentation.","Inspect recent runs, citations and review flags.","Use local runbooks for backup/security; this lab is not production-ready banking."]},"de":{"title":"Betrieb","description":"Persistenz, Extraktionsanbieter, Aufbewahrung, Limits, Telemetrie und letzte Agentenläufe ansehen.","steps":["Aktuellen Dienststatus statt nur Architekturhinweise lesen.","Läufe, Quellen und Prüfhinweise ansehen.","Lokale Runbooks für Backup/Sicherheit nutzen; kein produktionsreifes Banksystem."]},"vi":{"title":"Vận hành","description":"Xem lưu trữ, bộ trích xuất, retention, giới hạn dùng chung, telemetry và lượt agent gần đây.","steps":["Đọc trạng thái thực của dịch vụ, không chỉ sơ đồ kiến trúc.","Xem lượt chạy, nguồn và yêu cầu kiểm duyệt.","Dùng hướng dẫn local cho backup/bảo mật; đây chưa phải hệ thống ngân hàng production."]}},
-  {"id":"audit","aliases":["audit","nhật ký","nhat ky","activity log","protokoll","prüfprotokoll"],"en":{"title":"Activity log","description":"Inspect recorded case workflow actions and actors. The public demo shows fixtures, not live audit records.","steps":["Select the case first.","Read timestamps, actions and actors.","Do not confuse a demo record with a live audited action."]},"de":{"title":"Aktivitätsprotokoll","description":"Erfasste Vorgangsaktionen und Akteure ansehen. Die öffentliche Demo zeigt Beispiele, keine Live-Auditdaten.","steps":["Zuerst den Vorgang auswählen.","Zeitpunkte, Aktionen und Akteure lesen.","Beispieldaten sind keine live geprüften Aktionen."]},"vi":{"title":"Nhật ký hoạt động","description":"Xem hành động và người thao tác trên hồ sơ. Demo công khai là mẫu, không phải nhật ký live.","steps":["Chọn hồ sơ trước.","Đọc thời gian, hành động và người thao tác.","Không coi bản ghi demo là hoạt động đã kiểm toán thực tế."]}}
+  {
+    "id": "overview",
+    "aliases": [
+      "overview",
+      "tổng quan",
+      "tong quan",
+      "übersicht"
+    ],
+    "en": {
+      "title": "Overview",
+      "description": "Select a case, see review progress, missing documents and conflicts.",
+      "steps": [
+        "Select a case card.",
+        "Open a flagged issue to inspect its evidence.",
+        "Create/edit is available only locally to authorized advisors."
+      ]
+    },
+    "de": {
+      "title": "Übersicht",
+      "description": "Vorgang auswählen, Prüfstand, fehlende Unterlagen und Widersprüche ansehen.",
+      "steps": [
+        "Eine Vorgangskarte auswählen.",
+        "Einen Hinweis öffnen und die Belege prüfen.",
+        "Anlegen/Bearbeiten ist nur lokal mit Beraterberechtigung möglich."
+      ]
+    },
+    "vi": {
+      "title": "Tổng quan",
+      "description": "Chọn hồ sơ, xem tiến độ kiểm duyệt, tài liệu thiếu và thông tin mâu thuẫn.",
+      "steps": [
+        "Chọn thẻ hồ sơ cần xem.",
+        "Mở mục cảnh báo để xem chứng cứ.",
+        "Tạo/sửa hồ sơ chỉ có trong bản local với quyền tư vấn."
+      ]
+    }
+  },
+  {
+    "id": "studio",
+    "aliases": [
+      "ai studio",
+      "studio",
+      "rag",
+      "retrieval",
+      "truy xuất",
+      "truy xuat",
+      "belegsuche"
+    ],
+    "en": {
+      "title": "AI Studio",
+      "description": "Search case evidence, inspect ranked passages, agent routing and Nova traces. Local: Qdrant + ONNX + BM25. Requires authentication and uploaded originals.",
+      "steps": [
+        "Enter a complete evidence question or choose a suggestion.",
+        "Compare retrieved passages and open their original document.",
+        "Ask Nova to explain the evidence; retrieval scores are not accuracy."
+      ]
+    },
+    "de": {
+      "title": "AI Studio",
+      "description": "Belege suchen, Fundstellen, Agentenrouting und Nova-Traces prüfen. Lokal: Qdrant + ONNX + BM25. Authentifizierung und hochgeladene Originale erforderlich.",
+      "steps": [
+        "Eine vollständige Belegfrage eingeben oder einen Vorschlag wählen.",
+        "Fundstellen vergleichen und das Original öffnen.",
+        "Nova um Erklärung bitten; Suchscores sind keine Genauigkeit."
+      ]
+    },
+    "vi": {
+      "title": "AI Studio",
+      "description": "Tìm chứng cứ hồ sơ, xem đoạn xếp hạng, điều phối agent và các lượt Nova. Local dùng Qdrant + ONNX + BM25; cần đăng nhập và tài liệu có bản gốc.",
+      "steps": [
+        "Nhập câu hỏi đầy đủ hoặc chọn câu hỏi gợi ý.",
+        "Đối chiếu các đoạn tìm được và mở tài liệu gốc.",
+        "Nhờ Nova giải thích; điểm truy xuất không phải độ chính xác."
+      ]
+    }
+  },
+  {
+    "id": "documents",
+    "aliases": [
+      "documents",
+      "dokumente",
+      "tài liệu",
+      "tai lieu",
+      "datev",
+      "gehaltsabrechnung",
+      "bảng lương",
+      "bang luong",
+      "pdf",
+      "ocr"
+    ],
+    "en": {
+      "title": "Documents & evidence review",
+      "description": "Preview PDFs/images, inspect extracted fields, tables, confidence and page evidence. The DATEV library uses official fictional LODAS references privately, not self-made payslips.",
+      "steps": [
+        "Open a document to compare the source and extracted fields.",
+        "Use the DATEV library to preview official local samples.",
+        "Confirm before uploading to Azure. Only reviewers/admins can confirm fields."
+      ]
+    },
+    "de": {
+      "title": "Dokumente & Belegprüfung",
+      "description": "PDFs/Bilder, extrahierte Felder, Tabellen, Konfidenz und Seitenbelege prüfen. Die DATEV-Bibliothek nutzt offizielle fiktive LODAS-Muster privat, keine selbst erstellten Abrechnungen.",
+      "steps": [
+        "Dokument öffnen und Quelle mit Feldern vergleichen.",
+        "Offizielle lokale Muster in der DATEV-Bibliothek ansehen.",
+        "Azure-Upload vorher bestätigen. Nur Prüfer/Admins bestätigen Felder."
+      ]
+    },
+    "vi": {
+      "title": "Tài liệu & kiểm duyệt",
+      "description": "Xem PDF/ảnh, trường trích xuất, bảng, độ tin cậy và chứng cứ từng trang. Thư viện DATEV dùng mẫu LODAS giả lập chính thức ở local, không phải bảng lương tự tạo.",
+      "steps": [
+        "Mở tài liệu để so nguồn gốc với các trường.",
+        "Xem trước mẫu chính thức trong thư viện DATEV local.",
+        "Xác nhận trước khi gửi Azure. Chỉ reviewer/admin được xác nhận trường."
+      ]
+    }
+  },
+  {
+    "id": "pipeline",
+    "aliases": [
+      "pipeline",
+      "luồng tài liệu",
+      "luong tai lieu",
+      "document flow",
+      "dokumentenpipeline",
+      "queue",
+      "hàng đợi",
+      "hang doi"
+    ],
+    "en": {
+      "title": "Document pipeline",
+      "description": "Follow upload jobs through scanning, extraction and human review; inspect retention and provider status.",
+      "steps": [
+        "Upload a permitted sample locally; Azure processing requires your confirmation.",
+        "Watch queued/processing/completed/failed stages.",
+        "Open evidence when extraction completes; completed is not human-verified."
+      ]
+    },
+    "de": {
+      "title": "Dokumentenpipeline",
+      "description": "Upload-Aufträge, Virenprüfung, Extraktion, menschliche Prüfung, Aufbewahrung und Anbieterstatus verfolgen.",
+      "steps": [
+        "Lokal ein erlaubtes Muster hochladen; Azure-Verarbeitung vorher bestätigen.",
+        "Warteschlange, Verarbeitung, Abschluss oder Fehler ansehen.",
+        "Danach Belege öffnen; abgeschlossen bedeutet nicht menschlich geprüft."
+      ]
+    },
+    "vi": {
+      "title": "Luồng tài liệu",
+      "description": "Theo dõi tác vụ tải lên, quét virus, trích xuất, kiểm duyệt; xem lưu trữ và bộ xử lý đang dùng.",
+      "steps": [
+        "Tải mẫu được phép ở local; xác nhận trước xử lý Azure.",
+        "Xem trạng thái chờ/đang xử lý/hoàn tất/lỗi.",
+        "Mở chứng cứ sau trích xuất; hoàn tất không đồng nghĩa đã kiểm duyệt."
+      ]
+    }
+  },
+  {
+    "id": "controls",
+    "aliases": [
+      "controls",
+      "đối chiếu",
+      "doi chieu",
+      "reconciliation",
+      "abgleich",
+      "prüfungen",
+      "kiem duyet"
+    ],
+    "en": {
+      "title": "Review & reconciliation",
+      "description": "Review alerts, compare payroll with statement transactions and inspect balanced teaching ledger entries.",
+      "steps": [
+        "Inspect the alert and its document source.",
+        "Compare name, period, net earnings and payout separately.",
+        "An amount-only match is not identity verification. Reviewer notes require permission."
+      ]
+    },
+    "de": {
+      "title": "Prüfung & Abgleich",
+      "description": "Hinweise prüfen, Gehalt mit Kontoauszügen abgleichen und ausgeglichene Lernbuchungen ansehen.",
+      "steps": [
+        "Hinweis und Belegquelle prüfen.",
+        "Name, Zeitraum, Netto-Verdienst und Auszahlung getrennt vergleichen.",
+        "Betragsgleichheit bestätigt keine Identität. Prüfnotizen erfordern Berechtigung."
+      ]
+    },
+    "vi": {
+      "title": "Kiểm duyệt & đối chiếu",
+      "description": "Xem cảnh báo, so bảng lương với sao kê và bút toán cân bằng dùng để học.",
+      "steps": [
+        "Xem cảnh báo và tài liệu nguồn.",
+        "Đối chiếu tên, kỳ lương, lương ròng và thực chi riêng biệt.",
+        "Trùng số tiền chưa xác minh danh tính. Ghi chú kiểm duyệt cần đúng quyền."
+      ]
+    }
+  },
+  {
+    "id": "banking",
+    "aliases": [
+      "banking lab",
+      "banking",
+      "thực hành ngân hàng",
+      "thuc hanh ngan hang",
+      "banking-lab",
+      "banking evidence",
+      "bankbelege",
+      "chứng cứ ngân hàng",
+      "chung cu ngan hang"
+    ],
+    "en": {
+      "title": "Statement and invoice evidence",
+      "description": "Only analyzed original documents from this case, with fields, tables and source pages. No mock accounts, generated transactions or fixed benchmarks.",
+      "steps": [
+        "Upload a source PDF or explicitly import an official DATEV reference.",
+        "Compare extracted fields with the original.",
+        "Ask Nova using only this document evidence."
+      ]
+    },
+    "de": {
+      "title": "Kontoauszüge und Rechnungsbelege",
+      "description": "Nur analysierte Originaldokumente mit Feldern, Tabellen und Quellen. Keine Musterkonten, erzeugten Umsätze oder Benchmarkwerte.",
+      "steps": [
+        "Quell-PDF hochladen oder DATEV-Referenz ausdrücklich importieren.",
+        "Ergebnisse mit dem Original vergleichen.",
+        "Nova nur zu diesen Dokumentbelegen fragen."
+      ]
+    },
+    "vi": {
+      "title": "Chứng cứ sao kê và hóa đơn",
+      "description": "Chỉ dùng tài liệu có bản gốc đã phân tích: trường, bảng và trang nguồn. Không dùng tài khoản mock, giao dịch tự sinh hay điểm benchmark mẫu.",
+      "steps": [
+        "Tải PDF nguồn hoặc xác nhận nhập mẫu DATEV chính thức.",
+        "Đối chiếu trường với bản gốc.",
+        "Hỏi Nova về chứng cứ của đúng tài liệu này."
+      ]
+    }
+  },
+  {
+    "id": "evaluation",
+    "aliases": [
+      "evaluation",
+      "quality",
+      "research lab",
+      "experiment",
+      "nghiên cứu ai",
+      "thí nghiệm",
+      "forschung",
+      "chất lượng ai",
+      "chat luong ai",
+      "f1",
+      "precision",
+      "recall",
+      "ki-qualität"
+    ],
+    "en": {
+      "title": "Study uploaded PDFs",
+      "description": "Only analyzed original documents from this case, with fields, tables and source pages. No mock accounts, generated transactions or fixed benchmarks.",
+      "steps": [
+        "Upload a source PDF or explicitly import an official DATEV reference.",
+        "Compare extracted fields with the original.",
+        "Ask Nova using only this document evidence."
+      ]
+    },
+    "de": {
+      "title": "Hochgeladene PDFs untersuchen",
+      "description": "Nur analysierte Originaldokumente mit Feldern, Tabellen und Quellen. Keine Musterkonten, erzeugten Umsätze oder Benchmarkwerte.",
+      "steps": [
+        "Quell-PDF hochladen oder DATEV-Referenz ausdrücklich importieren.",
+        "Ergebnisse mit dem Original vergleichen.",
+        "Nova nur zu diesen Dokumentbelegen fragen."
+      ]
+    },
+    "vi": {
+      "title": "Nghiên cứu PDF đã nhập",
+      "description": "Chỉ dùng tài liệu có bản gốc đã phân tích: trường, bảng và trang nguồn. Không dùng tài khoản mock, giao dịch tự sinh hay điểm benchmark mẫu.",
+      "steps": [
+        "Tải PDF nguồn hoặc xác nhận nhập mẫu DATEV chính thức.",
+        "Đối chiếu trường với bản gốc.",
+        "Hỏi Nova về chứng cứ của đúng tài liệu này."
+      ]
+    }
+  },
+  {
+    "id": "operations",
+    "aliases": [
+      "operations",
+      "vận hành",
+      "van hanh",
+      "betrieb",
+      "monitoring",
+      "metrics",
+      "security",
+      "bảo mật",
+      "bao mat"
+    ],
+    "en": {
+      "title": "Operations",
+      "description": "Inspect persistence, extraction provider, retention, shared limits, telemetry and recent agent runs.",
+      "steps": [
+        "Read current service status, not just architecture documentation.",
+        "Inspect recent runs, citations and review flags.",
+        "Use local runbooks for backup/security; this lab is not production-ready banking."
+      ]
+    },
+    "de": {
+      "title": "Betrieb",
+      "description": "Persistenz, Extraktionsanbieter, Aufbewahrung, Limits, Telemetrie und letzte Agentenläufe ansehen.",
+      "steps": [
+        "Aktuellen Dienststatus statt nur Architekturhinweise lesen.",
+        "Läufe, Quellen und Prüfhinweise ansehen.",
+        "Lokale Runbooks für Backup/Sicherheit nutzen; kein produktionsreifes Banksystem."
+      ]
+    },
+    "vi": {
+      "title": "Vận hành",
+      "description": "Xem lưu trữ, bộ trích xuất, retention, giới hạn dùng chung, telemetry và lượt agent gần đây.",
+      "steps": [
+        "Đọc trạng thái thực của dịch vụ, không chỉ sơ đồ kiến trúc.",
+        "Xem lượt chạy, nguồn và yêu cầu kiểm duyệt.",
+        "Dùng hướng dẫn local cho backup/bảo mật; đây chưa phải hệ thống ngân hàng production."
+      ]
+    }
+  },
+  {
+    "id": "audit",
+    "aliases": [
+      "audit",
+      "nhật ký",
+      "nhat ky",
+      "activity log",
+      "protokoll",
+      "prüfprotokoll"
+    ],
+    "en": {
+      "title": "Activity log",
+      "description": "Inspect recorded case workflow actions and actors. The public demo shows fixtures, not live audit records.",
+      "steps": [
+        "Select the case first.",
+        "Read timestamps, actions and actors.",
+        "Do not confuse a demo record with a live audited action."
+      ]
+    },
+    "de": {
+      "title": "Aktivitätsprotokoll",
+      "description": "Erfasste Vorgangsaktionen und Akteure ansehen. Die öffentliche Demo zeigt Beispiele, keine Live-Auditdaten.",
+      "steps": [
+        "Zuerst den Vorgang auswählen.",
+        "Zeitpunkte, Aktionen und Akteure lesen.",
+        "Beispieldaten sind keine live geprüften Aktionen."
+      ]
+    },
+    "vi": {
+      "title": "Nhật ký hoạt động",
+      "description": "Xem hành động và người thao tác trên hồ sơ. Demo công khai là mẫu, không phải nhật ký live.",
+      "steps": [
+        "Chọn hồ sơ trước.",
+        "Đọc thời gian, hành động và người thao tác.",
+        "Không coi bản ghi demo là hoạt động đã kiểm toán thực tế."
+      ]
+    }
+  }
 ]

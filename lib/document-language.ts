@@ -10,7 +10,7 @@ const chatVi:typeof chatEn={guardBlocked:"Yêu cầu bị chặn bởi bảo v�
 export const documentLanguageTables={en:{...en,...extraEn,...chatEn,review:"Compare extracted fields with the original document before confirming."},de:{...de,...extraDe,...chatDe,review:"Extrahierte Felder vor der Bestätigung mit dem Originaldokument vergleichen."},vi:{...vi,...extraVi,...chatVi,review:"Đối chiếu trường trích xuất với tài liệu gốc trước khi xác nhận."}};
 export function documentText(locale:string) {const table=documentLanguageTables[locale==="vi"?"vi":locale==="de"?"de":"en"];return(key:string)=>table[key as keyof typeof table]||key;}
 export const officialPayrollReference="https://www.datev.de/content/dam/markenassets/themen-und-produktgruppen/zielgruppen/zielgruppenuebergreifend/shop-assets/personalwirtschaft/lodas-musterauswertung-2025-deutsch.pdf";
-/** Legacy synthetic regression fixtures only. Not offered in the DATEV library. */
+/** TEST-ONLY legacy fixtures. Never served by Next.js or offered as DATEV examples. */
 export const syntheticPayrollFixtures=[
   {id:"september",file:"gehaltsabrechnung-2026-09-muster.pdf",net:"6240 EUR"},
   {id:"october",file:"gehaltsabrechnung-2026-10-muster.pdf",net:"6380 EUR"},

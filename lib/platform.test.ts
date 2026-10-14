@@ -1,8 +1,13 @@
 import {describe,expect,it} from "vitest";
 import {platformText} from "./platform-language";
-import {percent,searchSchema,pipelineStage,noticeIsVisible} from "./platform";
+import {percent,searchSchema,pipelineStage,noticeIsVisible,currentEvidenceSearch,type SearchData} from "./platform";
 
 describe("reliability workspace",()=>{
+  it("hides retrieved evidence after the case version changes",()=>{
+    const data={} as SearchData,snapshot={version:3,data};
+    expect(currentEvidenceSearch(snapshot,3)).toBe(data);expect(currentEvidenceSearch(snapshot,4)).toBeUndefined();
+    expect(currentEvidenceSearch(undefined,3)).toBeUndefined();
+  });
   it("does not show a reviewed document as still awaiting review",()=>{
     expect(pipelineStage({status:"COMPLETE",stage:"HUMAN_REVIEW",reviewStatus:"verified"})).toBe("reviewComplete");
     expect(pipelineStage({status:"COMPLETE",stage:"HUMAN_REVIEW",reviewStatus:"review"})).toBe("HUMAN_REVIEW");
@@ -17,7 +22,8 @@ describe("reliability workspace",()=>{
       const t=platformText(locale);
       for(const key of ["studio","pipeline","controls","operations","evaluation","queued","supportHint","qualityHint","confusion"])
         expect(t(key)).not.toBe(key);
-      expect(t("qualityHint")).toContain("40");
+      expect(t("qualityHint")).toContain("PDF");
+      expect(t("controlsHint")).toContain("PDF");
       expect(t("formatAzure").replace("{pages}","2")).toContain("2");
     }
   });

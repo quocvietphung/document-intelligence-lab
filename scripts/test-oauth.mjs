@@ -8,26 +8,32 @@ const api = process.env.TEST_API_URL || "http://localhost:8081";
 const web = process.env.TEST_WEB_URL || "http://localhost:3000";
 const realm = `${auth}/realms/credit-intelligence`;
 const clientId = "credit-intelligence-web";
+// Keycloak cookies belong to its origin, never to the Next.js proxy or Java API.
 const cookies = new Map();
+let checks = 0;
 async function request(url, options = {}) {
+  const origin = new URL(url).origin;
+  const jar = cookies.get(origin) || new Map();
   const response = await fetch(url, {
     ...options,
     redirect: "manual",
     signal: AbortSignal.timeout(55_000),
     headers: {
       ...options.headers,
-      Cookie: [...cookies].map(([key, value]) => `${key}=${value}`).join("; "),
+      Cookie: [...jar].map(([key, value]) => `${key}=${value}`).join("; "),
     },
   });
   for (const cookie of response.headers.getSetCookie()) {
     const pair = cookie.split(";")[0];
     const index = pair.indexOf("=");
-    cookies.set(pair.slice(0, index), pair.slice(index + 1));
+    jar.set(pair.slice(0, index), pair.slice(index + 1));
   }
+  cookies.set(origin, jar);
   return response;
 }
 function check(condition, message) {
   assert.ok(condition, message);
+  checks++;
   console.log(`PASS ${message}`);
 }
 const discovery = await request(`${realm}/.well-known/openid-configuration`);
@@ -140,6 +146,107 @@ check(
   "Access token has API audience, tenant and advisor role",
 );
 const bearer = { Authorization: `Bearer ${tokens.access_token}` };
+if(process.env.TEST_DOCUMENT_FOCUS==="1"){
+  const caseId="CR-80ee7bb3-b39",base=`${web}/api/cases/${caseId}`;
+  const response=await request(base,{headers:bearer});check(response.ok,"Document case available through authenticated web");
+  const item=await response.json();
+  check(item.documents.length>0&&item.documents.every(d=>d.originalAvailable),"Every live document has an uploaded original");
+  check(item.documents.some(d=>d.analysisProvider==="azure-document-intelligence"),"Actual Azure extraction evidence retained");
+  const bank=await request(base+"/banking",{headers:bearer});check(bank.ok,"Read-only document context available");const snapshot=await bank.json();
+  check(snapshot.synthetic===false&&["accounts","transactions","invoices","payments"].every(k=>snapshot[k].length===0),"No generated banking fixtures exposed");
+  const platform=await request(base+"/platform",{headers:bearer});check(platform.ok,"Document platform available");const data=await platform.json();
+  check(data.evaluations.length===0&&data.banking.ledger.length===0&&data.banking.reconciliation.length===0,"No fixed benchmark, ledger or mock reconciliation");
+  const fixtures=await request(base+"/platform/experiments",{headers:bearer});check(fixtures.status===404,"Offline fixture experiments disabled");
+  const document=item.documents.find(d=>d.contentType==="application/pdf"||d.name.endsWith(".pdf"));check(Boolean(document),"Uploaded PDF available for source inspection");
+  const pdf=await request(base+`/documents/${document.id}/original`,{headers:bearer});check(pdf.ok&&pdf.headers.get("cache-control")?.includes("no-store"),"Original PDF remains privately accessible without caching");
+  check(Buffer.from(await pdf.arrayBuffer()).subarray(0,5).toString()==="%PDF-","Original content is a PDF, not reference JSON");
+}
+if(process.env.TEST_RESEARCH==="1"){
+  assert.equal(new URL(web).hostname,"localhost","Research verification is local-only");
+  const caseId="CR-2026-1048",base=`${web}/api/cases/${caseId}/platform/experiments`;
+  const before=await request(`${web}/api/cases/${caseId}`,{headers:bearer});check(before.ok,"Research case available");const caseBefore=await before.json();
+  const anonymous=await request(base);check(anonymous.status===401,"Research history requires authentication");
+  const catalog=await request(base,{headers:bearer});check(catalog.ok,"Research catalogue available through Next.js");const data=await catalog.json();
+  check(data.persistent===true&&data.azureCalls===0&&data.references===40,"Research uses persistent local storage and no cloud calls");
+  const ids=[];
+  for(const suite of ["DOCUMENTS","RETRIEVAL","SAFETY","NUMERIC"]){
+    const response=await request(base,{method:"POST",headers:{...bearer,"Content-Type":"application/json"},body:JSON.stringify({suite})});
+    check(response.ok,`${suite}: real experiment executes (HTTP ${response.status})`);const run=await response.json();ids.push(run.id);
+    check(run.suite===suite&&run.azureCalls===0&&run.variants.length>0&&run.variants.every(v=>v.rows.length===v.samples),`${suite}: measured rows returned`);
+    check(/^[a-f0-9]{64}$/.test(run.datasetHash)&&/^[a-f0-9]{64}$/.test(run.implementationHash),`${suite}: reproducibility hashes captured`);
+    if(suite==="DOCUMENTS")check(run.variants[1].method==="pdfbox-label-rules"&&run.variants[1].passed>0&&run.variants[1].passed<40,"PDFBox actually extracts readable PDF references and retains failures");
+    if(suite==="RETRIEVAL")check(run.variants.length===3&&run.variants.every(v=>v.samples===12),"Three ranking strategies measured on twelve multilingual queries");
+  }
+  const history=await (await request(base,{headers:bearer})).json();check(ids.every(id=>history.runs.some(run=>run.id===id)),"All four reports remain readable from PostgreSQL");
+  const caseAfter=await (await request(`${web}/api/cases/${caseId}`,{headers:bearer})).json();check(caseAfter.version===caseBefore.version&&JSON.stringify(caseAfter.documents)===JSON.stringify(caseBefore.documents),"Experiments never change case evidence");
+  const unknown=await request(base,{method:"POST",headers:{...bearer,"Content-Type":"application/json"},body:JSON.stringify({suite:"PAYMENT"})});check(unknown.status===400,"Unknown/payment protocol rejected");
+}
+if(process.env.TEST_AZURE_TASKS==='1'){
+  assert.equal(new URL(web).hostname,'localhost','New Azure task verification is local-only');
+  const caseId=process.env.TEST_TASK_CASE||'CR-cdedde66-61b';assert.match(caseId,/^CR-[-a-zA-Z0-9]+$/);
+  const loaded=await request(`${web}/api/cases/${caseId}`,{headers:bearer});check(loaded.ok,'Existing fictional case loaded for new Azure tasks');const item=await loaded.json();
+  for(const taskId of ['review-checklist','terminology','bilingual-summary']){
+    const promptResponse=await request(`${web}/api/cases/${caseId}/trust/prompt`,{method:'POST',headers:{...bearer,'Content-Type':'application/json'},body:JSON.stringify({taskId,locale:'vi',caseVersion:item.version})});
+    check(promptResponse.ok,`${taskId}: controlled prompt route available`);const prompt=await promptResponse.json();check(prompt.automaticSend===false&&prompt.promptVersion==='nova-evidence-2026-10-v3',`${taskId}: draft does not automatically call the model`);
+    const response=await request(`${api}/api/assistant/chat`,{method:'POST',headers:{...bearer,'Content-Type':'application/json'},body:JSON.stringify({caseId,locale:'vi',question:prompt.question,taskId,caseVersion:item.version})});
+    check(response.ok,`${taskId}: real model call succeeds (HTTP ${response.status})`);const answer=await response.json();
+    check(answer.mode.startsWith('azure-')&&answer.answer.length>40&&answer.trust?.humanApproved===false&&answer.trust?.promptVersion==='nova-evidence-2026-10-v3',`${taskId}: keyless Azure answer and independent history recorded`);
+    if(taskId==='bilingual-summary')check(/DE|Deutsch|German|Tiếng Đức|tiếng Đức/.test(answer.answer)&&/VI|Vietnamesisch|Vietnamese|Tiếng Việt|tiếng Việt/.test(answer.answer),'Bilingual output visibly contains both language sections (not an accuracy claim)');
+  }
+}
+if(process.env.TEST_TRUST==='1'){
+  assert.equal(new URL(web).hostname,'localhost','Trust verification is local-only');
+  const created=await request(`${web}/api/cases`,{method:'POST',headers:{...bearer,'Content-Type':'application/json'},body:JSON.stringify({applicant:'Synthetic Nova Trust Verification',coApplicant:'',purpose:'Evidence and human-review workflow test',amountEuro:1000,version:0})});
+  check(created.status===201,'Fictional trust-verification case created');const item=await created.json();
+  const base=`${web}/api/cases/${item.id}/trust`;
+  const send=async(path,body)=>request(base+path,{method:'POST',headers:{...bearer,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const snapshot=await request(base,{headers:bearer});const initial=await snapshot.json();
+  check(snapshot.ok&&initial.persistent&&initial.privacy.readTriggersInference===false&&initial.answers.length===0,'Trust metadata reads do not trigger inference; PostgreSQL is active');
+  for(const taskId of ['summary','reconcile','explain','request-documents']){
+    const r=await send('/prompt',{taskId,locale:'en',caseVersion:item.version});const draft=await r.json();
+    check(r.ok&&draft.automaticSend===false&&draft.question.length<=2000,`${taskId} prepares a draft, not an automatic AI call`);
+  }
+  const response=await request(`${api}/api/assistant/chat`,{method:'POST',headers:{...bearer,'Content-Type':'application/json'},body:JSON.stringify({caseId:item.id,locale:'en',question:'List only the next evidence-review steps for this empty fictional case. State what is unknown, cite sources and make no credit decision.',caseVersion:item.version})});
+  check(response.ok,`Keyless Azure answer available (HTTP ${response.status})`);const result=await response.json();const original=result.trust;
+  check(result.mode.startsWith('azure-')&&original?.id&&original.humanApproved===false&&original.modelId==='gpt-4.1-mini'&&original.durationMs>0,'Real answer records model, sources, timing and human-review boundary');
+  const requestId=randomBytes(16).toString('hex').replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/,'$1-$2-$3-$4-$5');
+  const feedbackBody={answerId:original.id,reason:'UNSUPPORTED_SOURCE',note:'Synthetic test feedback: independently check every factual claim.',requestId,caseVersion:item.version};
+  let r=await send('/feedback',feedbackBody);const feedback=await r.json();check(r.ok,'Feedback saved without rewriting the original answer');
+  r=await send('/feedback',feedbackBody);check(r.ok&&(await r.json()).id===feedback.id,'Feedback retry is idempotent');
+  r=await send('/correction',{answerId:original.id,feedbackId:feedback.id,locale:'en',caseVersion:item.version});const correction=await r.json();
+  check(r.ok&&correction.automaticSend===false&&correction.revisionOf===original.id,'Correction is a user-editable unsent draft');
+  const taskId=randomBytes(16).toString('hex').replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/,'$1-$2-$3-$4-$5');
+  const taskBody={answerId:original.id,title:'Verify Nova evidence — synthetic test',note:'Inspect the source, not a credit decision.',requestId:taskId,caseVersion:item.version};
+  r=await send('/tasks',taskBody);check(r.ok,'Explicitly confirmed reviewer task saved');
+  r=await send('/tasks',taskBody);check(r.ok,'Task retry does not create a duplicate');
+  r=await send(`/tasks/${taskId}`,{action:'CLAIM',note:'',version:0,caseVersion:item.version});check(r.ok&&(await r.json()).state==='IN_REVIEW','Reviewer claims the task');
+  r=await send(`/tasks/${taskId}`,{action:'RESOLVE',note:'Synthetic check: sources inspected; no credit decision.',version:1,caseVersion:item.version});check(r.ok&&(await r.json()).state==='RESOLVED','Reviewer completes evidence check with a note');
+  r=await send(`/tasks/${taskId}`,{action:'REOPEN',note:'Synthetic follow-up verification.',version:2,caseVersion:item.version});check(r.ok&&(await r.json()).state==='OPEN','Resolved task can be reopened');
+  r=await send(`/tasks/${taskId}`,{action:'CLAIM',note:'',version:0,caseVersion:item.version});check(r.status===409,'Stale task cannot overwrite history');
+  r=await send('/features',{featureId:'nova',enabled:false,version:0,caseVersion:item.version,note:'Synthetic test'});check(r.status===403,'Advisor/reviewer cannot disable AI as an admin');
+  const refreshed=await request(base,{headers:bearer});const saved=await refreshed.json();
+  check(saved.answers.length===1&&JSON.stringify(saved.answers[0])===JSON.stringify(original)&&saved.feedback.length===1&&saved.tasks.length===1&&saved.tasks[0].history.length===4,'Original answer, feedback and reviewer history survive a fresh database read');
+  console.log(`Trust verification case: ${item.id}`);
+}
+for(const origin of [api,web]){
+  const response=await request(`${origin}/api/cases/ai-capabilities`,{headers:bearer});
+  const metadata=await response.json();
+  check(response.status===200&&metadata.scope==="configuration-only"&&metadata.automaticInference===false&&typeof metadata.chat.modelId==="string"&&typeof metadata.retrieval.semantic==="boolean","Authenticated AI configuration available without inference at "+new URL(origin).port);
+}
+if(process.env.TEST_REFERENCES==="1"){
+  assert.equal(new URL(web).hostname,"localhost","Private reference verification is local-only");
+  const catalog=await request(`${web}/api/payroll-references`,{headers:bearer});
+  const payload=await catalog.json();
+  check(catalog.status===200&&payload.references.length===2&&payload.references.every(row=>row.available),"Only the two prepared DATEV samples are available");
+  for(const name of ["datev-lodas-2025-robert-muster.pdf","datev-lodas-2025-melanie-muster.pdf"]){
+    const r=await request(`${web}/api/payroll-references?sample=${name}`,{headers:bearer});
+    const bytes=Buffer.from(await r.arrayBuffer());
+    check(r.ok&&r.headers.get("cache-control").includes("no-store")&&createHash("sha256").update(bytes).digest("hex")===createHash("sha256").update(readFileSync(`.local/reference-pdfs/${name}`)).digest("hex"),`Private DATEV original available and byte-identical: ${name}`);
+  }
+  for(const name of ["gehaltsabrechnung-2026-09-muster.pdf","gehaltsabrechnung-2026-10-muster.pdf","gehaltsabrechnung-teilzeit-muster.pdf","synthetic-payroll.pdf"]){
+    check((await request(`${web}/demo/${name}`)).status===404,`Homemade payroll not publicly served: ${name}`);
+  }
+}
 for (const base of [api, web]) {
   const cases = await request(`${base}/api/cases`, { headers: bearer });
   check(
@@ -147,13 +254,16 @@ for (const base of [api, web]) {
     `${base === api ? "Java" : "Next.js proxy"} returns authorized cases`,
   );
   const data = await cases.json();
-  const referenceCase = data.find((item) => item.id === "CR-2026-1048");
   check(
-    data.length > 0 &&
+    Array.isArray(data) &&
       data.every((item) => item.tenantId === claims.tenant_id) &&
-      referenceCase?.documents.length >= 4,
-    "Case and document response belongs to verified tenant",
+      data.every((item) => item.documents.every((document) => document.originalAvailable)),
+    "Case and original-document response belongs to verified tenant",
   );
+}
+if (process.env.TEST_DOCUMENT_AUDIT === "1") {
+  const { auditDocuments } = await import("./test-document-audit.mjs");
+  await auditDocuments({ request, check, bearer, web, api });
 }
 check(
   (
@@ -204,7 +314,7 @@ if(process.env.TEST_PLATFORM==="1"){
     r=await request(base+"/reviews",{method:"POST",headers:{...bearer,"Content-Type":"application/json"},body:JSON.stringify({alertId:alert.id,note:"Synthetic reviewer verified the fixture; no credit or fraud decision."})});
     check(r.status===200,"Reviewer acknowledgement persisted");
   }
-  const bytes=readFileSync("public/demo/gehaltsabrechnung-2026-09-muster.pdf");
+  const bytes=readFileSync("services/credit-api/src/test/resources/legacy-payroll/gehaltsabrechnung-2026-09-muster.pdf");
   const form=new FormData();form.set("file",new Blob([bytes],{type:"application/pdf"}),"synthetic-queued-payroll.pdf");
   r=await request(base+"/jobs",{method:"POST",headers:bearer,body:form});
   check(r.status===202,"Document upload returns 202 without waiting for extraction");
@@ -271,26 +381,18 @@ if (process.env.TEST_BANKING === "1") {
   check(response.status===200,"Case-scoped banking API passes through proxy");
   const initial=await response.json();
   check(initial.synthetic===true&&initial.persistent===true&&initial.tenantId===claims.tenant_id&&initial.accounts.length===3&&initial.transactions.length===11,"PostgreSQL synthetic banking seed is complete and tenant-bound");
-  const requestId=randomBytes(16).toString("hex").replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/,"$1-$2-$3-$4-$5");
-  const draft={accountId:"practice",invoiceId:"INV-EQUIPMENT",requestId,version:initial.version,sourceChecked:true};
-  response=await request(`${base}/payments`,{method:"POST",headers:{...bearer,"Content-Type":"application/json"},body:JSON.stringify(draft)});
-  check(response.status===200,"Advisor prepares a human-checked simulation draft");
-  const prepared=await response.json();
-  check(prepared.transactions.length===11&&prepared.payments.length===1,"Draft does not create a debit");
-  response=await request(`${base}/payments`,{method:"POST",headers:{...bearer,"Content-Type":"application/json"},body:JSON.stringify(draft)});
-  check(response.status===200&&(await response.json()).payments.length===1,"Draft request retry is idempotent");
-  response=await request(`${base}/payments`,{method:"POST",headers:{...bearer,"Content-Type":"application/json"},body:JSON.stringify({...draft,invoiceId:"INV-PAID",requestId:requestId.replace(/.$/,requestId.endsWith("a")?"b":"a"),version:prepared.version})});
-  check(response.status===409,"Already-paid invoice cannot be paid twice");
-  const confirmUrl=`${base}/payments/${prepared.payments[0].id}/confirm`;
-  response=await request(confirmUrl,{method:"POST",headers:{...bearer,"Content-Type":"application/json"},body:JSON.stringify({version:prepared.version,confirmed:false})});
-  check(response.status===422,"Payment requires explicit confirmation");
-  const confirmation={version:prepared.version,confirmed:true};
-  response=await request(confirmUrl,{method:"POST",headers:{...bearer,"Content-Type":"application/json"},body:JSON.stringify(confirmation)});
-  check(response.status===200,"Reviewer confirms a simulated payment");
-  const simulated=await response.json();
-  check(simulated.transactions.length===12&&simulated.payments[0].status==="SIMULATED"&&simulated.events.at(-1).action==="PAYMENT_SIMULATED","Exactly one mock movement and audit entry are persisted");
-  response=await request(confirmUrl,{method:"POST",headers:{...bearer,"Content-Type":"application/json"},body:JSON.stringify(confirmation)});
-  check(response.status===200&&(await response.json()).transactions.length===12,"Confirmation retry cannot double-debit");
+  for(const route of ["/payments","/payments/SIM-legacy/confirm"]){
+    const payload=JSON.stringify({accountId:"practice",invoiceId:"INV-EQUIPMENT",requestId:randomBytes(16).toString("hex"),version:initial.version,sourceChecked:true,confirmed:true});
+    response=await request(base+route,{method:"POST",headers:{...bearer,"Content-Type":"application/json"},body:payload});
+    check(response.status===404,"Next.js refuses retired payment route "+route);
+    response=await request(`${api}/api/cases/${created.id}/banking`+route,{method:"POST",headers:{...bearer,"Content-Type":"application/json"},body:payload});
+    check(response.status===403,"Java rejects payment writes "+route);
+  }
+  response=await request(base,{headers:bearer});
+  const after=await response.json();
+  check(response.status===200&&JSON.stringify(after)===JSON.stringify(initial),"Blocked payment attempts leave the persisted evidence snapshot unchanged");
+  response=await request(`${web}/api/cases/${created.id}/platform/sample-xml`,{headers:bearer});
+  check(response.status===404,"Payment XML template is no longer exposed");
   console.log(`Synthetic banking verification case: ${created.id}`);
 }
 
@@ -308,7 +410,7 @@ if (process.env.TEST_DOCUMENT === "azure") {
   check(createdResponse.status === 201, "Synthetic Docker verification case created");
   const created = await createdResponse.json();
   const form = new FormData();
-  form.set("file", new Blob([readFileSync("public/demo/synthetic-payroll.pdf")], { type: "application/pdf" }), "synthetic-payroll.pdf");
+  form.set("file", new Blob([readFileSync("services/credit-api/src/test/resources/legacy-payroll/synthetic-payroll.pdf")], { type: "application/pdf" }), "synthetic-payroll.pdf");
   form.set("version", String(created.version));
   const upload = await request(`${web}/api/cases/${created.id}/documents`, { method: "POST", headers: bearer, body: form });
   check(upload.status === 200, `Docker Java → Azure synthetic PDF upload (HTTP ${upload.status})`);
@@ -326,8 +428,8 @@ if(process.env.TEST_PAYROLL==="1") {
   let item=await createdResponse.json();payrollCaseId=item.id;
   for(const [file,expected] of [["gehaltsabrechnung-2026-09-muster.pdf","6240 EUR"],["gehaltsabrechnung-2026-10-muster.pdf","6380 EUR"],["gehaltsabrechnung-teilzeit-muster.pdf","3200 EUR"]]) {
     const sampleResponse=await request(`${web}/demo/${file}`);
-    check(sampleResponse.status===200,`Deployed sample PDF available: ${file}`);
-    const bytes=Buffer.from(await sampleResponse.arrayBuffer());
+    check(sampleResponse.status===404,`Legacy test PDF is not publicly served: ${file}`);
+    const bytes=readFileSync(`services/credit-api/src/test/resources/legacy-payroll/${file}`);
     check(bytes.subarray(0,4).toString()==="%PDF","Sample is a real PDF, not placeholder text");
     const form=new FormData();form.set("file",new Blob([bytes],{type:"application/pdf"}),file);form.set("version",String(item.version));
     const upload=await request(`${web}/api/cases/${item.id}/documents`,{method:"POST",headers:bearer,body:form});
@@ -400,6 +502,7 @@ if (process.env.TEST_WRITE === "1") {
   });
   check(createdResponse.status === 201, "Persistent case can be created");
   const created = await createdResponse.json();
+  if(process.env.TEST_LOCAL_AI_UNAVAILABLE === "1") chatBody.caseId = created.id;
   const form = new FormData();
   form.set(
     "file",
@@ -492,6 +595,10 @@ check(
   ).status === 401,
   "Chat requires an authorized case session",
 );
+if (process.env.TEST_LOCAL_AI_UNAVAILABLE === "1") {
+  const chat = await request(`${web}/api/chat`, {method:"POST",headers:{...bearer,"Content-Type":"application/json"},body:JSON.stringify(chatBody)});
+  check(chat.status === 503, "Unconfigured Azure fails explicitly instead of returning a financial demo answer");
+}
 if (process.env.TEST_CHAT) {
   const chat = await request(`${web}/api/chat`, {
     method: "POST",
@@ -529,7 +636,7 @@ if (process.env.TEST_CHAT) {
   }
   if(chatScenario==="banking") {
     const answer=events.filter(e=>e.type==="text-delta").map(e=>e.delta).join("");
-    check(/32[.,\s]?071/.test(answer),"Azure bank assistant reads the updated simulated practice balance");
+    check(/34[.,\s]?551/.test(answer),"Azure assistant reads the read-only sample statement balance");
     check(events.some(e=>e.type==="source-document"&&e.sourceId==="bank-accounts"),"Bank assistant returns tenant-scoped account sources");
   }
 }
@@ -576,4 +683,4 @@ check(
   (await exchange(tokenForm)).status === 400,
   "Authorization code cannot be reused",
 );
-console.log("OAuth integration passed. No tokens or passwords were printed.");
+console.log(`OAuth integration passed: ${checks} checks. No tokens or passwords were printed.`);

@@ -1,0 +1,2 @@
+# PDF cross-reference offsets must remain byte-identical; never normalize as text.
+*.pdf binary

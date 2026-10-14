@@ -1,5 +1,6 @@
 import type { UIMessage } from "ai";
 import { z } from "zod";
+import {novaTaskSchema} from './nova-trust';
 import { demoCase, knowledge } from "./credit-data";
 import type { WorkspaceCase } from "./credit-api";
 export function messageText(message:UIMessage) { return message.parts.filter(p=>p.type==="text").map(p=>p.text).join("").trim(); }
@@ -18,6 +19,8 @@ const part=z.union([z.object({type:z.literal("text"),text:z.string().max(2000)})
 export const conversationSchema=z.object({
   caseId:z.string().regex(/^[-a-zA-Z0-9]{1,80}$/),locale:z.enum(["en","de","vi"]),
   messages:z.array(z.object({id:z.string().max(100),role:z.enum(["user","assistant"]),parts:z.array(part).max(15)})).min(1).max(20),
+  revisionOf:z.string().regex(/^[-a-zA-Z0-9]{1,80}$/).optional(),feedbackId:z.uuid().optional(),
+  taskId:novaTaskSchema.optional(),caseVersion:z.number().int().nonnegative().optional(),
 });
 export type Source={id:string;title:string;text:string};
 function terms(text:string):string[] { return Array.from(text.normalize("NFKD").replace(/\p{M}/gu,"").toLowerCase().matchAll(/[\p{L}\p{N}]{3,}/gu),match=>match[0]); }

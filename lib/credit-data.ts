@@ -20,19 +20,21 @@ export const demoCase = {
   coApplicant: "Jonas Hoffmann",
   purpose: "Praxisübernahme",
   amount: "€ 480.000",
-  progress: 78,
+  progress: 0,
   status: "Human review",
   submittedAt: "08.10.2026 · 14:32",
   documents: [
     {
       id: "doc-1",
-      name: "Gehaltsabrechnung_09-2026.pdf",
+      name: "datev-lodas-2025-robert-muster.pdf",
       type: "Einkommensnachweis",
-      status: "verified",
-      confidence: 97,
+      status: "review",
+      confidence: null,
+      analysisProvider: "datev-reference-values",
+      originalAvailable: false,
       fields: [
-        { label: "Nettoeinkommen", value: "€ 6.240", confidence: 98 },
-        { label: "Arbeitgeber", value: "Klinikum Rhein", confidence: 96 },
+        { label: "netIncome", value: "2.967,11 EUR", confidence: null },
+        { label: "payoutAmount", value: "2.882,11 EUR", confidence: null },
       ],
     },
     {

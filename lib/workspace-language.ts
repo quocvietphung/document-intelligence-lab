@@ -1,7 +1,10 @@
 const en={
+  serviceUnavailable:"The backend is unavailable. Your data has not been deleted. If the Azure VM is stopped, start it and wait for the services to be ready; for local use, check Docker Desktop. Then refresh.",
+  sessionExpired:"Your session has expired. Sign in again to access this case.",
+  accessDenied:"Your account does not have permission for this action. Contact the lab operator; do not retry with a different tenant.",
   labWrites:"Authorized lab edits are enabled. Only synthetic records are allowed; no real banking operations.",
   payoutAmount:"Payout amount",
-  uploadSample:"Upload sample payroll",
+  uploadSample:"Open DATEV library",
   uploadHintAzure:"Azure Document Intelligence · PDF (max {pages} pages), PNG/JPEG (max 6 MP) · max 3 MB. Synthetic files only.",fileRejected:"Document rejected. Check the supported formats, page limit and file size shown above.",
   overview:"Overview",documents:"Documents & review",evaluation:"Quality evaluation",audit:"Activity log",workspace:"Credit workspace",lab:"Independent engineering lab",notice:"Synthetic data only. Not a bank product, financial advice or a credit decision.",
   welcome:"Evidence before decisions.",subtitle:"Organize cases, inspect source documents and keep a human in control.",cases:"Cases",newCase:"New case",editCase:"Edit draft",selectCase:"Select a case",applicant:"Applicant",purpose:"Purpose",amount:"Requested amount (€)",coApplicant:"Co-applicant",save:"Save draft",cancel:"Cancel",close:"Close",signIn:"Sign in",signOut:"Sign out",loading:"Loading…",refresh:"Refresh",search:"Search cases",noCases:"No cases match your search.",noSession:"Sign in to access your tenant’s cases.",publicLogin:"Use the private lab credentials provided by the operator. Local example credentials are not valid on the cloud deployment. Synthetic data only.",
@@ -12,9 +15,12 @@ const en={
   evaluationTitle:"Measured tests, honest limits.",evaluationHint:"Results of a deterministic extraction benchmark on synthetic labelled text. Not Azure LLM accuracy, not an independent OCR benchmark.",references:"Reference documents",classification:"Document type exact match",fields:"Field exact match",run:"Benchmark run",notMeasured:"Azure answer quality and scanned-image OCR accuracy have not been measured on a representative dataset.",dataset:"The 20 reference records, expected values and test are versioned in the repository.",security:"Verified tenant & role isolation",saved:"Saved successfully",language:"Language",readonly:"Sign in with an authorized lab account to save synthetic records through the Java API.",
 };
 const de:typeof en={
+  serviceUnavailable:"Das Backend ist nicht erreichbar. Deine Daten wurden nicht gelöscht. Ist die Azure-VM gestoppt, starte sie und warte auf die Dienste; lokal prüfe Docker Desktop. Danach aktualisieren.",
+  sessionExpired:"Deine Sitzung ist abgelaufen. Melde dich erneut an, um diesen Vorgang zu öffnen.",
+  accessDenied:"Dein Konto ist für diese Aktion nicht berechtigt. Wende dich an die betreibende Person; nicht mit einem anderen Mandanten wiederholen.",
   labWrites:"Autorisierte Änderungen im Lab sind möglich. Nur synthetische Daten; keine echten Bankvorgänge.",
   payoutAmount:"Auszahlungsbetrag",
-  uploadSample:"Muster-Gehaltsabrechnung hochladen",
+  uploadSample:"DATEV-Bibliothek öffnen",
   uploadHintAzure:"Azure Document Intelligence · PDF (max. {pages} Seiten), PNG/JPEG (max. 6 MP) · max. 3 MB. Nur synthetische Dateien.",fileRejected:"Dokument abgelehnt. Prüfe die angegebenen Dateiformate, Seitenlimits und Dateigröße.",
   overview:"Übersicht",documents:"Dokumente & Prüfung",evaluation:"Qualitätsbewertung",audit:"Aktivitätsprotokoll",workspace:"Kredit-Arbeitsbereich",lab:"Unabhängiges Engineering-Lab",notice:"Nur synthetische Daten. Kein Bankprodukt, keine Finanzberatung und keine Kreditentscheidung.",
   welcome:"Belege vor Entscheidungen.",subtitle:"Vorgänge organisieren, Originalbelege prüfen und die menschliche Kontrolle behalten.",cases:"Vorgänge",newCase:"Neuer Vorgang",editCase:"Entwurf bearbeiten",selectCase:"Vorgang auswählen",applicant:"Antragstellende Person",purpose:"Verwendungszweck",amount:"Beantragter Betrag (€)",coApplicant:"Mitantragstellende Person",save:"Entwurf speichern",cancel:"Abbrechen",close:"Schließen",signIn:"Anmelden",signOut:"Abmelden",loading:"Wird geladen…",refresh:"Aktualisieren",search:"Vorgänge suchen",noCases:"Keine passenden Vorgänge gefunden.",noSession:"Melde dich an, um die Vorgänge deines Mandanten zu öffnen.",publicLogin:"Verwende die privaten Lab-Zugangsdaten der betreibenden Person. Lokale Beispielpasswörter gelten nicht für die Cloud. Nur synthetische Daten verwenden.",
@@ -25,9 +31,12 @@ const de:typeof en={
   evaluationTitle:"Gemessene Tests, klare Grenzen.",evaluationHint:"Deterministischer Extraktionsbenchmark auf synthetischen, beschrifteten Texten. Keine Azure-LLM-Genauigkeit und kein unabhängiger OCR-Benchmark.",references:"Referenzdokumente",classification:"Dokumenttyp: exakte Übereinstimmung",fields:"Felder: exakte Übereinstimmung",run:"Benchmark-Lauf",notMeasured:"Azure-Antwortqualität und OCR-Genauigkeit auf gescannten Bildern sind noch nicht mit einem repräsentativen Datensatz gemessen.",dataset:"Die 20 Referenzdatensätze, Sollwerte und Tests sind im Repository versioniert.",security:"Geprüfte Mandanten- und Rollentrennung",saved:"Erfolgreich gespeichert",language:"Sprache",readonly:"Melde dich mit einem berechtigten Lab-Konto an, um synthetische Datensätze über die Java-API zu speichern.",
 };
 const vi:typeof en={
+  serviceUnavailable:"Không kết nối được backend. Dữ liệu chưa bị xóa. Nếu VM Azure đang tắt, hãy bật và chờ các dịch vụ sẵn sàng; nếu dùng local, kiểm tra Docker Desktop. Sau đó bấm Tải lại.",
+  sessionExpired:"Phiên đăng nhập đã hết hạn. Đăng nhập lại để mở hồ sơ này.",
+  accessDenied:"Tài khoản của bạn không có quyền thực hiện thao tác này. Liên hệ người quản trị lab; không thử chuyển sang tổ chức khác.",
   labWrites:"Có thể sửa dữ liệu lab theo quyền được cấp. Chỉ dùng hồ sơ giả lập; không thực hiện giao dịch ngân hàng thật.",
   payoutAmount:"Khoản thực chi",
-  uploadSample:"Tải bảng lương mẫu",
+  uploadSample:"Mở thư viện DATEV",
   uploadHintAzure:"Azure Document Intelligence · PDF (tối đa {pages} trang), PNG/JPEG (tối đa 6 MP) · tối đa 3 MB. Chỉ dùng tệp giả lập.",fileRejected:"Tài liệu bị từ chối. Kiểm tra định dạng, số trang và kích thước tệp theo giới hạn phía trên.",
   overview:"Tổng quan",documents:"Tài liệu & kiểm duyệt",evaluation:"Đánh giá chất lượng",audit:"Nhật ký hoạt động",workspace:"Không gian hồ sơ tín dụng",lab:"Phòng thực hành kỹ thuật độc lập",notice:"Chỉ dùng dữ liệu giả lập. Không phải sản phẩm ngân hàng, tư vấn tài chính hay quyết định cấp tín dụng.",
   welcome:"Kiểm chứng trước, quyết định sau.",subtitle:"Quản lý hồ sơ, kiểm tra chứng cứ và giữ con người ở vị trí kiểm soát.",cases:"Hồ sơ",newCase:"Tạo hồ sơ",editCase:"Sửa bản nháp",selectCase:"Chọn hồ sơ",applicant:"Người nộp hồ sơ",purpose:"Mục đích",amount:"Số tiền đề nghị (€)",coApplicant:"Người đồng nộp hồ sơ",save:"Lưu bản nháp",cancel:"Hủy",close:"Đóng",signIn:"Đăng nhập",signOut:"Đăng xuất",loading:"Đang tải…",refresh:"Tải lại",search:"Tìm hồ sơ",noCases:"Không có hồ sơ phù hợp.",noSession:"Đăng nhập để xem hồ sơ thuộc tổ chức của bạn.",publicLogin:"Dùng thông tin đăng nhập lab riêng do người quản trị cung cấp. Mật khẩu mẫu local không dùng được trên bản cloud. Chỉ dùng dữ liệu giả lập.",

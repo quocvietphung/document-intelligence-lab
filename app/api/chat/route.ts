@@ -3,6 +3,7 @@ import { conversationSchema,messageText } from "@/lib/credit-chat";
 import { boundedBody } from "@/lib/request-body";
 import { hasAllowedOrigin } from "@/lib/request-origin";
 import {novaLimit} from "@/lib/nova-limits";
+import {trustAnswerSchema} from "@/lib/nova-trust";
 export const runtime="nodejs";
 export const maxDuration=60;
 export async function POST(request:Request) {
@@ -21,7 +22,7 @@ export async function POST(request:Request) {
     if(!latest || !messageText(latest)) return Response.json({error:"Question required"},{status:400});
     const response=await fetch(`${root.replace(/\/$/,"")}/api/assistant/chat`,{
       method:"POST",headers:{Authorization:authorization,"Content-Type":"application/json"},
-      body:JSON.stringify({caseId:body.caseId,locale:body.locale,question:messageText(latest)}),
+      body:JSON.stringify({caseId:body.caseId,locale:body.locale,question:messageText(latest),revisionOf:body.revisionOf,feedbackId:body.feedbackId,taskId:body.taskId,caseVersion:body.caseVersion}),
       cache:"no-store",signal:AbortSignal.any([request.signal,AbortSignal.timeout(45_000)]),
     });
     if(!response.ok) {
@@ -33,12 +34,14 @@ export async function POST(request:Request) {
         if(seconds&&/^\d{1,5}$/.test(seconds)&&Number(seconds)>0&&Number(seconds)<=86400)headers["Retry-After"]=seconds;
         return Response.json({error:"Usage limit reached",...limit},{status:429,headers});
       }
-      return Response.json({error:"AI assistant unavailable"},{status:[400,401,403,404].includes(response.status)?response.status:503});
+      return Response.json({error:"AI assistant unavailable"},{status:[400,401,403,404,409].includes(response.status)?response.status:503});
     }
-    const result=await response.json() as {answer:string;mode:string;sources:{id:string;title:string}[]};
+    const result=await response.json() as {answer:string;mode:string;sources:{id:string;title:string}[];trust?:unknown};
     if(typeof result.answer!=="string"||!Array.isArray(result.sources)) throw new Error("Invalid assistant response");
+    const trust=trustAnswerSchema.safeParse(result.trust);
     const stream=createUIMessageStream<UIMessage>({execute:async({writer})=>{
       writer.write({type:"start"});
+      if(trust.success)writer.write({type:"data-nova-trust",data:trust.data});
       for(const source of result.sources) writer.write({type:"source-document",sourceId:source.id,mediaType:"text/plain",title:source.title});
       const id=crypto.randomUUID(); writer.write({type:"text-start",id});
       writer.write({type:"text-delta",id,delta:result.answer});

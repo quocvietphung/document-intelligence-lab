@@ -8,7 +8,7 @@ const normalize=(text:string)=>text.normalize("NFKD").replace(/\p{M}/gu,"").toLo
 export function novaFeature(id:WorkspaceTab,locale:string){const row=catalog.find(f=>f.id===id)!;return locale==="de"?row.de:locale==="vi"?row.vi:row.en;}
 export function workspaceTarget(hash:string):WorkspaceTab|undefined{const id=hash.replace(/^#/,"");return workspaceTabs.find(tab=>tab===id);}
 export function featureHref(locale:string,id:WorkspaceTab){return `/${["en","de","vi"].includes(locale)?locale:"en"}#${id}`;}
-export function novaGuideFor(question:string,current?:WorkspaceTab):NovaGuide|undefined {
+export function novaGuideFor(question:string,current?:WorkspaceTab,fallbackAll=false):NovaGuide|undefined {
   const q=normalize(question);
   // User-authored requests only. Document/provider text is never interpreted as an action.
   if(/ignore.*instruction|reveal.*secret|system prompt|bo qua.*huong dan|javascript:/.test(q))return;
@@ -19,6 +19,7 @@ export function novaGuideFor(question:string,current?:WorkspaceTab):NovaGuide|un
   const help=/what.*(can|does|is|feature)|how.*(use|open|upload)|show|open|where|guide|help|features|search|co.*gi|cach|huong dan|o dau|chuc nang|mo |dieu huong|tim |was.*(kann|ist|gibt)|wie|offne|funktion|zeig|suchen/.test(q);
   if(ids.length&&help)return {features:ids,query:question};
   if(/all.*features|app.*(can|features)|tat ca.*chuc nang|app.*co.*gi|ung dung.*co.*gi|alle.*funktion/.test(q))return {features:[...workspaceTabs],query:question};
+  if(fallbackAll)return {features:[...workspaceTabs],query:question};
 }
 export function novaGuideIntro(locale:string){return locale==="vi"?"Mình hướng dẫn bạn nhé. Đây là các chức năng thực sự có trong app. Bạn có thể mở mục tương ứng hoặc dùng công cụ chỉ đọc ngay bên dưới; mình không tự thay đổi hồ sơ.":locale==="de"?"Gern helfe ich dir! Das sind die tatsächlich vorhandenen Funktionen. Öffne den Bereich oder nutze unten ein lesendes Werkzeug. Ich ändere keine Vorgänge automatisch.":"Happy to help! These are the app's actual features. Open a section or use a read-only tool below. I do not automatically change case data.";}
 export const guideLabels={

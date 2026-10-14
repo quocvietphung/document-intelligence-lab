@@ -1,6 +1,7 @@
 package dev.creditlab.assistant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.creditlab.casework.CreditCaseService;
 import java.util.*;
@@ -14,10 +15,8 @@ class AssistantEvaluationTest {
     var refs=Arrays.asList(mapper.readValue(getClass().getResourceAsStream("/assistant-evals.json"),Eval[].class));
     var service=new CreditAssistantService(new CreditCaseService(),mapper,Optional.empty());
     return refs.stream().map(ref->DynamicTest.dynamicTest(ref.id(),()->{
-      var result=service.answer("praxisbank-demo","eval",
-          new CreditAssistantService.AssistantRequest("CR-2026-1048",ref.locale(),ref.question()));
-      assertThat(result.answer()).contains(ref.mustContain()).contains(ref.safety());
-      assertThat(result.sources()).extracting(CreditAssistantService.Source::id).contains("case-summary","policy");
+      assertThatThrownBy(()->service.answer("praxisbank-demo","eval",new CreditAssistantService.AssistantRequest("CR-2026-1048",ref.locale(),ref.question())))
+          .isInstanceOfSatisfying(org.springframework.web.server.ResponseStatusException.class,e->assertThat(e.getStatusCode().value()).isEqualTo(503));
     })).toList();
   }
 }

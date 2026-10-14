@@ -20,19 +20,22 @@ export async function proxyCase(request: Request, segments: string[] = []) {
   const path = segments.join("/");
   if (
     path && path !== "document-analysis/status" &&
-    !/^[-\w]+(?:\/documents(?:\/[-\w]+\/(?:original|review))?|\/banking(?:\/payments(?:\/[-\w]+\/confirm)?)?|\/platform(?:\/(?:search|evaluate|jobs|reviews|sample-xml))?)?$/.test(path)
+    !/^[-\w]+(?:\/documents(?:\/[-\w]+\/(?:original|review))?|\/banking|\/trust(?:\/(?:feedback|correction|prompt|features|tasks(?:\/[-\w]+)?))?|\/platform(?:\/(?:search|evaluate|experiments|jobs(?:\/[-\w]+\/retry)?|reviews))?)?$/.test(path)
   ) {
     return Response.json({ error: "Not found" }, { status: 404 });
   }
-  if (path === "document-analysis/status" && request.method !== "GET") {
+  if (["document-analysis/status","ai-capabilities"].includes(path) && request.method !== "GET") {
     return Response.json({ error: "Method not allowed" }, { status: 405 });
   }
   if (/\/banking(?:\/|$)/.test(path)) {
-    const allowed = path.endsWith("/banking") ? "GET" : "POST";
-    if (request.method !== allowed) return Response.json({ error: "Method not allowed" }, { status: 405 });
+    if (request.method !== "GET") return Response.json({ error: "Method not allowed" }, { status: 405 });
   }
   if (/\/platform(?:\/|$)/.test(path)) {
-    const allowed=path.endsWith('/platform')||path.endsWith('/sample-xml')?'GET':'POST';
+    const allowed=path.endsWith('/platform/experiments')?['GET','POST']:[path.endsWith('/platform')?'GET':'POST'];
+    if(!allowed.includes(request.method))return Response.json({error:'Method not allowed'},{status:405});
+  }
+  if (/\/trust(?:\/|$)/.test(path)) {
+    const allowed=path.endsWith('/trust')?'GET':'POST';
     if(request.method!==allowed)return Response.json({error:'Method not allowed'},{status:405});
   }
   if (!hasAllowedOrigin(request)) {

@@ -11,9 +11,19 @@ describe("document samples and translations",()=>{
   it("preserves three bounded synthetic regression PDFs (not DATEV)",()=>{
     expect(syntheticPayrollFixtures).toHaveLength(3);
     for(const sample of syntheticPayrollFixtures) {
-      const bytes=readFileSync(`public/demo/${sample.file}`);
+      const bytes=readFileSync(`services/credit-api/src/test/resources/legacy-payroll/${sample.file}`);
       expect(bytes.subarray(0,4).toString()).toBe("%PDF");expect(bytes.length).toBeLessThan(3_000_000);
       expect(documentLanguageTables.en[sample.id]).toBeTruthy();
+    }
+  });
+  it("offers only official DATEV reference names in the public demo, with no original or fake OCR",async()=>{
+    const {publicDemoCase}=await import("./public-demo");
+    const {datevReference}=await import("./datev-reference");
+    for(const doc of publicDemoCase.documents.filter(doc=>doc.type==="income")) {
+      expect(datevReference(doc.name)).toBeDefined();
+      expect(doc.analysisProvider).toBe("datev-reference-values");
+      expect(doc.originalAvailable).toBe(false);
+      expect(doc.fields?.some(field=>field.label==="payoutAmount")).toBe(true);
     }
   });
 });

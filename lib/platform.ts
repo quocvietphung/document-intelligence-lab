@@ -1,4 +1,5 @@
 import {z} from "zod";
+import approvedDatevHashes from "@/services/credit-api/src/main/resources/datev-reference-hashes.json";
 const record=z.record(z.string(),z.unknown());
 const metrics=z.object({precision:z.number(),recall:z.number(),f1:z.number(),truePositive:z.number(),falsePositive:z.number(),falseNegative:z.number()});
 export const evaluationSchema=metrics.extend({id:z.string(),createdAt:z.string(),version:z.string(),scope:z.string(),references:z.number(),classification:z.number(),recallAt5:z.number(),injectionQuarantined:z.number(),fields:z.array(metrics.extend({field:z.string()})),rows:z.array(z.object({id:z.string(),scenario:z.string(),typeCorrect:z.boolean(),misses:z.array(z.string()),quarantined:z.boolean(),expected:record,actual:record})),confusion:z.record(z.string(),z.number())});
@@ -13,7 +14,7 @@ export const platformSchema=z.object({
   runs:z.array(z.object({id:z.string(),time:z.string(),mode:z.string(),specialist:z.string(),steps:z.array(step),quality:z.object({validCitations:z.array(z.string()),invalidCitations:z.array(z.string()),lexicalSupport:z.number(),requiresReview:z.boolean(),method:z.string()}),durationMs:z.number(),sources:z.array(z.string())})),
   reviews:z.array(z.object({id:z.string(),alertId:z.string().optional(),note:z.string(),actor:z.string(),time:z.string(),state:z.string(),caseVersion:z.number()})),
   agents:z.array(z.object({name:z.string(),tools:z.array(z.string())})),
-  banking:z.object({synthetic:z.literal(true),balanced:z.boolean(),debitCents:z.number(),creditCents:z.number(),adapter:z.string(),ledger:z.array(z.object({id:z.string(),date:z.string(),debit:z.string(),credit:z.string(),amountCents:z.number(),reference:z.string()})),
+  banking:z.object({synthetic:z.boolean(),balanced:z.boolean(),debitCents:z.number(),creditCents:z.number(),adapter:z.string(),ledger:z.array(z.object({id:z.string(),date:z.string(),debit:z.string(),credit:z.string(),amountCents:z.number(),reference:z.string()})),
     alerts:z.array(z.object({id:z.string(),code:z.string(),severity:z.string(),source:z.string(),detail:z.string(),humanReview:z.boolean()})),
     reconciliation:z.array(z.object({documentId:z.string(),field:z.string(),value:z.string(),page:z.number(),transactionIds:z.array(z.string()),state:z.string(),note:z.string()})),
     categories:z.array(z.object({id:z.string(),counterparty:z.string(),amountCents:z.number(),category:z.string(),method:z.string()}))}),
@@ -22,6 +23,19 @@ export type PlatformData=z.infer<typeof platformSchema>;
 export type SearchData=z.infer<typeof searchSchema>;
 export type EvaluationData=z.infer<typeof evaluationSchema>;
 export type PlatformView="studio"|"pipeline"|"controls"|"operations"|"evaluation";
+export function currentEvidenceSearch(snapshot:{version:number;data:SearchData}|undefined,version:number){return snapshot?.version===version?snapshot.data:undefined;}
 export function percent(value:number){return `${value.toFixed(1)}%`;}
 export function pipelineStage(job:{status:string;stage:string;reviewStatus?:string|null}){return job.status==="COMPLETE"&&job.reviewStatus==="verified"?"reviewComplete":job.stage;}
 export function noticeIsVisible(noticeView:PlatformView,view:PlatformView){return noticeView===view;}
+const recoverableJobErrors=new Set(["AZURE_AUTH_UNAVAILABLE","AZURE_ACCESS_DENIED","AZURE_SERVICE_UNAVAILABLE","ANALYSIS_HTTP_503","ANALYSIS_HTTP_429","PROCESSING_UNAVAILABLE"]);
+export function canRetryDocumentJob(job:{name:string;sha256:string;status:string;error_code:string|null;expiresAt:string},now=Date.now()){
+  const digest=approvedDatevHashes[job.name as keyof typeof approvedDatevHashes];
+  return !!digest&&digest===job.sha256&&job.status==="FAILED"&&recoverableJobErrors.has(job.error_code||"")&&Date.parse(job.expiresAt)>now;
+}
+export function documentJobErrorKey(code:string){
+  if(code==="AZURE_AUTH_UNAVAILABLE")return "azureAuthUnavailable";
+  if(code==="AZURE_ACCESS_DENIED")return "azureAccessDenied";
+  if(code==="ANALYSIS_HTTP_429")return "azureQuotaBusy";
+  if(code==="MALWARE_BLOCKED"||code==="ACTIVE_CONTENT_BLOCKED"||code==="INJECTION_QUARANTINED")return "documentBlocked";
+  return "analysisUnavailable";
+}
