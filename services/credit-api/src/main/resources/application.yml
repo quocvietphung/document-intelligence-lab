@@ -69,5 +69,9 @@ management.metrics.tags.application: credit-api
 management.health.redis.enabled: ${REDIS_LIMITS_ENABLED:false}
 spring.data.redis.repositories.enabled: false
 management.tracing.enabled: ${OTEL_ENABLED:false}
+management.tracing.export.enabled: ${OTEL_ENABLED:false}
 management.tracing.sampling.probability: 1.0
-management.otlp.tracing.endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+management.opentelemetry.tracing.export.otlp.endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+# Only traces are configured in this lab collector; do not send logs or metrics implicitly.
+management.otlp.metrics.export.enabled: false
+management.logging.export.otlp.enabled: false
