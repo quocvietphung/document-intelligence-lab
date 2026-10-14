@@ -46,7 +46,7 @@ public class CreditAssistantService {
     if(limits!=null)limits.reserve(tenant,actor,"chat",cases.quotaPolicy().requestsPerMinute());
     var retrieval=platform==null?null:platform.retrieve(item,question);
     List<Source> sources=sources(question,item);
-    if(retrieval!=null){var context=new ArrayList<>(retrieval.hits().stream().map(h->new Source(h.id(),h.title(),h.text())).toList());for(var s:sources)if((s.id().equals("case-summary")||s.id().equals("policy"))&&context.stream().noneMatch(c->c.id().equals(s.id())))context.add(s);sources=List.copyOf(context);}
+    if(retrieval!=null){var context=new ArrayList<>(retrieval.hits().stream().map(h->new Source(h.id(),h.title(),h.text())).toList());for(var s:SelectedFieldEvidence.sources(item,question,retrieval.hits()))if(context.stream().noneMatch(c->c.id().equals(s.id())))context.add(s);for(var s:sources)if((s.id().equals("case-summary")||s.id().equals("policy"))&&context.stream().noneMatch(c->c.id().equals(s.id())))context.add(s);sources=List.copyOf(context);}
     if(question.toLowerCase(Locale.ROOT).matches("(?s).*(software|interface|app feature|app section|oberfläche|ansichten|funktion|giao diện|chức năng|mục này).*")){
       var context=new ArrayList<>(sources);context.add(new Source("app-guide","Application guide",new AppGuideTools(request.locale()).appFeatures()));sources=List.copyOf(context);
     }

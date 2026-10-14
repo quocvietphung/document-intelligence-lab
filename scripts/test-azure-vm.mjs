@@ -43,7 +43,9 @@ r=await request(root+'/api/cases',{headers:bearer});check(r.status===200&&Array.
 r=await request(root+'/api/cases',{method:'POST',headers:{...bearer,'Content-Type':'application/json'},body:JSON.stringify({applicant:'Synthetic Azure VM Verification',coApplicant:'',purpose:'Generated lab evidence only',amountEuro:10000,version:0})});
 check(r.status===201,'New synthetic case persisted');
 let item=await r.json();const caseId=item.id,base=root+'/api/cases/'+caseId+'/platform';
-for(const suffix of ['', '/documents/not-a-document/original','/platform','/banking','/research','/trust']){
+// Document research reads the authorized case; the optional fixture route is
+// /platform/experiments. There is no /research API to expose through the proxy.
+for(const suffix of ['', '/documents/not-a-document/original','/platform','/banking','/platform/experiments','/trust']){
   for(const headers of [{},{Authorization:'Bearer invalid'}]){r=await request(root+'/api/cases/'+caseId+suffix,{headers});check(r.status===401,'Protected data rejects missing/invalid Bearer: '+(suffix||'case'));}
 }
 for(const suffix of ['/platform/search','/platform/jobs','/trust/prompt','/documents/not-a-document/review']){
