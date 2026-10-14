@@ -28,6 +28,7 @@ public class RagEngine {
     factory.setReadTimeout(java.time.Duration.ofSeconds(4));return factory;
   }
   private final RestClient client=RestClient.builder().requestFactory(requestFactory()).build();
+  private final com.fasterxml.jackson.databind.ObjectMapper vectorJson=new com.fasterxml.jackson.databind.ObjectMapper();
   private final Map<String,float[]> cache=new ConcurrentHashMap<>();
   private final Map<String,String> versions=new ConcurrentHashMap<>();
   private volatile AllMiniLmL6V2QuantizedEmbeddingModel model;
@@ -83,10 +84,11 @@ public class RagEngine {
     if(indexCase&&!qdrant.isBlank()) {
       try {
         ensureCollection();sync(item,safe);
-        var response=client.post().uri(qdrant+"/collections/credit_lab_v1/points/search").body(Map.of("vector",query,"limit",24,"with_payload",true,"filter",filter(item))).retrieve().body(com.fasterxml.jackson.databind.JsonNode.class);
+        String json=client.post().uri(qdrant+"/collections/credit_lab_v1/points/search").body(Map.of("vector",query,"limit",24,"with_payload",true,"filter",filter(item))).retrieve().body(String.class);
+        var response=json==null?null:vectorJson.readTree(json);
         if(response!=null) for(var point:response.path("result"))scores.put(point.path("payload").path("chunkId").asText(),point.path("score").asDouble());
         backend="qdrant";
-      } catch(RuntimeException e) {backend="local-vector-fallback";}
+      } catch(java.io.IOException | RuntimeException e) {backend="local-vector-fallback";}
     }
     Set<String> terms=EvidenceGuard.terms(question);double average=safe.stream().mapToInt(c->EvidenceGuard.terms(c.text()).size()).average().orElse(1);
     var hits=new ArrayList<Hit>();
