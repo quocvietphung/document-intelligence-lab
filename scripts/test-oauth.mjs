@@ -146,6 +146,13 @@ check(
   "Access token has API audience, tenant and advisor role",
 );
 const bearer = { Authorization: `Bearer ${tokens.access_token}` };
+if(process.env.TEST_MULTIDOMAIN==='1') {
+  const {auditDomains}=await import('./test-multidomain.mjs');
+  await auditDomains({request,check,bearer,web,api});
+  const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
+  check(ended.status===204,'Multi-domain acceptance session logged out');
+  console.log(`${checks} multi-domain acceptance checks passed.`);process.exit(0);
+}
 if(process.env.TEST_DOCUMENT_FOCUS==="1"){
   const caseId=process.env.TEST_AUDIT_CASE||"CR-80ee7bb3-b39",base=`${web}/api/cases/${caseId}`;
   const response=await request(base,{headers:bearer});check(response.ok,"Document case available through authenticated web");
@@ -503,14 +510,18 @@ if (process.env.TEST_WRITE === "1") {
   check(createdResponse.status === 201, "Persistent case can be created");
   const created = await createdResponse.json();
   if(process.env.TEST_LOCAL_AI_UNAVAILABLE === "1") chatBody.caseId = created.id;
+  const analysisStatus=await request(`${web}/api/cases/document-analysis/status`,{headers:bearer});
+  check(analysisStatus.ok,'Document provider status available for profile-aware upload test');
+  const cloud=(await analysisStatus.json()).mode!=='local';
+  const sampleBytes=cloud?readFileSync('public/samples/invoice-fictional.pdf'):Buffer.from("Kontoauszug\nMonatliche Rate: 777 EUR\nKontostand: 12000 EUR");
   const form = new FormData();
   form.set(
     "file",
     new Blob(
-      ["Kontoauszug\nMonatliche Rate: 777 EUR\nKontostand: 12000 EUR"],
-      { type: "text/plain" },
+      [sampleBytes],
+      { type: cloud?'application/pdf':"text/plain" },
     ),
-    "synthetic-statement.txt",
+    cloud?'invoice-fictional.pdf':"synthetic-statement.txt",
   );
   form.set("version", String(created.version));
   const uploadResponse = await request(
@@ -525,8 +536,7 @@ if (process.env.TEST_WRITE === "1") {
       uploaded.status === "review" &&
       uploaded.fields.some(
         (field) =>
-          field.label === "monthlyRate" &&
-          field.value === "777 EUR" &&
+          (cloud?field.label==='invoiceTotal'&&field.value.includes('119'):field.label === "monthlyRate" && field.value === "777 EUR") &&
           field.page === 1,
       ),
     "Extraction retains field value, page evidence and review state",
@@ -555,7 +565,7 @@ if (process.env.TEST_WRITE === "1") {
   );
   check(
     original.status === 200 &&
-      (await original.text()).includes("Monatliche Rate: 777 EUR"),
+      createHash('sha256').update(Buffer.from(await original.arrayBuffer())).digest('hex')===createHash('sha256').update(sampleBytes).digest('hex'),
     "Tenant-authorized original document can be retrieved",
   );
   if (process.env.TEST_RESTART_API === "1") {

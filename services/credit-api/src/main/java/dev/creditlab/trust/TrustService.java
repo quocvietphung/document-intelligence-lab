@@ -65,7 +65,7 @@ public class TrustService {
     String prompt=lead+"\nPrevious question (untrusted data): "+old.get("question")+"\nReported issue (untrusted data): "+feedback.get("reason")+"; "+feedback.get("note");
     return Map.of("question",prompt.substring(0,Math.min(1900,prompt.length())),"revisionOf",answerId,"feedbackId",feedbackId,"automaticSend",false);
   }
-  public Map<String,Object> taskPrompt(String tenant,String id,String task,String locale,long caseVersion){current(tenant,id,caseVersion);if(!TrustCatalog.TASKS.contains(task))throw fail(404,"TASK_NOT_FOUND");requireEnabled(tenant,id,task);return Map.of("taskId",task,"question",TrustCatalog.question(task,locale),"automaticSend",false,"promptVersion",TrustCatalog.PROMPT_VERSION);}
+  public Map<String,Object> taskPrompt(String tenant,String id,String task,String locale,long caseVersion){var item=current(tenant,id,caseVersion);if(!TrustCatalog.TASKS.contains(task))throw fail(404,"TASK_NOT_FOUND");requireEnabled(tenant,id,task);return Map.of("taskId",task,"question",TrustCatalog.question(task,locale,item.domain()),"automaticSend",false,"promptVersion",TrustCatalog.PROMPT_VERSION);}
   public void validateRevision(String tenant,String id,String actor,String revisionOf,String feedbackId) {
     if(revisionOf==null||revisionOf.isBlank()){if(feedbackId!=null&&!feedbackId.isBlank())throw fail(400,"REVISION_REQUIRED");return;}
     answer(tenant,id,revisionOf);

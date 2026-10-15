@@ -169,7 +169,7 @@
     ],
     "en": {
       "title": "Review & reconciliation",
-      "description": "Review alerts, compare payroll with statement transactions and inspect balanced teaching ledger entries.",
+      "description": "Inspect document alerts, review tasks and source-linked field corrections in the selected domain. No ledger, payment or automated decision workflow.",
       "steps": [
         "Inspect the alert and its document source.",
         "Compare name, period, net earnings and payout separately.",
@@ -178,7 +178,7 @@
     },
     "de": {
       "title": "Prüfung & Abgleich",
-      "description": "Hinweise prüfen, Gehalt mit Kontoauszügen abgleichen und ausgeglichene Lernbuchungen ansehen.",
+      "description": "Dokumenthinweise, Prüfaufgaben und quellenbezogene Feldkorrekturen des Bereichs prüfen. Kein Zahlungs-, Buchungs- oder automatischer Entscheidungsablauf.",
       "steps": [
         "Hinweis und Belegquelle prüfen.",
         "Name, Zeitraum, Netto-Verdienst und Auszahlung getrennt vergleichen.",
@@ -187,7 +187,7 @@
     },
     "vi": {
       "title": "Kiểm duyệt & đối chiếu",
-      "description": "Xem cảnh báo, so bảng lương với sao kê và bút toán cân bằng dùng để học.",
+      "description": "Xem cảnh báo tài liệu, nhiệm vụ kiểm duyệt và chỉnh sửa trường có nguồn trong lĩnh vực đang chọn. Không có sổ cái, thanh toán hay quyết định tự động.",
       "steps": [
         "Xem cảnh báo và tài liệu nguồn.",
         "Đối chiếu tên, kỳ lương, lương ròng và thực chi riêng biệt.",
@@ -198,6 +198,12 @@
   {
     "id": "banking",
     "aliases": [
+      "domain research",
+      "insurance",
+      "versicherung",
+      "bảo hiểm",
+      "nghiên cứu theo lĩnh vực",
+      "bereichsrecherche",
       "banking lab",
       "banking",
       "thực hành ngân hàng",
@@ -209,7 +215,7 @@
       "chung cu ngan hang"
     ],
     "en": {
-      "title": "Statement and invoice evidence",
+      "title": "Domain research",
       "description": "Only analyzed original documents from this case, with fields, tables and source pages. No mock accounts, generated transactions or fixed benchmarks.",
       "steps": [
         "Upload a source PDF or explicitly import an official DATEV reference.",
@@ -218,7 +224,7 @@
       ]
     },
     "de": {
-      "title": "Kontoauszüge und Rechnungsbelege",
+      "title": "Bereichsrecherche",
       "description": "Nur analysierte Originaldokumente mit Feldern, Tabellen und Quellen. Keine Musterkonten, erzeugten Umsätze oder Benchmarkwerte.",
       "steps": [
         "Quell-PDF hochladen oder DATEV-Referenz ausdrücklich importieren.",
@@ -227,7 +233,7 @@
       ]
     },
     "vi": {
-      "title": "Chứng cứ sao kê và hóa đơn",
+      "title": "Nghiên cứu theo lĩnh vực",
       "description": "Chỉ dùng tài liệu có bản gốc đã phân tích: trường, bảng và trang nguồn. Không dùng tài khoản mock, giao dịch tự sinh hay điểm benchmark mẫu.",
       "steps": [
         "Tải PDF nguồn hoặc xác nhận nhập mẫu DATEV chính thức.",

@@ -37,8 +37,8 @@ export function showCaseEmpty(count: number, loading: boolean, error: string) {
 const en = {
   title: "Your AI tools, at a glance",
   hint: "Start with a source document. AI helps inspect and explain; a person verifies the result.",
-  documents: "Analyze a payslip",
-  documentHint: "Preview a fictional DATEV reference or upload a sample. Compare extracted fields and tables with the original PDF.",
+  documents: "Analyze a document",
+  documentHint: "Research banking, insurance and general PDFs. Compare extracted fields and tables with the original; DATEV remains in Banking & payroll.",
   azure: "Azure Document Intelligence configured",
   local: "Local PDFBox / Tesseract extraction",
   demo: "Read-only sample evidence",
@@ -57,8 +57,8 @@ const en = {
 const de: typeof en = {
   title: "Deine KI-Werkzeuge auf einen Blick",
   hint: "Beginne mit einem Quelldokument. KI hilft beim Prüfen und Erklären; ein Mensch bestätigt das Ergebnis.",
-  documents: "Gehaltsabrechnung analysieren",
-  documentHint: "Sieh dir ein fiktives DATEV-Muster an oder lade einen Beispielbeleg hoch. Vergleiche extrahierte Felder und Tabellen mit dem Original-PDF.",
+  documents: "Dokument analysieren",
+  documentHint: "Bank-, Versicherungs- und allgemeine PDFs untersuchen. Felder und Tabellen mit dem Original vergleichen; DATEV bleibt im Bereich Banking & Gehalt.",
   azure: "Azure Document Intelligence konfiguriert",
   local: "Lokale Extraktion mit PDFBox / Tesseract",
   demo: "Schreibgeschützte Beispielbelege",
@@ -77,8 +77,8 @@ const de: typeof en = {
 const vi: typeof en = {
   title: "Các công cụ AI của bạn",
   hint: "Bắt đầu từ tài liệu nguồn. AI hỗ trợ kiểm tra và giải thích; con người xác nhận kết quả.",
-  documents: "Phân tích bảng lương",
-  documentHint: "Xem mẫu DATEV giả lập hoặc tải tài liệu mẫu lên. Đối chiếu các trường và bảng đã trích xuất với PDF gốc.",
+  documents: "Phân tích tài liệu",
+  documentHint: "Nghiên cứu PDF ngân hàng, bảo hiểm và tài liệu chung. Đối chiếu trường và bảng với bản gốc; DATEV nằm trong Ngân hàng & bảng lương.",
   azure: "Đã cấu hình Azure Document Intelligence",
   local: "Trích xuất local bằng PDFBox / Tesseract",
   demo: "Chứng cứ mẫu chỉ để xem",
