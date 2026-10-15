@@ -18,7 +18,7 @@ export async function novaReadTool(feature:WorkspaceTab,item:WorkspaceCase,local
   if(feature==="documents"||feature==="banking"||feature==="evaluation") {
     const current=toWorkspaceCase(await read(""));
     if(current.id!==item.id||current.tenantId!==item.tenantId)throw new Error("Case mismatch");
-    const documents=uploadedEvidence(current.documents).filter(d=>feature!=="banking"||d.type==="statement"||d.type==="invoice");
+    const documents=uploadedEvidence(current.documents);
     result.sources=documents.flatMap(d=>{
       const pages=[...new Set([...(d.pages||[]).map(p=>p.number),...(d.fields||[]).flatMap(f=>f.page?[f.page]:[])])];
       if(!pages.length)return [{id:d.id,title:d.name,text:`${d.status} · ${d.analysisProvider||"unknown"}`}];

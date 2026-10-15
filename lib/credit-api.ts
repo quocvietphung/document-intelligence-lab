@@ -1,9 +1,11 @@
 import { z } from "zod";
 import type { CreditDocument } from "./credit-data";
+import {domainOf, type DocumentDomain} from './document-domains';
 
 export type WorkspaceCase = {
   id: string;
   tenantId: string;
+  domain?: DocumentDomain;
   applicant: string;
   coApplicant: string;
   purpose: string;
@@ -27,6 +29,7 @@ const field = z.object({
 export const creditCaseSchema = z.object({
   id: z.string(),
   tenantId: z.string(),
+  domain: z.enum(['banking','insurance','general']).default('banking'),
   applicant: z.string(),
   coApplicant: z.string(),
   purpose: z.string(),
@@ -69,6 +72,7 @@ export function toWorkspaceCase(value: unknown): WorkspaceCase {
     version: item.version,
     amountEuro: item.amountEuro,
     tenantId: item.tenantId,
+    domain: domainOf(item.domain),
     applicant: item.applicant,
     coApplicant: item.coApplicant,
     purpose: item.purpose,

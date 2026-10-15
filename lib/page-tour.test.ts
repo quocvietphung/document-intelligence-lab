@@ -6,6 +6,13 @@ import {NovaChatSurface} from "@/components/workspace/NovaChatSurface";
 import {pageTour,pageTourPages,pageTourPosition,pageTourHole} from "./page-tour";
 
 describe("native page walkthroughs",()=>{
+  it('only offers DATEV steps in banking, not insurance or general dossiers',()=>{
+    for(const domain of ['insurance','general'])for(const page of ['documents','pipeline'] as const) {
+      expect(pageTour('en',page,domain).steps.every(step=>!step.id.includes('datev'))).toBe(true);
+      expect(pageTour('en',page,domain).steps.some(step=>step.id.endsWith('upload'))).toBe(true);
+    }
+    expect(pageTour('en','documents','banking').steps.some(step=>step.id==='datev-preview')).toBe(true);
+  });
   it("covers all nine pages with localized instructions and static selectors",()=>{
     expect(pageTourPages()).toHaveLength(9);
     for(const page of pageTourPages())for(const locale of ["en","de","vi"]){

@@ -21,7 +21,7 @@ const entries: Record<WorkspaceTab, readonly Entry[]> = {
   overview: [
     {id:"case-select",en:["Choose the case","Select a fictional case here. Document search and Nova use that case's tenant-authorized evidence."],de:["Vorgang auswählen","Wähle hier einen fiktiven Vorgang. Belegsuche und Nova verwenden dessen berechtigte Belege."],vi:["Chọn hồ sơ","Chọn hồ sơ giả lập tại đây. Tìm chứng cứ và Nova chỉ dùng dữ liệu hồ sơ mà tổ chức của bạn được quyền đọc."]},
     {id:"case-search",en:["Find a case quickly","Type a case ID or applicant name. This filters the case cards; it does not call an AI model."],de:["Vorgang schnell finden","Gib Vorgangs-ID oder Namen ein. Dies filtert die Karten, ohne ein KI-Modell aufzurufen."],vi:["Tìm nhanh hồ sơ","Nhập ID hồ sơ hoặc tên. Đây là bộ lọc danh sách, không gọi mô hình AI."]},
-    {id:"case-new",en:["Create a fictional draft","Use New case to enter a fictional name, purpose and amount. Only authorized lab accounts can save it; the tour does not create a record."],de:["Fiktiven Entwurf anlegen","Mit Neuer Vorgang erfasst du fiktiven Namen, Zweck und Betrag. Nur berechtigte Konten speichern; der Rundgang erstellt nichts."],vi:["Tạo hồ sơ giả lập","Bấm Tạo hồ sơ để nhập tên, mục đích và số tiền giả lập. Chỉ tài khoản có quyền được lưu; tour không tự tạo dữ liệu."]},
+    {id:"case-new",en:["Create a research dossier","Choose banking, insurance or general documents, then enter a fictional subject and research objective. No loan amount is required. The tour never saves a record."],de:["Forschungsvorgang anlegen","Wähle Banking, Versicherungen oder allgemeine Dokumente und gib Gegenstand sowie Forschungsziel ein. Kein Kreditbetrag erforderlich. Der Rundgang speichert nichts."],vi:["Tạo hồ sơ nghiên cứu","Chọn ngân hàng, bảo hiểm hoặc tài liệu chung, nhập đối tượng giả lập và mục tiêu nghiên cứu. Không yêu cầu số tiền vay; tour không tự lưu hồ sơ."]},
     {id:"overview-ai",en:["Start the right AI workflow","These three entry points open DATEV document analysis, evidence search or Nova. Start with an original, then retrieve, explain and verify."],de:["Passenden KI-Ablauf starten","Diese drei Einstiege öffnen DATEV-Dokumentanalyse, Belegsuche oder Nova. Original prüfen, suchen, erklären lassen und verifizieren."],vi:["Chọn đúng luồng AI","Ba nút này mở phân tích tài liệu DATEV, tìm chứng cứ hoặc Nova. Bắt đầu từ bản gốc, tìm nguồn rồi giải thích và kiểm tra."]},
   ],
   documents: [
@@ -61,9 +61,9 @@ const entries: Record<WorkspaceTab, readonly Entry[]> = {
   ],
 };
 
-export function pageTour(locale: string, page: WorkspaceTab) {
+export function pageTour(locale: string, page: WorkspaceTab, domain = 'banking') {
   const language = locale === "de" || locale === "vi" ? locale : "en";
-  return {labels: labels[language], steps: entries[page].map(entry => ({id:entry.id,selector:`[data-page-tour="${entry.id}"]`,title:entry[language][0],body:entry[language][1]}))};
+  return {labels: labels[language], steps: entries[page].filter(entry=>domain==='banking'||!entry.id.includes('datev')).map(entry => ({id:entry.id,selector:`[data-page-tour="${entry.id}"]`,title:entry[language][0],body:entry[language][1]}))};
 }
 export function pageTourPages(){return [...workspaceTabs];}
 

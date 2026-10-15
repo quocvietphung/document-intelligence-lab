@@ -27,5 +27,14 @@ const featuresVi:FeatureCopy={'review-checklist':['AI checklist kiểm tra chứ
 featuresEn.quality=["Document AI research","Study uploaded PDF fields, tables and source evidence. No generated benchmark or unmeasured accuracy percentage."];
 featuresDe.quality=["Dokument-KI untersuchen","Felder, Tabellen und Quellen hochgeladener PDFs prüfen. Keine generierten Benchmarks oder ungemessenen Genauigkeitsprozente."];
 featuresVi.quality=["Nghiên cứu AI trên PDF","Xem trường, bảng và chứng cứ của PDF đã nhập. Không dùng benchmark tự tạo hay phần trăm chính xác chưa đo."];
+featuresEn.document=['Document OCR & layout','Read banking, insurance and general-document PDFs. Preserve page evidence, tables and field provenance.'];
+featuresDe.document=['Dokument-OCR & Layout','Bank-, Versicherungs- und allgemeine PDFs lesen. Quellseiten, Tabellen und Feldherkunft erhalten.'];
+featuresVi.document=['OCR & đọc bố cục tài liệu','Đọc PDF ngân hàng, bảo hiểm và tài liệu chung; giữ trang nguồn, bảng và nguồn gốc trường dữ liệu.'];
+featuresEn.reconcile=['Compare document evidence','Compare references, people, dates and amounts across the selected dossier. No credit or insurance decisions.'];
+featuresDe.reconcile=['Dokumentbelege vergleichen','Referenzen, Personen, Daten und Beträge des Vorgangs vergleichen. Keine Kredit- oder Versicherungsentscheidung.'];
+featuresVi.reconcile=['Đối chiếu chứng cứ tài liệu','So mã tham chiếu, người, ngày và số tiền trong hồ sơ. Không quyết định tín dụng hay bảo hiểm.'];
+featuresEn.terminology=['Explain German document terms','Explain labels present in payroll, insurance policies, contracts or invoices, with page sources.'];
+featuresDe.terminology=['Deutsche Dokumentbegriffe erklären','Vorhandene Begriffe aus Gehalt, Policen, Verträgen oder Rechnungen mit Quellseiten erklären.'];
+featuresVi.terminology=['Giải thích thuật ngữ tài liệu Đức','Giải thích nhãn có trong bảng lương, bảo hiểm, hợp đồng hay hóa đơn, kèm trang nguồn.'];
 export const dashboardLanguages={en:{labels:en,features:featuresEn},de:{labels:de,features:featuresDe},vi:{labels:vi,features:featuresVi}};
 export function dashboardText(locale:string){return dashboardLanguages[locale==='de'?'de':locale==='vi'?'vi':'en'];}

@@ -13,8 +13,8 @@ public final class FieldValueNormalizer {
   public static String normalize(String label, String value) {
     if (value == null) return "";
     return switch (label) {
-      case "netIncome", "monthlyRate", "balance" -> money(value);
-      case "date" -> date(value);
+      case "netIncome", "payoutAmount", "monthlyRate", "balance", "premium", "deductible", "coverageAmount", "invoiceTotal" -> money(value);
+      case "date", "coverageStart", "coverageEnd", "claimDate" -> date(value);
       default -> value.strip().replaceAll("\\s+"," ").toLowerCase(Locale.ROOT);
     };
   }

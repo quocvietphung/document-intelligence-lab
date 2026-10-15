@@ -5,8 +5,8 @@ import {ArrowLeft,ArrowRight,Compass,X} from "lucide-react";
 import {pageTour,pageTourHole,pageTourPosition,type TourRect} from "@/lib/page-tour";
 import type {WorkspaceTab} from "@/lib/nova-guide";
 
-export function PageTour({locale,page,step,onStep,close}:{locale:string;page:WorkspaceTab;step:number;onStep:(step:number)=>void;close:()=>void}) {
-  const {labels,steps}=pageTour(locale,page),current=steps[step];
+export function PageTour({locale,page,step,onStep,close,domain='banking'}:{locale:string;page:WorkspaceTab;step:number;onStep:(step:number)=>void;close:()=>void;domain?:string}) {
+  const {labels,steps}=pageTour(locale,page,domain),current=steps[step];
   const currentId=current?.id,currentSelector=current?.selector;
   const card=useRef<HTMLElement>(null),heading=useRef<HTMLHeadingElement>(null);
   const [layout,setLayout]=useState<{target:TourRect|null;viewport:{width:number;height:number};card:{width:number;height:number}}>();
