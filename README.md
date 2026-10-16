@@ -270,6 +270,16 @@ A real local Azure OpenAI conversation about the approved fictional DATEV sample
 
 ![Nova answering in English with document-page evidence](docs/screenshots/nova-datev-en.jpg)
 
+### Meet Nova and replay a page guide
+
+Nova's portrait is an **AI-generated fictional character**, not a real advisor. The same avatar appears on the chat launcher, conversation header and page-tour coachmarks. It is bundled locally; no external avatar service receives requests.
+
+<img src="public/images/nova-profile-v2.webp" width="240" alt="Nova, a fictional adult Vietnamese AI assistant wearing a navy skirt suit" />
+
+Open the portrait button at the bottom right. Choose **App guidance** for local instructions and links, or **Evidence analysis** for source-based Azure OpenAI questions. The **compass icon** starts a step-by-step guide for the current page; **Expand reading area** gives longer answers more room. Enter sends; Shift+Enter adds a line break.
+
+![Current English Nova interface with the fictional avatar and local app guidance](docs/screenshots/nova-profile-guide-en.jpg)
+
 ### Source-bound experiments
 
 Read labels independently from the original, save a reference version, then evaluate extraction or compare BM25/vector/hybrid retrieval. Results belong to that labelled sample, not general model accuracy.

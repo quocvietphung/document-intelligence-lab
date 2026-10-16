@@ -48,6 +48,7 @@ describe("native page walkthroughs",()=>{
     expect(source).toContain("scrollIntoView");
     expect(source).not.toMatch(/fetch\(|\.click\(|\.requestSubmit\(|dispatchEvent\(/);
     expect(source).toContain("page-guide-button");
+    expect(source).toContain("<NovaAvatar/>");
   });
   it("keeps Nova chat separate; the compass starts the current page guide",()=>{
     const html=renderToStaticMarkup(createElement(NovaChatSurface,{

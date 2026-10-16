@@ -1,9 +1,10 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
 import {createPortal} from "react-dom";
-import {ArrowLeft,ArrowRight,Compass,X} from "lucide-react";
+import {ArrowLeft,ArrowRight,X} from "lucide-react";
 import {pageTour,pageTourHole,pageTourPosition,type TourRect} from "@/lib/page-tour";
 import type {WorkspaceTab} from "@/lib/nova-guide";
+import {NovaAvatar} from "./NovaAvatar";
 
 export function PageTour({locale,page,step,onStep,close,domain='banking'}:{locale:string;page:WorkspaceTab;step:number;onStep:(step:number)=>void;close:()=>void;domain?:string}) {
   const {labels,steps}=pageTour(locale,page,domain),current=steps[step];
@@ -88,7 +89,7 @@ export function PageTour({locale,page,step,onStep,close,domain='banking'}:{local
     {shades.map((shade,index)=><div key={index} className="page-tour-shade" style={shade} aria-hidden="true"/>)}
     {hole?<div className="page-tour-spotlight" style={hole} aria-hidden="true"/>:null}
     <section ref={card} className="page-tour-coach" style={{...position,maxHeight:Math.max(100,layout.viewport.height-24)}} role="dialog" aria-modal="false" aria-labelledby="page-tour-title" aria-describedby="page-tour-body">
-      <header><span><Compass size={16}/>{labels.title}</span><button type="button" onClick={close} aria-label={labels.close}><X size={18}/></button></header>
+      <header><span><NovaAvatar/>Nova · {labels.title}</span><button type="button" onClick={close} aria-label={labels.close}><X size={18}/></button></header>
       <p className="page-tour-count">{labels.step} {step+1} / {steps.length}</p>
       <div className="page-tour-copy"><h2 id="page-tour-title" ref={heading} tabIndex={-1}>{current.title}</h2><p id="page-tour-body">{current.body}</p>{!layout.target?<p className="page-tour-missing" role="status">{labels.missing}</p>:null}</div>
       <footer><div><button type="button" className="button-secondary" disabled={step===0} onClick={()=>onStep(step-1)}><ArrowLeft size={14}/>{labels.back}</button><button type="button" className="button-primary" onClick={()=>step===steps.length-1?close():onStep(step+1)}>{step===steps.length-1?labels.finish:labels.next}<ArrowRight size={14}/></button></div><button type="button" className="button-link" onClick={close}>{labels.skip}</button><small>{labels.note}</small></footer>
