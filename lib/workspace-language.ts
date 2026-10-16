@@ -1,7 +1,7 @@
 import {documentResearchLabel} from './document-domains';
 import {researchText} from './document-research';
 const en={
-  serviceUnavailable:"The backend is unavailable. Your data has not been deleted. If the Azure VM is stopped, start it and wait for the services to be ready; for local use, check Docker Desktop. Then refresh.",
+  serviceUnavailable:"The backend is unavailable. Your data has not been deleted. Check Docker Desktop and the API service, then refresh. If using a separately configured cloud backend, check its service status.",
   sessionExpired:"Your session has expired. Sign in again to access this case.",
   accessDenied:"Your account does not have permission for this action. Contact the lab operator; do not retry with a different tenant.",
   labWrites:"Authorized lab edits are enabled. Only synthetic records are allowed; no real banking operations.",
@@ -17,7 +17,7 @@ const en={
   evaluationTitle:"Measured tests, honest limits.",evaluationHint:"Results of a deterministic extraction benchmark on synthetic labelled text. Not Azure LLM accuracy, not an independent OCR benchmark.",references:"Reference documents",classification:"Document type exact match",fields:"Field exact match",run:"Benchmark run",notMeasured:"Azure answer quality and scanned-image OCR accuracy have not been measured on a representative dataset.",dataset:"The 20 reference records, expected values and test are versioned in the repository.",security:"Verified tenant & role isolation",saved:"Saved successfully",language:"Language",readonly:"Sign in with an authorized lab account to save synthetic records through the Java API.",
 };
 const de:typeof en={
-  serviceUnavailable:"Das Backend ist nicht erreichbar. Deine Daten wurden nicht gelöscht. Ist die Azure-VM gestoppt, starte sie und warte auf die Dienste; lokal prüfe Docker Desktop. Danach aktualisieren.",
+  serviceUnavailable:"Das Backend ist nicht erreichbar. Deine Daten wurden nicht gelöscht. Prüfe Docker Desktop und den API-Dienst und aktualisiere die Seite. Bei einem separat konfigurierten Cloud-Backend dessen Dienststatus prüfen.",
   sessionExpired:"Deine Sitzung ist abgelaufen. Melde dich erneut an, um diesen Vorgang zu öffnen.",
   accessDenied:"Dein Konto ist für diese Aktion nicht berechtigt. Wende dich an die betreibende Person; nicht mit einem anderen Mandanten wiederholen.",
   labWrites:"Autorisierte Änderungen im Lab sind möglich. Nur synthetische Daten; keine echten Bankvorgänge.",
@@ -33,7 +33,7 @@ const de:typeof en={
   evaluationTitle:"Gemessene Tests, klare Grenzen.",evaluationHint:"Deterministischer Extraktionsbenchmark auf synthetischen, beschrifteten Texten. Keine Azure-LLM-Genauigkeit und kein unabhängiger OCR-Benchmark.",references:"Referenzdokumente",classification:"Dokumenttyp: exakte Übereinstimmung",fields:"Felder: exakte Übereinstimmung",run:"Benchmark-Lauf",notMeasured:"Azure-Antwortqualität und OCR-Genauigkeit auf gescannten Bildern sind noch nicht mit einem repräsentativen Datensatz gemessen.",dataset:"Die 20 Referenzdatensätze, Sollwerte und Tests sind im Repository versioniert.",security:"Geprüfte Mandanten- und Rollentrennung",saved:"Erfolgreich gespeichert",language:"Sprache",readonly:"Melde dich mit einem berechtigten Lab-Konto an, um synthetische Datensätze über die Java-API zu speichern.",
 };
 const vi:typeof en={
-  serviceUnavailable:"Không kết nối được backend. Dữ liệu chưa bị xóa. Nếu VM Azure đang tắt, hãy bật và chờ các dịch vụ sẵn sàng; nếu dùng local, kiểm tra Docker Desktop. Sau đó bấm Tải lại.",
+  serviceUnavailable:"Không kết nối được backend. Dữ liệu chưa bị xóa. Kiểm tra Docker Desktop và dịch vụ API rồi tải lại. Nếu đã cấu hình backend cloud riêng, kiểm tra trạng thái dịch vụ đó.",
   sessionExpired:"Phiên đăng nhập đã hết hạn. Đăng nhập lại để mở hồ sơ này.",
   accessDenied:"Tài khoản của bạn không có quyền thực hiện thao tác này. Liên hệ người quản trị lab; không thử chuyển sang tổ chức khác.",
   labWrites:"Có thể sửa dữ liệu lab theo quyền được cấp. Chỉ dùng hồ sơ giả lập; không thực hiện giao dịch ngân hàng thật.",
