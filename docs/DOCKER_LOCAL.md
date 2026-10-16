@@ -197,4 +197,4 @@ Optional local traces are not an automatic Application Insights integration. Man
 
 This guide does not run Terraform, publish images, start a paid VM, expose databases or deploy Vercel. Automatic Git-triggered Vercel deployment is disabled for this showcase release. Cloud release, TLS, secret management, backups and production identity remain separate work.
 
-The former Azure VM backend has been decommissioned. Local Docker, its volumes and the separately retained Azure AI resources remain available; the old Vercel frontend is not a working cloud login/API environment.
+The former Azure VM backend and Vercel project have been removed. Local Docker, its volumes and the separately retained Azure AI resources remain available. A future cloud release needs a newly reviewed deployment; no public frontend is active for this lab.
