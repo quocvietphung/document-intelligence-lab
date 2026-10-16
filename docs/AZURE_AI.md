@@ -1,5 +1,7 @@
 # Azure AI runbook
 
+For current clean-clone configuration, use [Docker local setup](DOCKER_LOCAL.md). The Azure override now requires **your own** endpoints and deployment through ignored `.env.azure.local` (template: `.env.azure.example`); it no longer defaults to the historical shared resources named below. The dated sections here record previous integration work, not permission to use the author's resources or an automatic background-service installation.
+
 The Java API owns both AI trust boundaries:
 
 ```text

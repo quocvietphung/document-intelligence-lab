@@ -31,7 +31,9 @@ services:
   storage-init:
     image: busybox:1.37
     user: root
-    command: ["sh", "-c", "chown $$STORAGE_UID:$$STORAGE_GID /documents && chmod 700 /documents"]
+    # The same private volume can move between the image user (local) and host
+    # UID (Azure token-file profile). Include existing dossier subdirectories.
+    command: ["sh", "-c", "chown -R $$STORAGE_UID:$$STORAGE_GID /documents && chmod 700 /documents"]
     environment:
       STORAGE_UID: ${CREDIT_LOCAL_UID:-1000}
       STORAGE_GID: ${CREDIT_LOCAL_GID:-1000}

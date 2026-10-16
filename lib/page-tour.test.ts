@@ -13,8 +13,8 @@ describe("native page walkthroughs",()=>{
     }
     expect(pageTour('en','documents','banking').steps.some(step=>step.id==='datev-preview')).toBe(true);
   });
-  it("covers all nine pages with localized instructions and static selectors",()=>{
-    expect(pageTourPages()).toHaveLength(9);
+  it("covers all ten pages with localized instructions and static selectors",()=>{
+    expect(pageTourPages()).toHaveLength(10);
     for(const page of pageTourPages())for(const locale of ["en","de","vi"]){
       const guide=pageTour(locale,page);
       expect(guide.steps.length).toBeGreaterThanOrEqual(2);
@@ -36,7 +36,7 @@ describe("native page walkthroughs",()=>{
     expect(pageTour("en","studio").steps[4].body).toContain("not an accuracy percentage");
   });
   it("has actual source anchors for every tour target",()=>{
-    const sources=["CreditWorkspace","PlatformWorkbench","DocumentCorpus","BankingWorkbench","PayrollSamples","WorkspaceAIOverview","DocumentResults"].map(name=>readFileSync(`components/workspace/${name}.tsx`,"utf8")).join("\n");
+    const sources=["CreditWorkspace","PlatformWorkbench","DocumentCorpus","BankingWorkbench","PayrollSamples","WorkspaceAIOverview","DocumentResults","DocumentResearchPanel"].map(name=>readFileSync(`components/workspace/${name}.tsx`,"utf8")).join("\n");
     for(const page of pageTourPages())for(const step of pageTour("en",page).steps){
       expect(sources).toContain(step.id.startsWith("menu-")?'data-page-tour={`menu-${id}`}':step.id);
     }

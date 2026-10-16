@@ -1,14 +1,24 @@
 import { execFileSync, spawn } from "node:child_process";
-import { chmodSync, mkdirSync, renameSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { userInfo } from "node:os";
+import {loadEnvFile} from 'node:process';
+import {azureDockerEnvironment} from './docker-azure-config.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const directory = resolve(root, ".local/azure-auth");
 const resource = "https://cognitiveservices.azure.com/";
 const user = userInfo();
-const env = { ...process.env, CREDIT_LOCAL_UID: String(user.uid), CREDIT_LOCAL_GID: String(user.gid), CREDIT_AZURE_TOKEN_DIR: directory };
+const mode = process.argv[2] || "up";
+if(!['up','start','prepare','watch'].includes(mode)) {
+  console.error('Usage: node scripts/docker-azure.mjs [up|start|prepare|watch]');process.exit(1);
+}
+const configuration=resolve(root,'.env.azure.local');
+if(existsSync(configuration))loadEnvFile(configuration);
+let env;
+try {env=azureDockerEnvironment(process.env,{root,uid:user.uid,gid:user.gid});}
+catch(error) {console.error(error.message);process.exit(1);}
 const args = ["compose", "-f", "docker-compose.yml", "-f", "docker-compose.azure.yml", "-f", "docker-compose.platform.yml"];
 
 function refresh() {
@@ -28,9 +38,8 @@ function refresh() {
 }
 
 try { refresh(); }
-catch { console.error("Azure login unavailable. Run az login on this Mac, then retry this command."); process.exit(1); }
+catch { console.error("Azure login unavailable. Run az login on your computer, then retry this command."); process.exit(1); }
 
-const mode = process.argv[2] || "up";
 if (mode === "prepare") {
   console.log("Token file prepared. Use the same start command to keep automatic refresh active.");
 } else if (mode === "up" || mode === "start" || mode === "watch") {
