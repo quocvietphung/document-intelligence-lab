@@ -3,6 +3,7 @@ import {ArrowUpRight,BrainCircuit,ChevronDown,FileSearch,Info,ShieldCheck,Sparkl
 import {aiText,chatEngine,documentAI,pageAIKind,type AICapabilities,type AIKind} from "@/lib/ai-capabilities";
 import type {CreditDocument} from "@/lib/credit-data";
 import type {WorkspaceTab} from "@/lib/nova-guide";
+import {researchText} from '@/lib/document-research';
 
 export function AITag({kind,locale,label}:{kind:AIKind;locale:string;label?:string}) {
   const t=aiText(locale),Icon=kind==="ai"?Sparkles:kind==="rules"?ShieldCheck:Info;
@@ -30,6 +31,8 @@ export function AIPageBanner({page,locale,capabilities,demo=false,ask}:{page:Wor
   }else if(page==="studio"){
     kind=demo?"demo":!rag?"unknown":rag.semantic?"ai":"rules";engine=demo?t.demo:rag?.embeddingModel||t.unknown;
     model=demo?"browser fixtures":rag?`${rag.vectorStore} · BM25 · feature ranking`:t.notReported;hint=demo?t.demoHint:t.searchHint;title=t.search;
+  }else if(page==='experiments'){
+    const research=researchText(locale);kind='rules';engine='Java · source-bound evaluation';model='source-evaluation-v1';title=research('experiments');hint=research('notJudge');
   }else{
     engine=page==="controls"?"Java · deterministic rules":page==="evaluation"||page==="banking"?"PDF · source evidence":"Java · configuration / audit";
     model=t.human;hint=page==="evaluation"?t.qualityHint:page==="controls"?t.rulesHint:t.reviewHint;

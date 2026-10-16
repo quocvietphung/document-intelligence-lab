@@ -34,7 +34,7 @@ const vi:typeof en={
 export const aiLanguageTables={en,de,vi};
 export function aiText(locale:string){return aiLanguageTables[locale==="vi"?"vi":locale==="de"?"de":"en"];}
 export function pageAIKind(page:WorkspaceTab):AIKind {
-  return ["studio","documents","pipeline"].includes(page)?"ai":["controls","evaluation"].includes(page)?"rules":"context";
+  return ["studio","documents","pipeline"].includes(page)?"ai":["controls","evaluation","experiments"].includes(page)?"rules":"context";
 }
 export function documentAI(doc:Pick<CreditDocument,"analysisProvider"|"modelId"|"status">,locale:string){
   const t=aiText(locale),provider=doc.analysisProvider;

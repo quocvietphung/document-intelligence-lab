@@ -146,6 +146,16 @@ check(
   "Access token has API audience, tenant and advisor role",
 );
 const bearer = { Authorization: `Bearer ${tokens.access_token}` };
+if(process.env.TEST_SHOWCASE==='1') {
+  const {auditShowcase}=await import('./test-showcase.mjs');await auditShowcase({request,check,bearer,web,api});
+  const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
+  check(ended.status===204,'Showcase acceptance session logged out');console.log(`${checks} showcase acceptance checks passed.`);process.exit(0);
+}
+if(process.env.TEST_RESEARCH==='1') {
+  const {auditResearch}=await import('./test-research.mjs');await auditResearch({request,check,bearer,web,api});
+  const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
+  check(ended.status===204,'Research acceptance session logged out');console.log(`${checks} research acceptance checks passed.`);process.exit(0);
+}
 if(process.env.TEST_MULTIDOMAIN==='1') {
   const {auditDomains}=await import('./test-multidomain.mjs');
   await auditDomains({request,check,bearer,web,api});

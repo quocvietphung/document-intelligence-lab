@@ -50,7 +50,7 @@ const en = {
   nova: "Ask Nova",
   novaHint: "Ask a complete question about this case. Each reply identifies its mode: app guide, guard or Azure AI.",
   novaAction: "Chat with Nova",
-  documentsSubtitle: "Preview sources, analyze fictional payroll documents and verify every extracted field.",
+  documentsSubtitle: "Preview banking, insurance and general documents; analyze permitted fictional sources and verify every extracted field.",
   bankingSubtitle: "Inspect statements and invoices from uploaded PDFs. No generated accounts or transactions.",
   auditSubtitle: "Follow saved workflow changes and reviewer confirmations for the selected case.",
 };
@@ -70,7 +70,7 @@ const de: typeof en = {
   nova: "Nova fragen",
   novaHint: "Stelle eine vollständige Frage zum Vorgang. Jede Antwort kennzeichnet ihren Modus: App-Hilfe, Schutzregel oder Azure-KI.",
   novaAction: "Mit Nova sprechen",
-  documentsSubtitle: "Quellen ansehen, fiktive Gehaltsabrechnungen analysieren und jedes extrahierte Feld prüfen.",
+  documentsSubtitle: "Banking-, Versicherungs- und allgemeine Dokumente ansehen, fiktive Quellen analysieren und jedes extrahierte Feld prüfen.",
   bankingSubtitle: "Kontoauszüge und Rechnungen aus hochgeladenen PDFs prüfen. Keine erzeugten Konten oder Umsätze.",
   auditSubtitle: "Gespeicherte Änderungen und manuelle Bestätigungen zum ausgewählten Vorgang nachvollziehen.",
 };
@@ -90,7 +90,7 @@ const vi: typeof en = {
   nova: "Hỏi Nova",
   novaHint: "Đặt câu hỏi đầy đủ về hồ sơ. Mỗi câu trả lời ghi rõ chế độ: hướng dẫn app, bảo vệ hoặc Azure AI.",
   novaAction: "Trò chuyện với Nova",
-  documentsSubtitle: "Xem nguồn, phân tích bảng lương giả lập và kiểm tra từng trường được trích xuất.",
+  documentsSubtitle: "Xem tài liệu ngân hàng, bảo hiểm và tài liệu chung; phân tích nguồn giả lập được phép và kiểm tra từng trường trích xuất.",
   bankingSubtitle: "Kiểm tra sao kê và hóa đơn từ PDF đã nhập. Không tự tạo tài khoản hay giao dịch.",
   auditSubtitle: "Theo dõi thay đổi đã lưu và xác nhận kiểm duyệt của hồ sơ đang chọn.",
 };
