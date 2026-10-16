@@ -100,8 +100,15 @@ public class DocumentExtractor {
   public CreditCase.Document parse(String name,List<CreditCase.Page> pages,Integer confidence,
       String provider,String modelId,String contentType) {
     String all=pages.stream().map(CreditCase.Page::text).reduce("",(a,b)->a+"\n"+b).toLowerCase(Locale.ROOT);
-    String type=all.contains("gehaltsabrechnung")||all.contains("entgeltabrechnung")||all.contains("abrechnung der brutto/netto-bezüge")?"income":all.contains("kontoauszug")?"statement":all.contains("selbstauskunft")?"disclosure":all.contains("praxisbewertung")?"valuation":"unknown";
-    String[][] labels={{"netIncome","Nettoeinkommen|Net income|Netto-Verdienst|Nettoverdienst|Nettogehalt|Nettolohn"},{"payoutAmount","Auszahlungsbetrag|Nettoauszahlung|Payout amount"},{"employer","Arbeitgeber|Employer"},{"monthlyRate","Monatliche Rate|Monthly rate"},{"balance","Kontostand|Balance"},{"date","Datum|Date"}};
+    String type=classify(all);
+    String[][] labels={{"netIncome","Nettoeinkommen|Net income|Netto-Verdienst|Nettoverdienst|Nettogehalt|Nettolohn"},{"payoutAmount","Auszahlungsbetrag|Nettoauszahlung|Payout amount"},{"employer","Arbeitgeber|Employer"},{"monthlyRate","Monatliche Rate|Monthly rate"},{"balance","Kontostand|Balance"},{"date","Datum|Date"},
+      {"policyNumber","Versicherungsnummer|Versicherungsschein-Nr\\.?|Policennummer|Policy number"},
+      {"insurer","Versicherer|Insurance company|Insurer"},{"policyholder","Versicherungsnehmer(?:in)?|Policyholder"},
+      {"premium","Jahresbeitrag|Versicherungsbeitrag|Annual premium|Premium"},{"deductible","Selbstbeteiligung|Deductible"},
+      {"coverageAmount","Deckungssumme|Versicherungssumme|Coverage amount"},{"coverageStart","Versicherungsbeginn|Coverage start"},
+      {"coverageEnd","Versicherungsende|Coverage end"},{"claimNumber","Schadennummer|Claim number"},
+      {"claimDate","Schadendatum|Date of loss"},{"invoiceNumber","Rechnungsnummer|Invoice number"},
+      {"invoiceTotal","Gesamtbetrag|Rechnungsbetrag|Invoice total"},{"contractNumber","Vertragsnummer|Contract number"}};
     var fields=new ArrayList<CreditCase.Field>();
     for(var page:pages) for(String[] label:labels) {
       var pattern=Pattern.compile("(?im)^\\s*(?:"+label[1]+")\\s*:\\s*([^\\r\\n]{1,300})");
@@ -113,6 +120,16 @@ public class DocumentExtractor {
         provider,modelId,contentType);
   }
 
+  static String classify(String all) {
+    if(all.contains("gehaltsabrechnung")||all.contains("entgeltabrechnung")||all.contains("abrechnung der brutto/netto-bezüge"))return "income";
+    if(all.contains("kontoauszug")||all.contains("account statement"))return "statement";
+    if(all.contains("schadenmeldung")||all.contains("claim notification"))return "insurance-claim";
+    if(all.contains("versicherungsschein")||all.contains("insurance policy")||all.contains("policennummer"))return "insurance-policy";
+    if(all.contains("rechnungsnummer")||all.contains("invoice number"))return "invoice";
+    if(all.contains("vertragsnummer")||all.contains("contract number"))return "contract";
+    return all.contains("selbstauskunft")?"disclosure":all.contains("praxisbewertung")?"valuation":"unknown";
+  }
+
   static Optional<String> canonicalFieldLabel(String rawLabel) {
     String label=rawLabel.toLowerCase(Locale.ROOT).replaceAll("[^\\p{L}]","");
     if(Set.of("nettoeinkommen","netincome","nettoverdienst","nettogehalt","nettolohn").contains(label)) return Optional.of("netIncome");
@@ -121,6 +138,19 @@ public class DocumentExtractor {
     if(label.contains("monatlicherate")||label.contains("monthlyrate")) return Optional.of("monthlyRate");
     if(label.contains("kontostand")||label.contains("balance")) return Optional.of("balance");
     if(label.equals("datum")||label.equals("date")) return Optional.of("date");
+    if(Set.of("versicherungsnummer","versicherungsscheinnr","policennummer","policynumber").contains(label))return Optional.of("policyNumber");
+    if(Set.of("versicherer","insurer","insurancecompany").contains(label))return Optional.of("insurer");
+    if(Set.of("versicherungsnehmer","versicherungsnehmerin","policyholder").contains(label))return Optional.of("policyholder");
+    if(Set.of("jahresbeitrag","versicherungsbeitrag","annualpremium","premium").contains(label))return Optional.of("premium");
+    if(Set.of("selbstbeteiligung","deductible").contains(label))return Optional.of("deductible");
+    if(Set.of("deckungssumme","versicherungssumme","coverageamount").contains(label))return Optional.of("coverageAmount");
+    if(Set.of("versicherungsbeginn","coveragestart").contains(label))return Optional.of("coverageStart");
+    if(Set.of("versicherungsende","coverageend").contains(label))return Optional.of("coverageEnd");
+    if(Set.of("schadennummer","claimnumber").contains(label))return Optional.of("claimNumber");
+    if(Set.of("schadendatum","dateofloss").contains(label))return Optional.of("claimDate");
+    if(Set.of("rechnungsnummer","invoicenumber").contains(label))return Optional.of("invoiceNumber");
+    if(Set.of("gesamtbetrag","rechnungsbetrag","invoicetotal").contains(label))return Optional.of("invoiceTotal");
+    if(Set.of("vertragsnummer","contractnumber").contains(label))return Optional.of("contractNumber");
     return Optional.empty();
   }
 }

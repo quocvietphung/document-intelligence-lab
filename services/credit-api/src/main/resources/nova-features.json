@@ -1,5 +1,12 @@
 [
   {
+    "id":"experiments",
+    "aliases":["ai experiments","experiments","ki-experimente","thi nghiem","thí nghiệm","referenzdatensatz"],
+    "en":{"title":"AI Experiments","description":"Create source-checked labels on actual PDFs and measure saved extraction or compare BM25, vector and hybrid retrieval. No Foundry judge or automatic Azure call.","steps":["Inspect an original PDF and add independent expected fields or a target page for a question.","Save an immutable reference version and explicitly run the selected experiment.","Inspect measured results and failed examples; changed sources require a new reference version."]},
+    "de":{"title":"KI-Experimente","description":"Geprüfte Referenzen an echten PDF-Originalen anlegen und Extraktion oder BM25-, Vektor- und Hybrid-Suche messen. Kein Foundry-Judge oder automatischer Azure-Aufruf.","steps":["Original prüfen und unabhängige Sollfelder oder Zielseite einer Frage angeben.","Unveränderliche Referenzversion speichern und gewähltes Experiment selbst starten.","Messungen und Fehler prüfen; geänderte Quellen erfordern eine neue Referenzversion."]},
+    "vi":{"title":"AI Experiments","description":"Gắn nhãn đã kiểm tra theo PDF thật và đo trích xuất đã lưu hoặc so sánh BM25, vector và hybrid. Không có Foundry judge hay tự gọi Azure.","steps":["Mở PDF gốc, nhập nhãn đúng hoặc trang phải trả lời được câu hỏi.","Lưu phiên bản tham chiếu bất biến rồi tự bấm chạy thí nghiệm.","Xem điểm đo và trường sai; nguồn thay đổi thì cần bộ tham chiếu mới."]}
+  },
+  {
     "id": "overview",
     "aliases": [
       "overview",
@@ -169,7 +176,7 @@
     ],
     "en": {
       "title": "Review & reconciliation",
-      "description": "Review alerts, compare payroll with statement transactions and inspect balanced teaching ledger entries.",
+      "description": "Inspect document alerts, review tasks and source-linked field corrections in the selected domain. No ledger, payment or automated decision workflow.",
       "steps": [
         "Inspect the alert and its document source.",
         "Compare name, period, net earnings and payout separately.",
@@ -178,7 +185,7 @@
     },
     "de": {
       "title": "Prüfung & Abgleich",
-      "description": "Hinweise prüfen, Gehalt mit Kontoauszügen abgleichen und ausgeglichene Lernbuchungen ansehen.",
+      "description": "Dokumenthinweise, Prüfaufgaben und quellenbezogene Feldkorrekturen des Bereichs prüfen. Kein Zahlungs-, Buchungs- oder automatischer Entscheidungsablauf.",
       "steps": [
         "Hinweis und Belegquelle prüfen.",
         "Name, Zeitraum, Netto-Verdienst und Auszahlung getrennt vergleichen.",
@@ -187,7 +194,7 @@
     },
     "vi": {
       "title": "Kiểm duyệt & đối chiếu",
-      "description": "Xem cảnh báo, so bảng lương với sao kê và bút toán cân bằng dùng để học.",
+      "description": "Xem cảnh báo tài liệu, nhiệm vụ kiểm duyệt và chỉnh sửa trường có nguồn trong lĩnh vực đang chọn. Không có sổ cái, thanh toán hay quyết định tự động.",
       "steps": [
         "Xem cảnh báo và tài liệu nguồn.",
         "Đối chiếu tên, kỳ lương, lương ròng và thực chi riêng biệt.",
@@ -198,6 +205,12 @@
   {
     "id": "banking",
     "aliases": [
+      "domain research",
+      "insurance",
+      "versicherung",
+      "bảo hiểm",
+      "nghiên cứu theo lĩnh vực",
+      "bereichsrecherche",
       "banking lab",
       "banking",
       "thực hành ngân hàng",
@@ -209,7 +222,7 @@
       "chung cu ngan hang"
     ],
     "en": {
-      "title": "Statement and invoice evidence",
+      "title": "Domain research",
       "description": "Only analyzed original documents from this case, with fields, tables and source pages. No mock accounts, generated transactions or fixed benchmarks.",
       "steps": [
         "Upload a source PDF or explicitly import an official DATEV reference.",
@@ -218,7 +231,7 @@
       ]
     },
     "de": {
-      "title": "Kontoauszüge und Rechnungsbelege",
+      "title": "Bereichsrecherche",
       "description": "Nur analysierte Originaldokumente mit Feldern, Tabellen und Quellen. Keine Musterkonten, erzeugten Umsätze oder Benchmarkwerte.",
       "steps": [
         "Quell-PDF hochladen oder DATEV-Referenz ausdrücklich importieren.",
@@ -227,7 +240,7 @@
       ]
     },
     "vi": {
-      "title": "Chứng cứ sao kê và hóa đơn",
+      "title": "Nghiên cứu theo lĩnh vực",
       "description": "Chỉ dùng tài liệu có bản gốc đã phân tích: trường, bảng và trang nguồn. Không dùng tài khoản mock, giao dịch tự sinh hay điểm benchmark mẫu.",
       "steps": [
         "Tải PDF nguồn hoặc xác nhận nhập mẫu DATEV chính thức.",

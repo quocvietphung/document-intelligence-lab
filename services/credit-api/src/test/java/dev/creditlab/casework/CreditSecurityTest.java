@@ -17,6 +17,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics
 class CreditSecurityTest {
   @Autowired MockMvc mvc;
+  @Test void sourceResearchRequiresVerifiedTenantAndRoleAndValidLabels()throws Exception {
+    String path="/api/cases/CR-2026-1048/platform/research";
+    var advisor=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"));
+    mvc.perform(get(path)).andExpect(status().isUnauthorized());
+    mvc.perform(get(path).with(jwt().jwt(j->j.claim("tenant_id","foreign")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR")))).andExpect(status().isNotFound());
+    mvc.perform(get(path).with(jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_CUSTOMER")))).andExpect(status().isForbidden());
+    mvc.perform(get(path).with(advisor)).andExpect(status().isOk()).andExpect(jsonPath("$.documents.length()").value(0)).andExpect(jsonPath("$.runs.length()").value(0));
+    mvc.perform(post(path+"/datasets").with(advisor).contentType("application/json").content("{\"caseVersion\":0,\"name\":\"v1\",\"fields\":[],\"questions\":[],\"sourceChecked\":false}")).andExpect(status().isBadRequest());
+    mvc.perform(post(path+"/runs").with(advisor).contentType("application/json").content("{\"caseVersion\":0,\"datasetId\":\"unknown\",\"suite\":\"PAYMENT\"}")).andExpect(status().isBadRequest());
+  }
   @Test void researchIsAuthenticatedTenantScopedAndRejectsUnknownProtocols()throws Exception{
     String path="/api/cases/CR-2026-1048/platform/experiments";
     var advisor=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"));

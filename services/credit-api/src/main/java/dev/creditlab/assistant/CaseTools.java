@@ -15,7 +15,7 @@ public class CaseTools {
 
   @Tool("Read the selected case summary, missing documents and validation issues")
   public String caseSummary() {
-    return json(Map.of("sourceId","case-summary","caseId",item.id(),"purpose",item.purpose(),"status",item.status(),
+    return json(Map.of("sourceId","case-summary","caseId",item.id(),"domain",item.domain(),"purpose",item.purpose(),"status",item.status(),
         "completeness",item.completeness(),"missingDocuments",item.missingDocuments(),"validationIssues",item.validationIssues()));
   }
 

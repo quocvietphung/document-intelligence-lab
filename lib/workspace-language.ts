@@ -1,3 +1,5 @@
+import {documentResearchLabel} from './document-domains';
+import {researchText} from './document-research';
 const en={
   serviceUnavailable:"The backend is unavailable. Your data has not been deleted. If the Azure VM is stopped, start it and wait for the services to be ready; for local use, check Docker Desktop. Then refresh.",
   sessionExpired:"Your session has expired. Sign in again to access this case.",
@@ -47,5 +49,5 @@ const vi:typeof en={
   evaluationTitle:"Đo được kết quả, nói rõ giới hạn.",evaluationHint:"Kiểm thử quy tắc trích xuất trên văn bản giả lập có nhãn. Không phải độ chính xác Azure LLM hay đánh giá OCR độc lập.",references:"Tài liệu tham chiếu",classification:"Loại tài liệu khớp hoàn toàn",fields:"Trường dữ liệu khớp hoàn toàn",run:"Lần chạy kiểm thử",notMeasured:"Chưa đo chất lượng trả lời Azure và độ chính xác OCR ảnh quét trên tập dữ liệu đại diện.",dataset:"20 bản ghi tham chiếu, kết quả kỳ vọng và bài kiểm thử được lưu trong repository.",security:"Kiểm tra quyền và tách biệt tổ chức",saved:"Đã lưu thành công",language:"Ngôn ngữ",readonly:"Đăng nhập bằng tài khoản lab có quyền để lưu dữ liệu giả lập qua Java API.",
 };
 export type TextKey=keyof typeof en;
-export function workspaceText(locale:string) { const table=locale==="de"?de:locale==="vi"?vi:en; return (key:string)=>table[key as TextKey]||key; }
+export function workspaceText(locale:string) { const table=locale==="de"?de:locale==="vi"?vi:en; return (key:string)=>['experiments','pipeline','groupDocuments','groupResearch','groupOperations'].includes(key)?researchText(locale)(key):documentResearchLabel(locale,key)||table[key as TextKey]||key; }
 export const languageTables={en,de,vi};

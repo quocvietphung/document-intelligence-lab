@@ -35,9 +35,9 @@ export function novaSuggestions(locale:string,page:WorkspaceTab) {
   const labels=customerUx(locale);
   const language=locale==="vi"?"vi":locale==="de"?"de":"en";
   const questions={
-    en:[`How do I use ${page==="studio"?"AI Studio":page==="banking"?"banking evidence":"this page"}?`,"What evidence is missing from this case?","Explain net earnings versus the payslip payout."],
-    de:[`Wie nutze ich ${page==="studio"?"AI Studio":page==="banking"?"Bankbelege":"diese Seite"}?`,"Welche Belege fehlen in diesem Vorgang?","Erkläre Netto-Verdienst und Auszahlungsbetrag der Gehaltsabrechnung."],
-    vi:[`Hướng dẫn sử dụng ${page==="studio"?"AI Studio":page==="banking"?"chứng cứ ngân hàng":"trang này"}.`,"Hồ sơ này còn thiếu chứng cứ nào?","Giải thích lương ròng và khoản thực chi trên bảng lương."],
+    en:[`How do I use ${page==="studio"?"AI Studio":page==="banking"?"domain research":"this page"}?`,"What evidence is missing from this dossier?","Explain the important amounts and dates in the uploaded documents, with page sources."],
+    de:[`Wie nutze ich ${page==="studio"?"AI Studio":page==="banking"?"die Bereichsrecherche":"diese Seite"}?`,"Welche Belege fehlen in diesem Vorgang?","Erkläre wichtige Beträge und Daten der hochgeladenen Dokumente mit Quellseiten."],
+    vi:[`Hướng dẫn sử dụng ${page==="studio"?"AI Studio":page==="banking"?"nghiên cứu theo lĩnh vực":"trang này"}.`,"Hồ sơ này còn thiếu chứng cứ nào?","Giải thích số tiền và ngày quan trọng trong tài liệu đã tải, kèm trang nguồn."],
   }[language];
   return {label:labels.suggestions,hint:labels.fillHint,questions};
 }

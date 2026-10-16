@@ -44,32 +44,39 @@ public class CreditCaseService {
   private CreditCase canonical(CreditCase item){
     if(!sourceOnly)return item;
     var view=documentView(item);
-    return new CreditCase(item.id(),item.tenantId(),item.applicant(),item.purpose(),item.amountEuro(),view.completeness(),view.status(),view.missingDocuments(),view.validationIssues(),item.coApplicant(),item.submittedAt(),item.documents(),item.audit(),item.version());
+    return new CreditCase(item.id(),item.tenantId(),item.applicant(),item.purpose(),item.amountEuro(),view.completeness(),view.status(),view.missingDocuments(),view.validationIssues(),item.coApplicant(),item.submittedAt(),item.documents(),item.audit(),item.version(),item.domain());
   }
   /** Non-destructive projection: stored originals/history retained; placeholders never become evidence. */
   static CreditCase documentView(CreditCase c){
     var docs=c.documents().stream().filter(CreditCase.Document::originalAvailable).toList();
-    var missing=new ArrayList<String>();for(String type:List.of("income","statement"))if(docs.stream().noneMatch(d->d.type().equals(type)))missing.add(type);
+    var missing=new ArrayList<String>();for(String type:DocumentDomain.required(c.domain()))if(docs.stream().noneMatch(d->d.type().equals(type)))missing.add(type);
     var issues=new ArrayList<CreditCase.ValidationIssue>();var rates=new HashSet<String>();
     for(var doc:docs){if(!doc.status().equals("verified"))issues.add(new CreditCase.ValidationIssue("UNREVIEWED_DOCUMENT","MEDIUM",doc.id(),true));for(var f:doc.fields())if(f.label().equals("monthlyRate"))rates.add(FieldValueNormalizer.normalize(f.label(),f.value()));}
     if(rates.size()>1)issues.add(new CreditCase.ValidationIssue("MONTHLY_RATE_CONFLICT","HIGH","Different monthlyRate values extracted from uploaded documents",true));
-    int progress=docs.isEmpty()?0:(int)(100*docs.stream().filter(d->d.status().equals("verified")).count()/Math.max(2,docs.size()));
-    return new CreditCase(c.id(),c.tenantId(),c.applicant(),c.purpose(),c.amountEuro(),progress,docs.isEmpty()?"DRAFT":issues.isEmpty()&&missing.isEmpty()?"REVIEW_COMPLETE":"HUMAN_REVIEW",missing,issues,c.coApplicant(),c.submittedAt(),docs,c.audit(),c.version());
+    int progress=docs.isEmpty()?0:(int)(100*docs.stream().filter(d->d.status().equals("verified")).count()/Math.max(Math.max(1,DocumentDomain.required(c.domain()).size()),docs.size()));
+    return new CreditCase(c.id(),c.tenantId(),c.applicant(),c.purpose(),c.amountEuro(),progress,docs.isEmpty()?"DRAFT":issues.isEmpty()&&missing.isEmpty()?"REVIEW_COMPLETE":"HUMAN_REVIEW",missing,issues,c.coApplicant(),c.submittedAt(),docs,c.audit(),c.version(),c.domain());
   }
   public CreditCase require(String tenant,String id) { return findById(tenant,id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND)); }
   public record Draft(@NotBlank @Size(max=120) String applicant,@NotBlank @Size(max=160) String purpose,
-      @Min(1) @Max(10_000_000) long amountEuro,@Size(max=120) String coApplicant,@Min(0) long version) {}
+      @Min(0) @Max(10_000_000) long amountEuro,@Size(max=120) String coApplicant,@Min(0) long version,
+      @Pattern(regexp="banking|insurance|general") String domain) {
+    public Draft(String applicant,String purpose,long amountEuro,String coApplicant,long version) {
+      this(applicant,purpose,amountEuro,coApplicant,version,null);
+    }
+  }
   public void allowWrite() {
     if(!writesEnabled || !(store instanceof SqlCaseStore)) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Persistent writing is not configured");
   }
   public CreditCase create(String tenant,String actor,Draft draft) {
     allowWrite();
-    var item=new CreditCase("CR-"+UUID.randomUUID().toString().substring(0,12),tenant,draft.applicant().strip(),draft.purpose().strip(),draft.amountEuro(),0,"DRAFT",List.of("income","statement"),List.of(),Objects.requireNonNullElse(draft.coApplicant(),""),Instant.now().toString(),List.of(),List.of(event("CASE_CREATED",actor)),0);
+    String domain=DocumentDomain.normalize(draft.domain());
+    var item=new CreditCase("CR-"+UUID.randomUUID().toString().substring(0,12),tenant,draft.applicant().strip(),draft.purpose().strip(),draft.amountEuro(),0,"DRAFT",DocumentDomain.required(domain),List.of(),Objects.requireNonNullElse(draft.coApplicant(),""),Instant.now().toString(),List.of(),List.of(event("CASE_CREATED",actor)),0,domain);
     store.insert(item); return item;
   }
   public CreditCase edit(String tenant,String id,String actor,Draft draft) {
     allowWrite(); var old=stored(tenant,id); checkVersion(old,draft.version());
-    var item=new CreditCase(id,tenant,draft.applicant().strip(),draft.purpose().strip(),draft.amountEuro(),old.completeness(),old.status(),old.missingDocuments(),old.validationIssues(),Objects.requireNonNullElse(draft.coApplicant(),""),old.submittedAt(),old.documents(),audit(old,"CASE_EDITED",actor),old.version()+1);
+    String domain=draft.domain()==null?old.domain():DocumentDomain.normalize(draft.domain());
+    var item=new CreditCase(id,tenant,draft.applicant().strip(),draft.purpose().strip(),draft.amountEuro(),old.completeness(),old.status(),old.missingDocuments(),old.validationIssues(),Objects.requireNonNullElse(draft.coApplicant(),""),old.submittedAt(),old.documents(),audit(old,"CASE_EDITED",actor),old.version()+1,domain);
     item=canonical(item);save(item,old.version()); return visible(item);
   }
   public CreditCase attach(String tenant,String id,String actor,byte[] bytes,CreditCase.Document doc,long version) {
@@ -103,10 +110,10 @@ public class CreditCaseService {
     }
     if(values.size()>1) issues.add(new CreditCase.ValidationIssue("MONTHLY_RATE_CONFLICT","HIGH","Different monthlyRate values in documents",true));
     var missing=new ArrayList<String>();
-    for(String type:List.of("income","statement")) if(docs.stream().noneMatch(d->d.type().equals(type))) missing.add(type);
+    for(String type:DocumentDomain.required(old.domain())) if(docs.stream().noneMatch(d->d.type().equals(type))) missing.add(type);
     long reviewed=docs.stream().filter(d->d.originalAvailable()&&d.status().equals("verified")).count();
-    int progress=docs.isEmpty()?0:(int)(100*reviewed/Math.max(2,docs.size()));
-    return canonical(new CreditCase(old.id(),old.tenantId(),old.applicant(),old.purpose(),old.amountEuro(),progress,issues.isEmpty()&&missing.isEmpty()?"REVIEW_COMPLETE":"HUMAN_REVIEW",missing,issues,old.coApplicant(),old.submittedAt(),docs,audit(old,action,actor),old.version()+1));
+    int progress=docs.isEmpty()?0:(int)(100*reviewed/Math.max(Math.max(1,DocumentDomain.required(old.domain()).size()),docs.size()));
+    return canonical(new CreditCase(old.id(),old.tenantId(),old.applicant(),old.purpose(),old.amountEuro(),progress,issues.isEmpty()&&missing.isEmpty()?"REVIEW_COMPLETE":"HUMAN_REVIEW",missing,issues,old.coApplicant(),old.submittedAt(),docs,audit(old,action,actor),old.version()+1,old.domain()));
   }
   private void checkVersion(CreditCase old,long expected) { if(old.version()!=expected) throw new ResponseStatusException(HttpStatus.CONFLICT,"Reload latest case version"); }
   private void save(CreditCase item,long previous) { if(!store.update(item,previous)) throw new ResponseStatusException(HttpStatus.CONFLICT,"Concurrent change; reload case"); }

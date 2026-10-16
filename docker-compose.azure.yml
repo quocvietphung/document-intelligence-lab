@@ -1,18 +1,18 @@
 # scripts/docker-azure.mjs supplies these bind-mount settings and refreshes the
-# short-lived token. All five application services run in Docker.
+# short-lived token. Configure your resources in ignored .env.azure.local.
 services:
   credit-api:
     user: "${CREDIT_LOCAL_UID:?Run node scripts/docker-azure.mjs}:${CREDIT_LOCAL_GID:?Run node scripts/docker-azure.mjs}"
     restart: unless-stopped
     environment:
       DOCUMENT_ANALYSIS_MODE: azure
-      AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT: https://vietphung-documents-shared.cognitiveservices.azure.com/
+      AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT: ${AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT:?Configure .env.azure.local or export your Document Intelligence endpoint}
       AZURE_DOCUMENT_INTELLIGENCE_MODEL: prebuilt-layout
       AZURE_DOCUMENT_INTELLIGENCE_MAX_PAGES: "2"
       AZURE_DOCUMENT_INTELLIGENCE_CREDENTIAL: token-file
       AZURE_DOCUMENT_INTELLIGENCE_TOKEN_FILE: /run/azure-auth/token.json
-      AZURE_OPENAI_ENDPOINT: https://vietphung-ai-shared.openai.azure.com/
-      AZURE_OPENAI_DEPLOYMENT: gpt-4.1-mini
+      AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT:?Configure .env.azure.local or export your Azure OpenAI endpoint}
+      AZURE_OPENAI_DEPLOYMENT: ${AZURE_OPENAI_DEPLOYMENT:?Set the name of your deployed chat model}
       AZURE_OPENAI_CREDENTIAL: token-file
       AZURE_OPENAI_TOKEN_FILE: /run/azure-auth/token.json
       AZURE_AI_REQUIRED: "true"
