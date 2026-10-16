@@ -1,7 +1,7 @@
 {
   "realm": "credit-intelligence",
   "enabled": true,
-  "displayName": "Credit Intelligence Lab",
+  "displayName": "Document Intelligence Lab",
   "registrationAllowed": false,
   "resetPasswordAllowed": false,
   "roles": {
@@ -16,7 +16,7 @@
   "clients": [
     {
       "clientId": "credit-intelligence-web",
-      "name": "Credit Intelligence Web",
+      "name": "Document Intelligence Web",
       "enabled": true,
       "publicClient": true,
       "standardFlowEnabled": true,

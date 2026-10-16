@@ -13,7 +13,7 @@ public class AgentSupervisor {
     if(EvidenceGuard.suspicious(q)) return new Plan("Supervisor",List.of(new Step("Supervisor","Request policy check",List.of(),"BLOCKED")),true,"Instruction override or secret request");
     String specialist=q.matches("(?s).*(risk|fraud|rủi ro|betrug|risiko).*" )?"Risk":
       q.matches("(?s).*(compliance|policy|datenschutz|retention|tuân thủ|richtlinie).*" )?"Compliance":
-      q.matches("(?s).*(document|salary|payroll|pdf|gehalt|beleg|dokument|netto|tài liệu|lương).*" )?"Document":
+      q.matches("(?s).*(document|salary|payroll|pdf|gehalt|beleg|dokument|netto|tài liệu|lương|versicherung|police|policy number|premium|deductible|claim|bảo hiểm).*" )?"Document":
       q.matches("(?s).*(account|transaction|invoice|konto|umsatz|rechnung|giao dịch|tài khoản).*" )?"Banking":"Explanation";
     List<String> tools=switch(specialist) {
       case "Banking"->List.of("caseSummary","documentEvidence","retrievedEvidence");

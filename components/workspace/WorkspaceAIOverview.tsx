@@ -7,6 +7,7 @@ import {AITag,AIWorkflowLegend} from "./AITransparency";
 import {AIDashboardStats,WorkspaceAICatalog} from './WorkspaceAICatalog';
 import type {CreditDocument} from '@/lib/credit-data';
 import type {TrustSection} from '@/lib/nova-trust';
+import {ResearchShortcuts} from './DocumentResearchPanel';
 
 export function WorkspaceAIOverview({locale, demo, documentMode, capabilities, navigate, openNova,documents,openTrust}: {
   locale: string;
@@ -42,6 +43,6 @@ export function WorkspaceAIOverview({locale, demo, documentMode, capabilities, n
         <button className="button-primary" onClick={openNova}>{t.novaAction}<ArrowUpRight size={15}/></button>
       </article>
     </div>
-    <AIWorkflowLegend locale={locale}/><p className="ai-configuration-note"><ShieldCheck size={13}/>{ai.notLive}</p>
+    <AIWorkflowLegend locale={locale}/><ResearchShortcuts locale={locale} navigate={navigate}/><p className="ai-configuration-note"><ShieldCheck size={13}/>{ai.notLive}</p>
   </section><AIDashboardStats locale={locale} documents={documents} capabilities={capabilities} demo={demo}/><WorkspaceAICatalog locale={locale} demo={demo} capabilities={capabilities} navigate={navigate} openNova={openNova} openTrust={openTrust}/></>;
 }

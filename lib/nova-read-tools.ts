@@ -4,6 +4,7 @@ import {uploadedEvidence} from "./document-focus";
 import {platformSchema,searchSchema} from "./platform";
 import {documentFocusText} from "./document-focus";
 import type {WorkspaceTab} from "./nova-guide";
+import {documentResearchSchema} from './document-research';
 export type NovaReadResult={rows:string[];sources:{id:string;title:string;text:string}[];demo:boolean};
 export async function novaReadTool(feature:WorkspaceTab,item:WorkspaceCase,locale:string,demo:boolean,token?:string,query?:string,signal?:AbortSignal):Promise<NovaReadResult>{
   if(demo||!token)throw new Error("Authentication required; original document evidence requires authentication");
@@ -15,10 +16,15 @@ export async function novaReadTool(feature:WorkspaceTab,item:WorkspaceCase,local
     if(!response.ok)throw new Error("Read unavailable");return response.json();
   }
   const result:NovaReadResult={rows:[],sources:[],demo};
+  if(feature==='experiments') {
+    const data=documentResearchSchema.parse(await read('/platform/research'));
+    if(data.caseId!==item.id)throw new Error('Case mismatch');
+    result.rows=[`${data.documents.length} PDF · ${data.datasets.length} reference versions · ${data.runs.length} experiments`,...data.runs.slice(0,5).map(r=>`${r.datasetName} · ${r.suite} · ${r.durationMs} ms · 0 Azure calls`)];return result;
+  }
   if(feature==="documents"||feature==="banking"||feature==="evaluation") {
     const current=toWorkspaceCase(await read(""));
     if(current.id!==item.id||current.tenantId!==item.tenantId)throw new Error("Case mismatch");
-    const documents=uploadedEvidence(current.documents).filter(d=>feature!=="banking"||d.type==="statement"||d.type==="invoice");
+    const documents=uploadedEvidence(current.documents);
     result.sources=documents.flatMap(d=>{
       const pages=[...new Set([...(d.pages||[]).map(p=>p.number),...(d.fields||[]).flatMap(f=>f.page?[f.page]:[])])];
       if(!pages.length)return [{id:d.id,title:d.name,text:`${d.status} · ${d.analysisProvider||"unknown"}`}];

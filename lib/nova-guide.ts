@@ -1,8 +1,8 @@
 import catalog from "../services/credit-api/src/main/resources/nova-features.json";
 import {z} from "zod";
-export const workspaceTabs=["overview","studio","documents","pipeline","controls","banking","evaluation","operations","audit"] as const;
+export const workspaceTabs=["overview","studio","experiments","documents","pipeline","controls","banking","evaluation","operations","audit"] as const;
 export type WorkspaceTab=typeof workspaceTabs[number];
-export const guideSchema=z.object({features:z.array(z.enum(workspaceTabs)).max(9),query:z.string().max(2000)});
+export const guideSchema=z.object({features:z.array(z.enum(workspaceTabs)).max(workspaceTabs.length),query:z.string().max(2000)});
 export type NovaGuide=z.infer<typeof guideSchema>;
 const normalize=(text:string)=>text.normalize("NFKD").replace(/\p{M}/gu,"").toLowerCase().replace(/ß/g,"ss");
 export function novaFeature(id:WorkspaceTab,locale:string){const row=catalog.find(f=>f.id===id)!;return locale==="de"?row.de:locale==="vi"?row.vi:row.en;}

@@ -5,7 +5,7 @@ import java.util.*;
 /** App-owned tasks, not user-programmable agents. No write/payment tools. */
 public final class TrustCatalog {
   private TrustCatalog() {}
-  public static final String PROMPT_VERSION="nova-evidence-2026-10-v3";
+  public static final String PROMPT_VERSION="nova-document-domains-2026-10-v4";
   public static final String TASK_PATTERN="summary|reconcile|explain|request-documents|review-checklist|terminology|bilingual-summary";
   public static final List<String> TASKS=List.of("summary","reconcile","explain","request-documents","review-checklist","terminology","bilingual-summary");
   public static List<Map<String,Object>> features() {
@@ -42,5 +42,16 @@ public final class TrustCatalog {
       "Giải thích các mâu thuẫn chứng cứ đã ghi nhận trong hồ sơ giả lập này. Tách sự kiện, quy tắc và diễn giải. Dẫn nguồn và liệt kê việc người kiểm duyệt cần kiểm tra; không kết luận người nào gian lận.",
       "Soạn email yêu cầu bổ sung đúng các chứng cứ thiếu hoặc chưa rõ trong hồ sơ giả lập này. Để nguồn trong ghi chú riêng cho người kiểm duyệt, không trong email khách hàng. Chỉ là bản nháp để sửa; không gửi và không hứa duyệt tín dụng."};
     return (locale.equals("vi")?vi:locale.equals("de")?de:en)[TASKS.indexOf(id)];
+  }
+  public static String question(String id,String locale,String domain) {
+    if(!TASKS.contains(id))throw new IllegalArgumentException("Unknown task");
+    if(domain.equals("banking"))return question(id,locale);
+    String intro=locale.equals("vi")?"Chỉ dùng tài liệu gốc của hồ sơ "+domain+" đang chọn. Dẫn trang nguồn; ghi rõ điều chưa biết. Không yêu cầu bảng lương hay sao kê nếu không liên quan. Không quyết định tín dụng, phạm vi bảo hiểm hay bồi thường. ":locale.equals("de")?"Nutze nur die Originalbelege des ausgewählten Bereichs "+domain+". Zitiere Quellseiten und benenne Unbekanntes. Keine sachfremden Gehalts- oder Kontoauszüge verlangen. Keine Kredit-, Deckungs- oder Regulierungsentscheidung. ":"Use only the selected "+domain+" dossier's originals. Cite page sources and state unknowns. Do not require unrelated payroll or bank statements. No lending, insurance coverage or settlement decisions. ";
+    String task=switch(id) {
+      case "reconcile" -> locale.equals("vi")?"Đối chiếu các tài liệu: mã tham chiếu, người, ngày và số tiền. Nếu là bảo hiểm, phân biệt phí, mức tự chịu và số tiền bảo hiểm; không coi chúng là khoản được bồi thường.":locale.equals("de")?"Vergleiche Dokumentreferenzen, Personen, Daten und Beträge. Unterscheide bei Versicherungen Beitrag, Selbstbeteiligung und Deckungssumme; diese sind keine zugesagte Entschädigung.":"Compare document references, people, dates and amounts. For insurance distinguish premium, deductible and coverage limit; none is a promised claim payout.";
+      case "terminology" -> locale.equals("vi")?"Giải thích các thuật ngữ Đức thực sự có trong tài liệu, giữ nguyên nhãn gốc và giá trị. Không bịa định nghĩa pháp lý.":locale.equals("de")?"Erkläre die tatsächlich vorkommenden deutschen Dokumentbegriffe. Behalte Originalbezeichnungen und Werte bei. Keine erfundenen Rechtsdefinitionen.":"Explain German terms actually present in the documents, preserving original labels and values. Do not invent legal definitions.";
+      default -> question(id,locale);
+    };
+    return intro+task;
   }
 }
