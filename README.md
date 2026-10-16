@@ -408,7 +408,7 @@ Development ports bind to `127.0.0.1`. Historical `credit-*` service/realm/volum
 - Original documents are private and Bearer-protected; PDF.js assets are served locally, not from a document-viewer CDN.
 - Upload consent, malware scanning, reviewer history and case/tenant isolation remain enabled.
 - Document retention is separate from chat/reference history; see the retention limits in [Nova privacy](docs/NOVA_TRUST.md).
-- The former Azure VM backend was decommissioned. **Local Docker is the primary runtime**; the old Vercel frontend is not a working backend/login environment.
+- The former Azure VM backend and Vercel project have been removed. **Local Docker is the primary runtime**. A future cloud release requires a newly reviewed deployment; there is no active public frontend for this lab.
 - No cloud resource is created by the local startup commands. Never commit private PDFs, `.env.azure.local`, tokens, database dumps or Terraform state.
 
 [Backup, monitoring and recovery](docs/RELIABILITY_LAB.md).

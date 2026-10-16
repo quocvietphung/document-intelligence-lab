@@ -2,7 +2,7 @@
 
 **Current status: decommissioned.** The previous `credit-lab-vm`, its disk, public IP, dedicated network and interview power scheduler were removed to avoid ongoing VM infrastructure costs. Docker local is the primary runtime.
 
-The Azure OpenAI and Document Intelligence resources used by local Docker are separate and were retained. The old Vercel frontend no longer has its former cloud API/Keycloak backend.
+The Azure OpenAI and Document Intelligence resources used by local Docker are separate and were retained. The former Vercel project has also been removed; any future public frontend and cloud backend require a newly reviewed deployment.
 
 ## Source kept for future use
 
