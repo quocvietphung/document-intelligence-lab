@@ -1,56 +1,66 @@
-# Nova trust and human review
+# Nova: evidence, privacy and review
 
-## Scope
+Nova has two intentionally separate modes:
 
-Branch: `feature/nova-trust-and-review`. Existing Next.js + Java + Keycloak + PostgreSQL and shared keyless Azure integrations are preserved. No paid service, Azure resource, payment tool, automated credit decision, cloud deployment or master merge is added.
+- **App guidance:** local feature help, navigation links and page tours; no LLM call.
+- **Evidence analysis:** Azure OpenAI through Java/LangChain4j, using the selected authorized dossier and read-only tools.
 
-## User workflow
+A greeting or configured-engine badge does not prove a model call succeeded. [Configure and verify local Azure access](AZURE_AI.md).
 
-1. Open **AI transparency & review** in the workspace or Nova's shield.
-2. Read which inputs leave the device: explicitly confirmed PDFs for Document Intelligence; the current question and selected permitted evidence for Nova. Static app guidance does not call an LLM. Reading this center does not run inference.
-3. Choose one of seven controlled tasks. The app fills a draft; the user decides whether to edit and send it.
-4. Inspect the response's paragraph-level citations. Open only a page present in the selected case's document. Review the original before confirming any fields.
-5. Report an incorrect amount, person, unsupported source or other issue. Feedback does not become verified fact. A correction request is an unsent draft; a subsequently generated revision has its own immutable answer ID and `revisionOf` link.
-6. Create a review task after explicit confirmation. An authorized reviewer claims it and leaves a note to return/resolve it. Reopening preserves history. Task completion is not loan approval or blanket approval of the AI answer.
+## Using Nova
 
-## Storage and permissions
+Open the floating Nova button, choose a mode and type a question. Enter sends; Shift+Enter creates a new line. Expand the reading area for long answers, minimize the chat when inspecting a document, or use the adjacent guide button for a tour of the current page.
 
-- `lab_records`: `trust-answer`, `trust-feedback`, `trust-task`, `trust-feature`, `trust-event`, `field-review`. Every query includes verified tenant and case ID.
-- Keycloak ADVISOR/REVIEWER/ADMIN can read and report; only REVIEWER/ADMIN can transition tasks, and only ADMIN can change case-scoped AI availability.
-- Answer and feedback records are insert-only. Request UUIDs support idempotent retries; conflicting reuse fails. Task/feature updates use optimistic payload/version checks. Stale case writes are rejected.
-- Server-side checks run before a disabled task can call the model. Case-scoped controls do not change OAuth permissions, OCR availability or another case.
-- Protected original PDFs use authenticated requests and `no-store`; tokens are never embedded in PDF URLs. Model/provider configuration metadata contains no secret or endpoint.
-- Visible-chat clear is not record deletion. Answer/feedback/task history has no automatic retention purge yet; configured document retention remains separate. Use fictional data only.
+The controlled task library prepares editable prompts for:
 
-## Honest evidence and metrics
+1. Document/dossier summary.
+2. Cross-document evidence comparison.
+3. Explanation of inconsistencies.
+4. Draft request for missing documents.
+5. Reviewer evidence checklist.
+6. German document terminology.
+7. German–Vietnamese evidence summary.
 
-`SOURCE_LINKED` means the cited ID exists in the response's selected sources. It is **not semantic verification, calibrated confidence or factual accuracy**. Uncited/invalid citations require review. Per-paragraph display is bounded to 30 paragraphs, 2,000 characters each; stored answer is bounded to 12,000 characters.
+Selecting a task prepares a draft; the user decides whether to send it. No tool sends an email, transfers money, approves a loan or settles a claim. Explicitly selecting a bilingual task produces two languages by design; ordinary interface labels follow the chosen locale.
 
-Original page links verify that the document/page exists. Field highlights require one exact original text item and supported geometry. If absent, duplicated, scanned or rotated, the viewer displays the page and explicitly reports that no unique region was located. No approximate region is presented as exact.
+## Read the evidence
 
-The activity panel reports observed answer duration, feedback/task counts, citation absence and reviewer field edits, using the latest 60 records per category. It does not report billed cost, token usage, total historic backlog, customer handling time, hallucination rate or invented savings. Model ID is the configured deployment name, not an independently pinned vendor model revision. The owner is an operational role, not an assigned individual. Lab controls are not banking-production certification.
+A reply can expose source links and evidence by statement. Open the original page and compare its text/amounts before accepting a conclusion.
 
-## Verification
+`SOURCE_LINKED` means the referenced source ID exists in the selected context. It is **not semantic verification, calibrated confidence or factual accuracy**. An exact PDF highlight is displayed only when supported by a unique text match; otherwise the viewer opens the page without pretending to identify an exact region.
 
-- Frontend tests cover safe schemas, citation targets, exact PDF match/fallback, task allowlists, authentication, HTTP methods and language parity.
-- Java `TrustWorkflowTest` covers immutable original/revision records, tenant/case isolation, citation limitations, feedback/task idempotency, unsent correction/task drafts, stale writes, task owner/state/version checks, controls, measured metrics and H2-backed persistence.
-- Security integration tests reject anonymous/foreign access and advisor attempts to perform reviewer/admin actions.
-- `TEST_TRUST=1 node scripts/test-oauth.mjs` exercises local Keycloak PKCE login, a fictional case, one real Azure answer, saved feedback, unsent correction, task transitions and a fresh PostgreSQL read. It leaves labelled fictional test records for inspection. It does not upload PDFs or send emails/payments.
+Document field edits and reviewer confirmation are separate from the model answer. Net earnings and payout must not be substituted for each other. German source quotations, names and number formatting remain unchanged in every UI language.
 
-## Verified local build — 13 October 2026
+## Feedback and reviewer tasks
 
-- Frontend: 165 tests passed; lint and TypeScript passed; Next.js production build passed in Docker.
-- Java: 154 tests, 153 passed and one opt-in live Document Intelligence test skipped; zero failures/errors. No new PDF upload was performed for this upgrade.
-- Live local integration: 43 checks passed, including Keycloak PKCE/refresh/logout, real keyless Azure OpenAI, trust records in PostgreSQL, draft-only correction, reviewer state transitions, idempotency and role/version guards. The labelled case is `CR-cdedde66-61b`.
-- Docker web/API were recreated without rebuilding or deleting database volumes. Java runtime fallback reused the existing trusted local application image after Docker Hub metadata for the standard base timed out. The tested JAR was packaged with Maven; the repository's standard Dockerfile remains unchanged. This fallback is local only, not a registry publication or reproducible clean-registry build claim.
-- Browser: all six center sections loaded; saved history was read; a second feedback report prepared an unsent correction; Enter sent the correction through the real Azure model and cleared revision context only after success. The original and revision remained separate. Reviewer claim/resolve updated task history from four to six steps.
-- Original DATEV PDF viewer rendered locally without a new Azure upload. Selecting the payout field located one exact PDF text region; unsupported/ambiguous geometry still falls back to the page.
-- Responsive check at 390 × 844: viewport and scroll widths both 390; the dialog was 370 px wide without horizontal overflow. The temporary viewport override was reset.
+- Report an incorrect amount, person, unsupported source or other issue.
+- A correction request is an unsent draft. A subsequent answer receives a new immutable answer ID linked to the original; the old answer is retained.
+- Confirm before creating a human-review task. A reviewer can claim, return, resolve or reopen it with a note and history.
+- Completing a task is not a financial decision or blanket validation of the model.
 
-### Real local screenshots
+## What leaves the device?
 
-![Nova transparency and review center](screenshots/nova-trust-center-desktop-2026-10-13.png)
+| Action | Destination / data |
+| --- | --- |
+| Open a page, tour or local guide | No Azure inference |
+| Preview a prepared private PDF | Authenticated local document service |
+| Confirm Azure document analysis | Selected file → Azure Document Intelligence |
+| Send an evidence-analysis message | Question + permitted selected evidence/tool context → Azure OpenAI |
+| Export a research bundle | Private browser download; not an automatic Azure upload |
 
-![Nova revision, evidence and feedback controls](screenshots/nova-trust-chat-2026-10-13.png)
+The app does not silently upload the entire document library. Nevertheless, Azure mode is external processing: use fictional or explicitly permitted documents and review regional/privacy requirements.
 
-![Mobile transparency center](screenshots/nova-trust-center-mobile-2026-10-13.png)
+## Storage and access
+
+- Keycloak authenticates the user; API-audience JWT, role, tenant and dossier checks apply before access.
+- Answer/feedback/task/feature/event records are held in PostgreSQL `lab_records` with verified tenant and dossier IDs.
+- ADVISOR/REVIEWER/ADMIN can read/report; reviewer/admin roles control review transitions, and admin controls case-scoped AI availability.
+- Original/revision answers and feedback are insert-only. Idempotency and version checks reject conflicting retries or stale writes.
+- PDF originals use authenticated `no-store` requests; tokens are not put into document URLs.
+- **Clear chat clears the visible conversation, not the audit/database history.** Answer, feedback, reference and task history has no automatic purge in this lab. Document retention is a separate worker policy.
+
+## Monitoring limits
+
+The review center reports observed answer duration, counts, feedback and source-link issues from a bounded set of stored records. It does not measure billed tokens/cost, global hallucination rate or customer time saved.
+
+Prompt guards, scoped tools and source checks reduce specific risks; they are not a security certification. Reviewers remain responsible for checking the original evidence.

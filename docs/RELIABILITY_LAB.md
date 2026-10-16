@@ -1,143 +1,83 @@
-# Reliability & evidence lab
+# Local operations, security and recovery
 
-This is an **AI bank-document analysis lab**, not a transactional bank platform.
-No payment functionality (including simulations), bank connection, automatic credit decision or fraud verdict exists.
-Statement and invoice fixtures are read-only evidence. Legacy payment APIs and payment-order XML exports have been removed; stored historical fixtures are preserved.
+The primary runtime is [Docker local](DOCKER_LOCAL.md). The previous Azure VM backend has been removed; the app's local volumes and shared Azure AI resources are independent.
 
-## Five new workspaces
-
-| Workspace | Working flow |
-| --- | --- |
-| AI Studio | Case evidence → page/field/table chunks → quantized local MiniLM embeddings → tenant/case-filtered Qdrant → BM25 hybrid ranking → transparent feature reranking → Nova |
-| Document pipeline | 202 upload → PostgreSQL durable queue → object volume → ClamAV + structural checks → Azure prebuilt-layout or explicitly configured local extraction → human review |
-| Review & insights | Derived double-entry mock journal, salary-to-synthetic-movement amount checks, rule alerts, append-only reviewer notes, non-submittable ISO 20022 example |
-| AI quality | 40 versioned labelled text references, field precision/recall/F1, type confusion matrix, five-query Recall@5, actual failed examples |
-| Operations | Provider/scanner/storage/Redis configuration, persisted agent runs and citation checks, latency, admin-only Prometheus metrics |
-
-### Important limits
-
-- The reranker is a **BM25/cosine/query-coverage formula**, not a trained cross-encoder.
-- MiniLM is small and runs locally; this variant is English-focused. Test German/VI separately before claiming multilingual quality.
-- Citation checks validate IDs against supplied sources. Lexical overlap **does not prove factual groundedness**. Missing, invented or low-overlap citations require review.
-- Regex injection checks plus tool isolation are defence layers, **not a guarantee that all prompt injection is blocked**.
-- The 40-reference scores measure deterministic text rules, **not Azure OCR, scanned PDF accuracy or LLM factual accuracy**.
-- Salary reconciliation is amount-only against fictional transactions. Period, holder identity and authenticity are not verified.
-- The journal is derived from mock movements and balanced by construction, not a production accounting ledger.
-- Supervisor routing invokes one specialist LLM per question, not five autonomous communicating agents.
-- Azure Blob, Azure Application Insights and signed releases are configurable extensions, not automatically provisioned cloud resources.
-
-## Start locally
-
-Docker Desktop needs roughly 5–6 GB available memory. Official ClamAV uses amd64 emulation on Apple Silicon and needs virus definitions before becoming ready.
+## Service health
 
 ```bash
-# Local extraction; no Azure credentials.
-docker compose -f docker-compose.yml -f docker-compose.platform.yml up --build -d --wait --wait-timeout 600
-
-# Existing Azure configuration; keyless short-lived CLI token, never an API key.
-# Keep this helper running to renew the token.
-node scripts/docker-azure.mjs up
+docker compose -f docker-compose.yml -f docker-compose.platform.yml ps --all
+curl --fail http://localhost:8081/actuator/health
+docker compose -f docker-compose.yml -f docker-compose.platform.yml logs --tail=60 credit-api web keycloak
 ```
 
-Open http://localhost:3000/en, sign in with the **local-only** account
-`advisor.demo / demo-password`, choose a case, then open AI Studio or Document pipeline.
-The imported demo realm grants this demo user advisor and reviewer roles; do not copy that arrangement to production.
+Expected: API, databases, Keycloak, Redis and ClamAV healthy; web/Qdrant running; `storage-init` exited 0. Do not restart a successful initializer just to make every row look green.
 
-PDF/image input is limited to 3 MB and the configured provider page count.
-TXT is available only with local extraction. Originals stay case-authorized.
-The existing synchronous document-upload endpoint also uses the scanner, shared
-upload limits and extracted-text injection checks; it cannot bypass these protections.
-It remains synchronous for compatibility, so use the new pipeline for durable background processing.
-Redis, Qdrant and ClamAV have no published host ports.
+Never share raw tokens, passwords, source text or provider responses from diagnostics.
 
-### Queue and retention
+## Persistence and document processing
 
-Flyway applies `V1__platform_lab.sql` on the existing case database, baselining legacy tables at 0 without deleting them.
-Claims use PostgreSQL `FOR UPDATE SKIP LOCKED`, bounded retries and five-minute crash leases.
-Extraction results are stored before attachment, preventing repeated paid extraction on a normal restart after the result is saved. A crash during the remote call itself can still lead to a repeated provider call on retry.
-SHA-256 deduplication is tenant/case scoped and protected by a partial unique index.
-
-New pipeline files expire after 30 days by default (1–365 configurable).
-The worker removes their vector index scope, case evidence/original, object and saved extraction.
-Cleanup failure is retried, not reported as successful. Legacy synchronous uploads are deliberately **not** silently purged.
-Evaluation reports and review notes are retained for lab audit; purge policy for these records must be defined before real data use.
-
-## Storage
-
-Default: private Docker object volume `lab_documents`, PostgreSQL original copy for the existing authenticated PDF viewer.
-Optional Azure Blob uses the same short-lived Entra credential:
-
-```text
-AZURE_BLOB_ENDPOINT=https://<existing-account>.blob.core.windows.net
-AZURE_BLOB_CONTAINER=lab-documents
-```
-
-Create the private container and grant narrowly scoped Blob Data permissions separately.
-No account/container or access grant is created by this implementation.
-Do not enable public blob access. Blob expiry is handled by the app's retention worker.
-
-## Verification
+- PostgreSQL stores dossiers, compatible original copies, audit and research records.
+- The private `lab_documents` volume holds queued document objects.
+- Qdrant vectors, Redis state, antivirus signatures and identity state use separate named volumes.
+- The durable worker scans before analysis, records attempts, recovers leases and retains failure history.
+- Document retention is configured to 30 days in the local platform profile. Chat/review/reference history has no new automatic purge; browser downloads have their own operator-managed retention.
+- Changing the Compose project name creates different volumes. It does not migrate data.
 
 ```bash
-npm run verify
-cd services/credit-api
-mvn test package
-cd ../..
-TEST_PLATFORM=1 TEST_RESTART_QUEUE=1 TEST_CHAT=azure node scripts/test-oauth.mjs
+# Stop without erasing data.
+docker compose -f docker-compose.yml -f docker-compose.platform.yml stop
+
+# Remove containers/network but retain named volumes.
+docker compose -f docker-compose.yml -f docker-compose.platform.yml down
 ```
 
-The integration test creates a named synthetic case, checks real retrieval/Redis,
-measures the dataset, stores a review note, uploads a generated payroll PDF, restarts
-the API and verifies durable completion and byte-identical original retrieval.
-It also uses the harmless EICAR antivirus test signature to verify rejection **before** extraction.
-Azure mode uses the existing resource and may incur normal document/chat usage.
-No real customer documents are used.
+Do not add `-v` / `--volumes` or run volume pruning as a troubleshooting shortcut.
 
-## Telemetry
+## Backup and restore checks
+
+With the stack running and host Node.js installed:
 
 ```bash
-# Add to the same compose files used for your stack:
+node scripts/backup-lab.mjs
+node scripts/restore-lab-test.mjs cases .local/backups/YOUR-BACKUP/credit_cases.dump
+node scripts/restore-lab-test.mjs identity .local/backups/YOUR-BACKUP/keycloak.dump
+```
+
+Use the paths printed by the backup script. Dumps are private and Git-ignored. The restore checker creates separate test databases; it does not overwrite the live app or realm. Those test databases remain for inspection.
+
+The database backup helper does **not** back up every object/vector volume. Preserve private document objects, approved reference files and vector state separately when a complete environment recovery is required. Test compatibility and ownership before switching the application to restored data.
+
+## Security boundaries
+
+- Keycloak authorization-code + PKCE; Java validates JWT issuer, API audience, tenant and roles.
+- Dossier lookup and source access are authorized server-side; a guessed ID is not permission.
+- ClamAV precedes extraction. Do not disable it when a file is rejected or the scanner is unavailable.
+- Shared Redis quotas fail closed when unavailable.
+- Upload/file/page bounds, explicit Azure processing consent and private original endpoints remain active.
+- AI answers, source links, field edits and human verification are separate states.
+- Local published passwords are development examples only; production requires a separate secret-management and identity plan.
+
+## Optional telemetry
+
+```bash
 docker compose -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.observability.yml up -d
 docker compose -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.observability.yml logs --tail=30 otel-collector
 ```
 
-OTel HTTP spans go to a local OTLP collector with a basic debug exporter.
-Metrics: `/actuator/prometheus` requires an ADMIN JWT. No prompts, PDF text, access tokens or model responses are logged in agent-run records.
-RAG/agent counters and timers have bounded labels, not customer IDs.
+The optional collector receives local OTLP traces. Application Insights is not connected automatically. `/actuator/prometheus` requires an ADMIN JWT. Keep prompts, PDFs, access tokens and customer identifiers out of telemetry.
 
-Azure Application Insights is **not connected by default**. Before adding an
-approved Azure Monitor exporter/Java agent, define telemetry redaction, consent,
-retention and region. Do not send document text to monitoring.
+Suggested operational signals include queue age, repeated retries, API errors, scanner/Redis failures, token expiry and retention failures. These are signals to implement in your monitoring environment, not active cloud alerts.
 
-Suggested alerts: HTTP 5xx > 2% for 5 min, queue age > 5 min, any failed malware scan,
-Redis unavailable, repeated extraction retry, token expiry, storage cleanup failure.
-These are incident thresholds to configure in a real monitoring system, not active cloud alerts.
+## Incident checklist
 
-## Backup and recovery
+| Failure | Response |
+| --- | --- |
+| Azure unavailable | Check provider, Entra helper, resource roles and newest attempt; no API-key workaround |
+| Redis unavailable | Restore the dependency; do not disable limits |
+| Qdrant unavailable | Inspect the explicitly reported fallback and restore/rebuild the dossier index |
+| Scanner unavailable | Restore signature/health state; never bypass scanning |
+| Wrong evidence | Verify tenant/dossier, source version and page; correct through reviewer workflow |
+| Flyway migration error | Preserve data and inspect history; never run clean against the live database |
+| Suspected credential exposure | Stop the affected workflow, restrict access and rotate through authorized administration |
 
-```bash
-node scripts/backup-lab.mjs
-# Use paths printed by the backup script:
-node scripts/restore-lab-test.mjs cases .local/backups/<date>/credit_cases.dump
-node scripts/restore-lab-test.mjs identity .local/backups/<date>/keycloak.dump
-```
-
-Backups are private, ignored by Git, and include fictional evidence and Keycloak state.
-Restore creates a separate test database. It never overwrites the live databases.
-An application/realm recovery needs a maintenance window, tested backup,
-compatible versions and explicit operator confirmation before switching connections.
-Back up the object/vector volumes separately if preserving pipeline objects is required.
-
-## Security and incident runbook
-
-- **Azure failures:** inspect provider mode and safe error codes; refresh Entra login/helper. Never paste tokens or introduce an API key as a workaround.
-- **Redis outage:** protected writes/chat fail closed. Restore Redis; do not disable shared limits to hide the failure.
-- **Qdrant outage:** searches explicitly report local-vector fallback. Restore Qdrant and re-query to rebuild the case index.
-- **Scanner failure:** queue retries then stops; do not bypass it for an untrusted file.
-- **Wrong sources:** verify case/tenant, document version and supplied IDs. Correct evidence through reviewer UI; never auto-approve lending.
-- **Migration failure:** preserve database; inspect Flyway history before any repair. Never run clean against the case database.
-- **Credentials:** Azure uses short-lived Entra tokens/identity. Rotate local Keycloak/DB demo passwords only through a planned operator workflow; production needs secret management and separate accounts.
-- **Build supply chain:** security workflow checks dependencies, image vulnerabilities and secrets; creates CycloneDX SBOM. Resolve findings instead of hiding failed checks.
-- **Signing:** the separate manually dispatched workflow builds/publishes a GHCR image and signs its digest using GitHub OIDC. Configure a protected `container-release` environment and inspect the SBOM before triggering it. It has not been run automatically.
-
-This lab demonstrates engineering controls; it is not a claim of regulatory compliance or production bank readiness.
+CI includes dependency/image/secret checks and SBOM generation. A signing workflow is present but its presence is not proof that an image has already been signed or independently audited. This is research software, not production/compliance certification.

@@ -4,6 +4,17 @@ import {proxyCase} from './case-proxy';
 import {workspaceText} from './workspace-language';
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
 describe('source-bound document experiments',()=>{
+  it('localizes reference and table labels rather than leaking English into other interfaces',()=>{
+    expect(researchText('en')('tables')).toBe('tables');
+    expect(researchText('de')('tables')).toBe('Tabellen');
+    expect(researchText('vi')('tables')).toBe('bảng');
+    expect(researchText('en')('labelFlow')).toBe('PDF → checked labels');
+    expect(researchText('de')('labelFlow')).toBe('PDF → geprüfte Labels');
+    expect(researchText('vi')('labelFlow')).toBe('PDF → nhãn đã kiểm tra');
+    expect(researchText('de')('pipeline')).toBe('Datenpipelines');
+    expect(researchText('vi')('pipeline')).toBe('Luồng dữ liệu');
+    expect(researchText('vi')('experiments')).toBe('Thí nghiệm AI');
+  });
   it('never renders missing metrics as a zero or success score',()=>{expect(researchMetric(null)).toBe('—');expect(researchMetric(undefined)).toBe('—');expect(researchMetric(0)).toBe('0.0%');});
   it('blocks a reference after the source changes',()=>{expect(datasetIsCurrent({sourceHash:'old'},'new')).toBe(false);expect(datasetIsCurrent(undefined,'new')).toBe(false);});
   it('keeps results scoped to the selected reference version rather than mixing historical tests',()=>{const runs=[{id:'new',datasetId:'v2'},{id:'old',datasetId:'v1'},{id:'older',datasetId:'v2'}];expect(runsForReference(runs,'v2').map(r=>r.id)).toEqual(['new','older']);expect(runsForReference(runs,undefined)).toEqual([]);});

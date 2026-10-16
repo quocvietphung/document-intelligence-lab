@@ -1,10 +1,10 @@
 # Source-bound research workspaces
 
-Implemented on `feature/document-intelligence-lab` and included in the source showcase release. Publishing the code does not deploy production or create paid Azure resources. For a clean clone, start with [Docker local setup](DOCKER_LOCAL.md).
+Use the current document evidence to build reproducible references and comparisons. No experiment automatically deploys cloud infrastructure. For a clean clone, start with [Docker local setup](DOCKER_LOCAL.md).
 
 ## Start from an original
 
-1. Sign in at `http://localhost:3000/vi` (or `/en`, `/de`). Local credentials: `advisor.demo` / `demo-password`.
+1. Sign in at `http://localhost:3000/en` (or `/de`, `/vi`). Local credentials: `advisor.demo` / `demo-password`.
 2. Choose a domain and dossier. Open **Documents & review**; preview and explicitly analyze an approved fictional PDF. Private official DATEV samples remain in the banking domain and are never put into Git/public assets.
 3. Open **AI Experiments**. Select the original document/page and open its PDF. Read the expected values yourself; do not copy model predictions and call them ground truth.
 4. Add fields using their extraction key (e.g. `netIncome`, `payoutAmount`, `premium`, `invoiceTotal`). Missing field keys are permitted. Add retrieval questions with one target document/page if desired.
@@ -59,19 +59,10 @@ Experiment jobs are persisted as `document-experiment-job`. A compare-and-swap l
 
 ```bash
 npm run verify
-mvn -f services/credit-api/pom.xml test
-TEST_RESEARCH=1 node scripts/test-oauth.mjs
+mvn -f services/credit-api/pom.xml verify
+TEST_SHOWCASE=1 node scripts/test-oauth.mjs
 ```
 
-The live acceptance script signs in through Keycloak authorization-code + PKCE, tests the Next.js proxy/Java API, persists reference versions and runs on an existing approved original, and checks fresh reads plus private export. It does not upload real documents or create cloud resources. Test records remain labelled in the local research history; no production deployment is performed.
+The no-Azure showcase acceptance creates labelled fictional records and checks the complete local workflow. For an existing independently approved DATEV original, `TEST_RESEARCH=1 node scripts/test-oauth.mjs` additionally checks source-bound datasets, durable jobs, private exports and fresh PostgreSQL reads. It does not make new Azure calls or replace the live Qdrant index.
 
-### Local verification — 16 October 2026
-
-- Frontend: 203 tests passed; lint and TypeScript checks passed.
-- Java: 197 tests discovered, 196 passed, one skipped, no failures or errors.
-- Live research acceptance: 33 checks passed, including authenticated proxy/API requests, validation, durable jobs, tenant/dossier isolation, private export and independent PostgreSQL readback.
-- Both application Docker images built successfully. Existing authentication, databases, vector search and malware scanning remain enabled.
-- Browser verification used the private approved Robert-Muster DATEV PDF: two expected amounts were read from the original, saved as a new reference, and evaluated. Both labelled fields matched (2/2); this is a two-label check, **not a general accuracy claim**. Retrieval runs use the same source-bound reference and local ranking methods.
-- A private JSON download was verified to contain the original references, saved extraction, manual labels and evaluation inputs, with `cloudUploaded=false` and `destination=browser-download-only`.
-- Browser layouts were checked at 1280px and 390px; the mobile document had no horizontal overflow. The experiments tour targets the always-visible reference/results tabs, so it can start from either tab without pointing at a hidden form. No browser console errors were observed during these checks.
-- No new Azure AI calls were required by these research experiments. Foundry, Data Factory and Blob connectors remain unconfigured; production deployments and Git main branches are unchanged.
+UI language follows the selected English/German/Vietnamese locale. Original document text, extraction keys, user-entered labels/questions and technical model/method identifiers are preserved instead of silently translated.

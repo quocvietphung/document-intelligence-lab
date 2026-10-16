@@ -2,6 +2,11 @@ import {describe,it,expect} from "vitest";
 import {documentLanguageTables,syntheticPayrollFixtures} from "./document-language";
 import {readFileSync} from "node:fs";
 describe("document samples and translations",()=>{
+  it("uses an English payslip label without translating the German source evidence",()=>{
+    expect(documentLanguageTables.en.salary).toBe('Payslip');
+    expect(documentLanguageTables.de.salary).toBe('Gehaltsabrechnung');
+    expect(documentLanguageTables.vi.salary).toBe('Bảng lương');
+  });
   it("keeps English, German and Vietnamese complete",()=>{
     for(const table of Object.values(documentLanguageTables)) {
       expect(Object.keys(table).sort()).toEqual(Object.keys(documentLanguageTables.en).sort());

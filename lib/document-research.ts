@@ -20,6 +20,7 @@ export function runsForReference<T extends {datasetId:string}>(runs:readonly T[]
 export function referenceExportLines(bundle:{evaluationInputs?:unknown[]}){return (bundle.evaluationInputs||[]).map(row=>JSON.stringify(row)).join('\n');}
 
 const en={
+  labelFlow:'PDF → checked labels',tables:'tables',
   experiments:'AI Experiments',pipeline:'Data Pipelines',groupDocuments:'Documents',groupResearch:'AI research',groupOperations:'Data & operations',
   QUEUED:'Experiment queued',RUNNING:'Experiment running · results appear automatically',FAILED:'Experiment failed — refresh or create a new run',SOURCE_CHANGED:'Source changed. Create a fresh checked reference version.',EXPERIMENT_UNAVAILABLE:'Experiment unavailable. Check the worker and run again.',ATTEMPTS_EXHAUSTED:'Worker recovery attempts exhausted. Inspect services and create a new run.',
   title:'Measure AI against your source documents.',hint:'Create independently checked references, then evaluate saved extraction or compare retrieval strategies. No automatic upload or Azure call.',
@@ -50,7 +51,8 @@ const en={
 };
 type Copy=typeof en;
 const vi:Copy={
-  experiments:'AI Experiments',pipeline:'Data Pipelines',groupDocuments:'Tài liệu',groupResearch:'Nghiên cứu AI',groupOperations:'Dữ liệu & vận hành',
+  labelFlow:'PDF → nhãn đã kiểm tra',tables:'bảng',
+  experiments:'Thí nghiệm AI',pipeline:'Luồng dữ liệu',groupDocuments:'Tài liệu',groupResearch:'Nghiên cứu AI',groupOperations:'Dữ liệu & vận hành',
   QUEUED:'Thí nghiệm đang chờ',RUNNING:'Đang chạy thí nghiệm · kết quả sẽ tự hiển thị',FAILED:'Thí nghiệm thất bại — tải lại hoặc tạo lượt mới',SOURCE_CHANGED:'Nguồn thay đổi. Tạo phiên bản tham chiếu đã kiểm tra mới.',EXPERIMENT_UNAVAILABLE:'Chưa chạy được thí nghiệm. Kiểm tra worker rồi chạy lại.',ATTEMPTS_EXHAUSTED:'Worker đã hết lượt phục hồi. Kiểm tra dịch vụ rồi tạo lượt mới.',
   title:'Đo chất lượng AI bằng tài liệu nguồn.',hint:'Tạo nhãn chuẩn đã tự kiểm tra, đánh giá kết quả trích xuất đã lưu và so sánh cách truy xuất. Không tự upload hay gọi Azure.',
   datasets:'1. Bộ dữ liệu tham chiếu',results:'2. Kết quả thí nghiệm',newDataset:'Tạo phiên bản tham chiếu',name:'Tên phiên bản tham chiếu',nameHint:'Ví dụ: khoản thực chi DATEV · đã kiểm tra v1',
@@ -79,7 +81,8 @@ const vi:Copy={
   docs:'Tài liệu Microsoft',sourceHash:'Dấu vân tay nguồn',noScore:'Chưa đo',researchLink:'Tạo nhãn chuẩn, đánh giá trích xuất và so sánh truy xuất',pipelineLink:'Xem xử lý, nguồn gốc dữ liệu và ranh giới kết nối Azure',
 };
 const de:Copy={
-  ...en,experiments:'KI-Experimente',groupDocuments:'Dokumente',groupResearch:'KI-Forschung',groupOperations:'Daten & Betrieb',
+  ...en,experiments:'KI-Experimente',pipeline:'Datenpipelines',groupDocuments:'Dokumente',groupResearch:'KI-Forschung',groupOperations:'Daten & Betrieb',
+  labelFlow:'PDF → geprüfte Labels',tables:'Tabellen',
   QUEUED:'Experiment eingereiht',RUNNING:'Experiment läuft · Ergebnisse erscheinen automatisch',FAILED:'Experiment fehlgeschlagen — aktualisieren oder neuen Lauf starten',SOURCE_CHANGED:'Quelle geändert. Neue geprüfte Referenzversion anlegen.',EXPERIMENT_UNAVAILABLE:'Experiment nicht verfügbar. Worker prüfen und erneut starten.',ATTEMPTS_EXHAUSTED:'Worker-Wiederherstellung ausgeschöpft. Dienste prüfen und neuen Lauf starten.',
   title:'KI an den eigenen Quelldokumenten messen.',hint:'Unabhängig geprüfte Referenzen anlegen, gespeicherte Extraktion bewerten und Suchstrategien vergleichen. Kein automatischer Upload oder Azure-Aufruf.',
   datasets:'1. Referenzdatensatz',results:'2. Experimentergebnisse',newDataset:'Referenzversion anlegen',name:'Name der Referenzversion',nameHint:'Zum Beispiel: DATEV-Auszahlung · geprüft v1',

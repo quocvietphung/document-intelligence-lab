@@ -1,206 +1,222 @@
-# Azure AI runbook
+# Azure AI for the local Docker workspace
 
-For current clean-clone configuration, use [Docker local setup](DOCKER_LOCAL.md). The Azure override now requires **your own** endpoints and deployment through ignored `.env.azure.local` (template: `.env.azure.example`); it no longer defaults to the historical shared resources named below. The dated sections here record previous integration work, not permission to use the author's resources or an automatic background-service installation.
+This guide connects **your local Java container** to Azure Document Intelligence and Azure OpenAI. Docker, Keycloak and the databases stay on your machine. It does not deploy a VM or Vercel application.
 
-The Java API owns both AI trust boundaries:
+Start with [Docker local setup](DOCKER_LOCAL.md). Without Azure, the workspace still offers local extraction, PDF review, evidence search and experiments. Only Nova's evidence-analysis mode needs a deployed chat model.
 
-```text
-Browser -> Keycloak access token -> Java API
-                                  |- selected tenant/case
-                                  |- Azure Document Intelligence
-                                  `- LangChain4j -> Azure OpenAI
-```
-
-Azure compute uses `DefaultAzureCredential` / Managed Identity. The local Docker profile uses the host's Azure CLI login through a read-only, short-lived token file for both Document Intelligence and OpenAI. There is intentionally no Azure API-key code path. Raw prompts, document text and tokens are not written to application logs.
-
-## Verified shared AI profile (2026-10-11)
-
-`docker-compose.azure.yml` now configures both real services: `vietphung-documents-shared` / `prebuilt-layout` and `vietphung-ai-shared` / `gpt-4.1-mini`. Java selects the `token-file` credential for both. `AZURE_AI_REQUIRED=true` prevents a missing endpoint/deployment from silently starting in demo mode. The UI labels this profile **Azure OpenAI · Entra identity, no API key**, not Managed Identity.
-
-The signed-in developer identity has **Cognitive Services OpenAI User** on the shared OpenAI resource only, granted after explicit owner approval. Subscription Owner alone did not provide this inference data permission. No new model, key or paid Azure resource was created. Inference on the existing model still follows normal Azure token billing.
-
-The current payroll library offers only the two official fictional DATEV LODAS 2025 Robert/Melanie references; older self-made fixtures are regression-test resources, not public samples. Open **Documents & review → Payroll sample library**, preview the private prepared PDF, then explicitly confirm import/analysis. **Inspect evidence** displays the authenticated original with PDF.js, page/zoom controls and extracted fields. PDF.js worker/font/wasm assets are served by the app itself; no document or bearer token is sent to a PDF-viewer CDN. Original bytes remain in the case database. Source links in Nova can open the selected case's PDF evidence.
-
-Live integration:
-
-```bash
-TEST_PAYROLL=1 TEST_CHAT=azure node scripts/test-oauth.mjs
-TEST_BANKING=1 TEST_CHAT=azure node scripts/test-oauth.mjs
-```
-
-These use synthetic records only and exercise Azure calls. The ordinary Java/TypeScript suites do not call Azure unless explicitly enabled. Keep `scripts/docker-azure.mjs` running for token renewal while using the local Docker profile.
-
-## Document Intelligence modes
-
-| Mode | Behaviour |
-|---|---|
-| `local` | PDFBox/Tesseract plus transparent label rules; no Azure call |
-| `azure` | `prebuilt-layout` (or the configured model) must succeed; failures fail closed |
-| `azure-with-local-fallback` | Azure is primary; service failures fall back to local extraction and the stored provider makes this visible |
-
-Every stored document records `analysisProvider`, `modelId`, `contentType`, page text/evidence and OCR confidence when available. Confidence is a recognition signal, never business accuracy. Every extracted field still requires human confirmation.
-
-## Provision the keyless Azure resources
-
-```bash
-az login
-az group create --name rg-credit-ai-lab --location germanywestcentral
-cp infra/azure/ai-services.bicepparam.example infra/azure/ai-services.bicepparam
-az deployment group what-if \
-  --resource-group rg-credit-ai-lab \
-  --template-file infra/azure/ai-services.bicep \
-  --parameters infra/azure/ai-services.bicepparam
-az deployment group create \
-  --resource-group rg-credit-ai-lab \
-  --template-file infra/azure/ai-services.bicep \
-  --parameters infra/azure/ai-services.bicepparam
-```
-
-The template creates a user-assigned managed identity, Document Intelligence and the least-privilege Cognitive Services role assignment. The default `prebuilt-layout` request enables `KEY_VALUE_PAIRS`; a trained custom model ID can be supplied later without changing the transport. Both Azure key-value pairs and top-level custom fields are normalized into the review schema while page evidence and provider/model provenance remain visible. Azure OpenAI creation is optional because model availability and quotas vary by subscription and region. Set `deployOpenAi=true` only after confirming quota, model version and allowed region.
-
-Attach the output managed identity to the Java runtime (for example Azure Container Apps), then set:
+## 1. Understand the two authentication boundaries
 
 ```text
-AZURE_CLIENT_ID=<managed identity client id>
-DOCUMENT_ANALYSIS_MODE=azure
-AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=<deployment output>
-AZURE_DOCUMENT_INTELLIGENCE_MODEL=prebuilt-layout
-AZURE_OPENAI_ENDPOINT=<existing or deployment output>
-AZURE_OPENAI_DEPLOYMENT=<deployment name>
+Browser -- Keycloak access token --> Next.js proxy --> Java API
+Host Azure CLI -- short-lived Entra token file --> Java --> Azure AI
 ```
 
-For a direct local Java run, `az login` supplies the developer identity. Grant that identity **Cognitive Services User** for Document Intelligence and **Cognitive Services OpenAI User** for Azure OpenAI. Base Docker Compose remains in `local` mode; the explicit Azure override enables the token-file bridge without copying the host CLI credential cache into a container.
+Keycloak verifies the **app user**: API audience, role, tenant and dossier access. An Entra token verifies the **developer identity** allowed to call Azure. Neither token replaces the other.
 
-## Existing shared resource (2026-10-11)
+The token-file bridge is for local development, **not Managed Identity**. Managed Identity applies to an Azure-hosted workload. Microsoft documents the distinction and resource-scoped OpenAI access in its [keyless authentication guide](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/managed-identity).
 
-Document Intelligence `vietphung-documents-shared` is in the existing `ai-shared` resource group, West Europe, on the free `F0` tier. It is a separate service alongside `vietphung-ai-shared` OpenAI. No new Azure OpenAI deployment or storage service is required for byte uploads.
+No Azure API key belongs in Next.js public variables, Git, Vercel or a browser. This setup does not require a client secret or an application registration.
 
-Endpoint: `https://vietphung-documents-shared.cognitiveservices.azure.com/`
+## 2. Prepare the resources
 
-API-key authentication is disabled. The local developer has resource-scoped **Cognitive Services User** access. Managed Identity `credit-intelligence-ai` has the same role on this document resource; attach it to a Java Azure runtime before using it there. Its client ID is `d571d150-197a-4f5b-9f50-0d49cc2a9487`. Local execution uses `az login` and does not require setting that Managed Identity client ID.
+Reuse resources you are authorized to use, or have an administrator create these two resources:
 
-The `azure-shared` Spring profile configures the endpoint, `prebuilt-layout` plus key-value extraction, and a two-page maximum. It explicitly selects `AzureCliCredential` to avoid IDE credential/keychain prompts on macOS. On an Azure runtime set `AZURE_DOCUMENT_INTELLIGENCE_CREDENTIAL=default` (and `AZURE_TOKEN_CREDENTIALS=ManagedIdentityCredential` for a deployed Managed Identity). PDFs over two pages are rejected before calling Azure, avoiding incomplete F0 results. The upload formats in this profile are PDF, PNG and JPEG; TXT remains a local-only format.
+| Resource | Required configuration |
+| --- | --- |
+| Azure OpenAI | A resource-root endpoint and a deployed chat model compatible with Chat Completions/tool calling |
+| Azure Document Intelligence | A custom-subdomain resource endpoint; the application uses `prebuilt-layout` |
 
-Run Java on the host with existing Keycloak/PostgreSQL configuration:
+### Azure OpenAI and the model deployment
+
+1. Open the Azure OpenAI resource in Azure/Foundry and record its resource endpoint.
+2. Open its model deployment screen and deploy a supported chat model with available quota in your region.
+3. Record the **deployment name** you chose. It can differ from the underlying model name.
+4. Use the deployment/resource pair from the same resource.
+
+The existing local integration has been exercised with a `gpt-4.1-mini` chat deployment. Do not assume that this model/version is available in every region or that a Responses-only/reasoning deployment accepts the same settings.
+
+This code uses LangChain4j `AzureOpenAiChatModel` with temperature `0.1`, output limit `1500`, a `35-second` timeout, no SDK retries and provider request/response logging disabled. These settings are in `services/credit-api/src/main/java/dev/creditlab/assistant/AzureAiConfiguration.java`, not editable model tuning controls in the UI.
+
+Creating a resource or model deployment can incur costs. It is not done by any local startup script.
+
+### Document Intelligence
+
+Use a resource-specific endpoint, such as:
+
+```text
+https://example-documents.cognitiveservices.azure.com/
+```
+
+A regional endpoint is not interchangeable with a custom-subdomain endpoint for Entra authentication. See [Microsoft's authentication requirements](https://learn.microsoft.com/en-us/azure/ai-services/authentication).
+
+No custom extraction model training is required for `prebuilt-layout`. Field classification/normalization also use Java rules; do not describe this as a trained payroll or insurance model.
+
+If access is restricted, use the organization's approved network/VPN and verify DNS and access policy. Do not bypass restrictions or make a private resource public merely to get a successful test.
+
+## 3. Sign in to the correct tenant/subscription
+
+Install **Azure CLI**, **Node.js 22+**, and Docker on the host.
 
 ```bash
-az login
-cd services/credit-api
-mvn spring-boot:run -Dspring-boot.run.profiles=azure-shared
+az login --tenant YOUR-TENANT-ID
+az account set --subscription YOUR-SUBSCRIPTION-ID
+az account show --query '{subscription:name,id:id,tenant:tenantId}' -o table
 ```
 
-This command retains OAuth/Keycloak validation. For browser uploads the Java case database must also be configured; running the profile alone does not provision Keycloak or PostgreSQL. The default Docker Compose still uses local extraction. A host Azure CLI session is not automatically available inside its Java container.
+For a browserless session, use the Azure CLI's supported device-code login flow. Your host CLI session stays on the host; the app does not copy the `.azure` directory into Docker.
 
-### Recommended: web and Java both in Docker
+Tenant/subscription IDs identify configuration, not a credential. Signing in does not by itself grant inference permission.
 
-Stop any host Next.js/Java processes using ports 3000 and 8081 before starting this stack. Do not run both versions on the same ports.
+## 4. Grant resource-scoped inference permissions
+
+An authorized administrator grants:
+
+| Identity | Resource scope | Role |
+| --- | --- | --- |
+| Your developer user | The one Azure OpenAI resource | `Cognitive Services OpenAI User` |
+| Your developer user | The one Document Intelligence resource | `Cognitive Services User` |
+
+Being able to administer a subscription is not the same as having data-plane inference access. These grants are persistent resource access; review the exact account and scope before applying them. Do not grant Owner, subscription-wide access or a new service principal for this local walkthrough.
+
+### Portal
+
+On each resource, open **Access control (IAM)** → **Add role assignment**. Select the role above and the correct developer user. Review the member and resource before confirming.
+
+### CLI alternative — administrator action, not startup
+
+The following example targets the currently signed-in user. An administrator granting another developer access must substitute that developer's object ID.
 
 ```bash
-az login
-node scripts/docker-azure.mjs
+doclabUserId=$(az ad signed-in-user show --query id -o tsv)
+doclabOpenAIId=$(az cognitiveservices account show -g YOUR-AI-RESOURCE-GROUP -n YOUR-OPENAI-RESOURCE --query id -o tsv)
+doclabDocumentId=$(az cognitiveservices account show -g YOUR-AI-RESOURCE-GROUP -n YOUR-DOCUMENT-RESOURCE --query id -o tsv)
+
+az role assignment create --assignee-object-id "$doclabUserId" --assignee-principal-type User --role "Cognitive Services OpenAI User" --scope "$doclabOpenAIId"
+az role assignment create --assignee-object-id "$doclabUserId" --assignee-principal-type User --role "Cognitive Services User" --scope "$doclabDocumentId"
 ```
 
-This builds/starts all five application containers with `docker-compose.azure.yml`: web, Java, Keycloak and two PostgreSQL databases. Existing database volumes are retained. Open `http://localhost:3000/en`. Containers have `unless-stopped` restart policies.
+Allow time for role propagation before diagnosing a newly granted `403`. Do not repeatedly broaden permissions. Local helpers never run these role-assignment commands.
 
-Keep this small host helper running: every five minutes it renews a short-lived Cognitive Services access token using your existing Azure CLI login. Java reads a read-only bind-mounted token file. No API key or Azure CLI refresh-token directory is mounted into Docker; `.local/azure-auth/` is excluded from Git and the Docker build context. This is a local developer bridge, **not Managed Identity**. On Azure use Managed Identity instead.
+## 5. Configure the local app
 
-If the helper stops, containers stay running, but Azure calls fail closed after the token expires. Restart token renewal without rebuilding with `node scripts/docker-azure.mjs watch`. After a reboot, run the normal start command again. `prepare` is only for one-shot setup and does not renew tokens.
-
-### Background token renewal on this Mac
-
-The 13 October local repair installed `dev.creditlab.azure-token-refresh` as a **user** LaunchAgent in `~/Library/LaunchAgents/`. It runs the same `watch` mode, with explicit Node/Azure CLI paths, `RunAtLoad` and `KeepAlive`. It does not start Docker, an Azure VM, or another paid resource. Its process was verified running and renewing tokens after the terminal-based workflow ended.
-
-Check the process without printing credentials:
+From the repository root, copy the example **only if the private file does not already exist**:
 
 ```bash
-launchctl print gui/$(id -u)/dev.creditlab.azure-token-refresh
-tail -n 3 .local/azure-auth/renewal.log
+cp .env.azure.example .env.azure.local
 ```
 
-Logs contain expiry/status only, never access tokens. If the CLI login is revoked or cannot renew, run `az login` on the Mac and restart the helper:
+Edit the file using your editor:
+
+```dotenv
+AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=https://YOUR-DOCUMENT-RESOURCE.cognitiveservices.azure.com/
+AZURE_OPENAI_ENDPOINT=https://YOUR-OPENAI-RESOURCE.openai.azure.com/
+AZURE_OPENAI_DEPLOYMENT=YOUR-CHAT-DEPLOYMENT
+```
+
+| Value | Correct | Incorrect |
+| --- | --- | --- |
+| OpenAI endpoint | Resource root ending in `.openai.azure.com/` | Portal URL, Foundry project URL or `/openai/v1/chat/completions` |
+| Document endpoint | Custom-subdomain resource root | Document Intelligence Studio page or analyze-operation URL |
+| Deployment | Your actual deployment name | Guessing a model family name |
+| Credentials | Host Entra login + helper | API key in `NEXT_PUBLIC_*` or token pasted into a file manually |
+
+The ignored `.env.azure.local` is read by `scripts/docker-azure.mjs`; exported shell values take precedence. Next.js does not automatically turn this file into Java container configuration. The helper supplies Compose variables.
+
+The validator accepts public Azure HTTPS `.azure.com` hosts. Sovereign clouds require a reviewed endpoint/audience change. Use the root endpoints even if vendor examples use a different SDK-specific base URL.
+
+## 6. Start Docker with continuous token renewal
 
 ```bash
-launchctl kickstart -k gui/$(id -u)/dev.creditlab.azure-token-refresh
+node scripts/docker-azure.mjs up
 ```
 
-Do not run a second `watch` process concurrently. To stop the background helper deliberately:
+The helper:
+
+1. Validates the required endpoint/deployment values.
+2. Obtains a short-lived token for `https://cognitiveservices.azure.com/` using host Azure CLI.
+3. Atomically writes `.local/azure-auth/token.json` with private directory/file permissions.
+4. Read-only mounts that directory as `/run/azure-auth` in Java.
+5. Starts base + Azure + platform Compose files using the host numeric UID/GID.
+6. Refreshes the token every five minutes without printing it.
+
+Do not change the token audience to match an unrelated SDK example: the checked-in token bridge and Java credential validate the Cognitive Services resource for this integration.
+
+| Helper command | Purpose |
+| --- | --- |
+| `node scripts/docker-azure.mjs up` | Build/start containers, then keep renewal active |
+| `node scripts/docker-azure.mjs start` | Start existing images and keep renewal active |
+| `node scripts/docker-azure.mjs watch` | Renew tokens only |
+| `node scripts/docker-azure.mjs prepare` | Refresh once; not a long-running renewal service |
+
+Keep that terminal running. **Ctrl+C stops token renewal, not Docker.** Containers can remain healthy while an expired token causes AI calls to fail. After a reboot, start Docker and run the helper again. A clone does not install a background service.
+
+Azure Compose limits: PDF **2 pages**, images **6 MP**, files **3 MB**. Interactive limits are finite: 12 AI requests/minute/account, 150,000 reserved tokens/day/account and 300,000/day/tenant. These are lab safeguards, **not billed usage or a monetary cap**.
+
+## 7. Verify with the actual UI
+
+Open [the English workspace](http://localhost:3000/en) and sign in to local Keycloak.
+
+### Document analysis
+
+1. Create/select the correct document-domain dossier.
+2. Upload an included fictional PDF, or prepare the permitted DATEV reference pages.
+3. Preview it and explicitly confirm analysis.
+4. Find **Analysis results** above the library and choose **View result & PDF**.
+5. Check the document's provider/model, original page, extracted values and tables.
+6. Expand **OCR recognition details** only when needed. Its model signal is not measured accuracy.
+
+Previewing a prepared PDF does not send it to Azure. Confirmed analysis does. An old failed queue attempt remains history; inspect the newest attempt/result.
+
+### Nova
+
+1. Open Nova and select **Evidence analysis**.
+2. Ask in English, for example:
+
+> What are the net earnings and payout in this DATEV payslip? Cite the page and do not invent missing deductions.
+
+3. Press Enter to send; Shift+Enter adds a line break.
+4. Check the reply's **Azure OpenAI** mode, page sources and evidence-by-statement controls.
+5. Open a citation and compare the original before accepting a value.
+6. Use feedback or a confirmed reviewer task when evidence is wrong or incomplete.
+
+**App guidance** is a separate local mode. A greeting, configured-engine badge, health endpoint or local guide response is not proof that the Azure model answered. A completed source-linked model reply is the relevant connectivity check, not an accuracy benchmark.
+
+The README screenshots use approved fictional DATEV evidence. They do not imply that real customer data can be uploaded without permission.
+
+## 8. Diagnose safely
 
 ```bash
-launchctl bootout gui/$(id -u)/dev.creditlab.azure-token-refresh
+docker compose -f docker-compose.yml -f docker-compose.platform.yml ps --all
+curl --fail http://localhost:8081/actuator/health
+node --test scripts/docker-azure-config.test.mjs
 ```
 
-Stopping it does not stop Docker; cloud calls will fail once the current token expires. The LaunchAgent's absolute Node/repository paths must be updated if Node or the checkout moves. This is installed on this developer's Mac, not automatically installed by cloning the repository. On another machine, use the documented foreground `watch` mode or configure your own user service. It runs while this Mac user's session is active, not while the Mac is off/asleep.
+| Symptom | Check |
+| --- | --- |
+| App `401/403` before reaching AI | Keycloak session, API audience, roles, tenant and dossier permission |
+| Azure `401` | Correct tenant, current token, supported resource endpoint |
+| Azure `403` | Resource-scoped data-plane role, propagation and approved network access |
+| Deployment not found / `404` | Deployment belongs to the configured resource; use its deployment name |
+| Nova works, OCR fails | Document resource endpoint/role and its quota are separate from OpenAI |
+| OCR works, Nova fails | Chat deployment/role, compatible model settings and request limits |
+| `429` | Distinguish the app's shared limits from Azure quota; wait for the applicable reset |
+| Analysis `503` | Check current provider, helper renewal, service logs and newest queue attempt |
+| Helper exited | Restart it; `prepare` alone does not renew indefinitely |
 
-In **Document pipeline**, a recoverable failed approved DATEV reference can be requeued using **Retry DATEV reference**, followed by the provider confirmation. The new job appears above the old failed history entry. Do not treat a retained old failure as the status of the new extraction. [Verified Robert recovery](DATEV_RECOVERY.md).
+Do not paste token files, credentials, PDF text or provider payloads into support logs. Expired or unavailable identity should fail closed, not fall back to a fabricated answer.
 
-If Maven downloads inside Docker fail, build the JAR with your host Maven cache, then use the prebuilt runtime Dockerfile:
+## Return to local-only processing
+
+Stop the renewal helper, then recreate only the app services with the base profile:
 
 ```bash
-cd services/credit-api
-mvn -DskipTests package
-docker build -f Dockerfile.prebuilt -t credit-intelligence-lab-credit-api .
-cd ../..
-docker compose build web
-node scripts/docker-azure.mjs start
+docker compose -f docker-compose.yml -f docker-compose.platform.yml up -d --build --force-recreate credit-api web
 ```
 
-`start` uses existing images without rebuilding and still renews the Azure token. For offline local packaging only, `Dockerfile.prebuilt` also accepts `--build-arg RUNTIME_IMAGE=<trusted-local-java-tesseract-image>`; never supply an untrusted base image. Run the Java tests before packaging.
+Named database/document volumes remain. Existing Azure-analyzed documents retain their true provider metadata; switching modes does not relabel or re-analyze them.
 
-### Alternative: Java and web on the host
+## Data and cloud boundaries
 
-Start Docker Desktop. From the repository root start only the supporting services:
+Document Intelligence receives the explicitly confirmed file. Nova receives the current question and permitted selected evidence/tool results, not a silent upload of every local PDF. Sources and model answers remain scoped to the authorized dossier.
 
-```bash
-docker compose -f docker-compose.yml -f docker-compose.azure-host.yml \
-  up -d --wait --wait-timeout 180 case-db identity-db keycloak
-```
-
-In a second terminal run the Java API on the host (the credentials below are the existing synthetic local database credentials):
-
-```bash
-cd services/credit-api
-SERVER_PORT=8081 \
-KEYCLOAK_ISSUER=http://localhost:8080/realms/credit-intelligence \
-KEYCLOAK_JWK_URI=http://localhost:8080/realms/credit-intelligence/protocol/openid-connect/certs \
-CASE_PERSISTENCE_ENABLED=true CASE_WRITES_ENABLED=true \
-CASE_DATABASE_URL=jdbc:postgresql://localhost:5433/credit_cases \
-CASE_DATABASE_USER=credit_lab CASE_DATABASE_PASSWORD=local-cases-only \
-mvn spring-boot:run -Dspring-boot.run.profiles=azure-shared
-```
-
-In a third terminal, from the repository root:
-
-```bash
-CREDIT_API_URL=http://localhost:8081 \
-NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8080 \
-NEXT_PUBLIC_KEYCLOAK_REALM=credit-intelligence \
-NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=credit-intelligence-web \
-npm run dev -- --hostname 127.0.0.1
-```
-
-Open `http://localhost:3000/en`, sign in as the local `advisor.demo` account, create/select a fictional case, then open **Documents & review → Payroll sample library**. Prepare the two private DATEV pages according to [PUBLIC_PAYROLL_TESTS.md](PUBLIC_PAYROLL_TESTS.md); preview the reference and explicitly confirm import/analysis. **Inspect evidence** shows the actual provider/model, net income and payout alongside the PDF and page evidence. The former `public/demo/synthetic-payroll.pdf` action belonged to the 11 October historical test and is no longer offered; that public URL now returns 404. No real applicant or financial data is included in the DATEV references.
-
-An opt-in live test generates a synthetic PDF in memory and verifies real Azure page/field extraction through the application's Java provider:
-
-```bash
-cd services/credit-api
-AZURE_DOCUMENT_LIVE_TEST=true \
-AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=https://vietphung-documents-shared.cognitiveservices.azure.com/ \
-mvn -Dtest=AzureDocumentIntelligenceLiveTest test
-```
-
-Optionally set `AZURE_DOCUMENT_SAMPLE_PATH` to export the generated synthetic PDF for manual browser uploads. The ordinary test suite never calls Azure unless `AZURE_DOCUMENT_LIVE_TEST=true` is explicitly set.
-
-To reproduce only the shared document resource configuration, use `infra/azure/shared-document-intelligence.bicep` against `ai-shared`. It defaults to F0, disables key authentication, and leaves existing shared OpenAI resources unchanged. RBAC assignments are separate from this resource template.
-
-F0 limits: [Microsoft service limits](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/service-limits?view=doc-intel-4.0.0). Model support: [Layout documentation](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/prebuilt/layout?view=doc-intel-4.0.0).
-
-## Verification
-
-1. Call `GET /api/cases/document-analysis/status` with an advisor token. It must report the selected mode, provider, model and `keylessIdentity: true`.
-2. Upload a synthetic PDF/image. Inspect its provider/model and page evidence in the workspace.
-3. Confirm/edit fields as a reviewer; no field is auto-approved.
-4. Ask Nova a case question. The Java API binds tools to the already-authorized tenant and case; the model cannot select another case.
-5. Check the append-only `ai_audit` table. It stores request ID, actor, tenant, case, mode and time—never the prompt or document content.
-
-Production still requires private networking or restricted ingress, encrypted object storage instead of bounded PostgreSQL blobs, malware scanning, retention/deletion policy, backup/restore tests, regional/data-residency review, DPIA, alerting and independent model/security validation.
+The former demo VM has been deleted; it is not needed to call the retained AI resources from local Docker. Terraform, Vercel, Foundry evaluations, Data Factory, Blob ingestion and Application Insights are not activated by this guide. Review usage charges, region and data-handling rules separately.

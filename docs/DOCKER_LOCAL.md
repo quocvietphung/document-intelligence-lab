@@ -34,7 +34,7 @@ docker compose -f docker-compose.yml -f docker-compose.platform.yml ps --all
 curl --fail http://localhost:8081/actuator/health
 ```
 
-Open `http://localhost:3000/en`, `/de` or `/vi`.
+Open `http://localhost:3000/en` for the English interface; `/de` for German or `/vi` for Vietnamese. Interface labels follow the selected language. Document text, filenames, user-authored records and source number formatting remain unchanged.
 
 | Purpose | Username | Password |
 | --- | --- | --- |
@@ -57,6 +57,8 @@ Local profile: PDFBox text extraction, Tesseract German/English image OCR and Ja
 Nova app guidance is local. Nova evidence-analysis requires Azure OpenAI; no local LLM is bundled and no fake answer replaces an unavailable cloud model.
 
 ## Azure mode: your resources, your identity
+
+For the complete resource/model preparation, role-assignment examples and Nova walkthrough, use [Azure AI for local Docker](AZURE_AI.md). This section covers starting the Docker profile once those prerequisites are ready.
 
 This optional profile uses existing resources you control. It does **not** create resources, grant RBAC, start a VM or change your subscription. Azure inference may be billable; check region, data use and spending controls first.
 
@@ -194,3 +196,5 @@ docker compose -f docker-compose.yml -f docker-compose.platform.yml \
 Optional local traces are not an automatic Application Insights integration. Manage with the same override. Do not remove orphaned containers before checking their purpose.
 
 This guide does not run Terraform, publish images, start a paid VM, expose databases or deploy Vercel. Automatic Git-triggered Vercel deployment is disabled for this showcase release. Cloud release, TLS, secret management, backups and production identity remain separate work.
+
+The former Azure VM backend has been decommissioned. Local Docker, its volumes and the separately retained Azure AI resources remain available; the old Vercel frontend is not a working cloud login/API environment.
