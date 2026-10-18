@@ -107,7 +107,7 @@ public class DocumentExtractor {
       {"premium","Jahresbeitrag|Versicherungsbeitrag|Annual premium|Premium"},{"deductible","Selbstbeteiligung|Deductible"},
       {"coverageAmount","Deckungssumme|Versicherungssumme|Coverage amount"},{"coverageStart","Versicherungsbeginn|Coverage start"},
       {"coverageEnd","Versicherungsende|Coverage end"},{"claimNumber","Schadennummer|Claim number"},
-      {"claimDate","Schadendatum|Date of loss"},{"invoiceNumber","Rechnungsnummer|Invoice number"},
+      {"claimDate","Schadendatum|Date of loss"},{"invoiceNumber","Rechnungsnummer|Invoice number|Invoice no"},
       {"invoiceTotal","Gesamtbetrag|Rechnungsbetrag|Invoice total"},{"contractNumber","Vertragsnummer|Contract number"}};
     var fields=new ArrayList<CreditCase.Field>();
     for(var page:pages) for(String[] label:labels) {
@@ -121,11 +121,16 @@ public class DocumentExtractor {
   }
 
   static String classify(String all) {
+    String normalized=all.replaceAll("\\s+"," ");
+    // Standard policy wording is not an individual insurance certificate.
+    if((normalized.contains("gc 6002")&&normalized.contains("part i - definitions"))
+        ||(normalized.contains("gc 6003")&&normalized.contains("policy administration"))
+        ||(normalized.contains("ho-4")&&(normalized.contains("policy coverage period")||normalized.contains("personal liability"))))return "insurance-wording";
     if(all.contains("gehaltsabrechnung")||all.contains("entgeltabrechnung")||all.contains("abrechnung der brutto/netto-bezüge"))return "income";
     if(all.contains("kontoauszug")||all.contains("account statement"))return "statement";
     if(all.contains("schadenmeldung")||all.contains("claim notification"))return "insurance-claim";
     if(all.contains("versicherungsschein")||all.contains("insurance policy")||all.contains("policennummer"))return "insurance-policy";
-    if(all.contains("rechnungsnummer")||all.contains("invoice number"))return "invoice";
+    if(all.contains("rechnungsnummer")||all.contains("invoice number")||all.contains("invoice no:"))return "invoice";
     if(all.contains("vertragsnummer")||all.contains("contract number"))return "contract";
     return all.contains("selbstauskunft")?"disclosure":all.contains("praxisbewertung")?"valuation":"unknown";
   }
@@ -148,7 +153,7 @@ public class DocumentExtractor {
     if(Set.of("versicherungsende","coverageend").contains(label))return Optional.of("coverageEnd");
     if(Set.of("schadennummer","claimnumber").contains(label))return Optional.of("claimNumber");
     if(Set.of("schadendatum","dateofloss").contains(label))return Optional.of("claimDate");
-    if(Set.of("rechnungsnummer","invoicenumber").contains(label))return Optional.of("invoiceNumber");
+    if(Set.of("rechnungsnummer","invoicenumber","invoiceno").contains(label))return Optional.of("invoiceNumber");
     if(Set.of("gesamtbetrag","rechnungsbetrag","invoicetotal").contains(label))return Optional.of("invoiceTotal");
     if(Set.of("vertragsnummer","contractnumber").contains(label))return Optional.of("contractNumber");
     return Optional.empty();

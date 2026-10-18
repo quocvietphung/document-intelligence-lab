@@ -46,13 +46,13 @@ These public example credentials are **local only**. Ports bind to loopback; nev
 ## First document
 
 1. Create a General documents dossier.
-2. Upload `public/samples/invoice-fictional.pdf`. Visiting a page never uploads it automatically.
+2. Prepare the private Kaggle library using the [README](../README.md#kaggle-document-library). In Document research library, preview invoice 51109301, then confirm Import & analyze. Visiting a page never uploads it automatically.
 3. Wait for extraction; open the private PDF/result and compare amount, date and identifier.
 4. In AI Studio, search for the invoice total and inspect its original source.
 5. In AI Experiments, independently read labels from the PDF or specify a question's target page, acknowledge the source check, save a reference and run an experiment.
 6. Inspect Data Pipelines: Processing queue versus Data assets & Azure. Exports contain text and require private handling.
 
-Local profile: PDFBox text extraction, Tesseract German/English image OCR and Java field rules. It is **not Azure OCR**; table/field results can differ. Supported PDF/image/TXT inputs stay within app limits. Use the included PDF for the reproducible walkthrough.
+Local profile: PDFBox text extraction, Tesseract German/English image OCR and Java field rules. It is **not Azure OCR**; table/field results can differ. Supported PDF/image/TXT inputs stay within app limits. User-facing samples come only from the private Kaggle library and preserved DATEV references; legacy self-authored PDFs are test-only.
 
 Nova app guidance is local. Nova evidence-analysis requires Azure OpenAI; no local LLM is bundled and no fake answer replaces an unavailable cloud model.
 
@@ -155,6 +155,10 @@ node --test scripts/docker-azure-config.test.mjs
 ```
 
 Acceptance covers OIDC+PKCE, token audience/roles/tenant, upload queue, ClamAV, local invoice extraction, byte-identical private originals, anonymous denial, Qdrant, durable experiments and export. It logs out afterward. Labelled test records remain; no existing dossier is erased.
+
+After preparing the eight Kaggle PDFs and starting Azure mode, `TEST_KAGGLE=1 TEST_KAGGLE_CHAT=1 node scripts/test-oauth.mjs` verifies the complete Kaggle library, Azure layout analysis, private originals, classification, hybrid retrieval and Nova citations. This separate opt-in check creates two local dossiers and makes billable Azure inference calls; it does not delete prior records or approve extracted values.
+
+For the processing control room, run `TEST_PIPELINE=1 node scripts/test-oauth.mjs` in Azure mode. It creates a labelled local dossier, analyzes one pinned synthetic Kaggle invoice, verifies source integrity and six database-recorded stages, and checks duplicate rejection, waiting-job cancellation and an inert content-security negative control. The invoice analysis may incur Azure charges; the blocked control must not reach Azure. No existing records are erased or human-approval states fabricated. See [pipeline operations](../README.md#document-pipeline-operations) for retry, cancellation and manifest limits.
 
 For code checks: `npm ci && npm run verify`; Java 21/Maven: `mvn -f services/credit-api/pom.xml verify`. `TEST_RESEARCH=1 node scripts/test-oauth.mjs` needs an existing approved Robert-Muster original and is **not** the fresh-clone test. Other opt-in historical flags can call Azure; read their prerequisites before running.
 

@@ -13,13 +13,13 @@ const capabilities:AICapabilities={scope:'configuration-only',automaticInference
 const document=(id:string,change:Partial<CreditDocument>={}):CreditDocument=>({id,name:'example.pdf',type:'income',status:'review',...change});
 describe('AI dashboard directory',()=>{
   it('provides distinct current destinations without payment actions',()=>{
-    expect(dashboardFeatures).toHaveLength(15);expect(new Set(dashboardFeatures.map(f=>f.id)).size).toBe(15);
+    expect(dashboardFeatures).toHaveLength(28);expect(new Set(dashboardFeatures.map(f=>f.id)).size).toBe(28);
     for(const feature of dashboardFeatures){const target=feature.target;if('page' in target)expect(workspaceTabs).toContain(target.page);if('trust' in target)expect(trustSections).toContain(target.trust);}
     expect(JSON.stringify(dashboardFeatures)).not.toMatch(/payment|approve-credit/);
   });
   it('counts only real original-backed Azure results in this case',()=>{
     const docs=[document('azure',{originalAvailable:true,analysisProvider:'azure-document-intelligence'}),document('reference',{analysisProvider:'azure-document-intelligence'}),document('local',{originalAvailable:true,analysisProvider:'local-pdfbox-tesseract',status:'verified'}),document('missing',{originalAvailable:true,analysisProvider:'azure-document-intelligence',status:'missing'})];
-    expect(dashboardStats(docs,capabilities)).toEqual({aiWorkflows:11,configuredEngines:3,azureDocuments:1,pendingReview:1});
+    expect(dashboardStats(docs,capabilities)).toEqual({aiWorkflows:13,configuredEngines:3,azureDocuments:1,pendingReview:1});
     expect(dashboardStats([],undefined).configuredEngines).toBeNull();
     expect(dashboardStats([],capabilities,true).configuredEngines).toBe(0);
   });
@@ -37,10 +37,10 @@ describe('AI dashboard directory',()=>{
   });
   it('filters by workflow class and accent-insensitive text or engine',()=>{
     const copy=dashboardText('vi').features;
-    expect(filteredDashboardFeatures('ai','',copy)).toHaveLength(11);
-    expect(filteredDashboardFeatures('control','',copy)).toHaveLength(4);
+    expect(filteredDashboardFeatures('ai','',copy)).toHaveLength(13);
+    expect(filteredDashboardFeatures('control','',copy)).toHaveLength(15);
     expect(filteredDashboardFeatures('all','tom tat',copy).map(f=>f.id)).toEqual(['summary','bilingual-summary']);
-    expect(filteredDashboardFeatures('all','Qdrant',copy,capabilities).map(f=>f.id)).toEqual(['search']);
+    expect(filteredDashboardFeatures('all','Qdrant',copy,capabilities).map(f=>f.id)).toEqual(['search','embeddings']);
     expect(filteredDashboardFeatures('all','not-existing',copy)).toEqual([]);
   });
   it('has complete labels and descriptions in EN, DE and VI',()=>{

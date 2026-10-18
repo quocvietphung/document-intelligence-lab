@@ -1,5 +1,6 @@
 import {z} from "zod";
 import approvedDatevHashes from "@/services/credit-api/src/main/resources/datev-reference-hashes.json";
+import {kaggleReference} from './research-samples';
 const record=z.record(z.string(),z.unknown());
 const metrics=z.object({precision:z.number(),recall:z.number(),f1:z.number(),truePositive:z.number(),falsePositive:z.number(),falseNegative:z.number()});
 export const evaluationSchema=metrics.extend({id:z.string(),createdAt:z.string(),version:z.string(),scope:z.string(),references:z.number(),classification:z.number(),recallAt5:z.number(),injectionQuarantined:z.number(),fields:z.array(metrics.extend({field:z.string()})),rows:z.array(z.object({id:z.string(),scenario:z.string(),typeCorrect:z.boolean(),misses:z.array(z.string()),quarantined:z.boolean(),expected:record,actual:record})),confusion:z.record(z.string(),z.number())});
@@ -9,7 +10,11 @@ export const searchSchema=z.object({search:z.object({hits:z.array(hit),chunks:z.
 export const platformSchema=z.object({
   persistent:z.boolean(),caseId:z.string(),generatedAt:z.string(),limits:z.string(),architecture:z.string(),
   documentPipeline:z.object({worker:z.boolean(),persistent:z.boolean(),storage:z.string(),scanner:z.string(),retentionDays:z.number(),provider:z.object({mode:z.string(),activeProvider:z.string(),modelId:z.string(),maxPages:z.number()})}),
-  jobs:z.array(z.object({id:z.string(),name:z.string(),status:z.string(),stage:z.string(),reviewStatus:z.string().nullable().optional(),document_id:z.string().nullable(),scan_result:z.string().nullable(),error_code:z.string().nullable(),sha256:z.string(),createdAt:z.string(),expiresAt:z.string(),attempt:z.number()})),
+  jobs:z.array(z.object({id:z.string(),name:z.string(),status:z.string(),stage:z.string(),reviewStatus:z.string().nullable().optional(),document_id:z.string().nullable(),scan_result:z.string().nullable(),error_code:z.string().nullable(),sha256:z.string(),createdAt:z.string(),expiresAt:z.string(),attempt:z.number(),
+    updatedAt:z.string().optional(),finishedAt:z.string().nullable().optional(),nextAttemptAt:z.string().nullable().optional(),retryOf:z.string().nullable().optional(),canCancel:z.boolean().optional(),retryEligible:z.boolean().optional(),
+    events:z.array(z.object({id:z.number(),stage:z.string(),status:z.string(),attempt:z.number(),errorCode:z.string().nullable(),time:z.string()})).optional(),
+    extraction:z.object({type:z.string(),provider:z.string(),modelId:z.string(),pages:z.number(),fields:z.number(),tables:z.number(),textCharacters:z.number(),originalAvailable:z.boolean()}).nullable().optional(),
+  })),
   evaluations:z.array(evaluationSchema),
   runs:z.array(z.object({id:z.string(),time:z.string(),mode:z.string(),specialist:z.string(),steps:z.array(step),quality:z.object({validCitations:z.array(z.string()),invalidCitations:z.array(z.string()),lexicalSupport:z.number(),requiresReview:z.boolean(),method:z.string()}),durationMs:z.number(),sources:z.array(z.string())})),
   reviews:z.array(z.object({id:z.string(),alertId:z.string().optional(),note:z.string(),actor:z.string(),time:z.string(),state:z.string(),caseVersion:z.number()})),
@@ -27,15 +32,18 @@ export function currentEvidenceSearch(snapshot:{version:number;data:SearchData}|
 export function percent(value:number){return `${value.toFixed(1)}%`;}
 export function pipelineStage(job:{status:string;stage:string;reviewStatus?:string|null}){return job.status==="COMPLETE"&&job.reviewStatus==="verified"?"reviewComplete":job.stage;}
 export function noticeIsVisible(noticeView:PlatformView,view:PlatformView){return noticeView===view;}
-const recoverableJobErrors=new Set(["AZURE_AUTH_UNAVAILABLE","AZURE_ACCESS_DENIED","AZURE_SERVICE_UNAVAILABLE","ANALYSIS_HTTP_503","ANALYSIS_HTTP_429","PROCESSING_UNAVAILABLE"]);
+const recoverableJobErrors=new Set(["AZURE_AUTH_UNAVAILABLE","AZURE_ACCESS_DENIED","AZURE_SERVICE_UNAVAILABLE","ANALYSIS_HTTP_503","ANALYSIS_HTTP_429","PROCESSING_UNAVAILABLE","PROCESSING_CONFLICT","WORKER_ATTEMPTS_EXHAUSTED"]);
 export function canRetryDocumentJob(job:{name:string;sha256:string;status:string;error_code:string|null;expiresAt:string},now=Date.now()){
-  const digest=approvedDatevHashes[job.name as keyof typeof approvedDatevHashes];
+  const digest=approvedDatevHashes[job.name as keyof typeof approvedDatevHashes]||kaggleReference(job.name)?.sha256;
   return !!digest&&digest===job.sha256&&job.status==="FAILED"&&recoverableJobErrors.has(job.error_code||"")&&Date.parse(job.expiresAt)>now;
 }
 export function documentJobErrorKey(code:string){
+  if(code==='DOCUMENT_REJECTED')return 'documentRejected';
+  if(code==='PROCESSING_CONFLICT')return 'processingConflict';
+  if(code==='WORKER_ATTEMPTS_EXHAUSTED')return 'workerExhausted';
   if(code==="AZURE_AUTH_UNAVAILABLE")return "azureAuthUnavailable";
   if(code==="AZURE_ACCESS_DENIED")return "azureAccessDenied";
   if(code==="ANALYSIS_HTTP_429")return "azureQuotaBusy";
-  if(code==="MALWARE_BLOCKED"||code==="ACTIVE_CONTENT_BLOCKED"||code==="INJECTION_QUARANTINED")return "documentBlocked";
+  if(code==="MALWARE_BLOCKED"||code==="ACTIVE_CONTENT_BLOCKED"||code==="INJECTION_QUARANTINED"||code==='SOURCE_INTEGRITY_FAILED')return "documentBlocked";
   return "analysisUnavailable";
 }

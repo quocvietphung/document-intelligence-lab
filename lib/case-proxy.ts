@@ -20,7 +20,7 @@ export async function proxyCase(request: Request, segments: string[] = []) {
   const path = segments.join("/");
   if (
     path && path !== "document-analysis/status" &&
-    !/^[-\w]+(?:\/documents(?:\/[-\w]+\/(?:original|review))?|\/banking|\/trust(?:\/(?:feedback|correction|prompt|features|tasks(?:\/[-\w]+)?))?|\/platform(?:\/(?:search|evaluate|experiments|research(?:\/(?:datasets|runs|export))?|jobs(?:\/[-\w]+\/retry)?|reviews))?)?$/.test(path)
+    !/^[-\w]+(?:\/documents(?:\/[-\w]+\/(?:original|review))?|\/banking|\/trust(?:\/(?:feedback|correction|prompt|features|tasks(?:\/[-\w]+)?))?|\/platform(?:\/(?:search|evaluate|experiments|batches|research(?:\/(?:datasets|runs|export))?|jobs(?:\/[-\w]+\/(?:retry|cancel))?|reviews))?)?$/.test(path)
   ) {
     return Response.json({ error: "Not found" }, { status: 404 });
   }
@@ -31,7 +31,7 @@ export async function proxyCase(request: Request, segments: string[] = []) {
     if (request.method !== "GET") return Response.json({ error: "Method not allowed" }, { status: 405 });
   }
   if (/\/platform(?:\/|$)/.test(path)) {
-    const allowed=path.endsWith('/platform/experiments')?['GET','POST']:[path.endsWith('/platform')||path.endsWith('/platform/research')?'GET':'POST'];
+    const allowed=path.endsWith('/platform/experiments')||path.endsWith('/platform/batches')?['GET','POST']:[path.endsWith('/platform')||path.endsWith('/platform/research')?'GET':'POST'];
     if(!allowed.includes(request.method))return Response.json({error:'Method not allowed'},{status:405});
   }
   if (/\/trust(?:\/|$)/.test(path)) {
@@ -43,7 +43,7 @@ export async function proxyCase(request: Request, segments: string[] = []) {
   }
   try {
     const body =
-      request.method === "GET" ? undefined : await boundedBody(request, 4_000_000);
+      request.method === "GET" ? undefined : await boundedBody(request, path.endsWith('/platform/batches')?12_100_000:4_000_000);
     const response = await fetch(
       `${root.replace(/\/$/, "")}/api/cases${path ? `/${path}` : ""}`,
       {

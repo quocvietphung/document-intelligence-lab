@@ -101,6 +101,7 @@ public class AzureDocumentIntelligenceProvider implements DocumentAnalysisProvid
       document=new CreditCase.Document(document.id(),document.name(),document.type(),document.status(),document.confidence(),document.fields(),document.pages(),true,document.analysisProvider(),document.modelId(),document.contentType(),tables);
       var structuredFields=structuredFields(result);
       structuredFields.addAll(layoutFields(result));
+      structuredFields.addAll(InvoiceTableFields.extract(document));
       if(structuredFields.isEmpty()) return document;
       var merged=new LinkedHashMap<String,CreditCase.Field>();
       document.fields().forEach(field->merged.put(field.label()+":"+field.page(),field));

@@ -17,6 +17,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics
 class CreditSecurityTest {
   @Autowired MockMvc mvc;
+  @Test void platformAndTrustReadsRejectTokensWithoutTenant()throws Exception{
+    var advisor=jwt().authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"));
+    for(String suffix:new String[]{"/platform","/platform/batches","/platform/research","/platform/experiments","/trust"})
+      mvc.perform(get("/api/cases/CR-2026-1048"+suffix).with(advisor)).andExpect(status().isForbidden());
+  }
+  @Test void batchIntakeRequiresVerifiedTenantAndWriteRole()throws Exception{
+    String path="/api/cases/CR-2026-1048/platform/batches";
+    var advisor=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"));
+    var reviewer=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_REVIEWER"));
+    mvc.perform(get(path)).andExpect(status().isUnauthorized());
+    mvc.perform(get(path).with(jwt().jwt(j->j.claim("tenant_id","foreign")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR")))).andExpect(status().isNotFound());
+    mvc.perform(get(path).with(jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_CUSTOMER")))).andExpect(status().isForbidden());
+    mvc.perform(get(path).with(advisor)).andExpect(status().isOk()).andExpect(jsonPath("$.batches.length()").value(0)).andExpect(jsonPath("$.adfConnected").value(false));
+    mvc.perform(get(path).with(reviewer)).andExpect(status().isOk());
+    mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart(path).file(new org.springframework.mock.web.MockMultipartFile("files","invoice.pdf","application/pdf",new byte[]{1})).param("requestId",java.util.UUID.randomUUID().toString()).param("name","Test").param("source","Permitted source").param("profile","invoice").with(reviewer)).andExpect(status().isForbidden());
+  }
   @Test void sourceResearchRequiresVerifiedTenantAndRoleAndValidLabels()throws Exception {
     String path="/api/cases/CR-2026-1048/platform/research";
     var advisor=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"));
@@ -93,6 +109,12 @@ class CreditSecurityTest {
   }
   @Test void datevRetryRequiresAdvisorAndVerifiedTenant() throws Exception {
     String path="/api/cases/CR-2026-1048/platform/jobs/job-test/retry";
+    mvc.perform(post(path)).andExpect(status().isUnauthorized());
+    mvc.perform(post(path).with(jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_REVIEWER")))).andExpect(status().isForbidden());
+    mvc.perform(post(path).with(jwt().jwt(j->j.claim("tenant_id","foreign")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR")))).andExpect(status().isNotFound());
+  }
+  @Test void pipelineCancellationRequiresAdvisorAndVerifiedTenant() throws Exception {
+    String path="/api/cases/CR-2026-1048/platform/jobs/job-test/cancel";
     mvc.perform(post(path)).andExpect(status().isUnauthorized());
     mvc.perform(post(path).with(jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_REVIEWER")))).andExpect(status().isForbidden());
     mvc.perform(post(path).with(jwt().jwt(j->j.claim("tenant_id","foreign")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR")))).andExpect(status().isNotFound());

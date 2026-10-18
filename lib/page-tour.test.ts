@@ -36,7 +36,7 @@ describe("native page walkthroughs",()=>{
     expect(pageTour("en","studio").steps[4].body).toContain("not an accuracy percentage");
   });
   it("has actual source anchors for every tour target",()=>{
-    const sources=["CreditWorkspace","PlatformWorkbench","DocumentCorpus","BankingWorkbench","PayrollSamples","WorkspaceAIOverview","DocumentResults","DocumentResearchPanel"].map(name=>readFileSync(`components/workspace/${name}.tsx`,"utf8")).join("\n");
+    const sources=["CreditWorkspace","PlatformWorkbench","DocumentPipeline","DocumentCorpus","BankingWorkbench","PayrollSamples","WorkspaceAIOverview","DocumentResults","DocumentResearchPanel"].map(name=>readFileSync(`components/workspace/${name}.tsx`,"utf8")).join("\n");
     for(const page of pageTourPages())for(const step of pageTour("en",page).steps){
       expect(sources).toContain(step.id.startsWith("menu-")?'data-page-tour={`menu-${id}`}':step.id);
     }

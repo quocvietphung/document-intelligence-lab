@@ -19,7 +19,12 @@ Never share raw tokens, passwords, source text or provider responses from diagno
 - PostgreSQL stores dossiers, compatible original copies, audit and research records.
 - The private `lab_documents` volume holds queued document objects.
 - Qdrant vectors, Redis state, antivirus signatures and identity state use separate named volumes.
-- The durable worker scans before analysis, records attempts, recovers leases and retains failure history.
+- The durable worker verifies source SHA-256, scans before analysis, records attempts, recovers leases and retains failure history. Flyway V2 adds `lab_job_events`; a PostgreSQL trigger records stage/state changes in the same transaction as each job update. Historical stages are not backfilled.
+- Processing control room shows the latest submission per file within the latest 30 loaded jobs; prior submissions remain available through its history toggle. Results, human confirmation and on-demand RAG indexing are separate states.
+- Transient service/429 failures wait 30 then 60 seconds, with at most three attempts. Authentication/permission/security/content failures stop automatically. Manual retry accepts only pinned DATEV/Kaggle references, preserves the failed job and links its replacement.
+- Waiting-job cancellation is authorized and atomic; a running provider request cannot be cancelled. It does not delete the private original or reverse charges. Retention still applies to cancelled jobs.
+- Saved extraction checkpoints can avoid repeat OCR after a later-stage failure. Provider response loss before checkpointing can still lead to repeat inference; there is no exactly-once billing guarantee.
+- Processing manifests exclude PDF/text/credentials/object paths but contain filenames and dossier IDs. Keep them private. The separate data-asset exports can contain source text.
 - Document retention is configured to 30 days in the local platform profile. Chat/review/reference history has no new automatic purge; browser downloads have their own operator-managed retention.
 - Changing the Compose project name creates different volumes. It does not migrate data.
 
@@ -72,7 +77,7 @@ Suggested operational signals include queue age, repeated retries, API errors, s
 
 | Failure | Response |
 | --- | --- |
-| Azure unavailable | Check provider, Entra helper, resource roles and newest attempt; no API-key workaround |
+| Azure unavailable | Inspect Processing details and the newest attempt. Check provider, Entra helper and resource roles; no API-key workaround. Auth/permission failures stop instead of repeatedly calling Azure. |
 | Redis unavailable | Restore the dependency; do not disable limits |
 | Qdrant unavailable | Inspect the explicitly reported fallback and restore/rebuild the dossier index |
 | Scanner unavailable | Restore signature/health state; never bypass scanning |

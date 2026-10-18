@@ -146,6 +146,23 @@ check(
   "Access token has API audience, tenant and advisor role",
 );
 const bearer = { Authorization: `Bearer ${tokens.access_token}` };
+if(process.env.TEST_BATCHES==='1') {
+  const {auditBatches}=await import('./test-batches.mjs');await auditBatches({request,check,bearer,web,api});
+  console.log(`PASS ${checks} OAuth and batch intake checks`);process.exit(0);
+}
+if(process.env.TEST_PIPELINE==='1') {
+  const {auditPipeline}=await import('./test-pipeline.mjs');await auditPipeline({request,check,bearer,web,api});
+  console.log(`PASS ${checks} OAuth and document pipeline checks`);process.exit(0);
+}
+if(process.env.TEST_KAGGLE==='1') {
+  const {auditKaggle}=await import('./test-kaggle.mjs');await auditKaggle({request,check,bearer,web,api});
+  console.log(`PASS ${checks} OAuth and Kaggle library checks`);process.exit(0);
+}
+if(process.env.TEST_INSURANCE==='1') {
+  const {auditInsurance}=await import('./test-insurance.mjs');await auditInsurance({request,check,bearer,web,api});
+  const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
+  check(ended.status===204,'Insurance test session logged out');console.log(`${checks} insurance acceptance checks passed.`);process.exit(0);
+}
 if(process.env.TEST_SHOWCASE==='1') {
   const {auditShowcase}=await import('./test-showcase.mjs');await auditShowcase({request,check,bearer,web,api});
   const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
@@ -523,7 +540,7 @@ if (process.env.TEST_WRITE === "1") {
   const analysisStatus=await request(`${web}/api/cases/document-analysis/status`,{headers:bearer});
   check(analysisStatus.ok,'Document provider status available for profile-aware upload test');
   const cloud=(await analysisStatus.json()).mode!=='local';
-  const sampleBytes=cloud?readFileSync('public/samples/invoice-fictional.pdf'):Buffer.from("Kontoauszug\nMonatliche Rate: 777 EUR\nKontostand: 12000 EUR");
+  const sampleBytes=cloud?readFileSync('services/credit-api/src/test/resources/legacy-research/invoice-fictional.pdf'):Buffer.from("Kontoauszug\nMonatliche Rate: 777 EUR\nKontostand: 12000 EUR");
   const form = new FormData();
   form.set(
     "file",

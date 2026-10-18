@@ -6,6 +6,7 @@ import {useAuth} from "@/components/auth/KeycloakProvider";
 import {creditCaseSchema} from "@/lib/credit-api";
 import {documentFocusText,uploadedEvidence} from "@/lib/document-focus";
 import {workspaceText} from "@/lib/workspace-language";
+import {downloadJson} from "@/lib/browser-download";
 type Doc=z.infer<typeof creditCaseSchema>["documents"][number];
 export function DocumentCorpus({caseId,locale,banking=false,inspect,ask}:{caseId:string;locale:string;banking?:boolean;inspect:(id:string)=>void;ask:(question:string)=>void}){
  const auth=useAuth(),t=documentFocusText(locale),field=workspaceText(locale);
@@ -26,7 +27,7 @@ export function DocumentCorpus({caseId,locale,banking=false,inspect,ask}:{caseId
  const visible=loading||error?[]:banking?docs.filter(d=>d.type==="statement"||d.type==="invoice"||(/rechnung|invoice/i.test(d.name)&&d.type!=="income")):docs;
  function download(){
   const value={caseId,scope:"uploaded-originals-only",accuracy:null,documents:visible.map(d=>({id:d.id,name:d.name,type:d.type,status:d.status,provider:d.analysisProvider,model:d.modelId,fields:d.fields,pages:d.pages,tables:d.tables}))};
-  const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:"application/json"}));const link=document.createElement("a");link.href=url;link.download="document-evidence-"+caseId+".json";link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  downloadJson(value, `document-evidence-${caseId}.json`);
  }
  return <section className="research-workbench" aria-label={banking?t.banking:t.title}>
   <header className="research-header"><div><span className="lab-badge"><FileSearch size={15}/>{t.all}</span><h2>{banking?t.banking:t.title}</h2><p>{t.hint}</p></div><button className="button-secondary" disabled={loading} onClick={()=>void load()}><RefreshCw size={16}/>{t.refresh}</button></header>
