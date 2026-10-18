@@ -4,6 +4,16 @@ A hands-on, **MIT-licensed document AI research lab** for studying how to turn P
 
 The project studies extraction, hybrid RAG, source-grounded answers and human review for **DATEV payroll/banking**, **insurance** and **general business documents**.
 
+The current workspace brings those experiments into one evidence-first workflow:
+
+- **Read documents:** extract page text, layout and tables with Azure Document Intelligence or the optional local Docling provider.
+- **Find and explain evidence:** compare keyword/vector/hybrid retrieval, then ask Nova source-based questions through Azure OpenAI.
+- **Review the result:** compare fields with the private original, record corrections and keep AI output separate from human approval.
+- **Measure, not assume:** create checked reference versions and evaluate extraction or retrieval on those specific documents.
+- **Operate locally:** sign in through Keycloak; follow durable processing jobs, batch receipts and activity history in Docker.
+
+Seven main destinations replace a long flat menu. Overview keeps **28 capabilities in six expandable groups**: **13 AI-assisted workflows** and **15 rule-based, navigation or human-review controls**, not 28 AI models.
+
 The main walkthrough follows one setup from a fresh clone to a working Nova conversation: **run the application locally in Docker and connect it to your Azure OpenAI and Document Intelligence resources**. Web, Java, Keycloak, databases and private storage stay on your computer; confirmed AI requests call Azure. For extraction without an Azure account, use the separate [local Docling guide](docs/LOCAL_DOCUMENT_AI.md); that profile does not include a generative Nova model.
 
 **Java 21 · Spring Boot · LangChain4j · Azure Document Intelligence · Azure OpenAI · Next.js · PostgreSQL · Qdrant · Keycloak · Docker**
@@ -156,14 +166,14 @@ These credentials apply to a **fresh local identity database**. Existing volumes
 ### 7. Analyze a document and test Nova
 
 1. Create a **General documents** dossier and open **Documents & review**.
-2. Prepare the [Kaggle document library](#kaggle-document-library), then select invoice **51109301** in **Document research library**. Preview it, choose **Import & analyze** and confirm the destination. Only the confirmed PDF is sent to Azure Document Intelligence.
+2. Prepare the [Kaggle document library](#kaggle-document-library), then expand **Reference library → Document research library** and select invoice **51109301**. Preview it, choose **Import & analyze** and confirm the destination. Only the confirmed PDF is sent to Azure Document Intelligence.
 3. Find **Analysis results**, above the sample library, and open **View result & PDF**. Inspect the Azure provider/model, original page, extracted values and tables. For progress/history, open **Data Pipelines → Processing queue**.
 4. Open **Nova → Evidence analysis**, type the question below and press Enter. Shift+Enter adds a line break.
 
 > What amounts are stated in this invoice? Cite the source page, distinguish observed facts from interpretation, and say what needs human verification.
 
 5. Check that a completed **Azure OpenAI** answer appears. Open its source links and compare the original. A greeting, engine badge or local **App guidance** response alone is not proof that the model answered.
-6. Use **AI Studio** to retrieve a passage. In **AI Experiments**, independently check labels/target pages against the PDF, save a reference and run an extraction or retrieval experiment.
+6. Use **AI Studio** to retrieve a passage. In **Research lab → Experiments**, independently check labels/target pages against the PDF, save a reference and run an extraction or retrieval experiment.
 
 For insurance, use the four private Kaggle references below. For payroll, prepare the private DATEV references.
 
@@ -175,7 +185,7 @@ See [Azure reference details](docs/AZURE_AI.md) for additional RBAC examples and
 
 ### Batch intake and extraction check profiles
 
-Open **Overview → Multi-document batch intake → Data Pipelines → Batch intake & extraction profiles**. Select **1–4 permitted PDFs/images**, each at most **3 MB**, enter a source/provenance note and choose a check profile. Review the file list and provider before **Confirm analysis**. Azure mode still limits each PDF to **2 pages**; a batch does not increase the per-file limits. Each accepted file is scanned separately before Azure analysis.
+Open **Data Pipelines → Batch intake**. Alternatively, find **Multi-document batch intake** in Overview's capability directory. Select **1–4 permitted PDFs/images**, each at most **3 MB**, enter a source/provenance note and choose a check profile. Review the file list and provider before **Confirm analysis**. Azure mode still limits each PDF to **2 pages**; a batch does not increase the per-file limits. Each accepted file is scanned separately before Azure analysis.
 
 Profiles are **versioned Java field checks**, not trained Azure classifiers or new LLM calls:
 
@@ -196,7 +206,7 @@ Repeated submission of the same request ID and identical content returns its rec
 
 The **Overview AI capability directory** lists all 28 current entries: 13 AI-assisted workflows and 15 rule-based, navigation, review or governance controls, each with a tool destination. Azure OpenAI, Azure Document Intelligence and local ONNX/Qdrant retrieval are distinguished. Counts describe catalogue entries, not independent models, live health checks or successful inference calls.
 
-![Current English Overview directory with 28 entries, separate AI/control filters and actual provider configuration](docs/screenshots/ai-capability-directory-en.png)
+See the [current six-group directory](#multi-domain-overview) in the workspace tour.
 
 To verify the complete local OAuth → proxy → Java → PostgreSQL → scan → Azure → protected PDF flow with two pinned, public synthetic Kaggle invoices:
 
@@ -269,16 +279,14 @@ python3 -m venv .local/kaggle-tools
 The helper downloads only allowlisted files, verifies source/version hashes and exact page markers, checks prepared PDF hashes and refuses to overwrite different existing files. Insurance originals stay in `.local/kaggle-insurance/`; invoice originals in `.local/kaggle-invoices/`; ready PDFs in `.local/reference-pdfs/`, already mounted read-only into Docker web. Invoice PDF bytes are preserved, not re-created by this app. **Preparation never calls Azure or writes to the database.** No Kaggle API key is required for these public files.
 
 1. Create/open an **Insurance** or **General documents** dossier, then **Documents & review**.
-2. In **Document research library**, search/select a document and choose **Preview PDF**. Viewing stays local and shows the source-page mapping.
+2. Expand **Reference library → Document research library**, search/select a document and choose **Preview PDF**. Viewing stays local and shows the source-page mapping.
 3. Choose **Import & analyze**, review the destination and confirm. The authenticated queue scans that PDF with ClamAV, calls the configured document provider and stores the original/result privately in the dossier. Azure mode sends only that confirmed PDF to Azure Document Intelligence.
 4. Stay on the page: processing and **View result & PDF** appear **above** the library. Exact prepared-file matches open their existing results instead of re-analyzing.
 5. Ask Nova about source wording, missing context, invoice number or totals. Check page citations; field counts and OCR signals are not accuracy scores.
 
 Keep the Azure token-renewal helper running for cloud analysis. Missing or modified private PDFs disable their cards; the web app never silently downloads a replacement. The old `prepare-insurance-references.py` entry point remains compatible and prepares only the four insurance references.
 
-![English Kaggle insurance library filtered by Principal, with existing results and new imports](docs/screenshots/insurance-kaggle-library-en.jpg)
-
-![English Kaggle invoice library](docs/screenshots/general-kaggle-library-en.jpg)
+![Current English insurance reference library with source-page mapping, rights disclosures and links to existing results](docs/screenshots/insurance-kaggle-library-en.jpg)
 
 With the Azure Docker stack running and all eight private files prepared, this explicit integration test creates two local research dossiers, scans/analyzes all eight PDFs and checks Nova's source links and original INR currency. It uses your configured Azure inference and may incur usage charges:
 
@@ -309,7 +317,7 @@ The helper validates the source and refuses to overwrite existing references. Ex
 .local/reference-pdfs/datev-lodas-2025-melanie-muster.pdf
 ```
 
-3. In a **Banking & payroll** dossier, open **Documents & review → Official DATEV payroll library**. Preview a page, choose **Import & analyze**, confirm its destination and inspect **Analysis results** above the library.
+3. In a **Banking & payroll** dossier, open **Documents & review → Reference library** to reveal the official DATEV payroll library. Preview a page, choose **Import & analyze**, confirm its destination and inspect **Analysis results** above the library.
 4. In Azure mode, ask Nova to distinguish net earnings from payout with a page citation. Robert-Muster's reference values are **2.967,11 EUR** net and **2.882,11 EUR** payout—not the same field.
 
 Previewing does not send a prepared PDF to Azure; confirmed analysis does. Keep third-party PDFs outside `public/` and Git. Source labels/number formatting remain unchanged across interface languages. [Reference details](docs/PUBLIC_PAYROLL_TESTS.md).
@@ -372,14 +380,20 @@ node --test scripts/docker-azure-config.test.mjs
 | Document OCR and layout | Azure Document Intelligence `prebuilt-layout`, optional local Docling, or PDFBox/Tesseract baseline; Java field normalization/classification rules | Documents & review |
 | Semantic and hybrid RAG | Local MiniLM ONNX embeddings, Qdrant and BM25—not Azure AI Search | AI Studio |
 | Document Q&A and source explanations | Azure OpenAI through Java/LangChain4j; dossier-scoped read-only tools | Nova → Evidence analysis |
-| Controlled AI drafts | Summary, cross-document comparison, inconsistency explanation, document request, review checklist, German terminology and DE–VI summary | AI transparency & review → Task library |
-| Source-bound evaluation | Human-checked reference labels; deterministic extraction precision/recall/F1 and retrieval hit rate@5/MRR@5 | AI Experiments |
+| Controlled AI drafts | Summary, cross-document comparison, inconsistency explanation, document request, review checklist, German terminology and DE–VI summary | Review & trust → Task library |
+| Source-bound evaluation | Human-checked reference labels; deterministic extraction precision/recall/F1 and retrieval hit rate@5/MRR@5 | Research lab → Experiments |
 | Traceable processing control room | Durable stages/events, current-versus-historical filters, bounded retries, waiting-job cancellation and metadata-only manifests | Data Pipelines → Processing queue |
 | Evidence review and research exports | Private PDF viewer, corrections/history, reviewer tasks, source hashes and private JSON/JSONL exports | Documents & review / Data Pipelines |
 
 The platform also provides Keycloak OAuth 2.0/OIDC + PKCE, Bearer-protected tenant/dossier access, PostgreSQL persistence, durable jobs, ClamAV, Redis limits, audit history and English/German/Vietnamese UI/page tours. Nova **App guidance** is local application logic, not an LLM response.
 
 OCR confidence is not measured accuracy; citation-ID validation does not prove that every statement is supported. Financial decisions remain outside scope. Azure Foundry evaluation, Data Factory orchestration, Blob ingestion and Application Insights are **not connected by default**. [Research methods](docs/RESEARCH_WORKSPACES.md) · [Nova privacy and review](docs/NOVA_TRUST.md).
+
+### Local Docling: what changed
+
+The optional Docker profile now connects the existing **Java document-provider interface** to **Docling Serve CPU**. It reads text, page layout and tables locally; the result uses the same private PDF viewer, queue and review workflow as Azure extraction. The service is pinned by image digest, has no host port or network egress, and receives document bytes rather than source URLs or app credentials. Missing confidence stays unknown; Java field checks are not a trained classifier.
+
+Follow the [Docling setup and real-model smoke test](docs/LOCAL_DOCUMENT_AI.md) separately from the main Azure walkthrough. Switching to that profile retains database volumes but clears Azure model configuration: **it does not provide a local generative Nova model or silently fall back to Azure**. Existing saved results keep their original provider. PaddleOCR, BGE-M3, a learned BGE reranker and Qwen-VL are not installed.
 
 ## Workspace tour
 
@@ -397,11 +411,21 @@ The sidebar has seven destinations. Related research and operations pages use lo
 
 Existing `#banking`, `#evaluation` and `#audit` links still open the correct section. Navigation, directory filters and page guides never start inference automatically. The optional Docling provider and the active Azure configuration are unchanged by the UI grouping.
 
-Current local UI in English. Screenshots show an existing research workspace, not dossiers preloaded into a fresh clone. German labels and number formatting inside source evidence are deliberately preserved.
+All interface screenshots below and in the setup/sample sections were captured again from the running local app on **18 October 2026**, in English. They show existing research dossiers and saved results, not dossiers preloaded into a fresh clone or new inference calls made for this documentation. German labels and number formatting inside source evidence are deliberately preserved.
 
 ### Multi-domain overview
 
-![English overview with banking, insurance and general-document domains](docs/screenshots/workspace-overview-en.jpg)
+![Current English overview with seven navigation destinations, three AI entry points and dossier-scoped metrics](docs/screenshots/workspace-overview-en.jpg)
+
+The directory separates AI from rules and human review. Expand a group or search for a task to find its engine, limits and direct destination; opening a destination does not run inference.
+
+![Current English capability directory with six collapsed groups and separate AI-assisted and human-review filters](docs/screenshots/ai-capability-directory-en.jpg)
+
+### Results first, references when needed
+
+**Analysis results** is the destination after import. Each compact result links directly to **View result & PDF** and Nova; the reference library stays collapsed until needed. Field/page/table counts describe extraction output, not accuracy.
+
+![Current English results list showing separate DATEV net earnings and payout, direct PDF access and the collapsed reference library](docs/screenshots/document-results-en.jpg)
 
 ### DATEV original and extraction
 
@@ -409,27 +433,17 @@ The current viewer places the private original beside extracted fields, source q
 
 ![Current DATEV PDF viewer with extracted fields and source evidence](docs/screenshots/datev-evidence-en.jpg)
 
-### Insurance document review
-
-The Kaggle-only library keeps references and processing results together; full originals remain private.
-
-![Kaggle-only insurance library and source provenance](docs/screenshots/insurance-kaggle-library-en.jpg)
+For insurance and invoices, the same workflow uses the [private Kaggle reference library](#kaggle-document-library), with explicit source and rights information. Full originals remain private.
 
 ### Document processing control room
 
-Actual local Azure processing of a synthetic Kaggle invoice. The review-ready filter separates a saved result from cancelled or blocked test submissions. Page/table counts are extraction output, not accuracy scores.
+The current queue shows a saved DATEV extraction and its reviewer-confirmed state. One set of status chips filters submissions; **Batch intake** and **Data assets & Azure** are separate tabs. Expand processing/storage settings only when needed.
 
 ![English document pipeline with state filters and a direct result-and-PDF action](docs/screenshots/document-pipeline-en.jpg)
 
-Open **Processing details** for the source identity, actual extraction counts and recorded events. **Download processing manifest** exports metadata only.
+Open **Processing details** for the source identity, actual extraction counts and recorded events. **Download processing manifest** exports metadata only. The pictured historical job predates detailed event recording; its missing timestamps are not reconstructed or presented as a new successful run.
 
-![English processing details showing recorded timestamps for all six stages and the metadata-only manifest action](docs/screenshots/document-pipeline-details-en.jpg)
-
-### Nova, grounded in the selected dossier
-
-A real local Azure OpenAI conversation about the approved fictional DATEV sample. Source links make the answer inspectable; they do not replace human verification.
-
-![Nova answering in English with document-page evidence](docs/screenshots/nova-datev-en.jpg)
+![Current processing receipt with source hash, provider, saved extraction counts and historical timestamp limitations](docs/screenshots/document-pipeline-details-en.jpg)
 
 ### Meet Nova and replay a page guide
 
@@ -439,11 +453,13 @@ Nova's portrait is an **AI-generated fictional character**, not a real advisor. 
 
 Open the portrait button at the bottom right. Choose **App guidance** for local instructions and links, or **Evidence analysis** for source-based Azure OpenAI questions. The **compass icon** starts a step-by-step guide for the current page; **Expand reading area** gives longer answers more room. Enter sends; Shift+Enter adds a line break.
 
+The screenshot shows **local App guidance**, not an Azure OpenAI answer. To test the generative model, follow [Test Nova](#7-analyze-a-document-and-test-nova), select **Evidence analysis**, send a question and independently check its page sources. Source links make an answer inspectable; they do not replace human verification.
+
 ![Current English Nova interface with the fictional avatar and local app guidance](docs/screenshots/nova-profile-guide-en.jpg)
 
 ### Source-bound experiments
 
-Read labels independently from the original, save a reference version, then evaluate extraction or compare BM25/vector/hybrid retrieval. Results belong to that labelled sample, not general model accuracy.
+The **Research lab** groups **Experiments**, **Domain insights** and **Document inventory** as local tabs. Read labels independently from the original, save a reference version, then evaluate extraction or compare BM25/vector/hybrid retrieval. Results belong to that labelled sample, not general model accuracy. Operations similarly keeps **Activity log** inside its section rather than adding another main-menu entry.
 
 ![English source-bound AI experiment workspace](docs/screenshots/research-experiments-en.jpg)
 
@@ -451,23 +467,42 @@ Read labels independently from the original, save a reference version, then eval
 
 ```mermaid
 flowchart TD
-    U[Browser · Next.js / React] -->|OIDC code + PKCE| K[Keycloak]
-    U -->|API-audience Bearer token| N[Next.js API proxy]
-    K --> I[(Identity PostgreSQL)]
-    N --> J[Java 21 · Spring Boot · tenant + dossier authorization]
-    J --> P[(PostgreSQL · dossiers / jobs / audit / references)]
-    J --> Q[Durable document queue]
-    Q --> V[ClamAV]
-    V --> D[Azure Document Intelligence OR local Docling OR PDFBox / Tesseract]
-    Q --> S[Private document volume]
-    D --> P
-    J --> R[ONNX + Qdrant + BM25]
-    R --> L[LangChain4j · scoped evidence context]
-    L --> O[Azure OpenAI · Nova]
-    J --> E[Source-bound experiment worker]
-    E --> P
-    J --> X[Redis quotas / optional OpenTelemetry]
+    U[Browser · seven workspace destinations]
+    subgraph LOCAL[Local Docker]
+        K[Keycloak · OIDC and PKCE] --> I[(Identity PostgreSQL)]
+        N[Next.js authenticated API proxy] --> J[Java 21 / Spring Boot · tenant and dossier authorization]
+        J --> P[(Case PostgreSQL · jobs, evidence, reviews and references)]
+        J --> Q[Durable document worker]
+        Q --> S[Private original-document volume]
+        Q --> V[ClamAV scan and content limits]
+        V --> D{Configured extraction provider}
+        D -->|Optional local profile| DC[Docling CPU · isolated parser]
+        D -->|Local baseline| B[PDFBox / Tesseract]
+        DC --> F[Java field mapping and checks]
+        B --> F
+        F --> P
+        J --> R[Local retrieval · MiniLM ONNX / Qdrant / BM25]
+        R --> L[LangChain4j · authorized evidence context]
+        J --> E[Source-bound extraction and retrieval experiments]
+        E --> P
+        J --> X[Redis quotas / optional OpenTelemetry]
+        A[Azure CLI token-renewal helper]
+    end
+    subgraph CLOUD[Your Azure resources · confirmed inference can be billable]
+        EN[Microsoft Entra]
+        DI[Document Intelligence · prebuilt-layout]
+        O[Azure OpenAI · Nova evidence analysis]
+    end
+    U -->|Sign in| K
+    U -->|API-audience Bearer token| N
+    D -->|Azure profile| DI
+    DI --> F
+    L --> O
+    A -->|Developer sign-in| EN
+    A -.->|Short-lived token file for Azure clients| J
 ```
+
+Exactly one document provider is selected by configuration; the branches are alternatives, not a three-engine ensemble or automatic cloud fallback. Azure results shown above were saved with the Azure provider. Local App guidance and page tours do not use the Azure OpenAI path. Retrieval indexing is built on demand, separately from OCR completion.
 
 Two separate identities:
 
@@ -482,6 +517,7 @@ Two separate identities:
 | `case-db` / `identity-db` | Separate internal PostgreSQL databases with named volumes |
 | `qdrant` / `redis` | Internal evidence index and shared quotas, persisted locally |
 | `clamav` | Scans uploads before extraction; persistent signature volume |
+| `docling` | Optional internal CPU parser, isolated network and temporary scratch storage; enabled with the separate Docling Compose profile |
 | `storage-init` | One-shot private-volume ownership task |
 | `otel-collector` | Optional local tracing override; no automatic cloud export |
 
