@@ -42,6 +42,17 @@ describe("AI identity and honest provenance",()=>{
     const html=renderToStaticMarkup(createElement(AIPageBanner,{page:"controls",locale:"en",capabilities,ask:()=>{}}));
     expect(html).toContain('data-ai-kind="rules"');expect(html).toContain("deterministic rules");expect(html).not.toContain('data-ai-kind="ai"');
   });
+  it("identifies Docling as local AI throughout the UI, without inventing Azure or an accuracy",()=>{
+    const local={...capabilities,documents:{provider:'docling',modelId:'docling-layout-tableformer',mode:'docling',configured:true}};
+    for(const locale of ['en','de','vi']){
+      const identity=documentAI({analysisProvider:'docling',status:'review'},locale);
+      expect(identity.engine).toBe('Docling · Local AI');expect(identity.kind).toBe('ai');
+      const html=renderToStaticMarkup(createElement(AIPageBanner,{page:'documents',locale,capabilities:local,ask:()=>{}}));
+      expect(html).toContain('Docling · Local AI');expect(html).not.toContain('Azure Document Intelligence');expect(html).not.toContain('100%');
+    }
+    const html=renderToStaticMarkup(createElement(WorkspaceAIOverview,{locale:'en',demo:false,capabilities:local,navigate:()=>{},openNova:()=>{}}));
+    expect(html).toContain('Docling · Local AI');expect(html).not.toContain('Azure Document Intelligence');
+  });
   it("discloses the actual retrieval choices and language limitation",()=>{
     const html=renderToStaticMarkup(createElement(AIPageBanner,{page:"studio",locale:"en",capabilities,ask:()=>{}}));
     expect(html).toContain("all-MiniLM-L6-v2");expect(html).toContain("Qdrant");expect(html).toContain("English-focused");

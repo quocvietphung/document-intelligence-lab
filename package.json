@@ -1,6 +1,7 @@
 {
   "name": "document-intelligence-lab",
   "version": "0.1.0",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "predev": "node scripts/sync-pdf-assets.mjs",

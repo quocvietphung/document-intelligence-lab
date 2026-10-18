@@ -1,0 +1,42 @@
+# Add to base + platform, not to the Azure token helper. Existing volumes are retained.
+services:
+  docling:
+    image: quay.io/docling-project/docling-serve-cpu:v1.18.0@sha256:fa1b087efcad34fe10f9f7dc3ce7e9913849a2836c9572c68e1d59074bd3228d
+    restart: unless-stopped
+    environment:
+      DOCLING_SERVE_ENABLE_UI: "false"
+      DOCLING_SERVE_ENABLE_REMOTE_SERVICES: "false"
+      DOCLING_SERVE_ALLOW_EXTERNAL_PLUGINS: "false"
+      DOCLING_SERVE_MAX_FILE_SIZE: "3000000"
+      DOCLING_SERVE_MAX_NUM_PAGES: "4"
+      DOCLING_SERVE_MAX_DOCUMENT_TIMEOUT: "110"
+      DOCLING_SERVE_MAX_SYNC_WAIT: "115"
+      DOCLING_SERVE_OPTIONS_CACHE_SIZE: "1"
+      DOCLING_SERVE_RESULT_REMOVAL_DELAY: "30"
+      OMP_NUM_THREADS: "2"
+    networks: [document_parser]
+    # No public/host port and no network egress. Use models bundled in the image.
+    # Scratch data is temporary, bounded and disappears when the container is removed.
+    tmpfs: ["/tmp:size=512m,mode=1777"]
+    mem_limit: 3g
+    cpus: 2
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+  credit-api:
+    environment:
+      DOCUMENT_ANALYSIS_MODE: docling
+      # Deliberately do not inherit cloud credentials in this profile.
+      AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT: ""
+      AZURE_OPENAI_ENDPOINT: ""
+      AZURE_OPENAI_DEPLOYMENT: ""
+    networks: [default, document_parser]
+    depends_on:
+      docling:
+        condition: service_healthy
+networks:
+  document_parser:
+    internal: true

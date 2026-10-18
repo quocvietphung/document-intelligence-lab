@@ -1,4 +1,16 @@
 # Logs
+# Private infrastructure state and model artifacts must not enter the public source.
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfplan
+**/*.tfvars
+!**/*.tfvars.example
+**/*.auto.tfvars*
+**/*.safetensors
+**/*.gguf
+**/*.pem
+**/*.p12
 .local/
 .local/azure-auth/
 .local/*.pdf

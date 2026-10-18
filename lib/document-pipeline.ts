@@ -1,8 +1,29 @@
 import type {PlatformData} from './platform';
 import {activeDocumentJob,latestDocumentJobs} from './document-results';
+import {searchText} from './customer-ux';
 
 export type PipelineJob=PlatformData['jobs'][number];
 export type PipelineFilter='all'|'active'|'review'|'verified'|'failed'|'cancelled'|'expired';
+export type PipelineSort='newest'|'oldest'|'name';
+export const pipelinePanels=['processing','batches','assets'] as const;
+export type PipelinePanel=typeof pipelinePanels[number];
+export function pipelinePanelFromSearch(search:string):PipelinePanel{
+  const value=new URLSearchParams(search).get('pipeline');
+  return pipelinePanels.find(panel=>panel===value)||'processing';
+}
+export function pipelinePanelPath(href:string,panel:PipelinePanel){
+  const url=new URL(href);url.searchParams.set('pipeline',panel);
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+export function sortPipelineJobs(jobs:readonly PipelineJob[],sort:PipelineSort){
+  return [...jobs].sort((a,b)=>{
+    if(sort==='name')return searchText(a.name).localeCompare(searchText(b.name),'en',{numeric:true})||a.id.localeCompare(b.id);
+    const aTime=Date.parse(a.createdAt),bTime=Date.parse(b.createdAt);
+    if(!Number.isFinite(aTime)||!Number.isFinite(bTime))return Number.isFinite(aTime)?-1:Number.isFinite(bTime)?1:a.id.localeCompare(b.id);
+    const difference=aTime-bTime;
+    return (sort==='oldest'?difference:-difference)||a.id.localeCompare(b.id);
+  });
+}
 export const pipelineStages=['RECEIVED','SCAN','EXTRACT','VALIDATE','ATTACH','HUMAN_REVIEW'] as const;
 export function pipelineSummary(jobs:readonly PipelineJob[]){
   const latest=latestDocumentJobs(jobs);
@@ -12,9 +33,9 @@ export function pipelineSummary(jobs:readonly PipelineJob[]){
     failed:latest.filter(j=>j.status==='FAILED').length};
 }
 export function filterPipelineJobs(jobs:readonly PipelineJob[],filter:PipelineFilter,query:string,history=false){
-  const source=history?[...jobs]:latestDocumentJobs(jobs),text=query.trim().toLowerCase();
+  const source=history?[...jobs]:latestDocumentJobs(jobs),terms=searchText(query).split(/\s+/).filter(Boolean);
   return source.filter(job=>{
-    if(text&&!`${job.name} ${job.id} ${job.sha256}`.toLowerCase().includes(text))return false;
+    if(!terms.every(term=>searchText(`${job.name} ${job.id} ${job.sha256}`).includes(term)))return false;
     if(filter==='active')return activeDocumentJob(job);
     if(filter==='review')return job.status==='COMPLETE'&&job.reviewStatus!=='verified';
     if(filter==='verified')return job.status==='COMPLETE'&&job.reviewStatus==='verified';

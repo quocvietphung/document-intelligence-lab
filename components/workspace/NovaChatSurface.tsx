@@ -44,7 +44,7 @@ export function NovaChatSurface({title,locale,open,onOpen,close,children,onPageG
         <div className="nova-chat-content">{children}</div>
       </section>
       <div className="nova-launcher-row">
-        {onPageGuide?<button type="button" className="nova-guide-launcher" onClick={onPageGuide} aria-label={pageGuideLabel} title={pageGuideLabel}><Compass size={23}/></button>:null}
+        {onPageGuide?<button type="button" data-page-tour="page-guide-button" className="nova-guide-launcher" onClick={onPageGuide} aria-label={pageGuideLabel} title={pageGuideLabel}><Compass size={23}/></button>:null}
         <button ref={launcher} type="button" className="nova-chat-launcher" onClick={()=>open?minimize():onOpen()} aria-expanded={open} aria-controls="nova-chat-panel" aria-label={open?t.minimize:t.open}>
           {open?<Minus size={21}/>:<NovaAvatar/>}<span>Nova <small>{engine.kind==="demo"?"DEMO":aiText(locale).ai}</small></span>
         </button>

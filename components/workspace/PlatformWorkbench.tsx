@@ -17,15 +17,16 @@ import {DocumentResearchPanel} from './DocumentResearchPanel';
 import {researchText} from '@/lib/document-research';
 import {DocumentPipeline} from './DocumentPipeline';
 import {DocumentBatches} from './DocumentBatches';
-import {batchText} from '@/lib/document-batches';
+import {workspacePresentation} from '@/lib/workspace-presentation';
 import {activeDocumentJob} from '@/lib/document-results';
+import {pipelinePanelFromSearch,pipelinePanelPath,type PipelinePanel} from '@/lib/document-pipeline';
 
 function Metric({label,value,detail}:{label:string;value:React.ReactNode;detail?:string}) {
   return <div className="lab-metric"><span>{label}</span><strong>{value}</strong>{detail?<small>{detail}</small>:null}</div>;
 }
 function Badge({children,tone="neutral"}:{children:React.ReactNode;tone?:"neutral"|"good"|"warn"}){return <span className={`lab-badge lab-badge-${tone}`}>{children}</span>;}
 
-export function PlatformWorkbench({caseId,locale,view,ask,inspect,changed,documents=[],caseVersion=0,domain='banking'}:{caseId:string;locale:string;view:PlatformView;ask:(question:string)=>void;inspect:(documentId:string,page?:number)=>void;changed:()=>Promise<void>;documents?:readonly {id:string;name:string}[];caseVersion?:number;domain?:string}) {
+export function PlatformWorkbench({caseId,locale,view,ask,inspect,changed,documents=[],caseVersion=0,domain='banking',guiding=false}:{caseId:string;locale:string;view:PlatformView;ask:(question:string)=>void;inspect:(documentId:string,page?:number)=>void;changed:()=>Promise<void>;documents?:readonly {id:string;name:string}[];caseVersion?:number;domain?:string;guiding?:boolean}) {
   const auth=useAuth(),t=platformText(locale);
   const ux=customerUx(locale),fieldText=workspaceText(locale);
   const demo=auth.mode==="demo",d=publicDemoText(locale);
@@ -35,8 +36,13 @@ export function PlatformWorkbench({caseId,locale,view,ask,inspect,changed,docume
   const [reviewId,setReviewId]=useState<string>();const [note,setNote]=useState("");const [success,setSuccess]=useState<"queued"|"reviewed"|"cancelled">();
   const [noticeView,setNoticeView]=useState<PlatformView>(view);
   const [retryJob,setRetryJob]=useState<PlatformData["jobs"][number]>();
-  const [pipelinePanel,setPipelinePanel]=useState<'processing'|'batches'|'assets'>('processing');
-  useEffect(()=>{if(view!=='pipeline')return;const sync=()=>{const panel=new URLSearchParams(window.location.search).get('pipeline');if(panel==='processing'||panel==='batches'||panel==='assets')setPipelinePanel(panel);};const timer=setTimeout(sync,0);window.addEventListener('popstate',sync);return()=>{clearTimeout(timer);window.removeEventListener('popstate',sync);};},[view]);
+  const [pipelinePanel,setPipelinePanel]=useState<PipelinePanel>('processing');
+  useEffect(()=>{if(view!=='pipeline')return;const sync=()=>{const panel=guiding?'processing':pipelinePanelFromSearch(window.location.search);setPipelinePanel(panel);};const timer=setTimeout(sync,0);window.addEventListener('popstate',sync);return()=>{clearTimeout(timer);window.removeEventListener('popstate',sync);};},[view,guiding]);
+  function selectPipelinePanel(panel:PipelinePanel){
+    setPipelinePanel(panel);
+    const next=pipelinePanelPath(window.location.href,panel);
+    if(next!==`${window.location.pathname}${window.location.search}${window.location.hash}`)window.history.pushState(null,'',next);
+  }
   const research=researchText(locale);
   const input=useRef<HTMLInputElement>(null),inFlight=useRef(false),finished=useRef(new Set<string>());
   const canUpload=auth.roles.some(r=>r==="ADVISOR"||r==="ADMIN");const canReview=auth.roles.some(r=>r==="REVIEWER"||r==="ADMIN");
@@ -62,16 +68,17 @@ export function PlatformWorkbench({caseId,locale,view,ask,inspect,changed,docume
   function retry(){if(!retryJob)return;const id=retryJob.id;setRetryJob(undefined);void run(async()=>{await action(`/jobs/${id}/retry`);setSuccess("queued");await load();});}
   async function cancelJob(job:PlatformData['jobs'][number]){await run(async()=>{await action(`/jobs/${job.id}/cancel`);setSuccess('cancelled');await load();});}
   function review(event:FormEvent){event.preventDefault();if(!reviewId||!note.trim())return;void run(async()=>{await action("/reviews",JSON.stringify({alertId:reviewId,note}));setReviewId(undefined);setNote("");setSuccess("reviewed");await load();});}
-  const azure=data?.documentPipeline.provider.mode!=="local";
-  const fileHint=t(azure?"formatAzure":"format").replace("{pages}",String(data?.documentPipeline.provider.maxPages||4));
+  const azure=!!data?.documentPipeline.provider.mode.startsWith("azure");
+  const structured=data?.documentPipeline.provider.mode!=="local";
+  const fileHint=t(structured?"formatAzure":"format").replace("{pages}",String(data?.documentPipeline.provider.maxPages||4));
   const date=(value:string)=>new Intl.DateTimeFormat(locale,{dateStyle:"medium",timeStyle:"short"}).format(new Date(value));
   return <div className="lab-workbench">
     
-    {view!=='pipeline'||pipelinePanel==='processing'?<div className="lab-page-heading"><div><span className="eyebrow">{t(view)} · {caseId}</span><h1>{t(`${view==="evaluation"?"quality":view}Title`)}</h1><p>{demo&&view==="operations"?d("operationsHint"):t(`${view==="evaluation"?"quality":view}Hint`)}</p></div><button className="button-secondary" onClick={()=>{setError("");void load();}} disabled={busy}><RefreshCw size={16}/>{t("refresh")}</button></div>:null}
+    {view!=='pipeline'?<div className="workspace-view-toolbar"><p>{demo&&view==="operations"?d("operationsHint"):t(`${view==="evaluation"?"quality":view}Hint`)}</p><button className="button-secondary" onClick={()=>{setError("");void load();}} disabled={busy}><RefreshCw size={16}/>{t("refresh")}</button></div>:null}
     {error&&noticeIsVisible(noticeView,view)?<p className="notice-error" role="alert">{t(error)}</p>:null}{success&&noticeIsVisible(noticeView,view)?<p className="notice-success" role="status">{t(success)}</p>:null}
     {loading?<div className="lab-loading" role="status"><Layers3 size={28}/>{t("loading")}</div>:null}
     {data&&view==="studio"?<>
-      <section className="lab-command"><div className="lab-command-icon"><Sparkles size={24}/></div><div><Badge>{t("implementation")}</Badge><h3>{demo?d("engine"):t("engine")}</h3><p>{demo?d("modelNote"):t("modelNote")}</p></div>
+      <section className="lab-command workspace-search-command">
         <form onSubmit={retrieve}><label htmlFor="lab-evidence-query" className="sr-only">{t("query")}</label><input data-page-tour="studio-query" id="lab-evidence-query" value={query} onChange={e=>setQuery(e.target.value)} maxLength={2000} placeholder={t("query")}/><button data-page-tour="studio-search" className="button-primary" disabled={busy||!query.trim()}><Search size={17}/>{t(busy?"loading":"search")}</button></form>
         <div data-page-tour="studio-suggestions" className="lab-suggestions">{["sampleQuery","sampleQuery2","sampleQuery3"].map(key=><button key={key} disabled={busy} onClick={()=>retrieve(undefined,t(key))}>{t(key)} <ArrowUpRight size={13}/></button>)}</div>
       </section>
@@ -82,15 +89,15 @@ export function PlatformWorkbench({caseId,locale,view,ask,inspect,changed,docume
         {search.search.quarantined.length?<p className="notice-error">{t("quarantine")}: {search.search.quarantined.join(", ")}</p>:null}
       </>:<section className="surface lab-empty"><FileSearch size={32}/><p>{t("noResults")}</p></section>}</div>
       <button data-page-tour="studio-nova" className="button-primary" disabled={busy||!query.trim()} onClick={()=>ask(query)}><Sparkles size={17}/>{t("ask")}</button>
-      <section className="surface lab-section"><h3>{t("agents")}</h3><p className="lab-caption">{demo?d("modelNote"):t("agentHint")}</p><div className="lab-agent-grid">{data.agents.map(a=><article key={a.name}><GitBranch size={20}/><h4>{t(a.name)}</h4>{a.tools.map(tool=><code key={tool}>{tool}</code>)}</article>)}</div></section>
-      <AgentRuns data={data} locale={locale}/>
+      <details className="surface workspace-technical-panel"><summary>{t("agents")}</summary><div><p className="lab-caption">{demo?d("modelNote"):t("agentHint")}</p><div className="lab-agent-grid">{data.agents.map(a=><article key={a.name}><GitBranch size={20}/><h4>{t(a.name)}</h4>{a.tools.map(tool=><code key={tool}>{tool}</code>)}</article>)}</div></div></details>
+      <AgentRuns data={data} locale={locale} guiding={guiding}/>
     </>:null}
-    {data&&view==='pipeline'?<div className="research-tabs" aria-label={research('pipeline')}>{(['processing','batches','assets'] as const).map(id=><button key={id} className={pipelinePanel===id?'selected':''} aria-pressed={pipelinePanel===id} onClick={()=>setPipelinePanel(id)}>{id==='batches'?batchText(locale).title:research(id)}</button>)}</div>:null}
+    {data&&view==='pipeline'?<div className="research-tabs" aria-label={research('pipeline')}>{(['processing','batches','assets'] as const).map(id=><button key={id} className={pipelinePanel===id?'selected':''} aria-pressed={pipelinePanel===id} onClick={()=>selectPipelinePanel(id)}>{id==='batches'?workspacePresentation(locale).batch:research(id)}</button>)}</div>:null}
     {data&&view==='pipeline'&&pipelinePanel==='batches'&&!demo?<DocumentBatches key={caseId} caseId={caseId} locale={locale} azure={azure} provider={data.documentPipeline.provider.activeProvider} canWrite={canUpload&&data.persistent} inspect={inspect} changed={changed}/>:null}
     {data&&view==='pipeline'&&pipelinePanel==='assets'?<DocumentResearchPanel key={`${caseId}:${caseVersion}`} caseId={caseId} caseVersion={caseVersion} locale={locale} view="assets" inspect={inspect}/>:null}
     {data&&view==="pipeline"&&pipelinePanel==='processing'?<>
-      <div data-page-tour="pipeline-provider" className="lab-metrics"><Metric label={t("provider")} value={data.documentPipeline.provider.activeProvider} detail={data.documentPipeline.provider.modelId}/><Metric label={t("scanner")} value={data.documentPipeline.scanner}/><Metric label={t("retention")} value={`${data.documentPipeline.retentionDays} ${t("days")}`} detail={data.documentPipeline.storage}/></div>
-      <section className="lab-upload"><div className="lab-upload-icon"><Upload size={30}/></div><div><h3>{t("stages")}</h3><p>{fileHint}</p></div><div className="lab-upload-actions"><input ref={input} type="file" accept={azure?".pdf,.png,.jpg,.jpeg":".pdf,.png,.jpg,.jpeg,.txt"} className="hidden" onChange={e=>{const file=e.target.files?.[0];e.target.value="";if(file)void run(()=>queue(file));}}/><button data-page-tour="pipeline-upload" className="button-primary" disabled={busy||!canUpload||!data.persistent} onClick={()=>input.current?.click()}><Upload size={16}/>{t("upload")}</button><button data-page-tour="pipeline-datev" style={domain!=='banking'?{display:'none'}:undefined} className="button-secondary" disabled={busy} onClick={sample}><FlaskConical size={16}/>{datevLabels(locale).title}</button></div></section>
+      <details data-page-tour="pipeline-provider" className="batch-processing-details"><summary>{workspacePresentation(locale).processingSettings}<span>{data.documentPipeline.scanner} · {t("retention")}: {data.documentPipeline.retentionDays} {t("days")}</span></summary><p>{t("provider")}: {data.documentPipeline.provider.activeProvider} · {data.documentPipeline.provider.modelId}</p><p>{t("storage")}: {data.documentPipeline.storage}</p></details>
+      <section className="lab-upload"><div className="lab-upload-icon"><Upload size={30}/></div><div><h3>{workspacePresentation(locale).upload}</h3><p>{fileHint}</p></div><div className="lab-upload-actions"><input ref={input} type="file" accept={structured?".pdf,.png,.jpg,.jpeg":".pdf,.png,.jpg,.jpeg,.txt"} className="hidden" onChange={e=>{const file=e.target.files?.[0];e.target.value="";if(file)void run(()=>queue(file));}}/><button data-page-tour="pipeline-upload" className="button-primary" disabled={busy||!canUpload||!data.persistent} onClick={()=>input.current?.click()}><Upload size={16}/>{t("upload")}</button><button data-page-tour="pipeline-datev" style={domain!=='banking'?{display:'none'}:undefined} className="button-secondary" disabled={busy} onClick={sample}><FlaskConical size={16}/>{datevLabels(locale).title}</button></div></section>
       <DocumentPipeline data={data} locale={locale} busy={busy} canWrite={canUpload&&!demo} inspect={inspect} retry={setRetryJob} cancel={cancelJob}/>
       <p className="lab-caption">{t("retentionHint")}</p>
       {retryJob?<ModalSurface title={t("retryTitle")} label={t("closeRetry")} close={()=>setRetryJob(undefined)}><p className="font-semibold">{retryJob.name}</p><p className="mt-3 text-sm leading-relaxed">{t("retryConfirm")} <strong>{data.documentPipeline.provider.activeProvider}</strong>.</p><p className="mt-3 text-xs leading-relaxed text-slate-500">{t("retryHistory")}</p><div className="mt-5 flex justify-end gap-3"><button className="button-secondary" onClick={()=>setRetryJob(undefined)}>{t("cancelRetry")}</button><button className="button-primary" disabled={busy||!canUpload||demo} onClick={retry}>{t("confirmRetry")}</button></div></ModalSurface>:null}
@@ -111,7 +118,7 @@ export function PlatformWorkbench({caseId,locale,view,ask,inspect,changed,docume
   </div>;
 }
 
-function AgentRuns({data,locale}:{data:PlatformData;locale:string}) {
+function AgentRuns({data,locale,guiding=false}:{data:PlatformData;locale:string;guiding?:boolean}) {
   const t=platformText(locale);
-  return <section data-page-tour="studio-traces" className="surface lab-section"><h3>{t("runs")}</h3><p className="lab-caption">{t("supportHint")}</p>{data.runs.length?<div className="lab-run-list">{data.runs.slice(0,8).map(run=><details key={run.id}><summary><GitBranch size={17}/><strong>{t(run.specialist)}</strong><span>{run.mode}</span><span>{run.durationMs} ms</span><Badge tone={run.quality.requiresReview?"warn":"good"}>{t("support")}: {percent(run.quality.lexicalSupport)}</Badge></summary><div><code>{run.id}</code><p>{t("sourceIds")}: {run.quality.validCitations.join(", ")||"—"}</p>{run.quality.invalidCitations.length?<p className="notice-error">{t("reviewRequired")}: {run.quality.invalidCitations.join(", ")}</p>:null}<ol>{run.steps.map(s=><li key={s.agent}>{t(s.agent)} · {s.tools.join(", ")}</li>)}</ol></div></details>)}</div>:<p className="lab-empty">{t("noRuns")}</p>}</section>;
+  return <details data-page-tour="studio-traces" className="surface workspace-technical-panel" open={guiding||undefined}><summary>{t("runs")}<small>{data.runs.length}</small></summary><div><p className="lab-caption">{t("supportHint")}</p>{data.runs.length?<div className="lab-run-list">{data.runs.slice(0,8).map(run=><details key={run.id}><summary><GitBranch size={17}/><strong>{t(run.specialist)}</strong><span>{run.mode}</span><span>{run.durationMs} ms</span><Badge tone={run.quality.requiresReview?"warn":"good"}>{t("support")}: {percent(run.quality.lexicalSupport)}</Badge></summary><div><code>{run.id}</code><p>{t("sourceIds")}: {run.quality.validCitations.join(", ")||"—"}</p>{run.quality.invalidCitations.length?<p className="notice-error">{t("reviewRequired")}: {run.quality.invalidCitations.join(", ")}</p>:null}<ol>{run.steps.map(s=><li key={s.agent}>{t(s.agent)} · {s.tools.join(", ")}</li>)}</ol></div></details>)}</div>:<p className="lab-empty">{t("noRuns")}</p>}</div></details>;
 }

@@ -52,7 +52,7 @@ public class DocumentJobs {
   private Map<String,Object> enqueue(String tenant,String id,String actor,String name,String type,byte[] bytes,String retryOf) {
     cases.allowWrite();cases.require(tenant,id);if(bytes.length==0||bytes.length>3_000_000)throw fail(422,"Use a file between 1 byte and 3 MB");
     if(!name.toLowerCase(Locale.ROOT).matches(".*\\.(pdf|png|jpe?g|txt)$"))throw fail(422,"Unsupported file extension");
-    if(name.toLowerCase(Locale.ROOT).endsWith(".txt")&&"azure".equals(analysis.status().get("mode")))throw fail(422,"Azure layout accepts PDF or image files, not plain text");
+    if(name.toLowerCase(Locale.ROOT).endsWith(".txt")&&!"local".equals(analysis.status().get("mode")))throw fail(422,"The selected provider accepts PDF or image files, not plain text");
     limits.reserve(tenant,actor,"document-upload",12);
     String digest;try{digest=HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));}catch(Exception e){throw new IllegalStateException(e);}
     var db=store.database();var duplicates=db.queryForList("SELECT id FROM lab_jobs WHERE tenant=? AND case_id=? AND sha256=? AND status NOT IN ('FAILED','EXPIRED','CANCELLED')",tenant,id,digest);
