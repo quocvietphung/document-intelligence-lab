@@ -4,8 +4,23 @@ import type {PlatformData} from "./platform";
 import approvedHashes from "@/services/credit-api/src/main/resources/datev-reference-hashes.json";
 import {kaggleReference} from './research-samples';
 import {platformText} from './platform-language';
+import {searchText} from './customer-ux';
 
 export type DocumentJob=PlatformData["jobs"][number];
+export type ResultFilter='all'|'review'|'verified';
+export function resultDocumentGroups(documents:readonly CreditDocument[]){
+  const latest=new Map<string,CreditDocument>(),history:CreditDocument[]=[],missing:CreditDocument[]=[];
+  for(const doc of documents){
+    if(doc.status==='missing')missing.push(doc);
+    else if(latest.has(doc.name))history.push(doc);
+    else latest.set(doc.name,doc);
+  }
+  return {latest:[...latest.values()],history,missing};
+}
+export function filterResultDocuments(documents:readonly CreditDocument[],query:string,filter:ResultFilter){
+  const terms=searchText(query).split(/\s+/).filter(Boolean);
+  return documents.filter(doc=>(filter==='all'||doc.status===filter)&&terms.every(term=>searchText(`${doc.name} ${doc.type} ${doc.id}`).includes(term)));
+}
 export const documentReceiptSchema=z.object({id:z.string().min(1),status:z.literal("QUEUED"),expiresAt:z.string().datetime()});
 export type DocumentImportOutcome={duplicate:true}|z.infer<typeof documentReceiptSchema>;
 export function activeDocumentJob(job:{status?:string}){return ["QUEUED","PROCESSING","RETRY"].includes(job.status||"");}

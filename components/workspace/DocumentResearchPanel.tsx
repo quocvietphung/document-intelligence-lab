@@ -1,7 +1,7 @@
 "use client";
 
 import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
-import {ArrowUpRight,CheckCircle2,Database,Download,FileCheck2,FlaskConical,Layers3,Plus,RefreshCw,Trash2} from 'lucide-react';
+import {ArrowUpRight,CheckCircle2,Download,FileCheck2,FlaskConical,Plus,RefreshCw,Trash2} from 'lucide-react';
 import {useAuth} from '@/components/auth/KeycloakProvider';
 import {datasetIsCurrent,runsForReference,documentResearchSchema,referenceExportLines,researchMetric,researchText,type DocumentResearchData,type ReferenceField,type ReferenceQuestion} from '@/lib/document-research';
 import {downloadBlob,downloadJson} from '@/lib/browser-download';
@@ -66,7 +66,7 @@ export function DocumentResearchPanel({caseId,caseVersion,locale,view,inspect}:P
   });}
   const date=(value:string)=>new Intl.DateTimeFormat(locale,{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
   return <section className="source-research-workbench">
-    <header className="lab-page-heading"><div><span className="eyebrow">{view==='experiments'?t('experiments'):t('pipeline')} · {caseId}</span><h1>{t(view==='experiments'?'title':'assetsTitle')}</h1><p>{t(view==='experiments'?'hint':'assetsHint')}</p></div><button className="button-secondary" disabled={busy||loading} onClick={()=>{setError('');void load();}}><RefreshCw size={16}/>{locale==='vi'?'Tải lại':locale==='de'?'Aktualisieren':'Refresh'}</button></header>
+    <header className="workspace-view-toolbar"><div><h2>{t(view==='experiments'?'title':'assetsTitle')}</h2><p>{t(view==='experiments'?'hint':'assetsHint')}</p></div><button className="button-secondary" disabled={busy||loading} onClick={()=>{setError('');void load();}}><RefreshCw size={16}/>{locale==='vi'?'Tải lại':locale==='de'?'Aktualisieren':'Refresh'}</button></header>
     {loading?<p role="status">{t('loading')}</p>:null}{error?<p className="notice-error" role="alert">{t(error)}</p>:null}{saved?<p className="notice-success" role="status">{t('saved')}</p>:null}
     {data? <>
       {view==='experiments'?data.jobs.filter(j=>j.status!=='COMPLETE').slice(0,5).map(job=><p className={job.status==='FAILED'?'notice-error':'notice-lab'} role="status" key={job.id}>{t(job.status)} · {t(job.suite==='EXTRACTION'?'extraction':'retrieval')}{job.errorCode?` · ${t(job.errorCode)}`:''}</p>):null}
@@ -95,9 +95,4 @@ export function DocumentResearchPanel({caseId,caseVersion,locale,view,inspect}:P
       </>}
     </>:null}
   </section>;
-}
-
-export function ResearchShortcuts({locale,navigate}:{locale:string;navigate:(id:'experiments'|'pipeline')=>void}) {
-  const t=researchText(locale);
-  return <section className="research-shortcuts">{[['experiments',FlaskConical,'researchLink'],['pipeline',Database,'pipelineLink']].map(([id,Icon,description])=>{const Symbol=Icon as typeof Layers3;return <button className="surface" key={String(id)} onClick={()=>navigate(id as 'experiments'|'pipeline')}><Symbol size={23}/><span><strong>{t(String(id))}</strong><small>{t(String(description))}</small></span><ArrowUpRight size={18}/></button>;})}</section>;
 }

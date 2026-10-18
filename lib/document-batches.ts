@@ -6,6 +6,17 @@ export const batchItemSchema=z.object({name:z.string(),sha256:z.string(),size:z.
 export const batchSchema=z.object({id:z.string(),name:z.string(),source:z.string(),profile:z.enum(extractionProfiles),time:z.string(),state:z.string(),items:z.array(batchItemSchema),manifestHash:z.string(),persistent:z.boolean()});
 export const batchListSchema=z.object({batches:z.array(batchSchema),adfConnected:z.literal(false),cloudIngestionConnected:z.literal(false)});
 export type DocumentBatch=z.infer<typeof batchSchema>;
+/** Collapse only uneventful repeat receipts, never failures, active work or missing-field warnings. */
+export function batchHistory(batches:readonly DocumentBatch[]){
+  const visible:DocumentBatch[]=[],repeated:DocumentBatch[]=[];
+  for(const batch of batches){
+    const duplicate=batch.state==='SUBMITTED'&&batch.items.length>0&&batch.items.every(item=>
+    item.state==='DUPLICATE'&&item.status==='COMPLETE'&&(!item.errorCode||item.errorCode==='DUPLICATE')&&!item.profileMismatch&&!item.missingFields?.length);
+    (duplicate?repeated:visible).push(batch);
+  }
+  if(!visible.length&&repeated.length)visible.push(repeated.shift()!);
+  return {visible,repeated};
+}
 export function validateBatchFiles(files:readonly Pick<File,'name'|'size'>[],azure=true){
   if(!files.length||files.length>4)return 'count';
   if(files.some(f=>!f.size||f.size>3_000_000||!(azure?/\.(pdf|png|jpe?g)$/i:/\.(pdf|png|jpe?g|txt)$/i).test(f.name)))return 'files';

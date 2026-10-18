@@ -1,10 +1,10 @@
 # Document Intelligence Lab
 
-A hands-on **Azure AI document research lab** for studying how to turn PDFs into traceable, reviewable answers.
+A hands-on, **MIT-licensed document AI research lab** for studying how to turn PDFs into traceable, reviewable answers with Azure AI and local open-source processing.
 
 The project studies extraction, hybrid RAG, source-grounded answers and human review for **DATEV payroll/banking**, **insurance** and **general business documents**.
 
-This README follows one setup from a fresh clone to a working Nova conversation: **run the application locally in Docker and connect it to your Azure OpenAI and Document Intelligence resources**. Web, Java, Keycloak, databases and private storage stay on your computer; confirmed AI requests call Azure.
+The main walkthrough follows one setup from a fresh clone to a working Nova conversation: **run the application locally in Docker and connect it to your Azure OpenAI and Document Intelligence resources**. Web, Java, Keycloak, databases and private storage stay on your computer; confirmed AI requests call Azure. For extraction without an Azure account, use the separate [local Docling guide](docs/LOCAL_DOCUMENT_AI.md); that profile does not include a generative Nova model.
 
 **Java 21 · Spring Boot · LangChain4j · Azure Document Intelligence · Azure OpenAI · Next.js · PostgreSQL · Qdrant · Keycloak · Docker**
 
@@ -13,6 +13,19 @@ This README follows one setup from a fresh clone to a working Nova conversation:
 > Research software, not a banking or insurance product. Use fictional or explicitly permitted documents. No payments, automated credit decisions, underwriting, claim settlement or automatic email delivery.
 
 **Local preview:** after starting Docker with the setup below, open [English](http://localhost:3000/en), [Deutsch](http://localhost:3000/de) or [Tiếng Việt](http://localhost:3000/vi). Sign in through [Keycloak](#sign-in-through-keycloak), then open Nova's portrait at the bottom right. Use the compass beside Nova to replay the current page's walkthrough. These links point to your own computer, not a hosted deployment.
+
+## Open-source scope
+
+The project code is available under [MIT](LICENSE); contributions are welcome through [CONTRIBUTING](CONTRIBUTING.md). Read [SECURITY](SECURITY.md) before reporting vulnerabilities and [third-party boundaries](THIRD_PARTY_NOTICES.md) before redistributing documents, images or models. `private: true` in `package.json` prevents accidental npm publishing; it does not make the GitHub repository private or restrict the MIT license.
+
+| Capability | Available implementation |
+| --- | --- |
+| Local document AI | Optional **Docling CPU** profile for layout, OCR and tables; existing PDFBox/Tesseract baseline remains available |
+| Cloud document AI and Nova | Azure Document Intelligence and Azure OpenAI; own authorized resource/configuration required, usage can be billable |
+| Local retrieval | MiniLM ONNX + Qdrant + BM25; English-focused embedding, not a newly installed multilingual model |
+| Review and governance | Private originals, page evidence, deterministic checks, experiments, audit and human approval |
+
+Downloaded DATEV/Kaggle PDFs, local credentials, customer documents and model caches are not part of the public source distribution. Unit tests use fictional fixtures and do not need Azure credentials. CI is a set of checks, not certification of model accuracy, production security or third-party rights.
 
 ## Local setup with Azure AI
 
@@ -24,7 +37,7 @@ This README follows one setup from a fresh clone to a working Nova conversation:
 - Available local ports: **3000**, **8080**, **8081**.
 - Internet for images, build dependencies and initial ClamAV signatures.
 - Commands use a macOS/Linux shell; on Windows, use a Docker-enabled WSL2 environment.
-- Repository access while it is private. No Vercel account or Azure VM is required.
+- No Vercel account or Azure VM is required. Clone the public source directly.
 
 Check the installed tools:
 
@@ -356,7 +369,7 @@ node --test scripts/docker-azure-config.test.mjs
 
 | Feature | Implementation | Where |
 | --- | --- | --- |
-| Document OCR and layout | Azure Document Intelligence `prebuilt-layout`; Java field normalization/classification rules | Documents & review |
+| Document OCR and layout | Azure Document Intelligence `prebuilt-layout`, optional local Docling, or PDFBox/Tesseract baseline; Java field normalization/classification rules | Documents & review |
 | Semantic and hybrid RAG | Local MiniLM ONNX embeddings, Qdrant and BM25—not Azure AI Search | AI Studio |
 | Document Q&A and source explanations | Azure OpenAI through Java/LangChain4j; dossier-scoped read-only tools | Nova → Evidence analysis |
 | Controlled AI drafts | Summary, cross-document comparison, inconsistency explanation, document request, review checklist, German terminology and DE–VI summary | AI transparency & review → Task library |
@@ -369,6 +382,20 @@ The platform also provides Keycloak OAuth 2.0/OIDC + PKCE, Bearer-protected tena
 OCR confidence is not measured accuracy; citation-ID validation does not prove that every statement is supported. Financial decisions remain outside scope. Azure Foundry evaluation, Data Factory orchestration, Blob ingestion and Application Insights are **not connected by default**. [Research methods](docs/RESEARCH_WORKSPACES.md) · [Nova privacy and review](docs/NOVA_TRUST.md).
 
 ## Workspace tour
+
+The sidebar has seven destinations. Related research and operations pages use local section tabs, rather than repeating similar entries in the main menu.
+
+| Destination | What to do here |
+| --- | --- |
+| Overview | Start document analysis, evidence search or Nova; see dossier warnings before the capability directory. All 28 capabilities remain available in six expandable groups; searching opens matching groups. |
+| Documents & review | Add a source, open the result and original PDF, inspect fields/tables, and confirm with reviewer permission. Expand **Reference library** for private DATEV or Kaggle samples. |
+| Data Pipelines | Follow processing jobs, use one status filter, inspect receipts, or switch to batch intake and data assets. |
+| AI Studio | Retrieve evidence with local hybrid search and prepare a question for Nova. |
+| Research lab | Switch between **Experiments**, **Domain insights** and **Document inventory**. |
+| Review & trust | Inspect deterministic warnings and the case-scoped human-review workflow. |
+| Operations | Inspect configuration/runbooks or switch to **Activity log**. |
+
+Existing `#banking`, `#evaluation` and `#audit` links still open the correct section. Navigation, directory filters and page guides never start inference automatically. The optional Docling provider and the active Azure configuration are unchanged by the UI grouping.
 
 Current local UI in English. Screenshots show an existing research workspace, not dossiers preloaded into a fresh clone. German labels and number formatting inside source evidence are deliberately preserved.
 
@@ -431,7 +458,7 @@ flowchart TD
     J --> P[(PostgreSQL · dossiers / jobs / audit / references)]
     J --> Q[Durable document queue]
     Q --> V[ClamAV]
-    V --> D[Azure Document Intelligence OR local PDFBox / Tesseract]
+    V --> D[Azure Document Intelligence OR local Docling OR PDFBox / Tesseract]
     Q --> S[Private document volume]
     D --> P
     J --> R[ONNX + Qdrant + BM25]

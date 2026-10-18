@@ -1,5 +1,5 @@
 "use client";
-import {ArrowUpRight,BrainCircuit,ChevronDown,FileSearch,Info,ShieldCheck,Sparkles} from "lucide-react";
+import {ArrowUpRight,ChevronDown,Info,ShieldCheck,Sparkles} from "lucide-react";
 import {aiText,chatEngine,documentAI,pageAIKind,type AICapabilities,type AIKind} from "@/lib/ai-capabilities";
 import type {CreditDocument} from "@/lib/credit-data";
 import type {WorkspaceTab} from "@/lib/nova-guide";
@@ -25,9 +25,9 @@ export function AIPageBanner({page,locale,capabilities,demo=false,ask}:{page:Wor
   const t=aiText(locale),doc=capabilities?.documents,rag=capabilities?.retrieval;
   let kind=pageAIKind(page),engine:string,model:string,hint:string,title:string;
   if(page==="documents"||page==="pipeline"){
-    kind=demo?"demo":!doc?"unknown":doc.provider==="azure-document-intelligence"?"ai":doc.provider==="unavailable"?"unknown":"rules";
-    engine=kind==="ai"?"Azure Document Intelligence":kind==="rules"?"PDFBox · Tesseract OCR":kind==="demo"?t.demo:t.unknown;
-    model=doc?.modelId||t.notReported;hint=demo?t.demoHint:kind==="ai"?t.documentHint:kind==="rules"?t.localHint:t.notLive;title=t[page==="documents"?"source":"pipeline"];
+    const identity=documentAI({analysisProvider:doc?.configured?doc.provider:undefined,modelId:doc?.modelId,status:'review'},locale);
+    kind=demo?"demo":identity.kind;engine=demo?t.demo:identity.engine;
+    model=doc?.modelId||t.notReported;hint=demo?t.demoHint:identity.hint;title=t[page==="documents"?"source":"pipeline"];
   }else if(page==="studio"){
     kind=demo?"demo":!rag?"unknown":rag.semantic?"ai":"rules";engine=demo?t.demo:rag?.embeddingModel||t.unknown;
     model=demo?"browser fixtures":rag?`${rag.vectorStore} · BM25 · feature ranking`:t.notReported;hint=demo?t.demoHint:t.searchHint;title=t.search;
@@ -38,16 +38,8 @@ export function AIPageBanner({page,locale,capabilities,demo=false,ask}:{page:Wor
     model=t.human;hint=page==="evaluation"?t.qualityHint:page==="controls"?t.rulesHint:t.reviewHint;
     title=t[page==="controls"?"controls":page==="evaluation"?"quality":page==="banking"?"banking":page==="operations"?"operations":"audit"];
   }
-  return <section className={`ai-page-banner ai-banner-${kind}`} aria-label={t.engines}>
-    <div className="ai-banner-icon"><BrainCircuit size={23} aria-hidden="true"/></div>
-    <div className="ai-banner-main"><div className="ai-banner-labels"><AITag kind={kind} locale={locale}/><span>{title}</span></div><strong>{engine}</strong><p>{hint}</p><code>{model}</code>
-      <details><summary>{t.how}<ChevronDown size={12}/></summary><p>{t.notLive}</p>{page==="studio"&&rag?.semantic?<p>{t.languageHint}</p>:null}<p>{t.reviewHint}</p></details>
-    </div>
-    <button className="button-secondary" onClick={()=>ask(`${t.pageRequest} ${title}. ${hint}`)}><Sparkles size={15}/>{t.ask}<ArrowUpRight size={14}/></button>
-  </section>;
-}
-
-export function AIWorkflowLegend({locale}:{locale:string}) {
-  const t=aiText(locale);
-  return <div className="ai-workflow-legend" aria-label={t.labels}><span><FileSearch size={14}/>{t.source}</span><i aria-hidden="true">→</i><span><BrainCircuit size={14}/>{t.search}</span><i aria-hidden="true">→</i><span><Sparkles size={14}/>{t.chat}</span><i aria-hidden="true">→</i><span><ShieldCheck size={14}/>{t.human}</span></div>;
+  return <details className={`ai-page-disclosure ai-banner-${kind}`} aria-label={t.engines}>
+    <summary><AITag kind={kind} locale={locale}/><span className="ai-context-text"><span>{title}</span><strong>{engine}</strong></span><span className="ai-context-toggle">{t.how}<ChevronDown size={14}/></span></summary>
+    <div className="ai-context-details"><p>{hint}</p><code>{model}</code><p>{t.notLive}</p>{page==="studio"&&rag?.semantic?<p>{t.languageHint}</p>:null}<p>{t.reviewHint}</p><button className="button-secondary" onClick={()=>ask(`${t.pageRequest} ${title}. ${hint}`)}><Sparkles size={15}/>{t.ask}<ArrowUpRight size={14}/></button></div>
+  </details>;
 }

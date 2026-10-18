@@ -1,4 +1,4 @@
-import type {AICapabilities,AIKind} from './ai-capabilities';
+import {documentAI,type AICapabilities,type AIKind} from './ai-capabilities';
 import type {CreditDocument} from './credit-data';
 import type {WorkspaceTab} from './nova-guide';
 import type {TrustSection} from './nova-trust';
@@ -35,6 +35,14 @@ export const dashboardFeatures=[
   {id:'injection-guard',category:'control',engine:'rules',target:{page:'studio'}},
 ] as const satisfies readonly {id:string;category:'ai'|'control';engine:string;target:DashboardTarget}[];
 export type DashboardFeature=typeof dashboardFeatures[number];
+export const dashboardGroups=[
+  {id:'documentTools',features:['document','tables','classification','field-explanation']},
+  {id:'retrievalTools',features:['search','embeddings','injection-guard']},
+  {id:'novaTools',features:['nova','summary','reconcile','explain','request-documents','review-checklist','terminology','bilingual-summary','app-guide']},
+  {id:'pipelineTools',features:['field-profiles','batches','lineage']},
+  {id:'researchTools',features:['quality','experiments']},
+  {id:'reviewTools',features:['validation','review','transparency','citations','feedback','governance','performance']},
+] as const satisfies readonly {id:string;features:readonly DashboardFeature['id'][]}[];
 export type DashboardFilter='all'|'ai'|'control';
 export function dashboardEngine(feature:DashboardFeature,capabilities:AICapabilities|undefined,demo:boolean):{kind:AIKind;provider:string;model:string;configured:boolean}{
   if(demo)return {kind:'demo',provider:'demo',model:'',configured:false};
@@ -44,7 +52,8 @@ export function dashboardEngine(feature:DashboardFeature,capabilities:AICapabili
   if(!capabilities)return {kind:'unknown',provider:'unknown',model:'',configured:false};
   if(feature.engine==='document'){
     const doc=capabilities.documents;
-    return {kind:doc.configured&&doc.provider==='azure-document-intelligence'?'ai':doc.configured&&doc.provider.startsWith('local')?'rules':'unknown',provider:doc.provider==='azure-document-intelligence'?'Azure Document Intelligence':doc.provider.startsWith('local')?'PDFBox · Tesseract OCR':'unknown',model:doc.modelId,configured:doc.configured};
+    const engine=documentAI({analysisProvider:doc.configured?doc.provider:undefined,modelId:doc.modelId,status:'review'},'en');
+    return {kind:engine.kind,provider:engine.engine,model:engine.model,configured:doc.configured};
   }
   if(feature.engine==='retrieval')return {kind:capabilities.retrieval.semantic?'ai':'rules',provider:capabilities.retrieval.vectorStore,model:capabilities.retrieval.embeddingModel,configured:capabilities.retrieval.semantic};
   const chat=capabilities.chat;
@@ -53,7 +62,7 @@ export function dashboardEngine(feature:DashboardFeature,capabilities:AICapabili
 export function dashboardStats(documents:readonly CreditDocument[],capabilities?:AICapabilities,demo=false){
   const originals=documents.filter(d=>d.originalAvailable&&d.status!=='missing');
   return {aiWorkflows:dashboardFeatures.filter(f=>f.category==='ai').length,
-    configuredEngines:demo?0:capabilities?Number(capabilities.documents.configured&&capabilities.documents.provider==='azure-document-intelligence')+Number(capabilities.chat.configured&&capabilities.chat.provider==='azure-openai')+Number(capabilities.retrieval.semantic):null,
+    configuredEngines:demo?0:capabilities?Number(capabilities.documents.configured&&['azure-document-intelligence','docling'].includes(capabilities.documents.provider))+Number(capabilities.chat.configured&&capabilities.chat.provider==='azure-openai')+Number(capabilities.retrieval.semantic):null,
     azureDocuments:originals.filter(d=>d.analysisProvider==='azure-document-intelligence').length,
     pendingReview:originals.filter(d=>d.status==='review').length};
 }

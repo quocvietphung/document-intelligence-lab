@@ -1,17 +1,20 @@
 "use client";
 
 import {useState} from 'react';
-import {ArrowUpRight,CheckCircle2,Clock3,Download,FileSearch,History,RefreshCw,Search,ShieldCheck,Sparkles,XCircle} from 'lucide-react';
+import {ArrowUpRight,CheckCircle2,Clock3,Download,FileSearch,History,RefreshCw,ShieldCheck,Sparkles,XCircle} from 'lucide-react';
 import {canRetryDocumentJob,documentJobErrorKey,pipelineStage,type PlatformData} from '@/lib/platform';
 import {platformText} from '@/lib/platform-language';
-import {filterPipelineJobs,pipelineCopy,pipelineManifest,pipelineStages,pipelineSteps,pipelineSummary,type PipelineFilter,type PipelineJob} from '@/lib/document-pipeline';
+import {filterPipelineJobs,pipelineCopy,pipelineManifest,pipelineStages,pipelineSteps,pipelineSummary,sortPipelineJobs,type PipelineFilter,type PipelineJob,type PipelineSort} from '@/lib/document-pipeline';
 import {ModalSurface} from './ModalSurface';
 import {downloadJson} from '@/lib/browser-download';
+import {workspacePresentation} from '@/lib/workspace-presentation';
+import {CollectionToolbar} from './CollectionToolbar';
 
 export function DocumentPipeline({data,locale,busy,canWrite,inspect,retry,cancel}:{data:PlatformData;locale:string;busy:boolean;canWrite:boolean;inspect:(id:string)=>void;retry:(job:PipelineJob)=>void;cancel:(job:PipelineJob)=>Promise<void>}){
-  const t=pipelineCopy(locale),status=platformText(locale);
-  const [query,setQuery]=useState(''),[filter,setFilter]=useState<PipelineFilter>('all'),[history,setHistory]=useState(false),[selected,setSelected]=useState<string>(),[cancelId,setCancelId]=useState<string>();
-  const summary=pipelineSummary(data.jobs),jobs=filterPipelineJobs(data.jobs,filter,query,history);
+  const t=pipelineCopy(locale),status=platformText(locale),u=workspacePresentation(locale);
+  const [query,setQuery]=useState(''),[filter,setFilter]=useState<PipelineFilter>('all'),[sort,setSort]=useState<PipelineSort>('newest'),[history,setHistory]=useState(false),[selected,setSelected]=useState<string>(),[cancelId,setCancelId]=useState<string>();
+  const summary=pipelineSummary(data.jobs),jobs=sortPipelineJobs(filterPipelineJobs(data.jobs,filter,query,history),sort);
+  const reset=()=>{setQuery('');setFilter('all');setSort('newest');setHistory(false);};
   const detail=data.jobs.find(job=>job.id===selected),cancelling=data.jobs.find(job=>job.id===cancelId);
   const date=(value?:string|null)=>value&&Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat(locale,{dateStyle:'medium',timeStyle:'medium'}).format(new Date(value)):'—';
   const canRetry=(job:PipelineJob)=>canRetryDocumentJob(job)&&!data.jobs.some(other=>other.id!==job.id&&other.sha256===job.sha256&&!['FAILED','EXPIRED','CANCELLED'].includes(other.status));
@@ -19,21 +22,19 @@ export function DocumentPipeline({data,locale,busy,canWrite,inspect,retry,cancel
   function download(job:PipelineJob){
     downloadJson(pipelineManifest(data.caseId,job), `processing-${job.id}.json`);
   }
-  return <section className="pipeline-control" data-page-tour="pipeline-jobs" aria-labelledby="pipeline-control-title">
-    <div className="pipeline-control-heading"><div><span className="eyebrow">{data.caseId}</span><h2 id="pipeline-control-title">{t.title}</h2><p>{t.hint}</p></div><span className={`lab-badge lab-badge-${data.documentPipeline.worker?'good':'warn'}`}><Clock3 size={14}/>{t[data.documentPipeline.worker?'running':'paused']}</span></div>
-    <ol className="pipeline-overview-steps" aria-label={t.timeline}>{pipelineStages.map((stage,index)=><li key={stage}><span>{String(index+1).padStart(2,'0')}</span><strong>{t[stage]}</strong>{stage==='EXTRACT'?<small><Sparkles size={12}/>AI</small>:null}</li>)}</ol>
-    <div className="pipeline-summary">{(['active','review','failed','verified'] as const).map(key=><button key={key} className={filter===key?'selected':''} aria-pressed={filter===key} onClick={()=>setFilter(filter===key?'all':key)}><span>{t[key]}</span><strong>{summary[key]}</strong></button>)}</div>
-    <p className="lab-caption">{t.scope}</p>
-    <div className="pipeline-filters"><label><span>{t.search}</span><div><Search size={17}/><input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={t.search}/></div></label><label><span>{t.all}</span><select aria-label={t.all} value={filter} onChange={e=>setFilter(e.target.value as PipelineFilter)}>{(['all','active','review','verified','failed','cancelled','expired'] as const).map(key=><option key={key} value={key}>{t[key]}</option>)}</select></label></div>
-    <div className="pipeline-list-caption"><label><input type="checkbox" checked={history} onChange={e=>setHistory(e.target.checked)}/><History size={15}/>{t.history}</label><span role="status">{jobs.length} / {history?data.jobs.length:summary.latest.length} {t.shown}</span></div>
-    <div className="pipeline-job-list">{jobs.map(job=><article className={`pipeline-job pipeline-job-${job.status.toLowerCase()}`} key={job.id}>
-      <div className="pipeline-job-heading"><span className="pipeline-file-icon"><FileSearch size={23}/></span><div><h3>{job.name}</h3><small>{date(job.createdAt)} · {t.attempt} {job.attempt}</small></div><span className={`lab-badge lab-badge-${job.status==='FAILED'?'warn':job.status==='COMPLETE'?'good':'neutral'}`}>{state(job)}</span></div>
-      <div className="pipeline-job-meta"><span>{t[pipelineStage(job) as keyof typeof t]||status(pipelineStage(job))}</span>{job.scan_result?<span><ShieldCheck size={13}/>{status(job.scan_result)}</span>:null}{job.extraction?<span>{t.pages}: {job.extraction.pages} · {t.tables}: {job.extraction.tables}</span>:null}</div>
-      {job.error_code?<p className="notice-error">{status(documentJobErrorKey(job.error_code))}</p>:null}
-      {job.nextAttemptAt&&job.status==='RETRY'?<p className="lab-caption">{t.next}: {date(job.nextAttemptAt)}</p>:null}
-      <div className="pipeline-job-actions"><button className="button-secondary" onClick={()=>setSelected(job.id)}><History size={15}/>{t.details}</button>{job.document_id&&job.extraction?.originalAvailable!==false?<button className="button-primary" onClick={()=>inspect(job.document_id!)}>{t.result}<ArrowUpRight size={14}/></button>:null}{canWrite&&canRetry(job)?<button className="button-secondary" disabled={busy} onClick={()=>retry(job)}><RefreshCw size={15}/>{t.retry}</button>:null}{canWrite&&job.canCancel?<button className="button-link" disabled={busy} onClick={()=>setCancelId(job.id)}><XCircle size={15}/>{t.cancel}</button>:null}</div>
-    </article>)}</div>
+  return <section className="pipeline-control pipeline-control-compact" data-page-tour="pipeline-jobs" aria-labelledby="pipeline-control-title">
+    <div className="pipeline-control-heading"><div><h2 id="pipeline-control-title">{t.title}</h2><p>{t.hint}</p></div><span className={`lab-badge lab-badge-${data.documentPipeline.worker?'good':'warn'}`}><Clock3 size={14}/>{t[data.documentPipeline.worker?'running':'paused']}</span></div>
+    <div className="pipeline-queue-tabs" role="group" aria-label={u.status}><button type="button" aria-pressed={filter==='all'} onClick={()=>setFilter('all')}>{t.all}<strong>{summary.latest.length}</strong></button>{(['active','review','failed','verified','cancelled','expired'] as const).map(key=><button type="button" key={key} aria-pressed={filter===key} onClick={()=>setFilter(key)}>{t[key]}<strong>{key==='cancelled'||key==='expired'?filterPipelineJobs(data.jobs,key,'',false).length:summary[key]}</strong></button>)}</div>
+    <CollectionToolbar locale={locale} label={t.title} query={query} searchLabel={t.search} onQuery={setQuery} sort={sort} sorts={[{value:'newest',label:u.newest},{value:'oldest',label:u.oldest},{value:'name',label:u.filename}]} onSort={value=>setSort(value as PipelineSort)} shown={jobs.length} total={history?data.jobs.length:summary.latest.length} active={!!query||filter!=='all'||sort!=='newest'||history} reset={reset}><label className="collection-history"><input type="checkbox" checked={history} onChange={event=>setHistory(event.target.checked)}/><History size={13}/>{t.history}</label></CollectionToolbar>
+    <div className="pipeline-table-wrap"><table className="pipeline-queue-table"><caption className="sr-only">{t.title}</caption><thead><tr><th scope="col">{u.document}</th><th scope="col">{u.status}</th><th scope="col">{u.evidence}</th><th scope="col">{u.actions}</th></tr></thead><tbody>{jobs.map(job=><tr key={job.id} className={`pipeline-row-${job.status.toLowerCase()}`}>
+      <th scope="row"><div className="queue-file"><FileSearch size={19} aria-hidden="true"/><div><strong>{job.name}</strong><small>{date(job.createdAt)} · {t.attempt} {job.attempt}</small></div></div></th>
+      <td data-label={u.status}><span className={`lab-badge lab-badge-${job.status==='FAILED'?'warn':job.status==='COMPLETE'?'good':'neutral'}`}>{state(job)}</span><small className="queue-stage">{t[pipelineStage(job) as keyof typeof t]||status(pipelineStage(job))}</small>{job.error_code?<p className="notice-error">{status(documentJobErrorKey(job.error_code))}</p>:null}{job.nextAttemptAt&&job.status==='RETRY'?<p className="lab-caption">{t.next}: {date(job.nextAttemptAt)}</p>:null}</td>
+      <td data-label={u.evidence}><div className="queue-source-checks">{job.scan_result?<span><ShieldCheck size={13}/>{status(job.scan_result)}</span>:<span>—</span>}{job.extraction?<small>{t.pages}: {job.extraction.pages} · {t.tables}: {job.extraction.tables}</small>:null}</div></td>
+      <td data-label={u.actions}><div className="queue-row-actions">{job.document_id&&job.extraction?.originalAvailable!==false?<button type="button" className="button-primary" aria-label={`${t.result} · ${job.name}`} onClick={()=>inspect(job.document_id!)}>{t.result}<ArrowUpRight size={14}/></button>:null}<button type="button" className="button-link" aria-label={`${t.details} · ${job.name}`} onClick={()=>setSelected(job.id)}><History size={14}/>{t.details}</button>{canWrite&&canRetry(job)?<button type="button" className="button-secondary" disabled={busy} onClick={()=>retry(job)}><RefreshCw size={14}/>{t.retry}</button>:null}{canWrite&&job.canCancel?<button type="button" className="button-link" disabled={busy} onClick={()=>setCancelId(job.id)}><XCircle size={14}/>{t.cancel}</button>:null}</div></td>
+    </tr>)}</tbody></table></div>
     {!jobs.length?<div className="lab-empty"><FileSearch size={28}/><p>{t.empty}</p></div>:null}
+    <p className="lab-caption queue-scope">{t.scope}</p>
+    <details className="pipeline-stage-help"><summary>{u.stages}</summary><ol className="pipeline-overview-steps" aria-label={u.stages}>{pipelineStages.map((stage,index)=><li key={stage}><span>{String(index+1).padStart(2,'0')}</span><strong>{t[stage]}</strong>{stage==='EXTRACT'?<small><Sparkles size={12}/>AI</small>:null}</li>)}</ol></details>
     <p className="pipeline-safety"><ShieldCheck size={15}/>{t.private} · {t[data.persistent?'persistent':'volatile']}</p>
     {detail?<ModalSurface wide title={detail.name} label={t.close} close={()=>setSelected(undefined)}>
       <div className="pipeline-detail-heading"><span className="lab-badge">{state(detail)}</span><code>{detail.id}</code></div>

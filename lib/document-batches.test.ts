@@ -1,5 +1,5 @@
 import {describe,it,expect,vi,afterEach} from 'vitest';
-import {batchLanguages,batchListSchema,batchItemState,validateBatchFiles} from './document-batches';
+import {batchHistory,batchLanguages,batchListSchema,batchItemState,validateBatchFiles,type DocumentBatch} from './document-batches';
 import {proxyCase} from './case-proxy';
 describe('document batch intake',()=>{
   afterEach(()=>{vi.unstubAllEnvs();vi.unstubAllGlobals();});
@@ -21,6 +21,27 @@ describe('document batch intake',()=>{
   });
   it('provides complete localized copy',()=>{
     for(const table of Object.values(batchLanguages))expect(Object.keys(table).sort()).toEqual(Object.keys(batchLanguages.en).sort());
+  });
+  const receipt=(id:string,changes:Partial<DocumentBatch>={}):DocumentBatch=>({id,name:id,source:'User-declared source',profile:'invoice',time:'2026-10-18T10:00:00Z',state:'SUBMITTED',items:[{name:'invoice.pdf',sha256:'source-hash',size:100,state:'DUPLICATE',status:'COMPLETE',documentId:'D1'}],manifestHash:'manifest',persistent:true,...changes});
+  it('groups only completed repeat receipts without losing or modifying saved history',()=>{
+    const repeated=receipt('repeat',{items:[{...receipt('repeat').items[0],errorCode:'DUPLICATE'}]}),original=receipt('original',{items:[{...repeated.items[0],state:'ACCEPTED',errorCode:undefined}]});
+    const input=Object.freeze([repeated,original]);
+    const result=batchHistory(input);
+    expect(result.visible).toEqual([original]);expect(result.repeated).toEqual([repeated]);
+    expect(input).toEqual([repeated,original]);expect(result.repeated[0]).toBe(repeated);
+    expect(batchHistory([])).toEqual({visible:[],repeated:[]});
+  });
+  it('always leaves one usable receipt visible if all submissions reused jobs',()=>{
+    const newest=receipt('new'),older=receipt('old');
+    expect(batchHistory([newest,older])).toEqual({visible:[newest],repeated:[older]});
+    expect(batchHistory([newest])).toEqual({visible:[newest],repeated:[]});
+  });
+  it('never folds active jobs, failures, missing fields, profile warnings or interrupted intake',()=>{
+    const base=receipt('repeat');
+    const receipts=[receipt('empty',{items:[]}),receipt('submitting',{state:'SUBMITTING'}),receipt('interrupted',{state:'INTERRUPTED'}),...[
+      {status:'QUEUED'},{status:'FAILED'},{status:'CANCELLED'},{profileMismatch:true},{missingFields:['total']},{errorCode:'ANALYSIS_HTTP_503'},
+    ].map((item,i)=>receipt(`warning-${i}`,{items:[{...base.items[0],...item}]}))];
+    expect(batchHistory([base,...receipts])).toEqual({visible:receipts,repeated:[base]});
   });
   it('requires Bearer, permits only GET/POST and retains no-store',async()=>{
     vi.stubEnv('CREDIT_API_URL','http://java:8080');
