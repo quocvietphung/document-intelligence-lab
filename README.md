@@ -153,7 +153,7 @@ Open **[http://localhost:3000/en](http://localhost:3000/en)**. German: `/de`; Vi
 2. On **Sign in to your account**, enter username **`advisor.demo`** and password **`demo-password`**, then click **Sign In**. Use the app account here, not the Keycloak administrator account.
 3. Keycloak redirects back to `http://localhost:3000/en`. The workspace and **Sign out** button confirm the browser session is active; open a dossier to access its protected data.
 
-![English Keycloak sign-in screen for the local Document Intelligence Lab, with the example username and an empty password field](docs/screenshots/keycloak-login-en.jpg)
+![English Keycloak sign-in screen for the local Document Intelligence Lab, with the example username and an empty password field](docs/screenshots/keycloak-login-en-2026-10-18.jpg)
 
 This is the real local Keycloak screen; the password field is intentionally empty in the screenshot. If you are already signed in, the app may reuse the existing session without displaying this form. Start each login from the app instead of bookmarking a temporary Keycloak authentication URL.
 
@@ -286,7 +286,7 @@ The helper downloads only allowlisted files, verifies source/version hashes and 
 
 Keep the Azure token-renewal helper running for cloud analysis. Missing or modified private PDFs disable their cards; the web app never silently downloads a replacement. The old `prepare-insurance-references.py` entry point remains compatible and prepares only the four insurance references.
 
-![Current English insurance reference library with source-page mapping, rights disclosures and links to existing results](docs/screenshots/insurance-kaggle-library-en.jpg)
+![Current English insurance reference library with source-page mapping, rights disclosures and links to existing results](docs/screenshots/insurance-kaggle-library-en-2026-10-18.jpg)
 
 With the Azure Docker stack running and all eight private files prepared, this explicit integration test creates two local research dossiers, scans/analyzes all eight PDFs and checks Nova's source links and original INR currency. It uses your configured Azure inference and may incur usage charges:
 
@@ -415,23 +415,23 @@ All interface screenshots below and in the setup/sample sections were captured a
 
 ### Multi-domain overview
 
-![Current English overview with seven navigation destinations, three AI entry points and dossier-scoped metrics](docs/screenshots/workspace-overview-en.jpg)
+![Current English overview with seven navigation destinations, three AI entry points and dossier-scoped metrics](docs/screenshots/workspace-overview-en-2026-10-18.jpg)
 
 The directory separates AI from rules and human review. Expand a group or search for a task to find its engine, limits and direct destination; opening a destination does not run inference.
 
-![Current English capability directory with six collapsed groups and separate AI-assisted and human-review filters](docs/screenshots/ai-capability-directory-en.jpg)
+![Current English capability directory with six collapsed groups and separate AI-assisted and human-review filters](docs/screenshots/ai-capability-directory-en-2026-10-18.jpg)
 
 ### Results first, references when needed
 
 **Analysis results** is the destination after import. Each compact result links directly to **View result & PDF** and Nova; the reference library stays collapsed until needed. Field/page/table counts describe extraction output, not accuracy.
 
-![Current English results list showing separate DATEV net earnings and payout, direct PDF access and the collapsed reference library](docs/screenshots/document-results-en.jpg)
+![Current English results list showing separate DATEV net earnings and payout, direct PDF access and the collapsed reference library](docs/screenshots/document-results-en-2026-10-18.jpg)
 
 ### DATEV original and extraction
 
 The current viewer places the private original beside extracted fields, source quotations and page links. **Net earnings and payout are separate values.** OCR confidence is inspectable under recognition details; it is not measured accuracy. The visible DATEV excerpt is from a fictional publisher sample, not a redistributed original PDF.
 
-![Current DATEV PDF viewer with extracted fields and source evidence](docs/screenshots/datev-evidence-en.jpg)
+![Current DATEV PDF viewer with extracted fields and source evidence](docs/screenshots/datev-evidence-en-2026-10-18.jpg)
 
 For insurance and invoices, the same workflow uses the [private Kaggle reference library](#kaggle-document-library), with explicit source and rights information. Full originals remain private.
 
@@ -439,11 +439,11 @@ For insurance and invoices, the same workflow uses the [private Kaggle reference
 
 The current queue shows a saved DATEV extraction and its reviewer-confirmed state. One set of status chips filters submissions; **Batch intake** and **Data assets & Azure** are separate tabs. Expand processing/storage settings only when needed.
 
-![English document pipeline with state filters and a direct result-and-PDF action](docs/screenshots/document-pipeline-en.jpg)
+![English document pipeline with state filters and a direct result-and-PDF action](docs/screenshots/document-pipeline-en-2026-10-18.jpg)
 
 Open **Processing details** for the source identity, actual extraction counts and recorded events. **Download processing manifest** exports metadata only. The pictured historical job predates detailed event recording; its missing timestamps are not reconstructed or presented as a new successful run.
 
-![Current processing receipt with source hash, provider, saved extraction counts and historical timestamp limitations](docs/screenshots/document-pipeline-details-en.jpg)
+![Current processing receipt with source hash, provider, saved extraction counts and historical timestamp limitations](docs/screenshots/document-pipeline-details-en-2026-10-18.jpg)
 
 ### Meet Nova and replay a page guide
 
@@ -455,13 +455,13 @@ Open the portrait button at the bottom right. Choose **App guidance** for local 
 
 The screenshot shows **local App guidance**, not an Azure OpenAI answer. To test the generative model, follow [Test Nova](#7-analyze-a-document-and-test-nova), select **Evidence analysis**, send a question and independently check its page sources. Source links make an answer inspectable; they do not replace human verification.
 
-![Current English Nova interface with the fictional avatar and local app guidance](docs/screenshots/nova-profile-guide-en.jpg)
+![Current English Nova interface with the fictional avatar and local app guidance](docs/screenshots/nova-profile-guide-en-2026-10-18.jpg)
 
 ### Source-bound experiments
 
 The **Research lab** groups **Experiments**, **Domain insights** and **Document inventory** as local tabs. Read labels independently from the original, save a reference version, then evaluate extraction or compare BM25/vector/hybrid retrieval. Results belong to that labelled sample, not general model accuracy. Operations similarly keeps **Activity log** inside its section rather than adding another main-menu entry.
 
-![English source-bound AI experiment workspace](docs/screenshots/research-experiments-en.jpg)
+![English source-bound AI experiment workspace](docs/screenshots/research-experiments-en-2026-10-18.jpg)
 
 ## Architecture
 
