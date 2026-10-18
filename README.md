@@ -8,7 +8,7 @@ This README follows one setup from a fresh clone to a working Nova conversation:
 
 **Java 21 · Spring Boot · LangChain4j · Azure Document Intelligence · Azure OpenAI · Next.js · PostgreSQL · Qdrant · Keycloak · Docker**
 
-[Setup](#local-setup-with-azure-ai) · [Test Nova](#7-analyze-a-document-and-test-nova) · [Nova & page guides](#meet-nova-and-replay-a-page-guide) · [Troubleshooting](#troubleshooting) · [Screenshots](#workspace-tour) · [Architecture](#architecture)
+[Setup](#local-setup-with-azure-ai) · [Test Nova](#7-analyze-a-document-and-test-nova) · [Document pipeline](#document-pipeline-operations) · [Nova & page guides](#meet-nova-and-replay-a-page-guide) · [Troubleshooting](#troubleshooting) · [Screenshots](#workspace-tour) · [Architecture](#architecture)
 
 > Research software, not a banking or insurance product. Use fictional or explicitly permitted documents. No payments, automated credit decisions, underwriting, claim settlement or automatic email delivery.
 
@@ -136,12 +136,14 @@ This is the real local Keycloak screen; the password field is intentionally empt
 
 **Keycloak login is separate from `az login`:** the app user signs in through this form; Azure CLI supplies the developer credential used by Java to call Azure AI. No Azure token or API key needs to be pasted into this screen.
 
+If the browser blocks Keycloak's silent cookie check, initialization fails closed instead of leaving **Loading…** indefinitely. Use **Sign in** for a top-level Keycloak redirect; interactive sign-in and OAuth callbacks do not depend on the silent third-party-cookie iframe. PKCE, API audience/tenant validation and role checks remain required.
+
 These credentials apply to a **fresh local identity database**. Existing volumes retain their accounts/passwords; importing a realm does not reset them. Do not delete an identity volume to fix login. Never expose this development realm publicly or reuse these passwords in a cloud deployment.
 
 ### 7. Analyze a document and test Nova
 
 1. Create a **General documents** dossier and open **Documents & review**.
-2. Upload `public/samples/invoice-fictional.pdf`. Review the consent/destination and confirm analysis when prompted. The confirmed file is sent to Azure Document Intelligence; opening a page alone does not upload it.
+2. Prepare the [Kaggle document library](#kaggle-document-library), then select invoice **51109301** in **Document research library**. Preview it, choose **Import & analyze** and confirm the destination. Only the confirmed PDF is sent to Azure Document Intelligence.
 3. Find **Analysis results**, above the sample library, and open **View result & PDF**. Inspect the Azure provider/model, original page, extracted values and tables. For progress/history, open **Data Pipelines → Processing queue**.
 4. Open **Nova → Evidence analysis**, type the question below and press Enter. Shift+Enter adds a line break.
 
@@ -150,11 +152,128 @@ These credentials apply to a **fresh local identity database**. Existing volumes
 5. Check that a completed **Azure OpenAI** answer appears. Open its source links and compare the original. A greeting, engine badge or local **App guidance** response alone is not proof that the model answered.
 6. Use **AI Studio** to retrieve a passage. In **AI Experiments**, independently check labels/target pages against the PDF, save a reference and run an extraction or retrieval experiment.
 
-For insurance, create an **Insurance** dossier and use `public/samples/insurance-policy-fictional.pdf` or `public/samples/insurance-claim-fictional.pdf`. For payroll, prepare the private DATEV references below.
+For insurance, use the four private Kaggle references below. For payroll, prepare the private DATEV references.
 
 Azure Compose limits include **2 PDF pages, 6 MP images and 3 MB files**. Shared request/token reservations are finite lab safeguards, not billed usage or a monetary cap.
 
 See [Azure reference details](docs/AZURE_AI.md) for additional RBAC examples and troubleshooting. Startup requires only the steps above, not another deployment.
+
+## Document pipeline operations
+
+### Batch intake and extraction check profiles
+
+Open **Overview → Multi-document batch intake → Data Pipelines → Batch intake & extraction profiles**. Select **1–4 permitted PDFs/images**, each at most **3 MB**, enter a source/provenance note and choose a check profile. Review the file list and provider before **Confirm analysis**. Azure mode still limits each PDF to **2 pages**; a batch does not increase the per-file limits. Each accepted file is scanned separately before Azure analysis.
+
+Profiles are **versioned Java field checks**, not trained Azure classifiers or new LLM calls:
+
+| Profile | Expected review |
+| --- | --- |
+| General documents | Inspect page text and tables without required business fields. |
+| Invoice | Check `invoiceNumber` and `invoiceTotal`; retain original currency. |
+| DATEV payroll | Check `netIncome` separately from `payoutAmount`; verify identity/period against the original. |
+| Insurance wording | Inspect wording and source pages; no personal-policy completeness or settlement decision is inferred. |
+
+The private intake receipt is stored in PostgreSQL `lab_records` under `document-batch`; per-file jobs remain in `lab_jobs`. It records declared provenance (not independently verified provenance), file SHA-256, profile version and accepted/duplicate/rejected outcomes. Open **Result & PDF** beside completed files. Duplicate receipts link existing jobs; linked manual retries follow their latest result without overwriting the original intake. Missing expected fields and type mismatches are review signals, **not confidence or accuracy scores**. Extraction never marks a document human-approved. Receipt metadata stays in case history; the document-file retention job does not automatically purge these receipts.
+
+For supported invoice summary tables, a conservative Java rule maps an explicitly labelled **Total × Gross Worth** cell to `invoiceTotal`, retaining the observed currency, page and table evidence. Net totals, VAT-only amounts and multiple ambiguous gross totals are not substituted. This adds no model call, invents no confidence score and does not retroactively rewrite older saved extractions.
+
+Repeated submission of the same request ID and identical content returns its receipt; changed content with that ID is rejected. New duplicate submissions do not create another active processing job. A receipt may contain partial acceptance. After an interrupted intake, inspect the queue before resubmitting; this is not an atomic all-or-nothing batch or an exactly-once inference guarantee. Waiting/retry jobs retain the existing cancel controls; manual retry remains limited to pinned DATEV/Kaggle bytes.
+
+**Azure Data Factory and cloud-source ingestion remain disconnected.** The batch screen works through local Java and Docker, with explicit Azure AI calls after confirmation. It does not deploy ADF, run a Foundry evaluator, expose localhost, create Azure resources or upload originals to a public container. Keep source notes and downloaded receipts private. Up to 60 recent batch receipts are listed per dossier; this is not an all-time operational dashboard.
+
+The **Overview AI capability directory** lists all 28 current entries: 13 AI-assisted workflows and 15 rule-based, navigation, review or governance controls, each with a tool destination. Azure OpenAI, Azure Document Intelligence and local ONNX/Qdrant retrieval are distinguished. Counts describe catalogue entries, not independent models, live health checks or successful inference calls.
+
+![Current English Overview directory with 28 entries, separate AI/control filters and actual provider configuration](docs/screenshots/ai-capability-directory-en.png)
+
+To verify the complete local OAuth → proxy → Java → PostgreSQL → scan → Azure → protected PDF flow with two pinned, public synthetic Kaggle invoices:
+
+```bash
+TEST_BATCHES=1 node scripts/test-oauth.mjs
+```
+
+This explicit test may incur Azure inference charges and leaves labelled test records for inspection. It checks repeat-request safety, duplicates, bounds, protected history and original hashes. It does not delete existing dossiers or auto-confirm extracted values.
+
+Add `TEST_BATCH_CHAT=1` to that command to also test a real Azure OpenAI answer with source links and unchanged INR currency. A passing check on these two samples is not general model-accuracy certification.
+
+Open a dossier, then **Data Pipelines → Processing queue → Processing control room**. The queue exposes six stages:
+
+`Received → Security scan → AI extraction → Content checks → Save evidence → Human review`
+
+| Control | What it does |
+| --- | --- |
+| State counters and filters | Show in-progress, review-ready, failed and reviewer-confirmed files. Counts use the latest submission per SHA-256 within the latest **30 loaded submissions**, not all-time platform totals. |
+| Search and earlier submissions | Search filename, job ID or hash. Enable **Include earlier submissions** to inspect prior failures without confusing them with the current result. |
+| Processing details | Inspect recorded timestamps, source hash, attempt, previous-job link, provider/model and actual page/field/table counts. Historical jobs without stage events are explicitly labelled; no timeline is invented. |
+| Open result & PDF | Open the saved extraction beside the protected original. Successful extraction means **ready for review**, not human approval or verified accuracy. |
+| Download processing manifest | Download local JSON containing source hash, job state, event history and extraction counts. It excludes PDF bytes, extracted text, credentials and internal storage paths. Treat dossier IDs and filenames as private operational metadata. |
+| Cancel waiting job | Cancel only a queued job or waiting retry, after confirmation. An already-running provider request cannot be interrupted; cancellation does not reverse prior charges or erase the original. Normal retention still applies. |
+
+PostgreSQL stores jobs and stage events together through a database trigger. The worker checks the stored bytes against their SHA-256 before scanning, bounds attempts to three and uses delayed retries for transient service/rate-limit errors. Authentication, permissions, unsupported content and security failures stop without repeated automatic calls. Fix the cause before retrying.
+
+Manual retry creates a linked job and retains the failed record. It is restricted to the **exact approved DATEV/Kaggle reference bytes**, within retention, and repeats scanning. A saved extraction can be reused after a later-stage failure. This is **not an exactly-once inference guarantee**: a lost provider response before a checkpoint can still require another billable call. Arbitrary uploads must be reviewed and submitted again through the normal consent flow.
+
+The six steps describe document processing, **not** vector indexing. AI Studio builds its dossier search/RAG index on demand. A completed OCR job or downloaded manifest does not certify index readiness, source truth, human approval or compliance.
+
+### Design references
+
+The control room adapts patterns from [Docling Serve](https://github.com/docling-project/docling-serve/blob/main/docs/usage.md) (asynchronous tasks and separate status/results), [Unstructured ingestion](https://docs.unstructured.io/open-source/ingestion/overview) (explicit processing stages and metadata) and [Paperless-ngx](https://github.com/paperless-ngx/paperless-ngx/blob/dev/docs/usage.md) (background processing and inspectable tasks). These are architectural references, not installed engines or a standards certification. Java, PostgreSQL, ClamAV and the configured extraction provider remain this application's runtime.
+
+### Verify the queue end to end
+
+With Azure Docker running and the private Kaggle files prepared, run:
+
+```bash
+TEST_PIPELINE=1 node scripts/test-oauth.mjs
+```
+
+This localhost-only acceptance test creates a labelled research dossier, analyzes one pinned synthetic Kaggle invoice with Azure, verifies the original hash and six recorded stages, checks duplicate protection and cancellation, and submits an inert negative-control file that must stop before Azure. It also checks authentication/authorization boundaries. Azure inference may be billable. Test records remain inspectable; no existing dossiers are deleted or AI values automatically approved.
+
+## Kaggle document library
+
+**Insurance** and **General documents** now offer Kaggle PDFs only. The old self-authored policy, claim and invoice are no longer public samples; they remain test-only fixtures. Existing dossier originals/history are not deleted or relabelled. **The two official DATEV payroll references remain unchanged** in Banking & payroll.
+
+| Domain | Source | Prepared documents |
+| --- | --- | --- |
+| Insurance | [Insurance Documents](https://www.kaggle.com/datasets/jpardovega/documents), version 3 | Principal definitions (source pages 9, 12), Principal administration (16–17), Shelter conditions (11–12), Shelter personal liability (23–24) |
+| General documents | [OCR-ready invoice PDFs](https://www.kaggle.com/datasets/devp1866/high-quality-ocr-ready-invoice-pdfs), version 1 | Four complete one-page invoices: 51109301–51109304; different product tables, original INR currency |
+
+There are **8 prepared PDFs**: four reviewed two-page insurance excerpts and four byte-identical original invoices. Search the library by title, publisher, filename or language. Each card shows source/version, declared license, document origin and PDF-page mapping.
+
+The insurance documents are **historical US wording in English, not German-standard insurance policies**, customer certificates or complete contracts. Only generic pages were selected; the first pages with names/addresses are excluded. The app classifies these excerpts as `insurance-wording`; they do not satisfy the individual-policy checklist or prove coverage.
+
+The invoice author explicitly describes the dataset as **fully synthetic**. This is Kaggle-sourced test data, not actual transactions. Keep INR as INR; do not infer German VAT compliance or convert the figures into EUR. The dataset's paired labels are development references, not proof of held-out performance.
+
+Review source terms before preparing private copies. Kaggle reports **Apache 2.0** for both datasets; for publisher-owned policy wording this is **not independent verification of the underlying publishers' rights**. No Kaggle PDF or extracted source-page image is bundled in Git or public assets.
+
+Prepare the library before following step 7 above:
+
+```bash
+python3 -m venv .local/kaggle-tools
+.local/kaggle-tools/bin/python -m pip install pypdf==6.10.0
+.local/kaggle-tools/bin/python scripts/prepare-kaggle-references.py
+```
+
+The helper downloads only allowlisted files, verifies source/version hashes and exact page markers, checks prepared PDF hashes and refuses to overwrite different existing files. Insurance originals stay in `.local/kaggle-insurance/`; invoice originals in `.local/kaggle-invoices/`; ready PDFs in `.local/reference-pdfs/`, already mounted read-only into Docker web. Invoice PDF bytes are preserved, not re-created by this app. **Preparation never calls Azure or writes to the database.** No Kaggle API key is required for these public files.
+
+1. Create/open an **Insurance** or **General documents** dossier, then **Documents & review**.
+2. In **Document research library**, search/select a document and choose **Preview PDF**. Viewing stays local and shows the source-page mapping.
+3. Choose **Import & analyze**, review the destination and confirm. The authenticated queue scans that PDF with ClamAV, calls the configured document provider and stores the original/result privately in the dossier. Azure mode sends only that confirmed PDF to Azure Document Intelligence.
+4. Stay on the page: processing and **View result & PDF** appear **above** the library. Exact prepared-file matches open their existing results instead of re-analyzing.
+5. Ask Nova about source wording, missing context, invoice number or totals. Check page citations; field counts and OCR signals are not accuracy scores.
+
+Keep the Azure token-renewal helper running for cloud analysis. Missing or modified private PDFs disable their cards; the web app never silently downloads a replacement. The old `prepare-insurance-references.py` entry point remains compatible and prepares only the four insurance references.
+
+![English Kaggle insurance library filtered by Principal, with existing results and new imports](docs/screenshots/insurance-kaggle-library-en.jpg)
+
+![English Kaggle invoice library](docs/screenshots/general-kaggle-library-en.jpg)
+
+With the Azure Docker stack running and all eight private files prepared, this explicit integration test creates two local research dossiers, scans/analyzes all eight PDFs and checks Nova's source links and original INR currency. It uses your configured Azure inference and may incur usage charges:
+
+```bash
+TEST_KAGGLE=1 TEST_KAGGLE_CHAT=1 node scripts/test-oauth.mjs
+```
+
+It does not delete old dossiers, confirm AI-extracted values as human-checked labels or send any actual customer documents. Insurance results show extracted page counts: reference wording is not expected to contain personal policy fields.
 
 ## DATEV payroll references
 
@@ -242,6 +361,7 @@ node --test scripts/docker-azure-config.test.mjs
 | Document Q&A and source explanations | Azure OpenAI through Java/LangChain4j; dossier-scoped read-only tools | Nova → Evidence analysis |
 | Controlled AI drafts | Summary, cross-document comparison, inconsistency explanation, document request, review checklist, German terminology and DE–VI summary | AI transparency & review → Task library |
 | Source-bound evaluation | Human-checked reference labels; deterministic extraction precision/recall/F1 and retrieval hit rate@5/MRR@5 | AI Experiments |
+| Traceable processing control room | Durable stages/events, current-versus-historical filters, bounded retries, waiting-job cancellation and metadata-only manifests | Data Pipelines → Processing queue |
 | Evidence review and research exports | Private PDF viewer, corrections/history, reviewer tasks, source hashes and private JSON/JSONL exports | Documents & review / Data Pipelines |
 
 The platform also provides Keycloak OAuth 2.0/OIDC + PKCE, Bearer-protected tenant/dossier access, PostgreSQL persistence, durable jobs, ClamAV, Redis limits, audit history and English/German/Vietnamese UI/page tours. Nova **App guidance** is local application logic, not an LLM response.
@@ -264,7 +384,19 @@ The current viewer places the private original beside extracted fields, source q
 
 ### Insurance document review
 
-![Insurance policy PDF and extracted evidence in the English workspace](docs/screenshots/insurance-evidence-en.jpg)
+The Kaggle-only library keeps references and processing results together; full originals remain private.
+
+![Kaggle-only insurance library and source provenance](docs/screenshots/insurance-kaggle-library-en.jpg)
+
+### Document processing control room
+
+Actual local Azure processing of a synthetic Kaggle invoice. The review-ready filter separates a saved result from cancelled or blocked test submissions. Page/table counts are extraction output, not accuracy scores.
+
+![English document pipeline with state filters and a direct result-and-PDF action](docs/screenshots/document-pipeline-en.jpg)
+
+Open **Processing details** for the source identity, actual extraction counts and recorded events. **Download processing manifest** exports metadata only.
+
+![English processing details showing recorded timestamps for all six stages and the metadata-only manifest action](docs/screenshots/document-pipeline-details-en.jpg)
 
 ### Nova, grounded in the selected dossier
 
@@ -330,7 +462,7 @@ Development ports bind to `127.0.0.1`. Historical `credit-*` service/realm/volum
 
 ## Data, privacy and operation
 
-- Included fictional PDFs: invoice, insurance policy and claim notification under `public/samples/`.
+- User-facing non-payroll samples: eight Kaggle PDFs prepared privately. The old three self-authored PDFs live only under `services/credit-api/src/test/resources/legacy-research/`, never in public assets.
 - Payroll examples: only the two official fictional **DATEV LODAS 2025 Robert/Melanie** pages in the user-facing library. Older payroll fixtures exist only as regression-test resources.
 - Original documents are private and Bearer-protected; PDF.js assets are served locally, not from a document-viewer CDN.
 - Upload consent, malware scanning, reviewer history and case/tenant isolation remain enabled.
@@ -350,6 +482,10 @@ Development ports bind to `127.0.0.1`. Historical `credit-*` service/realm/volum
 | `infra/keycloak/` | Local development realm |
 | `infra/azure/` | Optional infrastructure source; not required locally |
 | `scripts/` | Azure token bridge, private sample preparation and verification |
+
+Review the code by following one document: `CreditWorkspace` → the Next.js case proxy → Java controllers → `DocumentJobs` → saved evidence → `DocumentEvidence`. The directory layout, API routes and database schema stay stable. Small shared helpers handle browser downloads, active-job states, table previews and verified JWT identity; domain rules stay in their existing modules.
+
+Before contributing, run `npm run verify` and `mvn -f services/credit-api/pom.xml test`. With the Docker stack running, `node scripts/test-oauth.mjs` verifies real Keycloak login and protected API/proxy reads. Optional Azure integration checks are documented above; they may submit files or incur AI usage. Unit tests must not require Azure credentials or private PDFs.
 
 Documentation: [Docker](docs/DOCKER_LOCAL.md) · [Azure AI](docs/AZURE_AI.md) · [Document samples](docs/PUBLIC_PAYROLL_TESTS.md) · [Research](docs/RESEARCH_WORKSPACES.md) · [Nova](docs/NOVA_TRUST.md) · [Operations](docs/RELIABILITY_LAB.md).
 

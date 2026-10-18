@@ -7,10 +7,12 @@ import {legacyPayroll} from "@/lib/datev-reference";
 import {activeDocumentJob,completedJobDocument,documentUi,latestDocumentJobs,orderedResultDocuments,sampleDocumentJob,type DocumentJob,type DocumentImportOutcome} from "@/lib/document-results";
 import {DocumentResults} from "./DocumentResults";
 import {PayrollSamples} from "./PayrollSamples";
+import {ResearchSamples} from "./ResearchSamples";
+import {domainOf,type DocumentDomain} from "@/lib/document-domains";
 
-export function DocumentAnalysisWorkspace({caseId,documents,locale,busy,canImport,azure,importSample,refreshCase,open,ask,technical,showPayroll=true}:{
+export function DocumentAnalysisWorkspace({caseId,documents,locale,busy,canImport,azure,importSample,refreshCase,open,ask,technical,showPayroll=true,domain='banking'}:{
   caseId:string;documents:readonly CreditDocument[];locale:string;busy:boolean;canImport:boolean;azure:boolean;
-  importSample:(file:string)=>Promise<DocumentImportOutcome>;refreshCase:()=>Promise<void>;open:(doc:CreditDocument)=>void;ask:(question:string)=>void;technical:()=>void;showPayroll?:boolean;
+  importSample:(file:string)=>Promise<DocumentImportOutcome>;refreshCase:()=>Promise<void>;open:(doc:CreditDocument)=>void;ask:(question:string)=>void;technical:()=>void;showPayroll?:boolean;domain?:DocumentDomain;
 }){
   const auth=useAuth(),t=documentUi(locale),demo=auth.mode==="demo";
   const [jobs,setJobs]=useState<DocumentJob[]>([]),[loading,setLoading]=useState(!demo),[statusError,setStatusError]=useState(false),[importError,setImportError]=useState("");
@@ -45,7 +47,7 @@ export function DocumentAnalysisWorkspace({caseId,documents,locale,busy,canImpor
     if(completed.some(job=>!documents.some(doc=>doc.id===job.document_id)))void refreshCase();
   },[jobs,documents,refreshCase]);
   const focusResults=useCallback(()=>{const element=document.getElementById("document-analysis-results");element?.scrollIntoView({behavior:"smooth",block:"start"});element?.focus({preventScroll:true});},[]);
-  function choose(){if(showPayroll)document.getElementById("datev-library")?.scrollIntoView({behavior:"smooth",block:"start"});else document.querySelector<HTMLButtonElement>('[data-page-tour="documents-upload"]')?.click();}
+  function choose(){document.getElementById(showPayroll?"datev-library":"research-library")?.scrollIntoView({behavior:"smooth",block:"start"});}
   async function analyze(file:string){
     if(accepting.current)return;accepting.current=true;setImporting(true);setImportError("");setNotice(undefined);
     const signal=life.current?.signal;
@@ -70,8 +72,9 @@ export function DocumentAnalysisWorkspace({caseId,documents,locale,busy,canImpor
   return <>
     {notice?<p className="document-analysis-notice" role="status">{notice==="accepted"&&ready?t.finished:t[notice]}</p>:null}
     {importError?<p className="notice-error" role="alert">{t[importError as "limit"|"importError"]}</p>:null}
-    <DocumentResults documents={results.concat(documents.filter(doc=>doc.status==="missing"))} jobs={visibleJobs} locale={locale} loading={loading} error={statusError}
+    <DocumentResults payroll={showPayroll} documents={results.concat(documents.filter(doc=>doc.status==="missing"))} jobs={visibleJobs} locale={locale} loading={loading} error={statusError}
       refresh={()=>{void load();void refreshCase();}} open={open} ask={ask} choose={choose} technical={technical}/>
     {showPayroll?<PayrollSamples locale={locale} busy={busy||importing} canImport={canImport} azure={azure} importSample={analyze} jobs={jobs} documents={documents} openResult={open} showProgress={focusResults}/>:null}
+    {!showPayroll?<ResearchSamples domain={domainOf(domain)} locale={locale} disabled={!canImport||busy||importing} azure={azure} analyze={analyze} jobs={jobs} documents={documents} openResult={open} showProgress={focusResults}/>:null}
   </>;
 }

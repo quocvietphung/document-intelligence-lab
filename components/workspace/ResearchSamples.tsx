@@ -1,17 +1,46 @@
 "use client";
-import {useState} from 'react';
-import {FileText,ArrowUpRight} from 'lucide-react';
+import {useEffect,useRef,useState} from 'react';
+import {FileText,ArrowUpRight,ShieldCheck} from 'lucide-react';
+import {useAuth} from '@/components/auth/KeycloakProvider';
 import {ModalSurface} from './ModalSurface';
+import {PdfPreview} from './PdfPreview';
 import type {DocumentDomain} from '@/lib/document-domains';
-const samples={insurance:['insurance-policy-fictional.pdf','insurance-claim-fictional.pdf'],general:['invoice-fictional.pdf'],banking:[]} as const;
-const copy={
-  en:{badge:'Fictional research documents',title:'Fictional research samples',hint:'Original synthetic PDFs, not real policies or invoices. Preview first; analysis sends the selected file to the configured document provider.',preview:'Preview PDF',analyze:'Analyze this sample',confirm:'I confirm analysis of this fictional PDF',cancel:'Cancel',error:'Could not load the sample. Check the service and retry.'},
-  de:{badge:'Fiktive Forschungsdokumente',title:'Fiktive Forschungsmuster',hint:'Eigene synthetische PDFs, keine echten Policen oder Rechnungen. Zuerst ansehen; Analyse sendet die Datei an den konfigurierten Dokumentanbieter.',preview:'PDF ansehen',analyze:'Muster analysieren',confirm:'Analyse dieses fiktiven PDFs bestätigen',cancel:'Abbrechen',error:'Muster konnte nicht geladen werden. Dienst prüfen und erneut versuchen.'},
-  vi:{badge:'Tài liệu nghiên cứu giả lập',title:'Tài liệu nghiên cứu giả lập',hint:'PDF tự tạo, không phải hợp đồng bảo hiểm hay hóa đơn thật. Xem trước; khi xác nhận, tệp được gửi tới dịch vụ phân tích tài liệu đang cấu hình.',preview:'Xem PDF',analyze:'Phân tích mẫu này',confirm:'Tôi xác nhận phân tích PDF giả lập này',cancel:'Hủy',error:'Không tải được mẫu. Kiểm tra dịch vụ rồi thử lại.'},
-};
-export function ResearchSamples({domain,locale,disabled,analyze}:{domain:DocumentDomain;locale:string;disabled:boolean;analyze:(file:File)=>Promise<void>}) {
-  const t=copy[locale==='de'?'de':locale==='vi'?'vi':'en'];
-  const [selected,setSelected]=useState<string>(),[busy,setBusy]=useState(false),[error,setError]=useState(false);
-  async function submit(){if(!selected||busy)return;setBusy(true);setError(false);try{const response=await fetch(`/samples/${selected}`,{cache:'no-store'});if(!response.ok)throw new Error();const blob=await response.blob();await analyze(new File([blob],selected,{type:'application/pdf'}));setSelected(undefined);}catch{setError(true);}finally{setBusy(false);}}
-  return <section className="research-samples"><header><span className="eyebrow">{t.badge}</span><h3>{t.title}</h3><p>{t.hint}</p></header><div>{samples[domain].map(file=><article key={file}><FileText size={22}/><strong>{file}</strong><a className="button-secondary" href={`/samples/${file}`} target="_blank" rel="noopener noreferrer">{t.preview}<ArrowUpRight size={15}/></a><button type="button" className="button-primary" disabled={disabled||busy} onClick={()=>setSelected(file)}>{t.analyze}</button></article>)}</div>{selected?<ModalSurface title={t.analyze} close={()=>{if(!busy)setSelected(undefined);}} label={t.cancel}><p>{t.hint}</p><p className="my-4 font-semibold">{selected}</p>{error?<p role="alert" className="notice-error">{t.error}</p>:null}<div className="flex flex-wrap gap-3"><button type="button" disabled={busy} className="button-primary" onClick={()=>void submit()}>{t.confirm}</button><button type="button" disabled={busy} className="button-secondary" onClick={()=>setSelected(undefined)}>{t.cancel}</button></div></ModalSurface>:null}</section>;
+import {researchSamples,researchSampleLabels,researchSampleUrl,researchSampleScope,type ResearchSample} from '@/lib/research-samples';
+import {activeDocumentJob,completedJobDocument,sampleDocumentJob,type DocumentJob} from '@/lib/document-results';
+import type {CreditDocument} from '@/lib/credit-data';
+
+export function ResearchSamples({domain,locale,disabled,analyze,azure=false,jobs=[],documents=[],openResult,showProgress}:{domain:DocumentDomain;locale:string;disabled:boolean;analyze:(file:string)=>Promise<void>;azure?:boolean;jobs?:readonly DocumentJob[];documents?:readonly CreditDocument[];openResult?:(doc:CreditDocument)=>void;showProgress?:()=>void}) {
+  const t=researchSampleLabels(locale),auth=useAuth(),samples=researchSamples(domain);
+  const [selected,setSelected]=useState<ResearchSample>(),[preview,setPreview]=useState<ResearchSample>(),[busy,setBusy]=useState(false),[error,setError]=useState(false);
+  const [available,setAvailable]=useState<string[]|undefined>();
+  const [query,setQuery]=useState('');const accepting=useRef(false);
+  useEffect(()=>{
+    if(!auth.token||auth.mode==='demo')return;
+    const controller=new AbortController();
+    void fetch(`/api/research-references?domain=${domain}`,{headers:{Authorization:`Bearer ${auth.token}`},cache:'no-store',signal:controller.signal}).then(async response=>{
+      if(!response.ok)throw new Error();
+      const data=await response.json() as {references?:{id:string;available:boolean}[]};
+      if(!Array.isArray(data.references))throw new Error();
+      if(!controller.signal.aborted)setAvailable(data.references.filter(row=>row.available===true).map(row=>row.id));
+    }).catch(()=>{if(!controller.signal.aborted){setError(true);setAvailable([]);}});
+    return()=>controller.abort();
+  },[domain,auth.token,auth.mode]);
+  async function submit(){if(!selected||accepting.current)return;accepting.current=true;setBusy(true);setError(false);try{await analyze(selected.file);setSelected(undefined);}catch{setError(true);}finally{accepting.current=false;setBusy(false);}}
+  const visible=samples.filter(sample=>`${sample.title} ${sample.publisher} ${sample.language} ${sample.file}`.toLowerCase().includes(query.trim().toLowerCase()));
+  return <section className="research-samples" id="research-library" data-page-tour="research-library"><header><h3>{t.title}</h3><p>{t.hint}</p></header>
+    {error?<p role="alert" className="notice-error">{t.error}</p>:null}
+    <label className="research-library-search">{t.search}<input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder={t.search}/></label><p className="lab-caption" role="status">{visible.length} / {samples.length} · {t.kaggle}</p>
+    <div>{visible.map(sample=>{
+      const ready=available?.includes(sample.id),job=sampleDocumentJob(sample.file,jobs),result=completedJobDocument(job,documents);
+      return <article key={sample.id} className="research-sample-card"><div className="research-sample-heading"><FileText size={22}/><div><span className="eyebrow">{t.kaggle} · {sample.synthetic?t.synthetic:t.publisher}</span><h4>{sample.title}</h4><small>{sample.file}</small></div></div>
+        <p>{sample.language} · {sample.jurisdiction} · {t.pages}: {sample.sourcePages.join(', ')}</p><p>{researchSampleScope(sample,locale)}</p><details><summary><ShieldCheck size={14}/>{t.provenance}</summary><p>{sample.publisher} · {sample.kaggleLicense} · {t.version} {sample.datasetVersion}</p><p>{sample.synthetic?t.syntheticRights:t.rights}</p><a className="button-link" href={sample.sourceUrl} target="_blank" rel="noopener noreferrer">{t.source}<ArrowUpRight size={14}/></a></details>
+        <div className="research-sample-actions"><button type="button" className="button-secondary" disabled={!ready||busy} onClick={()=>setPreview(sample)}>{t.preview}</button>
+          {result&&openResult?<button type="button" className="button-primary" onClick={()=>openResult(result)}>{t.existing}</button>:job&&activeDocumentJob(job)&&showProgress?<button type="button" className="button-primary" onClick={showProgress}>{t.processing}</button>:<button type="button" className="button-primary" disabled={disabled||busy||!ready} onClick={()=>setSelected(sample)}>{t.analyze}</button>}
+        </div>{!ready?<p role="status">{available===undefined&&auth.token?t.loading:t.missing}</p>:null}
+      </article>;
+    })}</div>
+    {!visible.length?<p role="status">{t.noMatches}</p>:null}
+    {preview?<ModalSurface wide title={preview.title} close={()=>setPreview(undefined)} label={t.cancel}><p className="notice-lab">{researchSampleScope(preview,locale)} {t.mapped}: {preview.sourcePages.map((page,index)=>`${index+1} → ${page}`).join(' · ')}</p><PdfPreview locale={locale} token={auth.token} url={researchSampleUrl(preview)}/></ModalSurface>:null}
+    {selected?<ModalSurface title={t.confirm} close={()=>{if(!busy)setSelected(undefined);}} label={t.cancel}><h3>{selected.title}</h3><p className="notice-lab">{azure?t.cloud:t.local}</p><p className="my-4 text-sm leading-relaxed">{researchSampleScope(selected,locale)}</p><p className="text-xs leading-relaxed">{t.mapped}: {selected.sourcePages.map((page,index)=>`${index+1} → ${page}`).join(' · ')}</p>{error?<p role="alert">{t.error}</p>:null}<div className="research-sample-actions"><button type="button" disabled={busy} className="button-primary" onClick={()=>void submit()}>{t.send}</button><button type="button" disabled={busy} className="button-secondary" onClick={()=>setSelected(undefined)}>{t.cancel}</button></div></ModalSurface>:null}
+  </section>;
 }

@@ -1,11 +1,12 @@
 package dev.creditlab.trust;
 
+import static dev.creditlab.security.JwtIdentity.actor;
+import static dev.creditlab.security.JwtIdentity.tenant;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,7 +27,5 @@ public class TrustController {
   @PostMapping("/tasks") public Object create(@PathVariable String caseId,@Valid @RequestBody Task r,Authentication a){return trust.createTask(tenant(a),caseId,actor(a),r.answerId(),r.title(),r.note(),r.requestId(),r.caseVersion());}
   @PostMapping("/tasks/{taskId}") @PreAuthorize("hasAnyRole('REVIEWER','ADMIN')") public Object transition(@PathVariable String caseId,@PathVariable String taskId,@Valid @RequestBody Transition r,Authentication a){return trust.transition(tenant(a),caseId,actor(a),admin(a),taskId,r.action(),r.note(),r.version(),r.caseVersion());}
   @PostMapping("/features") @PreAuthorize("hasRole('ADMIN')") public Object configure(@PathVariable String caseId,@Valid @RequestBody Feature r,Authentication a){return trust.configure(tenant(a),caseId,actor(a),r.featureId(),r.enabled(),r.version(),r.caseVersion(),r.note());}
-  private String tenant(Authentication a){if(a instanceof JwtAuthenticationToken t){String value=t.getToken().getClaimAsString("tenant_id");if(value!=null&&!value.isBlank())return value;}throw new AccessDeniedException("Verified tenant required");}
-  private String actor(Authentication a){if(a instanceof JwtAuthenticationToken t)return t.getToken().getSubject();throw new AccessDeniedException("Verified identity required");}
   private boolean admin(Authentication a){return a!=null&&a.getAuthorities().stream().anyMatch(r->r.getAuthority().equals("ROLE_ADMIN"));}
 }

@@ -7,6 +7,13 @@ afterEach(() => {
 });
 
 describe("document analysis status transport", () => {
+  it('allows only authenticated POST cancellation without exposing arbitrary job operations',async()=>{
+    vi.stubEnv('CREDIT_API_URL','http://java:8080');vi.stubGlobal('fetch',vi.fn().mockResolvedValue(Response.json({status:'CANCELLED'})));
+    const path=['C','platform','jobs','job-test','cancel'],url='http://localhost:3000/api/cases/'+path.join('/'),headers={Authorization:'Bearer fixture'};
+    expect((await proxyCase(new Request(url,{headers,method:'POST'}),path)).status).toBe(200);
+    expect((await proxyCase(new Request(url,{headers}),path)).status).toBe(405);
+    expect((await proxyCase(new Request(url,{method:'POST'}),path)).status).toBe(401);
+  });
   it("forwards only the named authenticated retry route and POST method",async()=>{
     vi.stubEnv("CREDIT_API_URL","http://java:8080");
     const fetchMock=vi.fn().mockResolvedValue(Response.json({status:"QUEUED"},{status:202}));vi.stubGlobal("fetch",fetchMock);

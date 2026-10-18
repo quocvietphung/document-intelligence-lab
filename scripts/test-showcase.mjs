@@ -13,7 +13,7 @@ export async function auditShowcase({request,check,bearer,web,api}) {
   const created=await send(web+'/api/cases',{applicant:'Showcase · fictional invoice',purpose:'Local document research acceptance; no payments',domain:'general',amountEuro:0,coApplicant:'',version:0});
   check(created.status===201,'Create a general research dossier without a loan amount');
   let item=await created.json();const root=`${web}/api/cases/${item.id}`;
-  const bytes=readFileSync(new URL('../public/samples/invoice-fictional.pdf',import.meta.url));
+  const bytes=readFileSync(new URL('../services/credit-api/src/test/resources/legacy-research/invoice-fictional.pdf',import.meta.url));
   const upload=new FormData();upload.set('file',new Blob([bytes],{type:'application/pdf'}),'invoice-fictional.pdf');
   const queued=await request(root+'/platform/jobs',{method:'POST',headers:bearer,body:upload});
   check(queued.status===202,'Upload returns a durable processing job');const job=await queued.json();

@@ -1,6 +1,7 @@
 "use client";
 
 import type Keycloak from "keycloak-js";
+import {authDeadline,keycloakInitOptions} from '@/lib/auth-initialization';
 import {
   createContext,
   useCallback,
@@ -42,24 +43,17 @@ const signedOut: Session = {
 };
 // Shared initialization survives React StrictMode's setup/cleanup cycle.
 let initialization: Promise<Keycloak> | undefined;
-function initialize() {
-  initialization ??= import("keycloak-js").then(async ({ default: Client }) => {
+function initialize(interactive=false) {
+  initialization ??= authDeadline(import("keycloak-js").then(async ({ default: Client }) => {
     const client = new Client({
       url: process.env.NEXT_PUBLIC_KEYCLOAK_URL!,
       realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM || "credit-intelligence",
       clientId:
         process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || "credit-intelligence-web",
     });
-    await client.init({
-      onLoad: "check-sso",
-      pkceMethod: "S256",
-      silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
-      silentCheckSsoFallback: false,
-      checkLoginIframe: false,
-      messageReceiveTimeout: 30_000,
-    });
+    await client.init(keycloakInitOptions(window.location.href,interactive));
     return client;
-  });
+  })).catch(error=>{initialization=undefined;throw error;});
   return initialization;
 }
 function snapshot(client: Keycloak): Session {
@@ -135,7 +129,7 @@ export function KeycloakProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(() => {
     if (!configured) return;
-    void initialize()
+    void initialize(true)
       .then((client) =>
         client.login({
           redirectUri: `${window.location.origin}${window.location.pathname}`,

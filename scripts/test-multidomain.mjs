@@ -26,7 +26,7 @@ export async function auditDomains({request,check,bearer,web,api}) {
     if(domain==='banking')continue;
     const files=domain==='insurance'?['insurance-policy-fictional.pdf','insurance-claim-fictional.pdf']:['invoice-fictional.pdf'];
     for(const file of files) {
-      const bytes=readFileSync('public/samples/'+file);
+      const bytes=readFileSync('services/credit-api/src/test/resources/legacy-research/'+file);
       const form=new FormData();form.set('file',new Blob([bytes],{type:'application/pdf'}),file);
       r=await request(root+'/platform/jobs',{method:'POST',headers:bearer,body:form});
       check(r.status===202,`${domain}: fictional PDF accepted by async queue`);let job=await r.json();

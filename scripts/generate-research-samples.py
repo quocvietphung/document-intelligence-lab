@@ -1,11 +1,11 @@
-"""Generate original fictional, non-DATEV research fixtures. No customer data."""
+"""Generate legacy regression fixtures only. Never publish these in the UI."""
 from pathlib import Path
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.colors import HexColor
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "public" / "samples"
+OUT = ROOT / "services/credit-api/src/test/resources/legacy-research"
 SAMPLES = [
     ("insurance-policy-fictional.pdf", "Versicherungsschein", "Versicherungsunterlagen / Laborbeispiel", [
         ("Versicherungsnummer", "LAB-V-2026-104"), ("Versicherer", "Muster Versicherung (fiktiv)"),

@@ -1,0 +1,226 @@
+[
+  {
+    "id": "principal-life-definitions",
+    "file": "kaggle-principal-life-definitions-p9-12.pdf",
+    "title": "Principal Life · policy definitions",
+    "publisher": "Principal Life Insurance Company",
+    "sourceFile": "Principal-Sample-Life-Insurance-Policy.pdf",
+    "sourceSha256": "e68d757a293d57b6b7f1e954e572e9c4de22b9201ff2f93c2734c51b6836d9fb",
+    "sourcePages": [
+      9,
+      12
+    ],
+    "sourcePageCount": 64,
+    "markers": [
+      "PART I - DEFINITIONS",
+      "Insurance Month"
+    ],
+    "sha256": "94ded41ec6821e865834badf7577fafcbf13498aaf91796ac7d9a5780a7abacf",
+    "language": "English",
+    "jurisdiction": "United States · historical 2014 wording",
+    "dataset": "jpardovega/documents",
+    "datasetVersion": 3,
+    "sourceUrl": "https://www.kaggle.com/datasets/jpardovega/documents",
+    "downloadUrl": "https://www.kaggle.com/api/v1/datasets/download/jpardovega/documents/Principal-Sample-Life-Insurance-Policy.pdf?datasetVersionNumber=3",
+    "kaggleLicense": "Apache 2.0",
+    "domain": "insurance",
+    "documentType": "insurance-wording",
+    "format": "pdf-excerpt",
+    "synthetic": false
+  },
+  {
+    "id": "shelter-renters-conditions",
+    "file": "kaggle-shelter-renters-conditions-p11-12.pdf",
+    "title": "Shelter HO-4 · conditions and exclusions",
+    "publisher": "Shelter Insurance Companies",
+    "sourceFile": "Shelter_HO-4Renters.pdf",
+    "sourceSha256": "e41baaeacb9de423383389a6280bbfefc5afc6c0ccd9740130db8fb4da6fb182",
+    "sourcePages": [
+      11,
+      12
+    ],
+    "sourcePageCount": 29,
+    "markers": [
+      "POLICY COVERAGE PERIOD",
+      "Fire or lightning"
+    ],
+    "sha256": "d5f33e07b32568f09604279df6a8b983f15d82ab86fc331c05a3e1704c88c026",
+    "language": "English",
+    "jurisdiction": "United States · HO-4 (01-07)",
+    "dataset": "jpardovega/documents",
+    "datasetVersion": 3,
+    "sourceUrl": "https://www.kaggle.com/datasets/jpardovega/documents",
+    "downloadUrl": "https://www.kaggle.com/api/v1/datasets/download/jpardovega/documents/Shelter_HO-4Renters.pdf?datasetVersionNumber=3",
+    "kaggleLicense": "Apache 2.0",
+    "domain": "insurance",
+    "documentType": "insurance-wording",
+    "format": "pdf-excerpt",
+    "synthetic": false
+  },
+  {
+    "id": "principal-life-administration",
+    "file": "kaggle-principal-life-administration-p16-17.pdf",
+    "title": "Principal Life · policy administration",
+    "publisher": "Principal Life Insurance Company",
+    "sourceFile": "Principal-Sample-Life-Insurance-Policy.pdf",
+    "sourceSha256": "e68d757a293d57b6b7f1e954e572e9c4de22b9201ff2f93c2734c51b6836d9fb",
+    "sourcePages": [
+      16,
+      17
+    ],
+    "sourcePageCount": 64,
+    "markers": [
+      "PART II - POLICY ADMINISTRATION",
+      "Article 4 - Policy Incontestability"
+    ],
+    "sha256": "e13218f3cdaad68372765baa739a973238eb4b7c86e25bb019605d2060c3c878",
+    "language": "English",
+    "jurisdiction": "United States · historical 2014 wording",
+    "dataset": "jpardovega/documents",
+    "datasetVersion": 3,
+    "sourceUrl": "https://www.kaggle.com/datasets/jpardovega/documents",
+    "downloadUrl": "https://www.kaggle.com/api/v1/datasets/download/jpardovega/documents/Principal-Sample-Life-Insurance-Policy.pdf?datasetVersionNumber=3",
+    "kaggleLicense": "Apache 2.0",
+    "domain": "insurance",
+    "documentType": "insurance-wording",
+    "format": "pdf-excerpt",
+    "synthetic": false
+  },
+  {
+    "id": "shelter-personal-liability",
+    "file": "kaggle-shelter-liability-p23-24.pdf",
+    "title": "Shelter HO-4 · personal liability",
+    "publisher": "Shelter Insurance Companies",
+    "sourceFile": "Shelter_HO-4Renters.pdf",
+    "sourceSha256": "e41baaeacb9de423383389a6280bbfefc5afc6c0ccd9740130db8fb4da6fb182",
+    "sourcePages": [
+      23,
+      24
+    ],
+    "sourcePageCount": 29,
+    "markers": [
+      "SECTION II - PERSONAL LIABILITY",
+      "rendering or failing to render professional"
+    ],
+    "sha256": "3b1ef15dab46344f66144b3f848d2122f791096df7d79eba8bcc0aeec423ca41",
+    "language": "English",
+    "jurisdiction": "United States · HO-4 (01-07)",
+    "dataset": "jpardovega/documents",
+    "datasetVersion": 3,
+    "sourceUrl": "https://www.kaggle.com/datasets/jpardovega/documents",
+    "downloadUrl": "https://www.kaggle.com/api/v1/datasets/download/jpardovega/documents/Shelter_HO-4Renters.pdf?datasetVersionNumber=3",
+    "kaggleLicense": "Apache 2.0",
+    "domain": "insurance",
+    "documentType": "insurance-wording",
+    "format": "pdf-excerpt",
+    "synthetic": false
+  },
+  {
+    "id": "invoice-51109301",
+    "file": "kaggle-invoice-51109301.pdf",
+    "title": "Electronics invoice · 3 item lines",
+    "publisher": "Kaggle contributor devp1866",
+    "sourceFile": "Batch 1/invoices/invoice_51109301.pdf",
+    "sourceSha256": "1e823688f4dd4efaf4f6a75c124cccef0e7864bf7ad6f053b94b9714949b4f79",
+    "sourcePages": [
+      1
+    ],
+    "sourcePageCount": 1,
+    "markers": [
+      "Invoice no: 51109301"
+    ],
+    "sha256": "1e823688f4dd4efaf4f6a75c124cccef0e7864bf7ad6f053b94b9714949b4f79",
+    "language": "English",
+    "jurisdiction": "Synthetic India layout · INR · 2023",
+    "dataset": "devp1866/high-quality-ocr-ready-invoice-pdfs",
+    "datasetVersion": 1,
+    "sourceUrl": "https://www.kaggle.com/datasets/devp1866/high-quality-ocr-ready-invoice-pdfs",
+    "downloadUrl": "https://www.kaggle.com/api/v1/datasets/download/devp1866/high-quality-ocr-ready-invoice-pdfs/Batch%201%2Finvoices%2Finvoice_51109301.pdf?datasetVersionNumber=1",
+    "kaggleLicense": "Apache 2.0",
+    "domain": "general",
+    "documentType": "invoice",
+    "format": "pdf-original",
+    "synthetic": true
+  },
+  {
+    "id": "invoice-51109302",
+    "file": "kaggle-invoice-51109302.pdf",
+    "title": "Electronics invoice · 6 item lines",
+    "publisher": "Kaggle contributor devp1866",
+    "sourceFile": "Batch 1/invoices/invoice_51109302.pdf",
+    "sourceSha256": "d63d852cf4eb4f917cc4d5953a61e60653aa0558d1c74ef10d4bc2ce86b05a27",
+    "sourcePages": [
+      1
+    ],
+    "sourcePageCount": 1,
+    "markers": [
+      "Invoice no: 51109302"
+    ],
+    "sha256": "d63d852cf4eb4f917cc4d5953a61e60653aa0558d1c74ef10d4bc2ce86b05a27",
+    "language": "English",
+    "jurisdiction": "Synthetic India layout · INR · 2023",
+    "dataset": "devp1866/high-quality-ocr-ready-invoice-pdfs",
+    "datasetVersion": 1,
+    "sourceUrl": "https://www.kaggle.com/datasets/devp1866/high-quality-ocr-ready-invoice-pdfs",
+    "downloadUrl": "https://www.kaggle.com/api/v1/datasets/download/devp1866/high-quality-ocr-ready-invoice-pdfs/Batch%201%2Finvoices%2Finvoice_51109302.pdf?datasetVersionNumber=1",
+    "kaggleLicense": "Apache 2.0",
+    "domain": "general",
+    "documentType": "invoice",
+    "format": "pdf-original",
+    "synthetic": true
+  },
+  {
+    "id": "invoice-51109303",
+    "file": "kaggle-invoice-51109303.pdf",
+    "title": "Electronics invoice · 4 item lines",
+    "publisher": "Kaggle contributor devp1866",
+    "sourceFile": "Batch 1/invoices/invoice_51109303.pdf",
+    "sourceSha256": "4d8986e69005e5cea3310bfb6becc696e5a9f5fc6cd256f70bb6aea187a6e1e1",
+    "sourcePages": [
+      1
+    ],
+    "sourcePageCount": 1,
+    "markers": [
+      "Invoice no: 51109303"
+    ],
+    "sha256": "4d8986e69005e5cea3310bfb6becc696e5a9f5fc6cd256f70bb6aea187a6e1e1",
+    "language": "English",
+    "jurisdiction": "Synthetic India layout · INR · 2023",
+    "dataset": "devp1866/high-quality-ocr-ready-invoice-pdfs",
+    "datasetVersion": 1,
+    "sourceUrl": "https://www.kaggle.com/datasets/devp1866/high-quality-ocr-ready-invoice-pdfs",
+    "downloadUrl": "https://www.kaggle.com/api/v1/datasets/download/devp1866/high-quality-ocr-ready-invoice-pdfs/Batch%201%2Finvoices%2Finvoice_51109303.pdf?datasetVersionNumber=1",
+    "kaggleLicense": "Apache 2.0",
+    "domain": "general",
+    "documentType": "invoice",
+    "format": "pdf-original",
+    "synthetic": true
+  },
+  {
+    "id": "invoice-51109304",
+    "file": "kaggle-invoice-51109304.pdf",
+    "title": "Electronics invoice · mixed product table",
+    "publisher": "Kaggle contributor devp1866",
+    "sourceFile": "Batch 1/invoices/invoice_51109304.pdf",
+    "sourceSha256": "4fc7096589c8220769e30ad97d6df2a0c1b1f2be7eca0c95b08da970bb2e56bc",
+    "sourcePages": [
+      1
+    ],
+    "sourcePageCount": 1,
+    "markers": [
+      "Invoice no: 51109304"
+    ],
+    "sha256": "4fc7096589c8220769e30ad97d6df2a0c1b1f2be7eca0c95b08da970bb2e56bc",
+    "language": "English",
+    "jurisdiction": "Synthetic India layout · INR · 2023",
+    "dataset": "devp1866/high-quality-ocr-ready-invoice-pdfs",
+    "datasetVersion": 1,
+    "sourceUrl": "https://www.kaggle.com/datasets/devp1866/high-quality-ocr-ready-invoice-pdfs",
+    "downloadUrl": "https://www.kaggle.com/api/v1/datasets/download/devp1866/high-quality-ocr-ready-invoice-pdfs/Batch%201%2Finvoices%2Finvoice_51109304.pdf?datasetVersionNumber=1",
+    "kaggleLicense": "Apache 2.0",
+    "domain": "general",
+    "documentType": "invoice",
+    "format": "pdf-original",
+    "synthetic": true
+  }
+]

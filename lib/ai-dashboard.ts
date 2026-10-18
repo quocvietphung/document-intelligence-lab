@@ -3,7 +3,7 @@ import type {CreditDocument} from './credit-data';
 import type {WorkspaceTab} from './nova-guide';
 import type {TrustSection} from './nova-trust';
 
-export type DashboardTarget={page:WorkspaceTab}|{trust:TrustSection}|{nova:true};
+export type DashboardTarget={page:WorkspaceTab;panel?:'processing'|'batches'|'assets'}|{trust:TrustSection}|{nova:true};
 export const dashboardFeatures=[
   {id:'document',category:'ai',engine:'document',target:{page:'documents'}},
   {id:'tables',category:'ai',engine:'document',target:{page:'documents'}},
@@ -20,6 +20,19 @@ export const dashboardFeatures=[
   {id:'quality',category:'control',engine:'rules',target:{page:'evaluation'}},
   {id:'review',category:'control',engine:'human',target:{trust:'tasks'}},
   {id:'transparency',category:'control',engine:'human',target:{trust:'privacy'}},
+  {id:'embeddings',category:'ai',engine:'retrieval',target:{page:'studio'}},
+  {id:'field-explanation',category:'ai',engine:'chat',target:{page:'documents'}},
+  {id:'classification',category:'control',engine:'rules',target:{page:'documents'}},
+  {id:'field-profiles',category:'control',engine:'rules',target:{page:'pipeline',panel:'batches'}},
+  {id:'batches',category:'control',engine:'rules',target:{page:'pipeline',panel:'batches'}},
+  {id:'lineage',category:'control',engine:'rules',target:{page:'pipeline',panel:'processing'}},
+  {id:'experiments',category:'control',engine:'rules',target:{page:'experiments'}},
+  {id:'citations',category:'control',engine:'rules',target:{trust:'history'}},
+  {id:'feedback',category:'control',engine:'human',target:{trust:'history'}},
+  {id:'governance',category:'control',engine:'human',target:{trust:'governance'}},
+  {id:'performance',category:'control',engine:'rules',target:{trust:'metrics'}},
+  {id:'app-guide',category:'control',engine:'guide',target:{nova:true}},
+  {id:'injection-guard',category:'control',engine:'rules',target:{page:'studio'}},
 ] as const satisfies readonly {id:string;category:'ai'|'control';engine:string;target:DashboardTarget}[];
 export type DashboardFeature=typeof dashboardFeatures[number];
 export type DashboardFilter='all'|'ai'|'control';
@@ -27,6 +40,7 @@ export function dashboardEngine(feature:DashboardFeature,capabilities:AICapabili
   if(demo)return {kind:'demo',provider:'demo',model:'',configured:false};
   if(feature.engine==='rules')return {kind:'rules',provider:'Java · rules',model:feature.id==='quality'?'uploaded PDF evidence':'',configured:false};
   if(feature.engine==='human')return {kind:'context',provider:'human',model:'',configured:false};
+  if(feature.engine==='guide')return {kind:'context',provider:'Browser · app guidance',model:'',configured:false};
   if(!capabilities)return {kind:'unknown',provider:'unknown',model:'',configured:false};
   if(feature.engine==='document'){
     const doc=capabilities.documents;

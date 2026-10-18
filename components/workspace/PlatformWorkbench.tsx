@@ -1,14 +1,13 @@
 "use client";
 
 import {useCallback,useEffect,useRef,useState,type FormEvent} from "react";
-import {ArrowUpRight,Check,CheckCircle2,Clock3,Database,FileSearch,FlaskConical,GitBranch,Layers3,RefreshCw,Search,ShieldCheck,Sparkles,Upload} from "lucide-react";
+import {ArrowUpRight,Check,Database,FileSearch,FlaskConical,GitBranch,Layers3,RefreshCw,Search,ShieldCheck,Sparkles,Upload} from "lucide-react";
 import {useAuth} from "@/components/auth/KeycloakProvider";
-import {platformSchema,searchSchema,percent,pipelineStage,noticeIsVisible,currentEvidenceSearch,type PlatformData,type SearchData,type PlatformView} from "@/lib/platform";
+import {platformSchema,searchSchema,percent,noticeIsVisible,currentEvidenceSearch,type PlatformData,type SearchData,type PlatformView} from "@/lib/platform";
 import {platformText} from "@/lib/platform-language";
 import {demoPlatform,demoSearch} from "@/lib/public-demo";
 import {publicDemoText} from "@/lib/public-demo-language";
 import {datevLabels} from "@/lib/datev-reference";
-import {canRetryDocumentJob,documentJobErrorKey} from "@/lib/platform";
 import {ModalSurface} from "./ModalSurface";
 import {customerUx,reviewAlertPresentation} from "@/lib/customer-ux";
 import {workspaceText} from "@/lib/workspace-language";
@@ -16,6 +15,10 @@ import {DocumentCorpus} from "./DocumentCorpus";
 import {documentFocusText} from "@/lib/document-focus";
 import {DocumentResearchPanel} from './DocumentResearchPanel';
 import {researchText} from '@/lib/document-research';
+import {DocumentPipeline} from './DocumentPipeline';
+import {DocumentBatches} from './DocumentBatches';
+import {batchText} from '@/lib/document-batches';
+import {activeDocumentJob} from '@/lib/document-results';
 
 function Metric({label,value,detail}:{label:string;value:React.ReactNode;detail?:string}) {
   return <div className="lab-metric"><span>{label}</span><strong>{value}</strong>{detail?<small>{detail}</small>:null}</div>;
@@ -26,13 +29,14 @@ export function PlatformWorkbench({caseId,locale,view,ask,inspect,changed,docume
   const auth=useAuth(),t=platformText(locale);
   const ux=customerUx(locale),fieldText=workspaceText(locale);
   const demo=auth.mode==="demo",d=publicDemoText(locale);
-  const [data,setData]=useState<PlatformData>();const [searchResult,setSearchResult]=useState<{version:number;data:SearchData}>();
+  const [snapshot,setData]=useState<PlatformData>();const data=snapshot?.caseId===caseId?snapshot:undefined;const [searchResult,setSearchResult]=useState<{version:number;data:SearchData}>();
   const search=currentEvidenceSearch(searchResult,caseVersion),loadSequence=useRef(0);
   const [query,setQuery]=useState("");const [busy,setBusy]=useState(false);const [loading,setLoading]=useState(true);const [error,setError]=useState("");
-  const [reviewId,setReviewId]=useState<string>();const [note,setNote]=useState("");const [success,setSuccess]=useState<"queued"|"reviewed">();
+  const [reviewId,setReviewId]=useState<string>();const [note,setNote]=useState("");const [success,setSuccess]=useState<"queued"|"reviewed"|"cancelled">();
   const [noticeView,setNoticeView]=useState<PlatformView>(view);
   const [retryJob,setRetryJob]=useState<PlatformData["jobs"][number]>();
-  const [pipelinePanel,setPipelinePanel]=useState<'processing'|'assets'>('processing');
+  const [pipelinePanel,setPipelinePanel]=useState<'processing'|'batches'|'assets'>('processing');
+  useEffect(()=>{if(view!=='pipeline')return;const sync=()=>{const panel=new URLSearchParams(window.location.search).get('pipeline');if(panel==='processing'||panel==='batches'||panel==='assets')setPipelinePanel(panel);};const timer=setTimeout(sync,0);window.addEventListener('popstate',sync);return()=>{clearTimeout(timer);window.removeEventListener('popstate',sync);};},[view]);
   const research=researchText(locale);
   const input=useRef<HTMLInputElement>(null),inFlight=useRef(false),finished=useRef(new Set<string>());
   const canUpload=auth.roles.some(r=>r==="ADVISOR"||r==="ADMIN");const canReview=auth.roles.some(r=>r==="REVIEWER"||r==="ADMIN");
@@ -41,21 +45,22 @@ export function PlatformWorkbench({caseId,locale,view,ask,inspect,changed,docume
     const sequence=++loadSequence.current;
     if(demo){setData(demoPlatform(caseId));setLoading(false);setError("");return;}
     try{const r=await fetch(root,{headers:{Authorization:`Bearer ${auth.token}`},cache:"no-store",signal});if(!r.ok)throw new Error();const next=platformSchema.parse(await r.json());if(next.caseId!==caseId)throw new Error();if(!signal?.aborted&&sequence===loadSequence.current)setData(next);}
-    catch{if(!signal?.aborted&&sequence===loadSequence.current){setData(undefined);setNoticeView(view);setError("error");}}finally{if(!signal?.aborted&&sequence===loadSequence.current)setLoading(false);}
+    catch{if(!signal?.aborted&&sequence===loadSequence.current){setData(previous=>previous?.caseId===caseId?previous:undefined);setNoticeView(view);setError("error");}}finally{if(!signal?.aborted&&sequence===loadSequence.current)setLoading(false);}
   },[root,auth.token,view,demo,caseId]);
   useEffect(()=>{const controller=new AbortController();const timer=setTimeout(()=>void load(controller.signal),0);return()=>{clearTimeout(timer);controller.abort();};},[load,caseVersion]);
-  const active=data?.jobs.some(j=>["QUEUED","PROCESSING","RETRY"].includes(j.status));
-  useEffect(()=>{if(!active)return;const timer=setInterval(()=>void load(),3500);return()=>clearInterval(timer);},[active,load]);
+  const active=data?.jobs.some(activeDocumentJob);
+  useEffect(()=>{if(!active)return;const controller=new AbortController();const timer=setInterval(()=>{if(!document.hidden)void load(controller.signal);},3500);return()=>{clearInterval(timer);controller.abort();};},[active,load]);
   useEffect(()=>{if(!data)return;const complete=data.jobs.filter(j=>j.status==="COMPLETE");if(complete.some(j=>!finished.current.has(j.id))){complete.forEach(j=>finished.current.add(j.id));void changed();}},[data,changed]);
   async function action(path:string,body?:BodyInit,form=false){
     const r=await fetch(root+path,{method:"POST",headers:{Authorization:`Bearer ${auth.token}`,...(form?{}:{"Content-Type":"application/json"})},body});
-    if(!r.ok)throw new Error(r.status===429?"limit":r.status===409?"duplicate":r.status===422?"rejected":"error");return r.json();
+    if(!r.ok)throw new Error(r.status===429?"limit":r.status===409?(path.endsWith('/cancel')?'cancelRace':"duplicate"):r.status===422?"rejected":"error");return r.json();
   }
   async function run(task:()=>Promise<void>){if(inFlight.current)return;inFlight.current=true;setBusy(true);setNoticeView(view);setError("");setSuccess(undefined);try{await task();}catch(e){setError(e instanceof Error?e.message:"error");}finally{setBusy(false);inFlight.current=false;}}
   function retrieve(event?:FormEvent,question=query){event?.preventDefault();if(!question.trim())return;setQuery(question);const version=caseVersion;if(demo){setSearchResult({version,data:demoSearch(question)});return;}void run(async()=>setSearchResult({version,data:searchSchema.parse(await action("/search",JSON.stringify({question:question.trim()})))}));}
   async function queue(file:File){if(!file.size||file.size>3_000_000)throw new Error("rejected");const form=new FormData();form.set("file",file);await action("/jobs",form,true);setSuccess("queued");await load();}
   function sample(){window.location.hash="documents";}
   function retry(){if(!retryJob)return;const id=retryJob.id;setRetryJob(undefined);void run(async()=>{await action(`/jobs/${id}/retry`);setSuccess("queued");await load();});}
+  async function cancelJob(job:PlatformData['jobs'][number]){await run(async()=>{await action(`/jobs/${job.id}/cancel`);setSuccess('cancelled');await load();});}
   function review(event:FormEvent){event.preventDefault();if(!reviewId||!note.trim())return;void run(async()=>{await action("/reviews",JSON.stringify({alertId:reviewId,note}));setReviewId(undefined);setNote("");setSuccess("reviewed");await load();});}
   const azure=data?.documentPipeline.provider.mode!=="local";
   const fileHint=t(azure?"formatAzure":"format").replace("{pages}",String(data?.documentPipeline.provider.maxPages||4));
@@ -80,14 +85,14 @@ export function PlatformWorkbench({caseId,locale,view,ask,inspect,changed,docume
       <section className="surface lab-section"><h3>{t("agents")}</h3><p className="lab-caption">{demo?d("modelNote"):t("agentHint")}</p><div className="lab-agent-grid">{data.agents.map(a=><article key={a.name}><GitBranch size={20}/><h4>{t(a.name)}</h4>{a.tools.map(tool=><code key={tool}>{tool}</code>)}</article>)}</div></section>
       <AgentRuns data={data} locale={locale}/>
     </>:null}
-    {data&&view==='pipeline'?<div className="research-tabs" aria-label={research('pipeline')}>{(['processing','assets'] as const).map(id=><button key={id} className={pipelinePanel===id?'selected':''} aria-pressed={pipelinePanel===id} onClick={()=>setPipelinePanel(id)}>{research(id)}</button>)}</div>:null}
+    {data&&view==='pipeline'?<div className="research-tabs" aria-label={research('pipeline')}>{(['processing','batches','assets'] as const).map(id=><button key={id} className={pipelinePanel===id?'selected':''} aria-pressed={pipelinePanel===id} onClick={()=>setPipelinePanel(id)}>{id==='batches'?batchText(locale).title:research(id)}</button>)}</div>:null}
+    {data&&view==='pipeline'&&pipelinePanel==='batches'&&!demo?<DocumentBatches key={caseId} caseId={caseId} locale={locale} azure={azure} provider={data.documentPipeline.provider.activeProvider} canWrite={canUpload&&data.persistent} inspect={inspect} changed={changed}/>:null}
     {data&&view==='pipeline'&&pipelinePanel==='assets'?<DocumentResearchPanel key={`${caseId}:${caseVersion}`} caseId={caseId} caseVersion={caseVersion} locale={locale} view="assets" inspect={inspect}/>:null}
     {data&&view==="pipeline"&&pipelinePanel==='processing'?<>
       <div data-page-tour="pipeline-provider" className="lab-metrics"><Metric label={t("provider")} value={data.documentPipeline.provider.activeProvider} detail={data.documentPipeline.provider.modelId}/><Metric label={t("scanner")} value={data.documentPipeline.scanner}/><Metric label={t("retention")} value={`${data.documentPipeline.retentionDays} ${t("days")}`} detail={data.documentPipeline.storage}/></div>
       <section className="lab-upload"><div className="lab-upload-icon"><Upload size={30}/></div><div><h3>{t("stages")}</h3><p>{fileHint}</p></div><div className="lab-upload-actions"><input ref={input} type="file" accept={azure?".pdf,.png,.jpg,.jpeg":".pdf,.png,.jpg,.jpeg,.txt"} className="hidden" onChange={e=>{const file=e.target.files?.[0];e.target.value="";if(file)void run(()=>queue(file));}}/><button data-page-tour="pipeline-upload" className="button-primary" disabled={busy||!canUpload||!data.persistent} onClick={()=>input.current?.click()}><Upload size={16}/>{t("upload")}</button><button data-page-tour="pipeline-datev" style={domain!=='banking'?{display:'none'}:undefined} className="button-secondary" disabled={busy} onClick={sample}><FlaskConical size={16}/>{datevLabels(locale).title}</button></div></section>
-      <section data-page-tour="pipeline-jobs" className="surface lab-section"><div className="lab-section-heading"><h3>{t("queue")}</h3><Badge tone={active?"warn":"good"}>{active?<Clock3 size={13}/>:<CheckCircle2 size={13}/>} {demo?d("worker"):t("worker")}</Badge></div>
-        {data.jobs.length?<div className="lab-job-list">{data.jobs.map(job=><article key={job.id} className="lab-job"><div className="lab-job-icon"><FileSearch size={23}/></div><div className="lab-job-main"><strong>{job.name}</strong><small>{date(job.createdAt)} · {t("attempt")} {job.attempt}</small><div className="lab-job-stage"><Badge tone={job.status==="COMPLETE"?"good":job.status==="FAILED"?"warn":"neutral"}>{t(job.status)}</Badge><span>{t(pipelineStage(job))}</span>{job.scan_result?<span>{t(job.scan_result)}</span>:null}</div>{job.status==="FAILED"&&data.jobs.some(other=>other.id!==job.id&&other.sha256===job.sha256&&Date.parse(other.createdAt)>Date.parse(job.createdAt))?<p className="lab-caption">{ux.history}</p>:null}{job.error_code?<p className="lab-job-error">{t(documentJobErrorKey(job.error_code))}<code className="block text-xs">{job.error_code}</code></p>:null}<small>{t("expires")}: {date(job.expiresAt)}</small></div><div className="flex flex-wrap gap-2">{canRetryDocumentJob(job)&&!data.jobs.some(other=>other.id!==job.id&&other.sha256===job.sha256&&!["FAILED","EXPIRED"].includes(other.status))?<button className="button-secondary" disabled={busy||!canUpload||demo} onClick={()=>setRetryJob(job)}><RefreshCw size={16}/>{t("retryAnalysis")}</button>:null}{job.document_id?<button className="button-secondary" onClick={()=>inspect(job.document_id!)}>{t("evidence")}</button>:null}</div></article>)}</div>:<div className="lab-empty"><Upload size={30}/><p>{t("empty")}</p></div>}
-      </section><p className="lab-caption">{t("retentionHint")}</p>
+      <DocumentPipeline data={data} locale={locale} busy={busy} canWrite={canUpload&&!demo} inspect={inspect} retry={setRetryJob} cancel={cancelJob}/>
+      <p className="lab-caption">{t("retentionHint")}</p>
       {retryJob?<ModalSurface title={t("retryTitle")} label={t("closeRetry")} close={()=>setRetryJob(undefined)}><p className="font-semibold">{retryJob.name}</p><p className="mt-3 text-sm leading-relaxed">{t("retryConfirm")} <strong>{data.documentPipeline.provider.activeProvider}</strong>.</p><p className="mt-3 text-xs leading-relaxed text-slate-500">{t("retryHistory")}</p><div className="mt-5 flex justify-end gap-3"><button className="button-secondary" onClick={()=>setRetryJob(undefined)}>{t("cancelRetry")}</button><button className="button-primary" disabled={busy||!canUpload||demo} onClick={retry}>{t("confirmRetry")}</button></div></ModalSurface>:null}
     </>:null}
     {data&&view==="evaluation"?<DocumentCorpus key={`${caseId}:${caseVersion}`} caseId={caseId} locale={locale} inspect={inspect} ask={ask}/>:null}

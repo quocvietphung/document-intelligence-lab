@@ -4,7 +4,7 @@ import {readFileSync} from "node:fs";
 import {describe,expect,it,vi} from "vitest";
 import type {CreditDocument} from "./credit-data";
 import hashes from "@/services/credit-api/src/main/resources/datev-reference-hashes.json";
-import {activeDocumentJob,completedJobDocument,documentJobLabel,documentReceiptSchema,documentUi,documentUiTables,latestDocumentJobs,orderedResultDocuments,sampleDocumentJob,type DocumentJob} from "./document-results";
+import {activeDocumentJob,completedJobDocument,documentJobLabel,documentReceiptSchema,documentTableRows,documentUi,documentUiTables,latestDocumentJobs,orderedResultDocuments,sampleDocumentJob,type DocumentJob} from "./document-results";
 import {DocumentRecognitionDetails,DocumentProcessingCard,DocumentResultCard,DocumentResults} from "@/components/workspace/DocumentResults";
 import {PayrollSamples} from "@/components/workspace/PayrollSamples";
 
@@ -15,6 +15,24 @@ const job:DocumentJob={id:"job-new",name,status:"COMPLETE",stage:"HUMAN_REVIEW",
 const old:DocumentJob={...job,id:"job-old",status:"FAILED",stage:"STOPPED",document_id:null,error_code:"ANALYSIS_HTTP_503",createdAt:"2026-10-12T22:18:00Z",attempt:3};
 const open=()=>{};
 describe("document analysis results journey",()=>{
+  it("keeps sparse OCR table values and first-cell precedence without normalizing amounts",()=>{
+    const table={page:1,rows:2,columns:3,cells:[
+      {row:1,column:2,text:"1.250,50 EUR"},{row:0,column:0,text:"Total"},
+      {row:0,column:0,text:"Conflicting duplicate"},{row:0,column:1,text:""},
+    ]};
+    const before=structuredClone(table);
+    expect(documentTableRows(table)).toEqual([["Total","—","—"],["—","—","1.250,50 EUR"]]);
+    expect(table).toEqual(before);
+  });
+  it("bounds large table previews and handles empty tables",()=>{
+    const rows=documentTableRows({page:1,rows:1000,columns:1000,cells:[]});
+    expect(rows).toHaveLength(100);expect(rows.every(row=>row.length===30)).toBe(true);
+    expect(documentTableRows({page:1,rows:0,columns:0,cells:[]})).toEqual([]);
+  });
+  it("uses one active-job definition for queue polling and batch items",()=>{
+    for(const status of ["QUEUED","PROCESSING","RETRY"])expect(activeDocumentJob({status})).toBe(true);
+    for(const status of ["COMPLETE","FAILED","EXPIRED","CANCELLED",undefined])expect(activeDocumentJob({status})).toBe(false);
+  });
   it("keeps EN, DE and VI complete with meaningful labels",()=>{
     for(const table of Object.values(documentUiTables)){expect(Object.keys(table).sort()).toEqual(Object.keys(documentUiTables.en).sort());expect(Object.values(table).every(value=>value.trim())).toBe(true);}
     expect(documentUi("unknown")).toEqual(documentUiTables.en);
@@ -69,6 +87,11 @@ describe("document analysis results journey",()=>{
   it("keeps fixture/reference data visibly separate from Azure extraction",()=>{
     const html=renderToStaticMarkup(createElement(DocumentResultCard,{doc:{...doc,analysisProvider:"datev-reference-values",originalAvailable:false,confidence:null},locale:"vi",open}));
     expect(html).toContain("không phải AI trích xuất");expect(html).not.toContain("Azure Document Intelligence");
+  });
+  it('explains successful reference-wording extraction without implying missing form fields',()=>{
+    const html=renderToStaticMarkup(createElement(DocumentResultCard,{doc:{...doc,type:'insurance-wording',fields:[],pages:[{number:1,text:'Source wording',method:'azure'},{number:2,text:'More wording',method:'azure'}]},locale:'en',open}));
+    expect(html).toContain('2 extracted pages');expect(html).toContain('Individual-policy fields are not expected');
+    expect(html).not.toContain('0 extracted fields');
   });
   it("keeps OCR details collapsed and explicitly disclaims accuracy",()=>{
     const html=renderToStaticMarkup(createElement(DocumentRecognitionDetails,{doc,locale:"vi"}));

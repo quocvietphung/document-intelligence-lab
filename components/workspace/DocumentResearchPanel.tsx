@@ -4,6 +4,7 @@ import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
 import {ArrowUpRight,CheckCircle2,Database,Download,FileCheck2,FlaskConical,Layers3,Plus,RefreshCw,Trash2} from 'lucide-react';
 import {useAuth} from '@/components/auth/KeycloakProvider';
 import {datasetIsCurrent,runsForReference,documentResearchSchema,referenceExportLines,researchMetric,researchText,type DocumentResearchData,type ReferenceField,type ReferenceQuestion} from '@/lib/document-research';
+import {downloadBlob,downloadJson} from '@/lib/browser-download';
 
 type Props={caseId:string;caseVersion:number;locale:string;view:'experiments'|'assets';inspect:(id:string,page?:number)=>void};
 export function DocumentResearchPanel({caseId,caseVersion,locale,view,inspect}:Props) {
@@ -58,8 +59,10 @@ export function DocumentResearchPanel({caseId,caseVersion,locale,view,inspect}:P
   function run(suite:'EXTRACTION'|'RETRIEVAL') {if(!selected)return;void execute(async()=>{await action('/runs',{caseVersion,datasetId:selected.id,suite});setPanel('results');await load();});}
   function download(jsonl=false) {void execute(async()=>{
     const bundle=await action('/export',{caseVersion});
-    const blob=new Blob([jsonl?referenceExportLines(bundle):JSON.stringify(bundle,null,2)],{type:jsonl?'application/x-ndjson':'application/json'});
-    const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`document-research-${caseId}.${jsonl?'jsonl':'json'}`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);await load();
+    const filename=`document-research-${caseId}.${jsonl?'jsonl':'json'}`;
+    if(jsonl) downloadBlob(new Blob([referenceExportLines(bundle)],{type:'application/x-ndjson'}),filename);
+    else downloadJson(bundle,filename);
+    await load();
   });}
   const date=(value:string)=>new Intl.DateTimeFormat(locale,{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
   return <section className="source-research-workbench">

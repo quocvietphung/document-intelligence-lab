@@ -1,8 +1,9 @@
 package dev.creditlab.platform;
 
+import static dev.creditlab.security.JwtIdentity.tenant;
+
 import jakarta.validation.Valid;
 import java.util.Map;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 public class DocumentResearchController {
   private final DocumentResearch research;
   public DocumentResearchController(DocumentResearch research){this.research=research;}
-  private String tenant(JwtAuthenticationToken auth){String value=auth.getToken().getClaimAsString("tenant_id");if(value==null||value.isBlank())throw new AccessDeniedException("Verified tenant required");return value;}
   @GetMapping public Map<String,Object> read(@PathVariable String caseId,JwtAuthenticationToken auth){return research.read(tenant(auth),caseId);}
   @PostMapping("/datasets") public Map<String,Object> save(@PathVariable String caseId,@Valid @RequestBody DocumentResearch.DatasetRequest body,JwtAuthenticationToken auth){return research.save(tenant(auth),caseId,auth.getName(),body);}
   @PostMapping("/runs") @ResponseStatus(org.springframework.http.HttpStatus.ACCEPTED)

@@ -2,17 +2,15 @@
 
 Use fictional or explicitly permitted documents. Do not upload an actual employee's payslip, policyholder record or customer invoice merely to try the app.
 
-## Included research PDFs
+## Private Kaggle research library
 
-These repository-authored fictional files are available after cloning:
+The user-facing library contains four historical US insurance wording excerpts from [Insurance Documents](https://www.kaggle.com/datasets/jpardovega/documents) and four author-declared synthetic invoices from [High-Quality OCR-Ready Invoice PDFs](https://www.kaggle.com/datasets/devp1866/high-quality-ocr-ready-invoice-pdfs). The invoices retain their original INR currency. These are research sources, not German insurance coverage or tax advice.
 
-| Domain | File |
-| --- | --- |
-| Insurance | `public/samples/insurance-policy-fictional.pdf` |
-| Insurance | `public/samples/insurance-claim-fictional.pdf` |
-| General documents | `public/samples/invoice-fictional.pdf` |
+Follow the [Kaggle preparation instructions](../README.md#kaggle-document-library) to download the pinned versions, verify their hashes and prepare the private PDFs. They are not bundled in GitHub, public assets or Docker images. Both the catalogue and PDF viewer require a valid Bearer access token.
 
-Create a dossier in the matching domain, preview the sample and explicitly confirm analysis. Local mode uses PDFBox/Tesseract. Azure mode sends the selected file to the configured document provider.
+Create an **Insurance** or **General documents** dossier, search the matching library, preview a source, then explicitly confirm **Import & analyze**. Results appear above the library with links to the original and extracted evidence. Local mode uses PDFBox/Tesseract; Azure mode sends only the confirmed selection to the configured document provider.
+
+Older self-authored insurance and invoice PDFs are regression fixtures under `services/credit-api/src/test/resources/legacy-research/`, not user-facing samples. Existing dossier documents remain unchanged; their provenance is never relabelled as Kaggle.
 
 ## Official DATEV payroll sources
 

@@ -41,6 +41,21 @@ class DocumentDomainTest {
     assertThat(doc.type()).isEqualTo("insurance-claim");
     assertThat(CreditCaseService.documentView(dossier("insurance",List.of(doc))).missingDocuments()).containsExactly("insurance-policy");
   }
+  @Test void referenceWordingDoesNotSatisfyAnIndividualPolicyChecklist() {
+    for(String text:List.of("GC 6002 PART I - DEFINITIONS insurance policy", "HO-4 POLICY COVERAGE PERIOD insurance policy", "GC 6003 POLICY ADMINISTRATION", "HO-4 SECTION II PERSONAL LIABILITY")) {
+      var doc=new DocumentExtractor().parse("reference.pdf",List.of(new CreditCase.Page(1,text,"pdf-text")),null);
+      assertThat(doc.type()).isEqualTo("insurance-wording");
+      assertThat(doc.fields()).isEmpty();
+      assertThat(CreditCaseService.documentView(dossier("insurance",List.of(doc))).missingDocuments()).containsExactly("insurance-policy");
+    }
+  }
+  @Test void kaggleInvoiceNumberKeepsItsSourceWithoutInventingTotals() {
+    var doc=new DocumentExtractor().parse("invoice.pdf",List.of(new CreditCase.Page(1,"Invoice no: 51109301\nTotal\nINR 1,844,673.60","pdf-text")),null);
+    assertThat(doc.type()).isEqualTo("invoice");
+    assertThat(doc.fields()).extracting(CreditCase.Field::label).containsExactly("invoiceNumber");
+    assertThat(doc.fields().getFirst().value()).isEqualTo("51109301");
+    assertThat(doc.fields().getFirst().evidence()).contains("Invoice no: 51109301");
+  }
   @Test void domainPersistsAndEditsAreVersionChecked() {
     var store=new SqlCaseStore(new DriverManagerDataSource("jdbc:h2:mem:domains"+System.nanoTime()+";MODE=PostgreSQL;DB_CLOSE_DELAY=-1","sa",""),new ObjectMapper());
     var service=new CreditCaseService(store,false);ReflectionTestUtils.setField(service,"writesEnabled",true);

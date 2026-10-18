@@ -31,18 +31,19 @@ describe("approved DATEV recovery",()=>{
       const t=platformText(locale);
       for(const key of ["retryAnalysis","retryConfirm","retryHistory","azureAuthUnavailable","azureAccessDenied","analysisUnavailable"])
         expect(t(key)).not.toBe(key);
-      expect(t("retryConfirm")).toMatch(/Robert|Melanie/);
+      expect(t("retryConfirm")).toMatch(/DATEV/);expect(t('retryConfirm')).toContain('Kaggle');
       expect(t("retryHistory").length).toBeGreaterThan(100);
     }
   });
   it("puts retry behind confirmation and preserves the original failure",()=>{
     const source=readFileSync("components/workspace/PlatformWorkbench.tsx","utf8");
-    expect(source).toContain("canRetryDocumentJob(job)");
-    expect(source).toContain("setRetryJob(job)");
+    const pipeline=readFileSync('components/workspace/DocumentPipeline.tsx','utf8');
+    expect(pipeline).toContain("canRetryDocumentJob(job)");
+    expect(source).toContain("retry={setRetryJob}");
     expect(source).toContain('title={t("retryTitle")}');
     expect(source).toContain('t("confirmRetry")');
     const server=readFileSync("services/credit-api/src/main/java/dev/creditlab/platform/DocumentJobs.java","utf8");
-    expect(server).toContain("ApprovedDatevSamples.matches(name,bytes)");
+    expect(server).toContain("ApprovedResearchSamples.matches(name,bytes)");
     expect(server).toContain("result.put(\"retryOf\",sourceJob)");
   });
 });

@@ -5,6 +5,7 @@ import {bankMoney,transactionCsv,type BankingData} from "@/lib/banking";
 import {bankingText} from "@/lib/banking-language";
 import {bankDate,customerUx,filterTransactions,transactionTotals} from "@/lib/customer-ux";
 import {ModalSurface} from "./ModalSurface";
+import {downloadBlob} from "@/lib/browser-download";
 
 export function BankTransactionHistory({data,locale,account,onAccountChange,ask}:{data:BankingData;locale:string;account:string;onAccountChange:(account:string)=>void;ask:(question:string)=>void}) {
   const t=bankingText(locale),ux=customerUx(locale);
@@ -14,7 +15,9 @@ export function BankTransactionHistory({data,locale,account,onAccountChange,ask}
   const money=(amount:number)=>bankMoney(amount,locale);
   const transaction=data.transactions.find(row=>row.id===selected);
   function reset(){onAccountChange("all");setQuery("");setDirection("any");setFrom("");setTo("");}
-  function exportCsv(){const url=URL.createObjectURL(new Blob([transactionCsv(rows)],{type:"text/csv;charset=utf-8"}));const anchor=document.createElement("a");anchor.href=url;anchor.download=`synthetic-${data.caseId}-transactions.csv`;anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+  function exportCsv(){
+    downloadBlob(new Blob([transactionCsv(rows)],{type:"text/csv;charset=utf-8"}),`synthetic-${data.caseId}-transactions.csv`);
+  }
   const details=(row:BankingData["transactions"][number])=><button type="button" className="button-link" aria-label={`${ux.inspect} · ${row.id}`} onClick={()=>setSelected(row.id)}>{ux.inspect}<ArrowUpRight size={14}/></button>;
   return <section className="surface bank-transaction-section">
     <div className="banking-section-title"><h4>{t("transactions")}</h4><button className="button-secondary" onClick={exportCsv} disabled={!rows.length}><Download size={16}/>{t("export")}</button></div>

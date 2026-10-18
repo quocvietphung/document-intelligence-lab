@@ -1,6 +1,6 @@
 "use client";
 import {useCallback,useEffect,useMemo,useRef,useState, type FormEvent} from "react";
-import {ArrowUpRight,CheckCircle2,FileSearch,ClipboardCheck,Gauge,LayoutDashboard,LogIn,Menu,MessageSquareText,Plus,RefreshCw,Search,ShieldCheck,Upload,X,Compass} from "lucide-react";
+import {ArrowUpRight,CheckCircle2,ClipboardCheck,Compass,FileSearch,FlaskConical,Gauge,GitBranch,Layers3,LayoutDashboard,LogIn,Menu,MessageSquareText,Plus,RefreshCw,ScanSearch,Search,ShieldCheck,Square,Trash2,Upload,WalletCards,X} from "lucide-react";
 import {useChat} from "@ai-sdk/react";
 import {DefaultChatTransport} from "ai";
 import {useAuth} from "@/components/auth/KeycloakProvider";
@@ -20,11 +20,10 @@ import {pageTour} from "@/lib/page-tour";
 import {PlatformWorkbench} from "./PlatformWorkbench";
 import {DocumentResearchPanel} from './DocumentResearchPanel';
 import {platformText} from "@/lib/platform-language";
-import {FlaskConical,Layers3,GitBranch,ScanSearch} from "lucide-react";
 import {DocumentDomains,DomainResearch} from './DocumentDomains';
-import {ResearchSamples} from './ResearchSamples';
+import {researchSamples,researchSampleUrl} from '@/lib/research-samples';
 import {documentDomains,domainOf,domainText,filterDomain,type DocumentDomain} from '@/lib/document-domains';
-import {Square,Trash2,WalletCards} from "lucide-react";
+import {downloadBlob} from "@/lib/browser-download";
 import {DocumentAnalysisWorkspace} from "./DocumentAnalysisWorkspace";
 import {DocumentResultCard} from "./DocumentResults";
 import {documentReceiptSchema,type DocumentImportOutcome} from "@/lib/document-results";
@@ -197,8 +196,10 @@ export function CreditWorkspace({locale}:{locale:string}) {
     setChat(false);
     sampleInFlight.current=true;setBusy(true);setError("");setSuccess(false);
     try {
-      const reference=datevReference(fileName);if(!reference)throw new Error("Unknown reference");
-      const response=await fetch(`/api/payroll-references?sample=${reference.id}`,{headers:{Authorization:`Bearer ${auth.token}`},cache:"no-store"});
+      const reference=domainOf(item.domain)==='banking'?datevReference(fileName):undefined;
+      const sample=researchSamples(domainOf(item.domain)).find(row=>row.file===fileName);
+      if(!reference&&!sample)throw new Error("Unknown reference");
+      const response=await fetch(reference?`/api/payroll-references?sample=${reference.id}`:researchSampleUrl(sample!),{headers:{Authorization:`Bearer ${auth.token}`},cache:"no-store"});
       if(!response.ok)throw new Error("Sample unavailable");
       const form=new FormData();form.set("file",new File([await response.blob()],fileName,{type:"application/pdf"}));
       // Queue first: extraction can exceed the proxy timeout. Pipeline polls the durable job.
@@ -218,7 +219,7 @@ export function CreditWorkspace({locale}:{locale:string}) {
   async function original(doc:CreditDocument) {
     if(!item)return;
     try {const response=await fetch(`/api/cases/${item.id}/documents/${doc.id}/original`,{headers:{Authorization:`Bearer ${auth.token}`}});if(!response.ok)throw new Error();
-      const url=URL.createObjectURL(await response.blob());const anchor=document.createElement("a");anchor.href=url;anchor.download=doc.name;anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+      downloadBlob(await response.blob(),doc.name);
     } catch {setError("error");}
   }
   const status=(c:WorkspaceCase)=>t(c.status==="DRAFT"?"draft":c.status==="REVIEW_COMPLETE"?"complete":"humanReview");
@@ -250,8 +251,7 @@ export function CreditWorkspace({locale}:{locale:string}) {
             {tab==="documents"?<section className="surface"><header className="section-toolbar"><div><h3 className="section-heading">{t("documents")}</h3><p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-500">{analysis&&analysis.mode!=="local"?t("uploadHintAzure").replace("{pages}",String(analysis.maxPages)):t("uploadHint")}</p></div><input ref={inputFile} type="file" className="hidden" accept={analysis&&analysis.mode!=="local"?".pdf,.png,.jpg,.jpeg":".pdf,.png,.jpg,.jpeg,.txt"} onChange={event=>{const file=event.target.files?.[0];event.target.value="";if(file)uploadFile(file);}}/><div className="flex flex-wrap gap-2"><button className="button-secondary" disabled={!canWrite||busy} onClick={()=>document.getElementById("datev-library")?.scrollIntoView({behavior:"smooth",block:"start"})} style={domainOf(item.domain)!=='banking'?{display:'none'}:undefined}><FileSearch size={16}/>{t("uploadSample")}</button><button data-page-tour="documents-upload" className="button-primary" disabled={!canWrite||busy} onClick={()=>inputFile.current?.click()}><Upload size={16}/>{t(busy?"loading":"upload")}</button></div></header>
               {uploading?<p className="notice-lab notice-processing" role="status" aria-live="polite">{documentText(locale)("processing")}</p>:null}
               <p className="px-6 py-3 text-xs leading-relaxed text-slate-600">{documentText(locale)("policy")}</p>
-              <DocumentAnalysisWorkspace key={`document-analysis:${item.id}`} caseId={item.id} documents={item.documents} locale={locale} busy={busy} canImport={canWrite&&!!analysis} azure={!!analysis&&analysis.mode!=="local"} importSample={uploadSample} refreshCase={refresh} open={inspect} ask={askNova} technical={()=>navigate("pipeline")} showPayroll={domainOf(item.domain)==='banking'}/>
-              {domainOf(item.domain)!=='banking'?<ResearchSamples key={`research-samples:${item.id}`} domain={domainOf(item.domain)} locale={locale} disabled={!canWrite||busy||!analysis} analyze={uploadFile}/>:null}
+              <DocumentAnalysisWorkspace key={`document-analysis:${item.id}`} caseId={item.id} documents={item.documents} locale={locale} busy={busy} canImport={canWrite&&!!analysis} azure={!!analysis&&analysis.mode!=="local"} importSample={uploadSample} refreshCase={refresh} open={inspect} ask={askNova} technical={()=>navigate("pipeline")} showPayroll={domainOf(item.domain)==='banking'} domain={domainOf(item.domain)}/>
               {legacyDocs.length?<details className="payroll-legacy"><summary>{payrollUx.legacy} · {legacyDocs.length}</summary><p>{payrollUx.kept}</p>{legacyDocs.map(documentRow)}</details>:null}</section>:null}
             {(["studio","pipeline","controls","operations","evaluation"] as string[]).includes(tab)?<PlatformWorkbench key={item.id} domain={item.domain} caseId={item.id} locale={locale} view={tab as "studio"|"pipeline"|"controls"|"operations"|"evaluation"} caseVersion={item.version||0} documents={item.documents} changed={refresh} ask={askNova} inspect={(id,page)=>{const doc=item.documents.find(d=>d.id===id);if(doc)inspect(doc,page);else navigate("documents");}}/>:null}
             {auth.mode==='keycloak'&&tab==='controls'?<TrustWorkbench key={`trust-${item.id}`} caseId={item.id} caseVersion={item.version||0} locale={locale} onDraft={askNova} openSource={openCitation} initialSection="tasks"/>:null}

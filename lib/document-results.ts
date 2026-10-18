@@ -2,11 +2,24 @@ import {z} from "zod";
 import type {CreditDocument} from "./credit-data";
 import type {PlatformData} from "./platform";
 import approvedHashes from "@/services/credit-api/src/main/resources/datev-reference-hashes.json";
+import {kaggleReference} from './research-samples';
+import {platformText} from './platform-language';
 
 export type DocumentJob=PlatformData["jobs"][number];
 export const documentReceiptSchema=z.object({id:z.string().min(1),status:z.literal("QUEUED"),expiresAt:z.string().datetime()});
 export type DocumentImportOutcome={duplicate:true}|z.infer<typeof documentReceiptSchema>;
-export function activeDocumentJob(job:DocumentJob){return ["QUEUED","PROCESSING","RETRY"].includes(job.status);}
+export function activeDocumentJob(job:{status?:string}){return ["QUEUED","PROCESSING","RETRY"].includes(job.status||"");}
+
+/** Preserve OCR text and first-cell precedence while bounding the read-only preview. */
+export function documentTableRows(table:NonNullable<CreditDocument["tables"]>[number]) {
+  const cells=new Map<string,string>();
+  for(const cell of table.cells) {
+    const key=`${cell.row}:${cell.column}`;
+    if(!cells.has(key)) cells.set(key,cell.text);
+  }
+  return Array.from({length:Math.min(100,table.rows)},(_,row)=>
+    Array.from({length:Math.min(30,table.columns)},(_,column)=>cells.get(`${row}:${column}`)||"—"));
+}
 export function latestDocumentJobs(jobs:readonly DocumentJob[]){
   const groups=new Map<string,DocumentJob>();
   const ordered=[...jobs].sort((a,b)=>(Date.parse(b.createdAt)||0)-(Date.parse(a.createdAt)||0));
@@ -15,7 +28,7 @@ export function latestDocumentJobs(jobs:readonly DocumentJob[]){
 }
 /** The server list is already tenant/case scoped. Never match official samples by name alone. */
 export function sampleDocumentJob(file:string,jobs:readonly DocumentJob[]){
-  const hash=approvedHashes[file as keyof typeof approvedHashes];
+  const hash=approvedHashes[file as keyof typeof approvedHashes]||kaggleReference(file)?.sha256;
   return hash?latestDocumentJobs(jobs.filter(job=>job.name===file&&job.sha256===hash))[0]:undefined;
 }
 export function completedJobDocument(job:DocumentJob|undefined,documents:readonly CreditDocument[],now=Date.now()){
@@ -33,4 +46,4 @@ export const documentUiTables={
   vi:{fieldSignal:"Tín hiệu trích xuất của trường",finished:"Đã phân tích xong. Bấm Xem kết quả & PDF bên dưới để mở dữ liệu đã trích xuất cùng bản gốc.",results:"Kết quả phân tích",resultsHint:"Kết quả nằm ngay tại đây, phía trên thư viện mẫu. Mở kết quả để đối chiếu PDF gốc, trường dữ liệu và bảng đã trích xuất.",steps:"Chọn mẫu → xác nhận phân tích → xem kết quả ngay tại đây",choose:"Chọn mẫu DATEV để thử",view:"Xem kết quả & PDF",ask:"Nhờ Nova giải thích kết quả này",ready:"Đã trích xuất · cần kiểm duyệt",verified:"Đã được người kiểm duyệt xác nhận",reference:"Giá trị tham chiếu · không phải AI trích xuất",sourceMissing:"Chưa có bản gốc để đối chiếu",empty:"Hồ sơ này chưa có kết quả phân tích. Chọn một mẫu DATEV giả lập ở bên dưới để bắt đầu.",missing:"Tài liệu còn thiếu",net:"Lương ròng",payout:"Khoản thực chi",fields:"trường đã trích xuất",tables:"bảng",ocr:"Chi tiết nhận dạng chữ (OCR)",ocrHint:"Đây là tín hiệu nhận dạng do bộ trích xuất ghi nhận, không phải phần trăm chính xác đã kiểm chứng, điểm tín dụng hay bằng chứng các số tiền đúng. Cần đối chiếu bản gốc trước khi xác nhận.",unknown:"Bộ trích xuất chưa trả về điểm nhận dạng",progress:"Theo dõi phân tích tài liệu",queued:"Đã xếp hàng",scanning:"Đang quét tệp",extracting:"Đang trích xuất bằng dịch vụ đã cấu hình",attaching:"Đang lưu kết quả",waiting:"Đang tải kết quả đã hoàn thành",retrying:"Đang thử xử lý lại",failed:"Xử lý đã dừng",expired:"Tệp đã hết hạn",refresh:"Tải lại kết quả",statusError:"Chưa cập nhật được trạng thái xử lý. Kết quả có sẵn vẫn xem được; thông báo này không có nghĩa tệp đã thất bại.",accepted:"Đã bắt đầu xử lý. Bạn ở lại trang này: kết quả sẽ xuất hiện ngay tại đây khi hoàn thành.",duplicate:"Tệp này đã được xếp hàng hoặc xử lý trong hồ sơ. Không bắt đầu một lần phân tích thứ hai.",failureHint:"Lần xử lý này chưa tạo được kết quả mới. Xem chi tiết xử lý trước khi thử lại.",technical:"Chi tiết xử lý",processing:"Đang xử lý · xem trạng thái",existing:"Xem kết quả đã có",sampleReady:"Hồ sơ đã có kết quả cho đúng tệp mẫu này. Bạn có thể mở ngay, không cần nhập lại.",sampleActive:"Tệp này đang được xử lý. Bạn không cần nhập lại lần nữa.",confirmNext:"Sau khi xác nhận, bạn ở lại trang này. Trạng thái và kết quả sẽ xuất hiện phía trên thư viện mẫu.",resultQuestion:"Giải thích các giá trị đã trích xuất trong tài liệu này. Phân biệt lương ròng và khoản thực chi nếu có, nêu thông tin còn thiếu và dẫn trang nguồn. Không đưa ra quyết định tín dụng.",all:"Tài liệu khác trong hồ sơ",limit:"Đã đạt giới hạn xử lý. Chờ trước khi gửi thêm tệp.",importError:"Chưa xếp hàng được tệp này. Không coi là thành công; kiểm tra trạng thái hoặc thử lại.",history:"Kết quả cũ cùng tên tệp được giữ trong lịch sử; không đồng nghĩa nội dung tệp giống nhau.",historyTitle:"Các kết quả khác cùng tên tệp",loading:"Đang tải trạng thái xử lý…"},
 };
 export function documentUi(locale:string){return documentUiTables[locale==="de"?"de":locale==="vi"?"vi":"en"];}
-export function documentJobLabel(job:DocumentJob,locale:string){const t=documentUi(locale);return job.status==="COMPLETE"?t.waiting:job.status==="FAILED"?t.failed:job.status==="EXPIRED"?t.expired:job.status==="RETRY"?t.retrying:job.status==="QUEUED"?t.queued:job.stage==="ATTACH"?t.attaching:job.stage==="EXTRACT"?t.extracting:t.scanning;}
+export function documentJobLabel(job:DocumentJob,locale:string){const t=documentUi(locale);if(job.status==='CANCELLED')return platformText(locale)('CANCELLED');if(job.status==='PROCESSING'&&['VALIDATE','REUSE_EXTRACTION'].includes(job.stage))return platformText(locale)(job.stage);return job.status==="COMPLETE"?t.waiting:job.status==="FAILED"?t.failed:job.status==="EXPIRED"?t.expired:job.status==="RETRY"?t.retrying:job.status==="QUEUED"?t.queued:job.stage==="ATTACH"?t.attaching:job.stage==="EXTRACT"?t.extracting:t.scanning;}
