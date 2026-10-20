@@ -18,11 +18,26 @@ Start with **local Docker: Docling reads documents and Ollama runs Nova on your 
 
 **Java 21 · Spring Boot · LangChain4j · Azure Document Intelligence · Azure OpenAI · Next.js · PostgreSQL · Qdrant · Keycloak · Docker**
 
-[16 AI workflows](#ai-workflow-directory) · [Local Docker](#local-docker-with-nova) · [Azure setup](#local-setup-with-azure-ai) · [Document pipeline](#document-pipeline-operations) · [Nova & page guides](#meet-nova-and-replay-a-page-guide) · [Troubleshooting](#troubleshooting) · [Screenshots](#workspace-tour) · [Architecture](#architecture)
+[Document walkthrough](#document-walkthrough) · [16 AI workflows](#ai-workflow-directory) · [Local Docker](#local-docker-with-nova) · [Azure setup](#local-setup-with-azure-ai) · [Document pipeline](#document-pipeline-operations) · [Nova & page guides](#meet-nova-and-replay-a-page-guide) · [Troubleshooting](#troubleshooting) · [Screenshots](#workspace-tour) · [Architecture](#architecture)
 
 > Research software, not a banking or insurance product. Use fictional or explicitly permitted documents. No payments, automated credit decisions, underwriting, claim settlement or automatic email delivery.
 
 **Local preview:** after starting Docker with the setup below, open [English](http://localhost:3000/en), [Deutsch](http://localhost:3000/de) or [Tiếng Việt](http://localhost:3000/vi). Sign in through [Keycloak](#sign-in-through-keycloak), then open Nova's portrait at the bottom right. Use the compass beside Nova to replay the current page's walkthrough. These links point to your own computer, not a hosted deployment.
+
+## Document walkthrough
+
+```mermaid
+flowchart LR
+    A[Sign in with Keycloak<br/>Choose a research dossier] --> B[Documents and review<br/>Upload a permitted PDF]
+    B --> C[Data Pipelines<br/>Scan and extract]
+    C --> D[View result and PDF<br/>Check fields and tables]
+    D --> E[Nova evidence analysis<br/>Ask and inspect citations]
+    E --> F[Human review<br/>Compare with the original]
+```
+
+Try synthetic invoice **51109301** in a **General documents** dossier. After confirming **Import & analyze**, follow its job in **Data Pipelines**, then open **View result & PDF** from **Analysis results**. Ask Nova: *“What invoice number, currency and gross total are stated? Cite the source page.”* Open each citation and compare the original; a generated answer is not human approval. Local CPU generation can take minutes and can fail or return an incorrect draft; see the [validation status and setup](#local-docker-with-nova).
+
+This is a navigation diagram, **not a screen recording or proof of a passing run**. Recorded English walkthrough media has not yet been added; the dated screenshots below remain historical captures.
 
 ## Open-source scope
 
