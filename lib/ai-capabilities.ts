@@ -4,7 +4,7 @@ import type {WorkspaceTab} from "./nova-guide";
 
 export const aiCapabilitiesSchema=z.object({
   scope:z.literal("configuration-only"),automaticInference:z.literal(false),
-  chat:z.object({provider:z.enum(["azure-openai","local-demo","unavailable"]),modelId:z.string().max(100),configured:z.boolean()}),
+  chat:z.object({provider:z.enum(["azure-openai","ollama","local-demo","unavailable"]),modelId:z.string().max(100),configured:z.boolean()}),
   documents:z.object({provider:z.string(),modelId:z.string(),mode:z.string(),configured:z.boolean()}),
   retrieval:z.object({semantic:z.boolean(),embeddingModel:z.string(),vectorStore:z.string(),ranking:z.string(),languageCoverage:z.string()}),
 });
@@ -43,6 +43,7 @@ export function documentAI(doc:Pick<CreditDocument,"analysisProvider"|"modelId"|
   const t=aiText(locale),provider=doc.analysisProvider;
   if(provider==="azure-document-intelligence")return {kind:"ai" as AIKind,engine:"Azure Document Intelligence",model:doc.modelId||t.notReported,hint:t.documentHint};
   if(provider==="docling")return {kind:"ai" as AIKind,engine:"Docling · Local AI",model:doc.modelId||t.notReported,hint:t.doclingHint};
+  if(provider==="paddleocr")return {kind:"ai" as AIKind,engine:"PaddleOCR · Local AI",model:doc.modelId||"PP-StructureV3",hint:t.doclingHint};
   if(provider==="datev-reference-values"||provider==="synthetic-fixture"||provider==="fixture")return {kind:"demo" as AIKind,engine:t.demo,model:"DATEV / fixture",hint:t.demoHint};
   if(provider?.startsWith("local"))return {kind:"rules" as AIKind,engine:"PDFBox · Tesseract OCR",model:doc.modelId||"label rules",hint:t.localHint};
   return {kind:"unknown" as AIKind,engine:t.unknown,model:doc.modelId||t.notReported,hint:t.reviewHint};
@@ -51,5 +52,5 @@ export function chatEngine(capabilities:AICapabilities|undefined,locale:string,d
   const t=aiText(locale);
   if(demo||capabilities?.chat.provider==="local-demo")return {kind:"demo" as AIKind,engine:t.demo,model:"deterministic-demo"};
   if(!capabilities||!capabilities.chat.configured)return {kind:"unknown" as AIKind,engine:t.unavailable,model:t.notReported};
-  return {kind:"ai" as AIKind,engine:"Azure OpenAI",model:capabilities.chat.modelId==="not-reported"?t.notReported:capabilities.chat.modelId};
+  return {kind:"ai" as AIKind,engine:capabilities.chat.provider==="ollama"?"Ollama · Local LLM":"Azure OpenAI",model:capabilities.chat.modelId==="not-reported"?t.notReported:capabilities.chat.modelId};
 }

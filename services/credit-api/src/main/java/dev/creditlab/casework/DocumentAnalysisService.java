@@ -14,6 +14,7 @@ public class DocumentAnalysisService {
   private final Optional<AzureDocumentIntelligenceProvider> azure;
   private final Optional<DoclingDocumentAnalysisProvider> docling;
   private final String mode;
+  @org.springframework.beans.factory.annotation.Autowired(required=false) private PaddleDocumentAnalysisProvider paddle;
 
   public DocumentAnalysisService(LocalDocumentAnalysisProvider local,
       Optional<AzureDocumentIntelligenceProvider> azure,
@@ -23,13 +24,17 @@ public class DocumentAnalysisService {
     this.azure = azure;
     this.docling = docling;
     this.mode = mode.toLowerCase(Locale.ROOT);
-    if (!java.util.Set.of("local","docling","azure","azure-with-local-fallback").contains(this.mode)) {
+    if (!java.util.Set.of("local","docling","paddleocr","azure","azure-with-local-fallback").contains(this.mode)) {
       throw new IllegalArgumentException("Unsupported document intelligence mode");
     }
   }
 
   public CreditCase.Document analyze(String name, String contentType, byte[] bytes) {
     if (mode.equals("local")) return local.analyze(name, contentType, bytes);
+    if (mode.equals("paddleocr")) {
+      if(paddle==null)throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"PaddleOCR is not configured");
+      return paddle.analyze(name,contentType,bytes);
+    }
     if (mode.equals("docling")) return docling.orElseThrow(() -> new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
         "Docling is not configured")).analyze(name, contentType, bytes);
     var remote = azure.orElseThrow(() -> new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
@@ -44,13 +49,13 @@ public class DocumentAnalysisService {
   }
 
   public Map<String,Object> status() {
-    Optional<? extends DocumentAnalysisProvider> selected=mode.equals("local")?Optional.of(local):mode.equals("docling")?docling:azure;
+    Optional<? extends DocumentAnalysisProvider> selected=mode.equals("local")?Optional.of(local):mode.equals("paddleocr")?Optional.ofNullable(paddle):mode.equals("docling")?docling:azure;
     return Map.of(
         "mode", mode,
         "azureConfigured", azure.isPresent(),
         "activeProvider", selected.map(DocumentAnalysisProvider::provider).orElse("unavailable"),
         "modelId", selected.map(DocumentAnalysisProvider::modelId).orElse("unavailable"),
-        "maxPages", mode.equals("local")||mode.equals("docling") ? 4 : azure.map(AzureDocumentIntelligenceProvider::maxPages).orElse(4),
+        "maxPages", java.util.Set.of("local","docling","paddleocr").contains(mode) ? 4 : azure.map(AzureDocumentIntelligenceProvider::maxPages).orElse(4),
         "keylessIdentity", true,
         "humanReviewRequired", true);
   }

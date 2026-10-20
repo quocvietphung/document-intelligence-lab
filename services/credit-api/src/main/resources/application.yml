@@ -29,6 +29,9 @@ app:
     credential: ${AZURE_DOCUMENT_INTELLIGENCE_CREDENTIAL:default}
     token-file: ${AZURE_DOCUMENT_INTELLIGENCE_TOKEN_FILE:}
   ai:
+    provider: ${NOVA_PROVIDER:azure}
+    local-url: ${OLLAMA_URL:http://ollama:11434}
+    local-model: ${OLLAMA_CHAT_MODEL:}
     requests-per-minute: ${AI_REQUESTS_PER_MINUTE:6}
     tenant-requests-per-minute: ${AI_TENANT_REQUESTS_PER_MINUTE:60}
     daily-account-budget: ${AI_DAILY_ACCOUNT_BUDGET:30000}
@@ -56,6 +59,16 @@ spring.data.redis.host: ${REDIS_HOST:localhost}
 spring.data.redis.port: ${REDIS_PORT:6379}
 spring.data.redis.timeout: 2s
 app.platform.embeddings: ${LOCAL_EMBEDDINGS_ENABLED:false}
+app.platform.embedding-provider: ${EMBEDDING_PROVIDER:minilm}
+app.platform.learned-reranker: ${LEARNED_RERANKER_ENABLED:false}
+app.platform.model-service: ${LOCAL_MODEL_SERVICE:http://ai-models:8090}
+app.integrations.blob-endpoint: ${AZURE_BLOB_INGEST_ENDPOINT:}
+app.integrations.blob-container: ${AZURE_BLOB_INGEST_CONTAINER:document-intake}
+app.integrations.storage-token-file: ${AZURE_STORAGE_TOKEN_FILE:}
+app.integrations.adf-resource: ${AZURE_ADF_RESOURCE_ID:}
+app.integrations.foundry-endpoint: ${AZURE_EVALUATION_ENDPOINT:}
+app.integrations.telemetry: ${APPLICATIONINSIGHTS_ENABLED:false}
+app.ai.vision-model: ${OLLAMA_VISION_MODEL:}
 app.platform.qdrant-url: ${QDRANT_URL:}
 app.platform.redis-enabled: ${REDIS_LIMITS_ENABLED:false}
 app.platform.clamav-host: ${CLAMAV_HOST:}

@@ -18,3 +18,7 @@ Include the affected commit, a minimal synthetic reproduction and the expected a
 - Follow the documented retention behavior. Stopping containers is not deletion; named volumes retain data. Do not publish volumes, dumps, intake receipts or processing manifests.
 
 CI checks reduce risk; they do not prove the absence of vulnerabilities, undisclosed secrets or third-party copyright issues. If a credential is exposed, revoke/rotate it before considering history cleanup. Do not rewrite shared Git history without a coordinated recovery plan.
+
+## Dependency review notes
+
+At the local-Nova release review (2026-10-20), `npm audit --omit=dev` reported no advisories. Full audit still reported five high-severity entries along the **development-only** `eslint-config-next → fast-glob → micromatch → braces@3.0.3` chain ([upstream advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)); a compatible patched `braces` release was not available. `brace-expansion` was separately updated to its compatible patched release. Do not run lint against untrusted glob patterns or disable security checks to obtain a green badge. Recheck advisories and CI on the exact commit; this note is not a vulnerability waiver or a claim that container scans are clean.

@@ -1,0 +1,34 @@
+# Optional experimental providers. No startup model download and no public port.
+services:
+  ai-models:
+    build:
+      context: ./services/model-runtime
+      args:
+        INSTALL_PADDLE: ${PADDLE_ENABLED:-false}
+    environment:
+      PADDLE_ENABLED: ${PADDLE_ENABLED:-false}
+    networks: [model_runtime]
+    volumes:
+      - ./.local/models:/models:ro
+      - ./.local/paddle-cache:/home/model/.paddlex:ro
+    tmpfs: ["/tmp:size=512m,mode=1777"]
+    mem_limit: 5g
+    cpus: 3
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8090/health',timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+  credit-api:
+    environment:
+      LOCAL_MODEL_SERVICE: http://ai-models:8090
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-minilm}
+      LEARNED_RERANKER_ENABLED: ${LEARNED_RERANKER_ENABLED:-false}
+      DOCUMENT_ANALYSIS_MODE: ${DOCUMENT_ANALYSIS_MODE:-local}
+    networks: [default, model_runtime]
+    depends_on:
+      ai-models:
+        condition: service_healthy
+networks:
+  model_runtime:
+    internal: true

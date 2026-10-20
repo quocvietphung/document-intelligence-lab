@@ -30,7 +30,7 @@ public class AzureAiConfiguration {
     };
   }
   @Bean
-  @ConditionalOnExpression("'${app.ai.endpoint:}' != '' && '${app.ai.deployment:}' != ''")
+  @ConditionalOnExpression("'${app.ai.provider:azure}' == 'azure' && '${app.ai.endpoint:}' != '' && '${app.ai.deployment:}' != ''")
   ChatModel azureChatModel(@Value("${app.ai.endpoint}") String endpoint,
       @Value("${app.ai.deployment}") String deployment,
       @Value("${app.ai.credential:default}") String type,

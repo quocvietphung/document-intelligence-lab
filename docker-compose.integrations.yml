@@ -1,0 +1,11 @@
+# Explicit cloud intake configuration only. No scan, ingestion or inference on startup.
+services:
+  credit-api:
+    environment:
+      AZURE_BLOB_INGEST_ENDPOINT: ${AZURE_BLOB_INGEST_ENDPOINT:-}
+      AZURE_BLOB_INGEST_CONTAINER: ${AZURE_BLOB_INGEST_CONTAINER:-document-intake}
+      AZURE_STORAGE_TOKEN_FILE: /app/azure-auth/storage-token.json
+      AZURE_ADF_RESOURCE_ID: ${AZURE_ADF_RESOURCE_ID:-}
+      AZURE_EVALUATION_ENDPOINT: ${AZURE_EVALUATION_ENDPOINT:-}
+    volumes:
+      - ./.local/azure-auth:/app/azure-auth:ro

@@ -17,7 +17,7 @@ async function request(url, options = {}) {
   const response = await fetch(url, {
     ...options,
     redirect: "manual",
-    signal: AbortSignal.timeout(55_000),
+    signal: AbortSignal.timeout(process.env.TEST_NOVA_LOCAL==='1'?395_000:55_000),
     headers: {
       ...options.headers,
       Cookie: [...jar].map(([key, value]) => `${key}=${value}`).join("; "),
@@ -146,6 +146,27 @@ check(
   "Access token has API audience, tenant and advisor role",
 );
 const bearer = { Authorization: `Bearer ${tokens.access_token}` };
+if(process.env.TEST_NOVA_LOCAL==='1') {
+  let expiresAt=Number(claims.exp)*1000;
+  // CPU acceptance can outlive a short access token. Refresh normally, never extend realm TTL.
+  const localRequest=async(url,options={})=>{
+    if(options.headers?.Authorization===bearer.Authorization&&[new URL(web).origin,new URL(api).origin].includes(new URL(url).origin)&&Date.now()>expiresAt-30000){
+      const refreshed=await exchange({grant_type:'refresh_token',client_id:clientId,refresh_token:tokens.refresh_token});
+      check(refreshed.ok,'Local model test session refreshes through Keycloak');Object.assign(tokens,await refreshed.json());
+      bearer.Authorization=`Bearer ${tokens.access_token}`;expiresAt=Number(JSON.parse(Buffer.from(tokens.access_token.split('.')[1],'base64url')).exp)*1000;
+      options={...options,headers:{...options.headers,...bearer}};
+    }
+    return request(url,options);
+  };
+  const {auditNovaLocal}=await import('./test-nova-local.mjs');await auditNovaLocal({request:localRequest,check,bearer,web,api});
+  const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
+  check(ended.status===204,'Local Nova verification session logged out');console.log(`${checks} ${process.env.TEST_NOVA_PREPARE_ONLY==='1'?'document-preparation (no LLM)':'local Nova acceptance'} checks passed.`);process.exit(0);
+}
+if(process.env.TEST_INTEGRATIONS==='1') {
+  const {auditIntegrations}=await import('./test-integrations-local.mjs');await auditIntegrations({request,check,bearer,web,api});
+  const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
+  check(ended.status===204,'Integration verification session logged out');console.log(`${checks} local integration acceptance checks passed.`);process.exit(0);
+}
 if(process.env.TEST_BATCHES==='1') {
   const {auditBatches}=await import('./test-batches.mjs');await auditBatches({request,check,bearer,web,api});
   console.log(`PASS ${checks} OAuth and batch intake checks`);process.exit(0);

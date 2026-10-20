@@ -7,8 +7,8 @@ import {conversationSchema} from './credit-chat';
 
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
 describe('Nova trust boundaries',()=>{
-  it('allows all seven controlled task IDs in both task and chat schemas',()=>{
-    expect(novaTaskIds).toHaveLength(7);
+  it('allows all ten controlled task IDs in both task and chat schemas',()=>{
+    expect(novaTaskIds).toHaveLength(10);
     for(const taskId of novaTaskIds){expect(novaTaskSchema.safeParse(taskId).success).toBe(true);expect(conversationSchema.safeParse({caseId:'C',locale:'vi',taskId,messages:[{id:'m',role:'user',parts:[{type:'text',text:'Check evidence'}]}]}).success).toBe(true);}
     expect(novaTaskSchema.safeParse('payment')).toBeDefined();expect(novaTaskSchema.safeParse('payment').success).toBe(false);
   });

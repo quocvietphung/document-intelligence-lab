@@ -12,7 +12,9 @@ import org.springframework.http.HttpStatus;
 public class TrustService {
   private final CreditCaseService cases;private final LabStore store;private final DocumentJobs jobs;
   @org.springframework.beans.factory.annotation.Value("${app.ai.deployment:}") private String deployment="";
-  private String modelId(){return deployment.matches("[a-zA-Z0-9_.-]{1,100}")?deployment:"not-reported";}
+  @org.springframework.beans.factory.annotation.Value("${app.ai.provider:azure}") private String provider="azure";
+  @org.springframework.beans.factory.annotation.Value("${app.ai.local-model:}") private String localModel="";
+  private String modelId(){String selected=provider.equals("ollama")?localModel:deployment;return selected.matches("[a-zA-Z0-9_.:/-]{1,100}")&&!selected.contains("://")?selected:"not-reported";}
   public TrustService(CreditCaseService cases,LabStore store,DocumentJobs jobs){this.cases=cases;this.store=store;this.jobs=jobs;}
   public Map<String,Object> snapshot(String tenant,String caseId,String actor,boolean manager) {
     var item=cases.require(tenant,caseId);var answers=store.list(tenant,caseId,"trust-answer");
@@ -41,9 +43,9 @@ public class TrustService {
   public Map<String,Object> recordAnswer(CreditCase item,String actor,String requestId,String question,String answer,String mode,List<Map<String,Object>> sources,long durationMs,String revisionOf) {
     var value=new LinkedHashMap<String,Object>();value.put("id",requestId);value.put("time",Instant.now().toString());value.put("actor",actor);
     value.put("caseVersion",item.version());value.put("question",question);value.put("answer",answer.substring(0,Math.min(12000,answer.length())));
-    value.put("mode",mode);value.put("modelId",mode.startsWith("azure-")?modelId():"deterministic-demo");value.put("profile","analysis");value.put("promptVersion",TrustCatalog.PROMPT_VERSION);value.put("sources",sources);
+    value.put("mode",mode);value.put("modelId",mode.startsWith("azure-")||mode.equals("local-ollama")?modelId():"deterministic-demo");value.put("profile","analysis");value.put("promptVersion",TrustCatalog.PROMPT_VERSION);value.put("sources",sources);
     value.put("claims",AnswerEvidence.claims(answer,sources));value.put("durationMs",durationMs);value.put("revisionOf",Objects.requireNonNullElse(revisionOf,""));
-    value.put("humanApproved",false);value.put("verification","citation existence only; not factual accuracy");
+    value.put("humanApproved",false);value.put("verification","citation existence and per-claim currency/amount checks; not factual accuracy, identity or period verification");
     store.insert(item.tenantId(),item.id(),"trust-answer",requestId,value);return value;
   }
   public Map<String,Object> feedback(String tenant,String id,String actor,String answerId,String reason,String note,String requestId,long caseVersion) {

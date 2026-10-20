@@ -8,6 +8,8 @@ import {trustText} from '@/lib/nova-trust-language';
 import {ModalSurface} from './ModalSurface';
 import {NovaAnswerActions,ReviewerTaskForm} from './NovaEvidence';
 import {NovaCopyAnswer} from './NovaConversation';
+import {workflowPdfExample} from '@/lib/ai-pdf-examples';
+import {AIPdfExample} from './AIPdfExample';
 
 export function TrustWorkbench({caseId,caseVersion,locale,onDraft,openSource,initialSection='privacy'}:{caseId:string;caseVersion:number;locale:string;onDraft:(question:string,options:DraftOptions)=>void;openSource:(id:string)=>void;initialSection?:TrustSection}) {
   const auth=useAuth(),t=trustText(locale);
@@ -48,7 +50,7 @@ export function TrustWorkbench({caseId,caseVersion,locale,onDraft,openSource,ini
       <article className="trust-card"><ClipboardCheck size={22}/><h3>{t.retention}</h3><p>{t.retentionText.replace('{days}',String(data.privacy.pipeline.retentionDays))}</p></article>
       <article className="trust-card"><Sparkles size={22}/><h3>{t.analysisMode}</h3><p>{t.noInference}</p><p>{t.readOnly}</p></article>
     </div>:null}
-    {data&&section==='library'?<><p className="notice-lab">{t.draftHint}</p><div className="trust-grid">{data.features.filter(f=>f.id!=='nova').map(f=><article className="trust-card" key={f.id}><Sparkles size={22}/><h3>{t[f.id]}</h3><p>{t.readOnly}</p><small>{f.enabled&&data.features.find(x=>x.id==='nova')?.enabled?t.enabled:t.disabled}</small><button type="button" className="button-primary" disabled={busy||!f.enabled||!data.features.find(x=>x.id==='nova')?.enabled} onClick={()=>void taskPrompt(f.id as DraftOptions['taskId'])}>{t.draft}</button></article>)}</div></>:null}
+    {data&&section==='library'?<><p className="notice-lab">{t.draftHint}</p><div className="trust-grid">{data.features.filter(f=>f.id!=='nova').map(f=><article className="trust-card" key={f.id}><Sparkles size={22}/><h3>{t[f.id]}</h3><p>{t.readOnly}</p><AIPdfExample example={workflowPdfExample(f.id,locale)} locale={locale}/><small>{f.enabled&&data.features.find(x=>x.id==='nova')?.enabled?t.enabled:t.disabled}</small><button type="button" className="button-primary" disabled={busy||!f.enabled||!data.features.find(x=>x.id==='nova')?.enabled} onClick={()=>void taskPrompt(f.id as DraftOptions['taskId'])}>{t.draft}</button></article>)}</div></>:null}
     {data&&section==='history'?<><p className="trust-muted">{t.historyHint}</p>{!data.answers.length?<p className="trust-empty">{t.noAnswers}</p>:data.answers.map(answer=><details className="trust-history" key={answer.id}>
       <summary><MessageSquareText size={17}/><span>{answer.question.slice(0,120)}</span><small>{fmt(answer.time)}</small></summary>
       <p className="trust-muted">{answer.mode} · {answer.modelId||'—'} · {t.promptVersion} {answer.promptVersion} · {t.noHumanApproval}</p>

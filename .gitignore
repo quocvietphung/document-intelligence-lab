@@ -1,4 +1,5 @@
 # Logs
+__pycache__/
 # Private infrastructure state and model artifacts must not enter the public source.
 **/.terraform/
 **/*.tfstate

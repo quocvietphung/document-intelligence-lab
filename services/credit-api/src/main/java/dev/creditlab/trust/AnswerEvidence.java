@@ -15,8 +15,10 @@ public final class AnswerEvidence {
       String text=raw.strip();if(text.isEmpty())continue;
       var ids=new LinkedHashSet<String>();var m=CITE.matcher(text);while(m.find())ids.add(m.group(1));
       var valid=ids.stream().filter(available::contains).toList();var invalid=ids.stream().filter(id->!available.contains(id)).toList();
+      var unsupported=ClaimChecks.unsupportedMoney(CITE.matcher(text).replaceAll(""),sources.stream().filter(s->valid.contains(s.get("id"))).map(s->Objects.toString(s.get("excerpt"),"")).toList());
       result.add(Map.of("text",text.substring(0,Math.min(2000,text.length())),"citations",valid,"invalidCitations",invalid,
-          "state",!valid.isEmpty()&&invalid.isEmpty()?"SOURCE_LINKED":"REVIEW_REQUIRED"));
+          "unsupportedMoney",unsupported,"checkMethod","cited-source currency and amount membership; not semantic verification",
+          "state",!valid.isEmpty()&&invalid.isEmpty()&&unsupported.isEmpty()?"SOURCE_LINKED":"REVIEW_REQUIRED"));
       if(result.size()>=30)break;
     }
     return List.copyOf(result);

@@ -1,0 +1,54 @@
+# Add to base + platform. An explicit model must already be pulled; startup never downloads one.
+services:
+  web:
+    environment:
+      NOVA_PROVIDER: ollama
+  ollama:
+    image: document-lab-ollama-cpu:0.40.6
+    build:
+      context: ./services/ollama-cpu
+    restart: unless-stopped
+    environment:
+      OLLAMA_NO_CLOUD: "1"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_MAX_QUEUE: "2"
+      OLLAMA_KEEP_ALIVE: "30m"
+      # Single-user CPU lab: reuse the active slot, not multi-prompt RAM snapshots.
+      LLAMA_ARG_CACHE_RAM: "0"
+      LLAMA_ARG_THREADS: "3"
+      OLLAMA_CONTEXT_LENGTH: "4096"
+      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:?Choose an explicitly installed local model}
+    volumes:
+      - lab_ollama:/root/.ollama
+    networks: [local_models]
+    mem_limit: 5g
+    cpus: 3
+    healthcheck:
+      test: ["CMD-SHELL", "ollama show \"$$OLLAMA_CHAT_MODEL\" >/dev/null 2>&1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+  credit-api:
+    environment:
+      NOVA_PROVIDER: ollama
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:?Choose an explicitly installed local model}
+      OLLAMA_VISION_MODEL: ${OLLAMA_VISION_MODEL:-}
+      AZURE_OPENAI_ENDPOINT: ""
+      AZURE_OPENAI_DEPLOYMENT: ""
+      AZURE_AI_REQUIRED: "false"
+      AI_DAILY_ACCOUNT_BUDGET: "150000"
+      AI_DAILY_TENANT_BUDGET: "500000"
+    networks: [default, local_models]
+    depends_on:
+      ollama:
+        condition: service_healthy
+networks:
+  local_models:
+    internal: true
+volumes:
+  lab_ollama:
+    # Explicit preparation owns this persistent volume, not Compose teardown.
+    external: true
+    name: credit-intelligence-lab_lab_ollama

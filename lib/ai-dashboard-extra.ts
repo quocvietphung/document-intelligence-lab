@@ -1,6 +1,9 @@
 export const extraFeaturesEn={
+  timeline:['Document chronology','Draft a source-linked timeline of stated dates and periods. No invented dates or legally binding deadline calculation.'],
+  obligations:['Clause & obligation review','List stated obligations, conditions and exclusions with page sources. No legal opinion, coverage or settlement decision.'],
+  'privacy-review':['Sensitive-data review draft','Locate possible identifier categories for manual inspection. No automatic redaction, sensitive-value repetition or compliance certification.'],
   embeddings:['Local semantic embeddings','ONNX MiniLM embeds passages for vector retrieval. English-focused; not Azure OpenAI embeddings.'],
-  'field-explanation':['Explain a selected field','Open a result, choose a field and ask Azure OpenAI with document/page evidence. No automatic value changes.'],
+  'field-explanation':['Explain a selected field','Open a result, choose a field and ask the configured Nova model with document/page evidence. No automatic value changes.'],
   classification:['Document type detection','Java label rules identify supported types after OCR. Not a trained Azure custom classifier.'],
   'field-profiles':['Extraction check profiles','General, invoice, DATEV or insurance-wording checks. Missing fields and type mismatches are rules, not another model.'],
   batches:['Multi-document batch intake','Up to four permitted files, source provenance, a stable receipt and individual results. No ADF ingestion connection yet.'],
@@ -15,8 +18,11 @@ export const extraFeaturesEn={
 } as const;
 type Copy=Record<keyof typeof extraFeaturesEn,readonly [string,string]>;
 export const extraFeaturesDe:Copy={
+  timeline:['Dokument-Zeitleiste','Datumsangaben und Zeiträume mit Quellseiten ordnen. Keine erfundenen Daten oder rechtliche Fristberechnung.'],
+  obligations:['Klauseln & Pflichten prüfen','Genannte Pflichten, Bedingungen und Ausschlüsse mit Quellen erfassen. Keine Rechtsberatung, Deckungszusage oder Regulierung.'],
+  'privacy-review':['Sensible Daten prüfen','Mögliche Identifikator-Kategorien für manuelle Prüfung lokalisieren. Keine automatische Schwärzung oder Compliance-Zertifizierung.'],
   embeddings:['Lokale semantische Embeddings','ONNX MiniLM bettet Belegabschnitte ein. Englischorientiert; keine Azure-OpenAI-Embeddings.'],
-  'field-explanation':['Ein Feld erklären lassen','Ergebnis öffnen, Feld wählen und Azure OpenAI mit Dokument- und Seitenquelle fragen. Keine automatische Wertänderung.'],
+  'field-explanation':['Ein Feld erklären lassen','Ergebnis öffnen, Feld wählen und das konfigurierte Nova-Modell mit Seitenquelle fragen. Keine automatische Wertänderung.'],
   classification:['Dokumenttyp erkennen','Java-Labelregeln erkennen unterstützte Typen nach der OCR. Kein trainierter Azure-Klassifikator.'],
   'field-profiles':['Prüfprofile für Extraktion','Allgemein, Rechnung, DATEV oder Versicherungsbedingungen prüfen. Fehlfelder und Typabweichungen sind regelbasiert.'],
   batches:['Mehrere Dokumente importieren','Bis zu vier freigegebene Dateien mit Herkunft, Eingangsbeleg und individuellen Ergebnissen. Noch kein ADF-Import.'],
@@ -30,8 +36,11 @@ export const extraFeaturesDe:Copy={
   'injection-guard':['Schutz vor Instruktionsüberschreibung','Regeln blockieren verdächtige Anfragen oder isolieren Abschnitte. Kein Azure Prompt Shields oder vollständiger Schutz.'],
 };
 export const extraFeaturesVi:Copy={
+  timeline:['Dòng thời gian tài liệu','Sắp ngày và kỳ được ghi rõ theo nguồn trang. Không bịa ngày hay tự tính hạn có tính pháp lý.'],
+  obligations:['Rà soát điều khoản & nghĩa vụ','Liệt kê nghĩa vụ, điều kiện và loại trừ có nguồn. Không tư vấn luật, quyết định bảo hiểm hay bồi thường.'],
+  'privacy-review':['Rà soát dữ liệu nhạy cảm','Chỉ ra loại định danh có thể có để người dùng kiểm tra. Không tự che PDF, chép giá trị nhạy cảm hay chứng nhận tuân thủ.'],
   embeddings:['Embedding ngữ nghĩa local','ONNX MiniLM tạo vector chứng cứ. Thiên về tiếng Anh; không phải Azure OpenAI Embeddings.'],
-  'field-explanation':['AI giải thích từng trường','Mở kết quả, chọn trường và hỏi Azure OpenAI kèm nguồn tài liệu/trang. Không tự đổi giá trị.'],
+  'field-explanation':['AI giải thích từng trường','Mở kết quả, chọn trường và hỏi model Nova đã cấu hình kèm nguồn tài liệu/trang. Không tự đổi giá trị.'],
   classification:['Nhận diện loại tài liệu','Quy tắc nhãn Java nhận diện loại được hỗ trợ sau OCR. Không phải Azure custom classifier đã huấn luyện.'],
   'field-profiles':['Cấu hình kiểm tra trích xuất','Chọn tài liệu chung, hóa đơn, DATEV hoặc điều kiện bảo hiểm. Thiếu trường và sai loại được kiểm tra bằng quy tắc.'],
   batches:['Nhập nhiều tài liệu theo lô','Tối đa bốn tệp kèm nguồn, bản ghi tiếp nhận và kết quả từng tác vụ. Chưa kết nối nhập bằng ADF.'],

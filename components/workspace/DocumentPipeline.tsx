@@ -9,9 +9,10 @@ import {ModalSurface} from './ModalSurface';
 import {downloadJson} from '@/lib/browser-download';
 import {workspacePresentation} from '@/lib/workspace-presentation';
 import {CollectionToolbar} from './CollectionToolbar';
+import {pipelineLifecycle} from '@/lib/pipeline-lifecycle';
 
 export function DocumentPipeline({data,locale,busy,canWrite,inspect,retry,cancel}:{data:PlatformData;locale:string;busy:boolean;canWrite:boolean;inspect:(id:string)=>void;retry:(job:PipelineJob)=>void;cancel:(job:PipelineJob)=>Promise<void>}){
-  const t=pipelineCopy(locale),status=platformText(locale),u=workspacePresentation(locale);
+  const t=pipelineCopy(locale),status=platformText(locale),u=workspacePresentation(locale),lifecycle=pipelineLifecycle(locale);
   const [query,setQuery]=useState(''),[filter,setFilter]=useState<PipelineFilter>('all'),[sort,setSort]=useState<PipelineSort>('newest'),[history,setHistory]=useState(false),[selected,setSelected]=useState<string>(),[cancelId,setCancelId]=useState<string>();
   const summary=pipelineSummary(data.jobs),jobs=sortPipelineJobs(filterPipelineJobs(data.jobs,filter,query,history),sort);
   const reset=()=>{setQuery('');setFilter('all');setSort('newest');setHistory(false);};
@@ -36,6 +37,7 @@ export function DocumentPipeline({data,locale,busy,canWrite,inspect,retry,cancel
     <p className="lab-caption queue-scope">{t.scope}</p>
     <details className="pipeline-stage-help"><summary>{u.stages}</summary><ol className="pipeline-overview-steps" aria-label={u.stages}>{pipelineStages.map((stage,index)=><li key={stage}><span>{String(index+1).padStart(2,'0')}</span><strong>{t[stage]}</strong>{stage==='EXTRACT'?<small><Sparkles size={12}/>AI</small>:null}</li>)}</ol></details>
     <p className="pipeline-safety"><ShieldCheck size={15}/>{t.private} · {t[data.persistent?'persistent':'volatile']}</p>
+    <details className="research-reference-details pipeline-lifecycle"><summary>{lifecycle.title}</summary><p className="lab-caption">{lifecycle.hint}</p><ol>{lifecycle.steps.map(([title,hint])=><li key={title}><strong>{title}</strong><p>{hint}</p></li>)}</ol></details>
     {detail?<ModalSurface wide title={detail.name} label={t.close} close={()=>setSelected(undefined)}>
       <div className="pipeline-detail-heading"><span className="lab-badge">{state(detail)}</span><code>{detail.id}</code></div>
       <ol className="pipeline-detail-steps">{pipelineSteps(detail).map(step=><li key={step.stage} className={`pipeline-step-${step.state}`}><CheckCircle2 size={17}/><span>{t[step.stage]}</span></li>)}</ol>

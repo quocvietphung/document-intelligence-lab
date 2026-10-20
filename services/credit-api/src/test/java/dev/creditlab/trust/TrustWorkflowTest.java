@@ -99,8 +99,8 @@ class TrustWorkflowTest {
     assertThat(store.list(tenant,caseId,"trust-event")).hasSize(2);
     assertThat(store.list(tenant,caseId,"trust-answer")).isEmpty();
   }
-  @Test void taskLibraryOnlyPreparesSevenControlledReadOnlyDrafts(){
-    assertThat(TrustCatalog.TASKS).hasSize(7);
+  @Test void taskLibraryOnlyPreparesTenControlledReadOnlyDrafts(){
+    assertThat(TrustCatalog.TASKS).hasSize(10);
     for(String id:TrustCatalog.TASKS)for(String locale:List.of("en","de","vi"))assertThat(trust.taskPrompt(tenant,caseId,id,locale,0)).containsEntry("automaticSend",false);
     failure(()->trust.taskPrompt(tenant,caseId,"payment","en",0),404);
     assertThat(TrustCatalog.features()).allSatisfy(f->assertThat(f).containsEntry("payments",false).containsEntry("humanReview",true));

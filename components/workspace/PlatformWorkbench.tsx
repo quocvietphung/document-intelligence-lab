@@ -20,6 +20,7 @@ import {DocumentBatches} from './DocumentBatches';
 import {workspacePresentation} from '@/lib/workspace-presentation';
 import {activeDocumentJob} from '@/lib/document-results';
 import {pipelinePanelFromSearch,pipelinePanelPath,type PipelinePanel} from '@/lib/document-pipeline';
+import {ResearchConnections} from './ResearchConnections';
 
 function Metric({label,value,detail}:{label:string;value:React.ReactNode;detail?:string}) {
   return <div className="lab-metric"><span>{label}</span><strong>{value}</strong>{detail?<small>{detail}</small>:null}</div>;
@@ -110,6 +111,7 @@ export function PlatformWorkbench({caseId,locale,view,ask,inspect,changed,docume
       </section>
     </>:null}
     {data&&view==="operations"?<>
+      <ResearchConnections key={`${caseId}:${caseVersion}`} caseId={caseId} caseVersion={caseVersion} locale={locale} section="monitoring"/>
       <div data-page-tour="operations-status" className="lab-metrics"><Metric label={t("database")} value={t(data.persistent?"connected":"notConfigured")} detail="PostgreSQL"/><Metric label={t("rateLimits")} value={data.limits}/><Metric label={t("storage")} value={data.documentPipeline.storage}/></div>
       <section data-page-tour="operations-runbooks" className="lab-ops-grid">{[[Database,"migration","flyway"],[ShieldCheck,"security","securityHint"],[Layers3,"backups","backupHint"],[GitBranch,"telemetry","telemetryHint"]].map(([Icon,title,body])=>{const Symbol=Icon as typeof Database;return <article className="surface lab-section" key={String(title)}><Symbol size={25}/><h3>{t(String(title))}</h3><p className="lab-caption">{t(String(body))}</p></article>;})}</section>
       <section className="surface lab-section"><h3>{t("metrics")}</h3><p className="lab-caption">{t("prometheus")}</p><code>/actuator/prometheus</code></section><AgentRuns data={data} locale={locale}/>

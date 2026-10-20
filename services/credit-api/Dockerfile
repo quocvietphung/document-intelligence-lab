@@ -3,7 +3,7 @@ WORKDIR /workspace
 COPY pom.xml .
 RUN mvn -q -DskipTests dependency:go-offline
 COPY src src
-RUN mvn -q package -DskipTests
+RUN MAVEN_OPTS=-Xmx512m mvn -q package -DskipTests
 
 # Cache the test runner as well, so the explicit local model test needs no egress.
 FROM build AS docling-check
