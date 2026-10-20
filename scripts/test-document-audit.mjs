@@ -100,7 +100,7 @@ export async function auditDocuments({ request, check, bearer, web, api }) {
   check(r.status === 404, "No fabricated benchmark exposed as measured quality");
   const banking = await read(root + "/banking");
   check(!banking.synthetic && ["accounts", "transactions", "invoices", "payments"].every((k) => banking[k].length === 0), "No payment or synthetic bank data exposed");
-  for (const locale of ["en", "de", "vi"]) for (const taskId of ["summary", "reconcile", "explain", "request-documents", "review-checklist", "terminology", "bilingual-summary"]) {
+  for (const locale of ["en", "de", "vi"]) for (const taskId of ["summary", "reconcile", "explain", "request-documents", "review-checklist", "terminology", "bilingual-summary", "timeline", "obligations", "privacy-review"]) {
     r = await send(root + "/trust/prompt", { taskId, locale, caseVersion: item.version });
     check(r.ok && (await r.json()).automaticSend === false, `${locale}/${taskId} prepares controlled unsent prompt`);
   }

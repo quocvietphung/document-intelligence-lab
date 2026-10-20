@@ -16,6 +16,9 @@ export const dashboardFeatures=[
   {id:'review-checklist',category:'ai',engine:'chat',target:{trust:'library'}},
   {id:'terminology',category:'ai',engine:'chat',target:{trust:'library'}},
   {id:'bilingual-summary',category:'ai',engine:'chat',target:{trust:'library'}},
+  {id:'timeline',category:'ai',engine:'chat',target:{trust:'library'}},
+  {id:'obligations',category:'ai',engine:'chat',target:{trust:'library'}},
+  {id:'privacy-review',category:'ai',engine:'chat',target:{trust:'library'}},
   {id:'validation',category:'control',engine:'rules',target:{page:'controls'}},
   {id:'quality',category:'control',engine:'rules',target:{page:'evaluation'}},
   {id:'review',category:'control',engine:'human',target:{trust:'tasks'}},
@@ -38,7 +41,7 @@ export type DashboardFeature=typeof dashboardFeatures[number];
 export const dashboardGroups=[
   {id:'documentTools',features:['document','tables','classification','field-explanation']},
   {id:'retrievalTools',features:['search','embeddings','injection-guard']},
-  {id:'novaTools',features:['nova','summary','reconcile','explain','request-documents','review-checklist','terminology','bilingual-summary','app-guide']},
+  {id:'novaTools',features:['nova','summary','reconcile','explain','request-documents','review-checklist','terminology','bilingual-summary','timeline','obligations','privacy-review','app-guide']},
   {id:'pipelineTools',features:['field-profiles','batches','lineage']},
   {id:'researchTools',features:['quality','experiments']},
   {id:'reviewTools',features:['validation','review','transparency','citations','feedback','governance','performance']},
@@ -57,12 +60,12 @@ export function dashboardEngine(feature:DashboardFeature,capabilities:AICapabili
   }
   if(feature.engine==='retrieval')return {kind:capabilities.retrieval.semantic?'ai':'rules',provider:capabilities.retrieval.vectorStore,model:capabilities.retrieval.embeddingModel,configured:capabilities.retrieval.semantic};
   const chat=capabilities.chat;
-  return {kind:chat.configured?'ai':'unknown',provider:chat.provider==='azure-openai'?'Azure OpenAI':'unknown',model:chat.modelId,configured:chat.configured};
+  return {kind:chat.configured?'ai':'unknown',provider:chat.provider==='ollama'?'Ollama · Local LLM':chat.provider==='azure-openai'?'Azure OpenAI':'unknown',model:chat.modelId,configured:chat.configured};
 }
 export function dashboardStats(documents:readonly CreditDocument[],capabilities?:AICapabilities,demo=false){
   const originals=documents.filter(d=>d.originalAvailable&&d.status!=='missing');
   return {aiWorkflows:dashboardFeatures.filter(f=>f.category==='ai').length,
-    configuredEngines:demo?0:capabilities?Number(capabilities.documents.configured&&['azure-document-intelligence','docling'].includes(capabilities.documents.provider))+Number(capabilities.chat.configured&&capabilities.chat.provider==='azure-openai')+Number(capabilities.retrieval.semantic):null,
+    configuredEngines:demo?0:capabilities?Number(capabilities.documents.configured&&['azure-document-intelligence','docling','paddleocr'].includes(capabilities.documents.provider))+Number(capabilities.chat.configured&&['azure-openai','ollama'].includes(capabilities.chat.provider))+Number(capabilities.retrieval.semantic):null,
     azureDocuments:originals.filter(d=>d.analysisProvider==='azure-document-intelligence').length,
     pendingReview:originals.filter(d=>d.status==='review').length};
 }

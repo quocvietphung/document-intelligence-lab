@@ -5,9 +5,9 @@ import java.util.*;
 /** App-owned tasks, not user-programmable agents. No write/payment tools. */
 public final class TrustCatalog {
   private TrustCatalog() {}
-  public static final String PROMPT_VERSION="nova-document-domains-2026-10-v4";
-  public static final String TASK_PATTERN="summary|reconcile|explain|request-documents|review-checklist|terminology|bilingual-summary";
-  public static final List<String> TASKS=List.of("summary","reconcile","explain","request-documents","review-checklist","terminology","bilingual-summary");
+  public static final String PROMPT_VERSION="nova-document-domains-2026-10-v6";
+  public static final String TASK_PATTERN="summary|reconcile|explain|request-documents|review-checklist|terminology|bilingual-summary|timeline|obligations|privacy-review";
+  public static final List<String> TASKS=List.of("summary","reconcile","explain","request-documents","review-checklist","terminology","bilingual-summary","timeline","obligations","privacy-review");
   public static List<Map<String,Object>> features() {
     var result=new ArrayList<Map<String,Object>>();
     var ids=new ArrayList<>(TASKS);ids.addFirst("nova");
@@ -20,6 +20,18 @@ public final class TrustCatalog {
   }
   public static String question(String id,String locale) {
     if(!TASKS.contains(id))throw new IllegalArgumentException("Unknown task");
+    if(id.equals("timeline"))return locale.equals("vi")?
+      "Lập dòng thời gian từ PDF gốc: ngày ghi trên tài liệu, sự kiện tương ứng, trang nguồn và điều chưa rõ. Giữ nguyên chuỗi ngày gốc, không đoán múi giờ hay ngày còn thiếu; phân biệt ngày xuất bản, kỳ tài liệu và hạn được ghi rõ. Không suy ra ngày hết hạn có tính pháp lý. Tối đa 6 mục; đây là bản nháp cần người kiểm tra.":locale.equals("de")?
+      "Erstelle eine Zeitleiste aus den Original-PDFs: originales Datum, zugehöriges Ereignis, Quellseite und Unklarheiten. Unterscheide Veröffentlichungsdatum, Dokumentzeitraum und ausdrücklich genannte Fristen. Keine fehlenden Daten oder Zeitzonen erfinden und keine rechtliche Frist berechnen. Höchstens sechs Punkte; Entwurf zur manuellen Prüfung.":
+      "Build a chronology from the original PDFs: verbatim date, associated event, source page and uncertainty. Distinguish publication dates, document periods and explicitly stated deadlines. Do not invent missing dates or time zones or calculate a legally binding deadline. At most six entries; draft for human review.";
+    if(id.equals("obligations"))return locale.equals("vi")?
+      "Chỉ từ các điều khoản thực sự có trong PDF gốc, liệt kê tối đa 5 nghĩa vụ, điều kiện hoặc loại trừ: chủ thể nếu ghi rõ, hành động, thời hạn được viết rõ, đoạn trích ngắn và nguồn trang. Đánh dấu phần thiếu/ngữ cảnh bị cắt. Không tự áp luật, xác định hiệu lực hợp đồng, quyền được bảo hiểm hay số tiền bồi thường. Đây là danh mục để chuyên viên kiểm tra, không phải tư vấn pháp lý.":locale.equals("de")?
+      "Erfasse höchstens fünf im Original-PDF tatsächlich genannte Pflichten, Bedingungen oder Ausschlüsse: ausdrücklich benannte Partei, Handlung, wörtliche Frist, kurzes Zitat und Quellseite. Fehlendes oder abgeschnittenen Kontext kennzeichnen. Keine Rechtsanwendung, Vertragswirksamkeit, Deckungszusage oder Entschädigung bestimmen. Nur Prüfliste für Fachpersonen, keine Rechtsberatung.":
+      "List at most five obligations, conditions or exclusions actually stated in the original PDFs: explicitly named party, action, verbatim deadline, short quotation and source page. Flag missing or excerpted context. Do not apply external law, determine contract enforceability, insurance eligibility, binding coverage or claim payout. A clause-review draft, not legal advice.";
+    if(id.equals("privacy-review"))return locale.equals("vi")?
+      "Rà soát PDF gốc để chuẩn bị kiểm tra dữ liệu nhạy cảm: chỉ nêu loại thông tin có thể nhận diện (tên, địa chỉ, mã tài khoản, định danh), trang nguồn và bước kiểm tra/che thủ công. Không chép lại giá trị nhạy cảm, không đoán danh tính hay thuộc tính nhạy cảm. Đánh dấu nội dung là mẫu/giả lập nếu nguồn nói vậy. Không sửa PDF hoặc tuyên bố đã ẩn danh hay tuân thủ; có thể bỏ sót nên phải kiểm tra bản gốc.":locale.equals("de")?
+      "Prüfe die Original-PDFs auf mögliche Identifikatoren: nur Kategorien (Name, Anschrift, Kontokennung, Identifikator), Quellseite und manuelle Prüf-/Schwärzungsschritte nennen. Sensible Werte nicht wiederholen und keine Identität oder sensiblen Merkmale ableiten. Musterstatus nur nennen, wenn belegt. PDF nicht ändern und keine Anonymisierung oder Compliance behaupten; Vollständigkeit ist nicht garantiert.":
+      "Review original PDFs for possible identifiers: report only categories (name, address, account identifier, identity reference), source page and manual inspection/redaction steps. Do not repeat sensitive values, infer identity or sensitive traits, or modify the PDF. Label synthetic/sample status only when evidenced. Do not claim anonymization, compliance or complete detection; a human must inspect the original.";
     if(id.equals("review-checklist"))return locale.equals("vi")?
       "Lập checklist kiểm tra chứng cứ cho hồ sơ giả lập đang chọn. Chia thành: chứng cứ đã có, tài liệu thiếu và việc con người cần kiểm tra. Mỗi mục ghi nguồn, thông tin chưa biết và bước kiểm tra cụ thể. Không tự xác nhận tài liệu, kết luận gian lận hay quyết định tín dụng.":locale.equals("de")?
       "Erstelle eine Belegprüf-Checkliste für diesen fiktiven Vorgang: vorhandene Belege, fehlende Unterlagen und manuelle Prüfschritte. Nenne je Punkt Quelle, unbekannte Angaben und konkrete nächste Prüfung. Keine automatische Belegfreigabe, Betrugsunterstellung oder Kreditentscheidung.":

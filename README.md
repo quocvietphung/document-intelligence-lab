@@ -7,18 +7,18 @@ The project studies extraction, hybrid RAG, source-grounded answers and human re
 The current workspace brings those experiments into one evidence-first workflow:
 
 - **Read documents:** extract page text, layout and tables with Azure Document Intelligence or the optional local Docling provider.
-- **Find and explain evidence:** compare keyword/vector/hybrid retrieval, then ask Nova source-based questions through Azure OpenAI.
+- **Find and explain evidence:** compare keyword/vector/hybrid retrieval, then ask Nova source-based questions through local Ollama or Azure OpenAI.
 - **Review the result:** compare fields with the private original, record corrections and keep AI output separate from human approval.
 - **Measure, not assume:** create checked reference versions and evaluate extraction or retrieval on those specific documents.
 - **Operate locally:** sign in through Keycloak; follow durable processing jobs, batch receipts and activity history in Docker.
 
-Seven main destinations replace a long flat menu. Overview keeps **28 capabilities in six expandable groups**: **13 AI-assisted workflows** and **15 rule-based, navigation or human-review controls**, not 28 AI models.
+Seven main destinations replace a long flat menu. Overview keeps **31 capabilities in six expandable groups**: **16 AI-assisted workflows** and **15 rule-based, navigation or human-review controls**, not 31 AI models. The three new source-based Nova tasks are **document chronology**, **clause/obligation review** and **sensitive-data review drafts**. Every AI workflow has a collapsible PDF exercise, not an invented passing result.
 
-The main walkthrough follows one setup from a fresh clone to a working Nova conversation: **run the application locally in Docker and connect it to your Azure OpenAI and Document Intelligence resources**. Web, Java, Keycloak, databases and private storage stay on your computer; confirmed AI requests call Azure. For extraction without an Azure account, use the separate [local Docling guide](docs/LOCAL_DOCUMENT_AI.md); that profile does not include a generative Nova model.
+Start with **local Docker: Docling reads documents and Ollama runs Nova on your computer**. Model preparation is an explicit download, stored once in a named Docker volume. No Azure account or API charges are required for this profile. The separate Azure walkthrough below connects the same app to your own Azure OpenAI and Document Intelligence resources; confirmed cloud inference can be billable. Providers are selected explicitly, never used as silent fallbacks.
 
 **Java 21 · Spring Boot · LangChain4j · Azure Document Intelligence · Azure OpenAI · Next.js · PostgreSQL · Qdrant · Keycloak · Docker**
 
-[Setup](#local-setup-with-azure-ai) · [Test Nova](#7-analyze-a-document-and-test-nova) · [Document pipeline](#document-pipeline-operations) · [Nova & page guides](#meet-nova-and-replay-a-page-guide) · [Troubleshooting](#troubleshooting) · [Screenshots](#workspace-tour) · [Architecture](#architecture)
+[Local Docker](#local-docker-with-nova) · [Azure setup](#local-setup-with-azure-ai) · [Document pipeline](#document-pipeline-operations) · [Nova & page guides](#meet-nova-and-replay-a-page-guide) · [Troubleshooting](#troubleshooting) · [Screenshots](#workspace-tour) · [Architecture](#architecture)
 
 > Research software, not a banking or insurance product. Use fictional or explicitly permitted documents. No payments, automated credit decisions, underwriting, claim settlement or automatic email delivery.
 
@@ -31,11 +31,57 @@ The project code is available under [MIT](LICENSE); contributions are welcome th
 | Capability | Available implementation |
 | --- | --- |
 | Local document AI | Optional **Docling CPU** profile for layout, OCR and tables; existing PDFBox/Tesseract baseline remains available |
+| Local Nova | **Ollama + Qwen3 4B Instruct 2507 Q4**, private local model volume, CPU-only runtime image, explicit source citations and no cloud fallback |
 | Cloud document AI and Nova | Azure Document Intelligence and Azure OpenAI; own authorized resource/configuration required, usage can be billable |
 | Local retrieval | MiniLM ONNX + Qdrant + BM25; English-focused embedding, not a newly installed multilingual model |
 | Review and governance | Private originals, page evidence, deterministic checks, experiments, audit and human approval |
 
 Downloaded DATEV/Kaggle PDFs, local credentials, customer documents and model caches are not part of the public source distribution. Unit tests use fictional fixtures and do not need Azure credentials. CI is a set of checks, not certification of model accuracy, production security or third-party rights.
+
+## Local Docker with Nova
+
+Prerequisites: Git, Node.js 22+, Docker Desktop/Engine with Compose v2; free ports **3000, 8080, 8081**. Allow **4 CPUs and 8 GB Docker RAM**. Model inference competes with Docling and other services; do not run several optional large-model experiments simultaneously on an 8-GB Docker VM.
+
+```bash
+git clone https://github.com/quocvietphung/document-intelligence-lab.git
+cd document-intelligence-lab
+mkdir -p .local/reference-pdfs
+node scripts/docker-local.mjs --prepare-model
+```
+
+The explicit first setup builds the app and a CPU-only Ollama image from a pinned official release, then downloads **[`qwen3:4b-instruct-2507-q4_K_M`](https://ollama.com/library/qwen3:4b-instruct-2507-q4_K_M) (~2.5 GB)**. This explicit non-thinking checkpoint is intentional; a generic `qwen3:4b` reasoning alias is not an equivalent replacement. The upstream build input is larger because it bundles GPU backends; those are omitted from the final CPU image. Measured on **Linux ARM64 / Ollama 0.40.6**, the CPU runtime is **181 MB**, versus **4.24 GB** for the official full image (about 96% smaller); other architectures can differ. Weights remain separate. Leave at least **8 GiB free inside Docker** for preparation; the full document stack and first-build cache need additional space. The helper checks free space before starting and never prunes images or data automatically. No model weights are committed or embedded in the application image.
+
+After services start, the helper explicitly loads the selected model into RAM using an empty prompt (no PDF or question) and keeps it warm for 30 minutes. Wait for the final workspace message. On a memory-constrained Mac, loading can take several minutes; close unnecessary heavy apps before starting. Warmup is not a document-answer quality test. The smaller 0.6B/1.7B trials were not selected: they confused identifiers, document clauses or privacy categories. Local chat reads authorized context without autonomous tool calls; Azure's separately configured read-only agent remains available.
+
+Subsequent starts reuse both the model and the existing databases:
+
+```bash
+node scripts/docker-local.mjs
+```
+
+Open [http://localhost:3000/en](http://localhost:3000/en), choose **Sign in**, then use **`advisor.demo` / `demo-password`** on the [Keycloak login screen](#sign-in-through-keycloak). These are development credentials for a fresh identity database; retained volumes keep their existing passwords. Do not expose the local realm publicly.
+
+1. Create a **General documents** dossier. Upload a permitted PDF, or prepare the [private Kaggle library](#kaggle-document-library) and import synthetic invoice **51109301** after reviewing consent.
+2. In **Documents & review**, wait for **Analysis results → View result & PDF**. The selected extraction provider should be **Docling**. Scanning stays enabled.
+3. Open **Nova → Evidence analysis**, ask “What invoice number and currency are written in this document? Cite the source page.” Enter sends; Shift+Enter inserts a line break.
+4. Check **Ollama · Local LLM**, the actual answer and its source page against the original. Neither engine health nor a greeting proves model quality. Extraction and AI responses remain unapproved until reviewed by a human.
+
+The runtime has no public Ollama/Docling port or model-download egress. Stopping or recreating containers retains model, database and PDF volumes. **Do not use `down -v` to troubleshoot.** To stop this profile while keeping all data:
+
+```bash
+OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose -f docker-compose.yml -f docker-compose.platform.yml \
+  -f docker-compose.docling.yml -f docker-compose.nova-local.yml stop
+```
+
+Supply `OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M` to manual Compose commands if required. The helper supplies it automatically. After preparing the private synthetic invoice library, run the explicit authenticated, real-model acceptance check:
+
+```bash
+TEST_NOVA_LOCAL=1 TEST_NOVA_TASKS=1 node scripts/test-oauth.mjs
+```
+
+This creates a labelled local test dossier and retains its evidence/history. It does not call Azure. Passing these sample checks is not a general accuracy or prompt-injection guarantee. See [optional integrations](docs/AI_INTEGRATIONS.md) for model limits and separately reviewed experiments.
+
+**Validation status (20 October 2026):** application builds and automated unit/contract tests passed. The real local-model acceptance run is **not passing**: chronology preserved the invoice date and valid page citations, but also included unrelated, undated VAT/total details. The run stopped at that assertion; the remaining task and language checks were not completed for this checkpoint. Local Nova is experimental, not a production-certified document reviewer. Browser visual verification and refreshed screenshots are also pending; no Azure or Vercel deployment is included in this update.
 
 ## Local setup with Azure AI
 
@@ -185,7 +231,7 @@ See [Azure reference details](docs/AZURE_AI.md) for additional RBAC examples and
 
 ### Batch intake and extraction check profiles
 
-Open **Data Pipelines → Batch intake**. Alternatively, find **Multi-document batch intake** in Overview's capability directory. Select **1–4 permitted PDFs/images**, each at most **3 MB**, enter a source/provenance note and choose a check profile. Review the file list and provider before **Confirm analysis**. Azure mode still limits each PDF to **2 pages**; a batch does not increase the per-file limits. Each accepted file is scanned separately before Azure analysis.
+Open **Data Pipelines → Batch intake**. Alternatively, find **Multi-document batch intake** in Overview's capability directory. Select **1–4 permitted PDFs/images**, each at most **3 MB**, enter a source/provenance note and choose a check profile. Review the file list and provider before **Confirm analysis**. Azure mode still limits each PDF to **2 pages**; a batch does not increase the per-file limits. Each accepted file is scanned separately before the selected document provider analyzes it.
 
 Profiles are **versioned Java field checks**, not trained Azure classifiers or new LLM calls:
 
@@ -202,9 +248,9 @@ For supported invoice summary tables, a conservative Java rule maps an explicitl
 
 Repeated submission of the same request ID and identical content returns its receipt; changed content with that ID is rejected. New duplicate submissions do not create another active processing job. A receipt may contain partial acceptance. After an interrupted intake, inspect the queue before resubmitting; this is not an atomic all-or-nothing batch or an exactly-once inference guarantee. Waiting/retry jobs retain the existing cancel controls; manual retry remains limited to pinned DATEV/Kaggle bytes.
 
-**Azure Data Factory and cloud-source ingestion remain disconnected.** The batch screen works through local Java and Docker, with explicit Azure AI calls after confirmation. It does not deploy ADF, run a Foundry evaluator, expose localhost, create Azure resources or upload originals to a public container. Keep source notes and downloaded receipts private. Up to 60 recent batch receipts are listed per dossier; this is not an all-time operational dashboard.
+**Cloud integrations remain off by default.** Optional Blob intake now supports scoped, consented imports into the existing Java queue. ADF has an explicit operator CLI bridge for an existing pipeline; the batch screen does not provision ADF, expose localhost or report unverified cloud runs as completed. See [optional integrations and lightweight tests](docs/AI_INTEGRATIONS.md). Keep source notes and downloaded receipts private. Up to 60 recent batch receipts are listed per dossier; this is not an all-time operational dashboard.
 
-The **Overview AI capability directory** lists all 28 current entries: 13 AI-assisted workflows and 15 rule-based, navigation, review or governance controls, each with a tool destination. Azure OpenAI, Azure Document Intelligence and local ONNX/Qdrant retrieval are distinguished. Counts describe catalogue entries, not independent models, live health checks or successful inference calls.
+The **Overview AI capability directory** lists all 31 current entries: 16 AI-assisted workflows and 15 rule-based, navigation, review or governance controls, each with a tool destination and, for AI workflows, a PDF exercise. Local Ollama, Azure OpenAI, document providers and ONNX/Qdrant retrieval are distinguished. Counts describe catalogue entries, not independent models, live health checks or successful inference calls.
 
 See the [current six-group directory](#multi-domain-overview) in the workspace tour.
 
@@ -221,6 +267,8 @@ Add `TEST_BATCH_CHAT=1` to that command to also test a real Azure OpenAI answer 
 Open a dossier, then **Data Pipelines → Processing queue → Processing control room**. The queue exposes six stages:
 
 `Received → Security scan → AI extraction → Content checks → Save evidence → Human review`
+
+Expand **From PDF to reviewed evidence** for the wider lifecycle: explicit intake/consent → secure queue → extraction/checks → human review → on-demand search/Nova → independently labelled evaluation/private export → retention/operations. Only the six processing stages are job events; the app never invents indexing/evaluation completion. This is a coherent local research pipeline, **not** a complete enterprise ingestion platform: automatic ADF/Event Grid orchestration, full backup/restore drills, enterprise deletion and cloud delivery SLAs remain outside the verified local workflow. File retention does not purge case/chat history.
 
 | Control | What it does |
 | --- | --- |
@@ -379,21 +427,24 @@ node --test scripts/docker-azure-config.test.mjs
 | --- | --- | --- |
 | Document OCR and layout | Azure Document Intelligence `prebuilt-layout`, optional local Docling, or PDFBox/Tesseract baseline; Java field normalization/classification rules | Documents & review |
 | Semantic and hybrid RAG | Local MiniLM ONNX embeddings, Qdrant and BM25—not Azure AI Search | AI Studio |
-| Document Q&A and source explanations | Azure OpenAI through Java/LangChain4j; dossier-scoped read-only tools | Nova → Evidence analysis |
+| Document Q&A and source explanations | Ollama local or Azure OpenAI through Java/LangChain4j; dossier-scoped read-only tools | Nova → Evidence analysis |
+| Chronology / obligations / privacy review | Three distinct controlled LLM drafts with PDF/page sources; no legal deadline calculation, binding coverage opinion or automatic redaction | Nova → AI task library |
 | Controlled AI drafts | Summary, cross-document comparison, inconsistency explanation, document request, review checklist, German terminology and DE–VI summary | Review & trust → Task library |
 | Source-bound evaluation | Human-checked reference labels; deterministic extraction precision/recall/F1 and retrieval hit rate@5/MRR@5 | Research lab → Experiments |
 | Traceable processing control room | Durable stages/events, current-versus-historical filters, bounded retries, waiting-job cancellation and metadata-only manifests | Data Pipelines → Processing queue |
 | Evidence review and research exports | Private PDF viewer, corrections/history, reviewer tasks, source hashes and private JSON/JSONL exports | Documents & review / Data Pipelines |
+| Optional local AI adapters | Bounded PaddleOCR/vision contracts, isolated BGE-M3 index and learned reranker; their weights are not installed or tested by the lightweight checks | Research lab |
+| Optional Azure bridges | Scoped Blob intake, existing-ADF CLI, private Azure AI Evaluation SDK export and traces-only Application Insights configuration; not live-connected by default | Data Pipelines / Research lab / Operations |
 
 The platform also provides Keycloak OAuth 2.0/OIDC + PKCE, Bearer-protected tenant/dossier access, PostgreSQL persistence, durable jobs, ClamAV, Redis limits, audit history and English/German/Vietnamese UI/page tours. Nova **App guidance** is local application logic, not an LLM response.
 
-OCR confidence is not measured accuracy; citation-ID validation does not prove that every statement is supported. Financial decisions remain outside scope. Azure Foundry evaluation, Data Factory orchestration, Blob ingestion and Application Insights are **not connected by default**. [Research methods](docs/RESEARCH_WORKSPACES.md) · [Nova privacy and review](docs/NOVA_TRUST.md).
+OCR confidence is not measured accuracy. Citation checks now include currency/amount membership in the cited excerpts, but do not prove semantic correctness, identity or period. Financial decisions remain outside scope. Azure evaluation, Data Factory, Blob intake and Application Insights are **not connected by default**. [Integration setup, boundaries and light tests](docs/AI_INTEGRATIONS.md) · [Research methods](docs/RESEARCH_WORKSPACES.md) · [Nova privacy and review](docs/NOVA_TRUST.md).
 
 ### Local Docling: what changed
 
 The optional Docker profile now connects the existing **Java document-provider interface** to **Docling Serve CPU**. It reads text, page layout and tables locally; the result uses the same private PDF viewer, queue and review workflow as Azure extraction. The service is pinned by image digest, has no host port or network egress, and receives document bytes rather than source URLs or app credentials. Missing confidence stays unknown; Java field checks are not a trained classifier.
 
-Follow the [Docling setup and real-model smoke test](docs/LOCAL_DOCUMENT_AI.md) separately from the main Azure walkthrough. Switching to that profile retains database volumes but clears Azure model configuration: **it does not provide a local generative Nova model or silently fall back to Azure**. Existing saved results keep their original provider. PaddleOCR, BGE-M3, a learned BGE reranker and Qwen-VL are not installed.
+Follow the [Docling setup and real-model smoke test](docs/LOCAL_DOCUMENT_AI.md) separately from the main Azure walkthrough. That profile alone retains database volumes but clears Azure model configuration: **it does not provide a generative Nova model or silently fall back to Azure**. A separate [Ollama profile](docs/AI_INTEGRATIONS.md#nova-using-a-local-model) can provide local Nova after explicit model preparation. Existing saved results keep their original provider. PaddleOCR, BGE-M3, learned reranking and vision adapters are now present; their model weights remain uninstalled and require live benchmarking before use.
 
 ## Workspace tour
 
@@ -401,7 +452,7 @@ The sidebar has seven destinations. Related research and operations pages use lo
 
 | Destination | What to do here |
 | --- | --- |
-| Overview | Start document analysis, evidence search or Nova; see dossier warnings before the capability directory. All 28 capabilities remain available in six expandable groups; searching opens matching groups. |
+| Overview | Start document analysis, evidence search or Nova; see dossier warnings before the capability directory. All 31 capabilities remain available in six expandable groups; searching opens matching groups. |
 | Documents & review | Add a source, open the result and original PDF, inspect fields/tables, and confirm with reviewer permission. Expand **Reference library** for private DATEV or Kaggle samples. |
 | Data Pipelines | Follow processing jobs, use one status filter, inspect receipts, or switch to batch intake and data assets. |
 | AI Studio | Retrieve evidence with local hybrid search and prepare a question for Nova. |
@@ -411,7 +462,7 @@ The sidebar has seven destinations. Related research and operations pages use lo
 
 Existing `#banking`, `#evaluation` and `#audit` links still open the correct section. Navigation, directory filters and page guides never start inference automatically. The optional Docling provider and the active Azure configuration are unchanged by the UI grouping.
 
-All interface screenshots below and in the setup/sample sections were captured again from the running local app on **18 October 2026**, in English. They show existing research dossiers and saved results, not dossiers preloaded into a fresh clone or new inference calls made for this documentation. German labels and number formatting inside source evidence are deliberately preserved.
+Interface screenshots below and in the setup/sample sections were captured from the local app on **18 October 2026**, in English. They predate the **20 October additions: 16 AI workflows, PDF exercises and local Nova**; older counts/provider badges in images are historical, not current runtime metadata. They show existing research dossiers and saved results, not dossiers preloaded into a fresh clone. German labels and number formatting inside source evidence are deliberately preserved.
 
 ### Multi-domain overview
 
@@ -451,7 +502,7 @@ Nova's portrait is an **AI-generated fictional character**, not a real advisor. 
 
 <img src="public/images/nova-profile-v2.webp" width="240" alt="Nova, a fictional adult Vietnamese AI assistant wearing a navy skirt suit" />
 
-Open the portrait button at the bottom right. Choose **App guidance** for local instructions and links, or **Evidence analysis** for source-based Azure OpenAI questions. The **compass icon** starts a step-by-step guide for the current page; **Expand reading area** gives longer answers more room. Enter sends; Shift+Enter adds a line break.
+Open the portrait button at the bottom right. Choose **App guidance** for local instructions and links, or **Evidence analysis** for source-based questions to the explicitly configured local/Azure model. The **compass icon** starts a step-by-step guide for the current page; **Expand reading area** gives longer answers more room. Enter sends; Shift+Enter adds a line break.
 
 The screenshot shows **local App guidance**, not an Azure OpenAI answer. To test the generative model, follow [Test Nova](#7-analyze-a-document-and-test-nova), select **Evidence analysis**, send a question and independently check its page sources. Source links make an answer inspectable; they do not replace human verification.
 
@@ -478,11 +529,16 @@ flowchart TD
         V --> D{Configured extraction provider}
         D -->|Optional local profile| DC[Docling CPU · isolated parser]
         D -->|Local baseline| B[PDFBox / Tesseract]
+        D -.->|Opt-in adapter, not model-tested| PP[PaddleOCR CPU]
         DC --> F[Java field mapping and checks]
         B --> F
+        PP --> F
         F --> P
         J --> R[Local retrieval · MiniLM ONNX / Qdrant / BM25]
         R --> L[LangChain4j · authorized evidence context]
+        R -.-> BG[BGE / learned reranker · optional isolated runtime]
+        L -->|Local Nova profile| OL[Ollama CPU · Qwen3 chat · private model volume]
+        L -.-> VL[Optional separate page-vision model]
         J --> E[Source-bound extraction and retrieval experiments]
         E --> P
         J --> X[Redis quotas / optional OpenTelemetry]
@@ -497,12 +553,12 @@ flowchart TD
     U -->|API-audience Bearer token| N
     D -->|Azure profile| DI
     DI --> F
-    L --> O
+    L -->|Azure profile only| O
     A -->|Developer sign-in| EN
     A -.->|Short-lived token file for Azure clients| J
 ```
 
-Exactly one document provider is selected by configuration; the branches are alternatives, not a three-engine ensemble or automatic cloud fallback. Azure results shown above were saved with the Azure provider. Local App guidance and page tours do not use the Azure OpenAI path. Retrieval indexing is built on demand, separately from OCR completion.
+Exactly one document provider and one Nova chat provider are selected by configuration; the branches are alternatives, not an ensemble or automatic cloud fallback. Dashed model paths remain optional, separately prepared experiments. Historical Azure screenshots/results retain their actual Azure provenance. Local App guidance and page tours do not use the LLM path. Retrieval indexing is built on demand, separately from OCR completion.
 
 Two separate identities:
 
@@ -518,6 +574,7 @@ Two separate identities:
 | `qdrant` / `redis` | Internal evidence index and shared quotas, persisted locally |
 | `clamav` | Scans uploads before extraction; persistent signature volume |
 | `docling` | Optional internal CPU parser, isolated network and temporary scratch storage; enabled with the separate Docling Compose profile |
+| `ollama` | CPU-only local Nova engine on an internal network; weights persist separately in `lab_ollama`; no host port |
 | `storage-init` | One-shot private-volume ownership task |
 | `otel-collector` | Optional local tracing override; no automatic cloud export |
 

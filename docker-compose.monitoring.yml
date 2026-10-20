@@ -1,0 +1,17 @@
+# Optional cloud trace export. Never combine with a different collector override.
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.136.0
+    command: ["--config=/etc/otelcol/config.yml"]
+    environment:
+      APPLICATIONINSIGHTS_CONNECTION_STRING: ${APPLICATIONINSIGHTS_CONNECTION_STRING:?Explicit Application Insights destination required}
+    volumes:
+      - ./infra/observability/application-insights.yml:/etc/otelcol/config.yml:ro
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 1
+  credit-api:
+    environment:
+      OTEL_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
+      APPLICATIONINSIGHTS_ENABLED: "true"

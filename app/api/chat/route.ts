@@ -5,7 +5,7 @@ import { hasAllowedOrigin } from "@/lib/request-origin";
 import {novaLimit} from "@/lib/nova-limits";
 import {trustAnswerSchema} from "@/lib/nova-trust";
 export const runtime="nodejs";
-export const maxDuration=60;
+export const maxDuration=420;
 export async function POST(request:Request) {
   if(process.env.NEXT_PUBLIC_DEMO_MODE==="true") return Response.json({error:"Public demo: Azure chat disabled"},{status:503});
   const requestId=crypto.randomUUID(); const root=process.env.CREDIT_API_URL;
@@ -23,7 +23,7 @@ export async function POST(request:Request) {
     const response=await fetch(`${root.replace(/\/$/,"")}/api/assistant/chat`,{
       method:"POST",headers:{Authorization:authorization,"Content-Type":"application/json"},
       body:JSON.stringify({caseId:body.caseId,locale:body.locale,question:messageText(latest),revisionOf:body.revisionOf,feedbackId:body.feedbackId,taskId:body.taskId,caseVersion:body.caseVersion}),
-      cache:"no-store",signal:AbortSignal.any([request.signal,AbortSignal.timeout(45_000)]),
+      cache:"no-store",signal:AbortSignal.any([request.signal,AbortSignal.timeout(process.env.NOVA_PROVIDER==='ollama'?380_000:45_000)]),
     });
     if(!response.ok) {
       if(response.status===422)return Response.json({error:"AI_SAFETY_FILTER"},{status:422,headers:{"Cache-Control":"no-store"}});

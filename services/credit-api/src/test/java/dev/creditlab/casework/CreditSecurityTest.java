@@ -17,6 +17,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics
 class CreditSecurityTest {
   @Autowired MockMvc mvc;
+  @Test void integrationsAreTenantScopedReadOnlyConfigurationNotFakeLiveHealth()throws Exception{
+    String path="/api/cases/CR-2026-1048/platform/integrations";
+    var advisor=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"));
+    mvc.perform(get(path)).andExpect(status().isUnauthorized());
+    mvc.perform(get(path).with(jwt().jwt(j->j.claim("tenant_id","foreign")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR")))).andExpect(status().isNotFound());
+    mvc.perform(get(path).with(advisor)).andExpect(status().isOk()).andExpect(jsonPath("$.automaticCalls").value(false)).andExpect(jsonPath("$.integrations.length()").value(9)).andExpect(jsonPath("$.integrations[0].configured").value(false)).andExpect(jsonPath("$.integrations[0].verification").value("NOT_LIVE_TESTED"));
+    mvc.perform(post(path+"/import").with(jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_REVIEWER"))).contentType("application/json").content("{\"requestId\":\"00000000-0000-0000-0000-000000000001\",\"caseVersion\":0,\"name\":\"source.pdf\",\"etag\":\"test\",\"profile\":\"general\",\"consent\":true}")).andExpect(status().isForbidden());
+    mvc.perform(post(path+"/vision").with(advisor).contentType("application/json").content("{\"documentId\":\"doc\",\"page\":1,\"question\":\"test\",\"caseVersion\":0,\"consent\":false}")).andExpect(status().isBadRequest());
+  }
   @Test void platformAndTrustReadsRejectTokensWithoutTenant()throws Exception{
     var advisor=jwt().authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"));
     for(String suffix:new String[]{"/platform","/platform/batches","/platform/research","/platform/experiments","/trust"})

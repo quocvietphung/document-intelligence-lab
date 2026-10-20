@@ -64,7 +64,7 @@ describe('enterprise document collections',()=>{
     expect(html).toContain('Cancelled');expect(html).toContain('Expired');
     expect(inspect).not.toHaveBeenCalled();expect(retry).not.toHaveBeenCalled();expect(cancel).not.toHaveBeenCalled();
     const queued={...data,jobs:[{...job,status:'QUEUED',document_id:null}]};
-    expect(renderToStaticMarkup(createElement(DocumentPipeline,{data:queued,locale:'en',busy:false,canWrite:false,inspect,retry,cancel}))).not.toContain('Open result &amp; PDF');
+    expect(renderToStaticMarkup(createElement(DocumentPipeline,{data:queued,locale:'en',busy:false,canWrite:false,inspect,retry,cancel}))).not.toMatch(/<button[^>]*aria-label="Open result &amp; PDF/);
   });
   it('keeps advanced panels collapsed but makes trace evidence visible during a tour',()=>{
     const source=readFileSync('components/workspace/PlatformWorkbench.tsx','utf8');

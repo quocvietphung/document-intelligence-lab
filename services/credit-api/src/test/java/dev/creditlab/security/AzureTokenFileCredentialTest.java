@@ -29,6 +29,13 @@ class AzureTokenFileCredentialTest {
     assertThatThrownBy(()->new AzureTokenFileCredential(file().toString()).getTokenSync(context))
         .isInstanceOf(CredentialUnavailableException.class);
   }
+  @Test void storageTokenCannotBeUsedForAiOrArm() throws Exception {
+    write("synthetic-storage",OffsetDateTime.now().plusMinutes(10),"https://storage.azure.com/");
+    var credential=new AzureTokenFileCredential(file().toString(),"https://storage.azure.com/");
+    assertThat(credential.getTokenSync(new TokenRequestContext().addScopes("https://storage.azure.com/.default")).getToken()).isEqualTo("synthetic-storage");
+    assertThatThrownBy(()->credential.getTokenSync(context)).isInstanceOf(CredentialUnavailableException.class);
+    assertThatThrownBy(()->credential.getTokenSync(new TokenRequestContext().addScopes("https://management.azure.com/.default"))).isInstanceOf(CredentialUnavailableException.class);
+  }
   @Test void refusesOtherAzureScopes() throws Exception {
     write("synthetic",OffsetDateTime.now().plusMinutes(10),"https://cognitiveservices.azure.com/");
     assertThatThrownBy(()->new AzureTokenFileCredential(file().toString()).getTokenSync(

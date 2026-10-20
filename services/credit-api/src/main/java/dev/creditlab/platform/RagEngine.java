@@ -33,18 +33,25 @@ public class RagEngine {
   private final Map<String,String> versions=new ConcurrentHashMap<>();
   private volatile AllMiniLmL6V2QuantizedEmbeddingModel model;
   private volatile boolean collectionReady;
+  @org.springframework.beans.factory.annotation.Value("${app.platform.embedding-provider:minilm}") private String embeddingProvider="minilm";
+  @org.springframework.beans.factory.annotation.Value("${app.platform.model-service:http://ai-models:8090}") private String modelService="http://ai-models:8090";
+  @org.springframework.beans.factory.annotation.Value("${app.platform.learned-reranker:false}") private boolean learnedReranker;
+  @jakarta.annotation.PostConstruct void validateConfiguration(){if(!Set.of("minilm","bge-m3").contains(embeddingProvider))throw new IllegalArgumentException("Unknown embedding provider");if(!semantic&&(embeddingProvider.equals("bge-m3")||learnedReranker))throw new IllegalArgumentException("Semantic retrieval must be enabled for optional models");}
+  private int dimensions(){return embeddingProvider.equals("bge-m3")?1024:384;}
+  private String collection(){return embeddingProvider.equals("bge-m3")?"document_lab_bge_m3_v1":"credit_lab_v1";}
+  private String embeddingName(){return embeddingProvider.equals("bge-m3")?"BAAI/bge-m3 (1024d, multilingual)":"all-MiniLM-L6-v2 quantized (ONNX, 384d)";}
   public RagEngine(@Value("${app.platform.embeddings:false}") boolean semantic,@Value("${app.platform.qdrant-url:}") String qdrant) { this.semantic=semantic;this.qdrant=qdrant; }
   /** Reports choices without warming the model or making a Qdrant request. */
   public Map<String,Object> configuration() {
-    return Map.of("semantic",semantic,"embeddingModel",semantic?"all-MiniLM-L6-v2 quantized (ONNX, 384d)":"lexical-hash (test fallback)",
-        "vectorStore",qdrant.isBlank()?"in-memory":"Qdrant","ranking","BM25 + cosine + query coverage",
-        "languageCoverage",semantic?"English-focused":"lexical only");
+    return Map.of("semantic",semantic,"embeddingModel",semantic?embeddingName():"lexical-hash (test fallback)",
+        "vectorStore",qdrant.isBlank()?"in-memory":"Qdrant","ranking",learnedReranker?"Hybrid candidates + BAAI/bge-reranker-v2-m3":"BM25 + cosine + query coverage",
+        "languageCoverage",semantic?(embeddingProvider.equals("bge-m3")?"Multilingual; benchmark required":"English-focused"):"lexical only");
   }
   private synchronized AllMiniLmL6V2QuantizedEmbeddingModel model() { if(model==null)model=new AllMiniLmL6V2QuantizedEmbeddingModel();return model; }
   private float[] vector(String text) {
     String key=hash(text); var existing=cache.get(key);if(existing!=null)return existing;
     float[] value;
-    if(semantic) value=model().embed(text).content().vector();
+    if(semantic) value=embeddingProvider.equals("bge-m3")?new LocalModels(modelService).embed(text):model().embed(text).content().vector();
     else { value=new float[384];for(var term:EvidenceGuard.terms(text))value[Math.floorMod(term.hashCode(),384)]+=1; }
     double norm=0;for(float v:value)norm+=v*v;if(norm>0)for(int i=0;i<value.length;i++)value[i]/=(float)Math.sqrt(norm);
     if(cache.size()>2500)cache.clear();cache.put(key,value);return value;
@@ -85,11 +92,11 @@ public class RagEngine {
   private Search search(CreditCase item,List<Chunk> chunks,String question,int limit,boolean indexCase,Strategy strategy) {
     var quarantine=chunks.stream().filter(c->!c.kind().equals("policy")&&EvidenceGuard.suspicious(c.text())).map(Chunk::id).toList();
     var safe=chunks.stream().filter(c->!quarantine.contains(c.id())).toList();
-    float[] query=strategy==Strategy.BM25?new float[384]:vector(question);Map<String,Double> scores=new HashMap<>();String backend=strategy==Strategy.BM25?"local-bm25":"local-vector";
+    float[] query=strategy==Strategy.BM25?new float[dimensions()]:vector(question);Map<String,Double> scores=new HashMap<>();String backend=strategy==Strategy.BM25?"local-bm25":"local-vector";
     if(indexCase&&!qdrant.isBlank()) {
       try {
         ensureCollection();sync(item,safe);
-        String json=client.post().uri(qdrant+"/collections/credit_lab_v1/points/search").body(Map.of("vector",query,"limit",24,"with_payload",true,"filter",filter(item))).retrieve().body(String.class);
+        String json=client.post().uri(qdrant+"/collections/"+collection()+"/points/search").body(Map.of("vector",query,"limit",24,"with_payload",true,"filter",filter(item))).retrieve().body(String.class);
         var response=json==null?null:vectorJson.readTree(json);
         if(response!=null) for(var point:response.path("result"))scores.put(point.path("payload").path("chunkId").asText(),point.path("score").asDouble());
         backend="qdrant";
@@ -106,25 +113,30 @@ public class RagEngine {
       hits.add(new Hit(c.id(),c.documentId(),c.title(),c.page(),c.kind(),c.text(),round(cos),round(bm25),round(rank),false));
     }
     hits.sort(Comparator.comparingDouble(Hit::score).reversed().thenComparing(Hit::id));
-    return new Search(hits.stream().limit(Math.min(12,Math.max(1,limit))).toList(),chunks.size(),backend,strategy==Strategy.BM25?"none":semantic?"all-MiniLM-L6-v2 quantized (384d, English-focused)":"lexical-hash (test fallback)",strategy==Strategy.HYBRID?"BM25 + cosine + query coverage":strategy.name(),quarantine);
+    if(learnedReranker&&strategy==Strategy.HYBRID&&!hits.isEmpty()) {
+      var candidates=hits.stream().limit(24).toList();var reranked=new LocalModels(modelService).rerank(question,candidates.stream().map(Hit::text).toList());hits.clear();
+      for(int i=0;i<candidates.size();i++){var h=candidates.get(i);hits.add(new Hit(h.id(),h.documentId(),h.title(),h.page(),h.kind(),h.text(),h.vector(),h.lexical(),round(reranked.get(i)),false));}
+      hits.sort(Comparator.comparingDouble(Hit::score).reversed().thenComparing(Hit::id));
+    }
+    return new Search(hits.stream().limit(Math.min(12,Math.max(1,limit))).toList(),chunks.size(),backend,strategy==Strategy.BM25?"none":semantic?embeddingName():"lexical-hash (test fallback)",strategy==Strategy.HYBRID?(learnedReranker?"BAAI/bge-reranker-v2-m3":"BM25 + cosine + query coverage"):strategy.name(),quarantine);
   }
   private Map<String,Object> filter(CreditCase item) {return Map.of("must",List.of(Map.of("key","tenant","match",Map.of("value",item.tenantId())),Map.of("key","caseId","match",Map.of("value",item.id()))));}
   public synchronized void invalidate(CreditCase item) {
-    if(!qdrant.isBlank()){ensureCollection();client.post().uri(qdrant+"/collections/credit_lab_v1/points/delete?wait=true").body(Map.of("filter",filter(item))).retrieve().toBodilessEntity();}
+    if(!qdrant.isBlank()){ensureCollection();client.post().uri(qdrant+"/collections/"+collection()+"/points/delete?wait=true").body(Map.of("filter",filter(item))).retrieve().toBodilessEntity();}
     versions.remove(item.tenantId()+"|"+item.id());cache.clear();
   }
   private synchronized void ensureCollection() {
     if(collectionReady)return;
-    try{client.get().uri(qdrant+"/collections/credit_lab_v1").retrieve().toBodilessEntity();}
-    catch(org.springframework.web.client.HttpClientErrorException.NotFound e){client.put().uri(qdrant+"/collections/credit_lab_v1").body(Map.of("vectors",Map.of("size",384,"distance","Cosine"))).retrieve().toBodilessEntity();}
-    for(String field:List.of("tenant","caseId"))client.put().uri(qdrant+"/collections/credit_lab_v1/index").body(Map.of("field_name",field,"field_schema","keyword")).retrieve().toBodilessEntity();
+    try{client.get().uri(qdrant+"/collections/"+collection()).retrieve().toBodilessEntity();}
+    catch(org.springframework.web.client.HttpClientErrorException.NotFound e){client.put().uri(qdrant+"/collections/"+collection()).body(Map.of("vectors",Map.of("size",dimensions(),"distance","Cosine"))).retrieve().toBodilessEntity();}
+    for(String field:List.of("tenant","caseId"))client.put().uri(qdrant+"/collections/"+collection()+"/index").body(Map.of("field_name",field,"field_schema","keyword")).retrieve().toBodilessEntity();
     collectionReady=true;
   }
   private synchronized void sync(CreditCase item,List<Chunk> chunks) {
     String scope=item.tenantId()+"|"+item.id(),version=hash(chunks.toString());if(version.equals(versions.get(scope)))return;
-    client.post().uri(qdrant+"/collections/credit_lab_v1/points/delete?wait=true").body(Map.of("filter",filter(item))).retrieve().toBodilessEntity();
+    client.post().uri(qdrant+"/collections/"+collection()+"/points/delete?wait=true").body(Map.of("filter",filter(item))).retrieve().toBodilessEntity();
     var points=chunks.stream().map(c->Map.of("id",UUID.nameUUIDFromBytes((scope+"|"+c.id()).getBytes(StandardCharsets.UTF_8)).toString(),"vector",vector(c.text()),"payload",Map.of("tenant",item.tenantId(),"caseId",item.id(),"chunkId",c.id()))).toList();
-    client.put().uri(qdrant+"/collections/credit_lab_v1/points?wait=true").body(Map.of("points",points)).retrieve().toBodilessEntity();versions.put(scope,version);
+    client.put().uri(qdrant+"/collections/"+collection()+"/points?wait=true").body(Map.of("points",points)).retrieve().toBodilessEntity();versions.put(scope,version);
   }
   private static double cosine(float[] a,float[] b) {double value=0;for(int i=0;i<a.length;i++)value+=a[i]*b[i];return value;}
   private static double bm25(Set<String> terms,String text,List<Chunk> corpus,double avg) {

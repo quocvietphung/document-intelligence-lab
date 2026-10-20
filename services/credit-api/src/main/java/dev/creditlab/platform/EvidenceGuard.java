@@ -6,7 +6,11 @@ import java.util.regex.Pattern;
 public final class EvidenceGuard {
   private EvidenceGuard() {}
   private static final Pattern INJECTION=Pattern.compile("(?is)(ignore (all |previous |prior )?instructions|disregard.*instructions|system\\s*prompt|reveal.*(token|password|secret)|<\\|?(system|assistant)\\|?>|bypass.*(policy|guard)|ignoriere.*anweisung|bỏ qua.*hướng dẫn)");
-  public static boolean suspicious(String text) { return INJECTION.matcher(text).find(); }
+  public static boolean suspicious(String text) {
+    String normalized=java.text.Normalizer.normalize(Objects.requireNonNullElse(text,""),java.text.Normalizer.Form.NFKC)
+        .replaceAll("\\p{Cf}","").replaceAll("\\s+"," ");
+    return INJECTION.matcher(normalized).find()||Pattern.compile("(?is)(<\\s*/?\\s*(system|assistant|developer)\\s*>|\\[inst\\]|\\[/?system\\]|send.{0,80}(api.?key|access.?token|password|secret).{0,80}https?://|tiết lộ.{0,30}(mật khẩu|token)|verrate.{0,30}(passwort|geheimnis))").matcher(normalized).find();
+  }
   public static Set<String> terms(String text) {
     var result=new LinkedHashSet<String>(); var m=Pattern.compile("[\\p{L}\\p{N}]{3,}").matcher(text.toLowerCase(Locale.ROOT));
     while(m.find()) result.add(m.group());

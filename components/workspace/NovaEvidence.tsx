@@ -23,6 +23,7 @@ export function NovaEvidence({answer,locale,caseVersion,openSource}:{answer:Trus
         <span className={claim.state==='SOURCE_LINKED'?'trust-source-label':'trust-warning-label'}>{claim.state==='SOURCE_LINKED'?t.linked:t.needsReview}</span>
         <p>{claim.text}</p>
         {!claim.citations.length?<small>{t.claimSourceMissing}</small>:null}
+        {claim.unsupportedMoney?.length?<small className="trust-warning">{locale==='vi'?'Số tiền/tiền tệ chưa khớp trích đoạn nguồn':locale==='de'?'Betrag/Währung im zitierten Auszug nicht bestätigt':'Amount/currency not matched in the cited excerpt'}: {claim.unsupportedMoney.join(', ')}</small>:null}
         {claim.invalidCitations.map(id=><small className="trust-warning" key={id}>{t.unknownSource}: [{id}]</small>)}
         {claim.citations.map(id=>{const source=answer.sources.find(s=>s.id===id);return source?<details key={id} className="nova-claim-source"><summary>{source.title}</summary>
           <p className="trust-muted">{source.kind==='REFERENCE'||source.kind==='FIXTURE'?t.reference:source.humanReviewed?t.verifiedSource:t.unreviewedSource}</p>

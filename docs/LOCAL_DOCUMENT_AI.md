@@ -2,6 +2,8 @@
 
 This profile replaces document extraction with **Docling Serve CPU**, while retaining Java, PostgreSQL, Keycloak, Qdrant, the security queue and the existing PDF review UI. It does not install a new frontend, call a public demo service or replace Nova with a local LLM.
 
+For **Docling plus local Nova**, use the combined [README local Docker walkthrough](../README.md#local-docker-with-nova). The commands on this page intentionally test document extraction alone.
+
 The adapter uses the stable v1 wire format (`sources` with `kind: file`, and an explicit `inbody` target). Legacy `file_sources` examples do not match the pinned server's OpenAPI schema. The image is pinned by version and digest; review both when upgrading.
 
 ## Start
@@ -64,4 +66,4 @@ Keep volumes. To return to Azure, stop the parser service with that configuratio
 
 Benchmark extraction field-by-field and table-by-table against independently checked labels. Keep provider/source/version separate. Old extractions are not automatically rerun or relabelled when changing provider, and same-file duplicate protection still applies. Use a new research dossier to compare a permitted source with another provider.
 
-Multilingual embeddings, a learned reranker and a local Nova LLM are future work, **not installed by this profile**. Do not change vector models in an existing collection without a separate versioned index and reindex plan. See [CONTRIBUTING](../CONTRIBUTING.md) and [third-party notices](../THIRD_PARTY_NOTICES.md).
+For local generative Nova, use the separate [local Docker walkthrough](../README.md#local-docker-with-nova), which layers Ollama after this Docling profile. Optional BGE/reranker adapters are documented in [AI integrations](AI_INTEGRATIONS.md); they are not installed by this profile. Do not change vector models in an existing collection without a separate versioned index and reindex plan. See [CONTRIBUTING](../CONTRIBUTING.md) and [third-party notices](../THIRD_PARTY_NOTICES.md).

@@ -17,7 +17,7 @@ export function AIDocumentBadge({doc,locale,compact=false}:{doc:CreditDocument;l
 
 export function AIChatIdentity({capabilities,locale,demo=false,mode}:{capabilities?:AICapabilities;locale:string;demo?:boolean;mode?:string}) {
   const t=aiText(locale),value=chatEngine(capabilities,locale,demo);
-  const response=mode==="app-guide"?t.localGuide:mode?.includes("guard")?t.guard:mode==="synthetic-demo"?t.demo:mode==="azure-entra"?`Azure OpenAI · ${value.model}`:undefined;
+  const response=mode==="app-guide"?t.localGuide:mode?.includes("guard")?t.guard:mode==="synthetic-demo"?t.demo:mode==="local-ollama"?`Ollama · ${t.local} · ${value.model}`:mode?.startsWith("azure-")?`Azure OpenAI · ${value.model}`:undefined;
   return <div className="ai-chat-identity"><div><AITag kind={value.kind} locale={locale} label={value.engine}/><code>{value.model}</code></div><small>{response?`${t.actualReply}: ${response}`:value.kind==="ai"?t.configured:value.kind==="unknown"?t.unknown:t.demoHint}</small></div>;
 }
 
@@ -30,7 +30,7 @@ export function AIPageBanner({page,locale,capabilities,demo=false,ask}:{page:Wor
     model=doc?.modelId||t.notReported;hint=demo?t.demoHint:identity.hint;title=t[page==="documents"?"source":"pipeline"];
   }else if(page==="studio"){
     kind=demo?"demo":!rag?"unknown":rag.semantic?"ai":"rules";engine=demo?t.demo:rag?.embeddingModel||t.unknown;
-    model=demo?"browser fixtures":rag?`${rag.vectorStore} · BM25 · feature ranking`:t.notReported;hint=demo?t.demoHint:t.searchHint;title=t.search;
+    model=demo?"browser fixtures":rag?`${rag.vectorStore} · ${rag.ranking}`:t.notReported;hint=demo?t.demoHint:t.searchHint;title=t.search;
   }else if(page==='experiments'){
     const research=researchText(locale);kind='rules';engine='Java · source-bound evaluation';model='source-evaluation-v1';title=research('experiments');hint=research('notJudge');
   }else{
@@ -38,8 +38,9 @@ export function AIPageBanner({page,locale,capabilities,demo=false,ask}:{page:Wor
     model=t.human;hint=page==="evaluation"?t.qualityHint:page==="controls"?t.rulesHint:t.reviewHint;
     title=t[page==="controls"?"controls":page==="evaluation"?"quality":page==="banking"?"banking":page==="operations"?"operations":"audit"];
   }
+  const retrievalHint=rag&&(rag.embeddingModel.includes('bge')||rag.ranking.includes('bge'))?(locale==='vi'?'Model đa ngôn ngữ/xếp hạng học máy cần benchmark với tài liệu của bạn. Đã cấu hình không có nghĩa đã kiểm thử chất lượng.':locale==='de'?'Mehrsprachige Modelle und gelerntes Reranking müssen an den eigenen Quellen bewertet werden. Konfiguration belegt keine Qualität.':'Multilingual models and learned reranking need a benchmark on your own sources. Configuration is not quality validation.'):t.languageHint;
   return <details className={`ai-page-disclosure ai-banner-${kind}`} aria-label={t.engines}>
     <summary><AITag kind={kind} locale={locale}/><span className="ai-context-text"><span>{title}</span><strong>{engine}</strong></span><span className="ai-context-toggle">{t.how}<ChevronDown size={14}/></span></summary>
-    <div className="ai-context-details"><p>{hint}</p><code>{model}</code><p>{t.notLive}</p>{page==="studio"&&rag?.semantic?<p>{t.languageHint}</p>:null}<p>{t.reviewHint}</p><button className="button-secondary" onClick={()=>ask(`${t.pageRequest} ${title}. ${hint}`)}><Sparkles size={15}/>{t.ask}<ArrowUpRight size={14}/></button></div>
+    <div className="ai-context-details"><p>{hint}</p><code>{model}</code><p>{t.notLive}</p>{page==="studio"&&rag?.semantic?<p>{retrievalHint}</p>:null}<p>{t.reviewHint}</p><button className="button-secondary" onClick={()=>ask(`${t.pageRequest} ${title}. ${hint}`)}><Sparkles size={15}/>{t.ask}<ArrowUpRight size={14}/></button></div>
   </details>;
 }

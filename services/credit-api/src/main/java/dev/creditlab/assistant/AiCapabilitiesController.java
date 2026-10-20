@@ -22,6 +22,8 @@ public class AiCapabilitiesController {
   private final DocumentAnalysisService documents;
   private final RagEngine retrieval;
   private final String deployment;
+  @Value("${app.ai.provider:azure}") private String provider="azure";
+  @Value("${app.ai.local-model:}") private String localModel="";
   public AiCapabilitiesController(Optional<ChatModel> chat,DocumentAnalysisService documents,RagEngine retrieval,
       @Value("${app.ai.deployment:}") String deployment) {
     this.chat=chat;this.documents=documents;this.retrieval=retrieval;this.deployment=deployment;
@@ -32,10 +34,11 @@ public class AiCapabilitiesController {
         ||token.getToken().getClaimAsString("tenant_id").isBlank()) throw new AccessDeniedException("Verified tenant required");
     var doc=documents.status();
     boolean configured=chat.isPresent();
-    String publicDeployment=deployment.matches("[a-zA-Z0-9_.-]{1,100}")?deployment:"not-reported";
+    String selected=provider.equals("ollama")?localModel:deployment;
+    String publicDeployment=selected.matches("[a-zA-Z0-9_.:/-]{1,100}")&&!selected.contains("://")?selected:"not-reported";
     return ResponseEntity.ok().header("Cache-Control","no-store").body(Map.of(
         "scope","configuration-only", "automaticInference",false,
-        "chat",Map.of("provider",configured?"azure-openai":"unavailable","modelId",configured?publicDeployment:"not-configured","configured",configured),
+        "chat",Map.of("provider",configured?(provider.equals("ollama")?"ollama":"azure-openai"):"unavailable","modelId",configured?publicDeployment:"not-configured","configured",configured),
         "documents",Map.of("provider",doc.get("activeProvider"),"modelId",doc.get("modelId"),"mode",doc.get("mode"),"configured",!"unavailable".equals(doc.get("activeProvider"))),
         "retrieval",retrieval.configuration()));
   }

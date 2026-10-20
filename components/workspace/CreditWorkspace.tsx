@@ -77,7 +77,7 @@ function Copilot({item,locale,open,onOpen,close,initialQuestion,initialOptions,o
         {message.role==="assistant"&&message.id!=="nova-welcome"&&!message.parts.some(p=>p.type==="data-nova-guide")?<NovaCopyAnswer text={message.parts.filter(p=>p.type==="text").map(p=>p.text).join("")} locale={locale}/>:null}
         {record.success?<NovaAnswerActions answer={record.data} caseId={item.id} caseVersion={item.version||0} locale={locale} onDraft={onDraft} openSource={openSource}/>:null}
       </article>;})}
-      {busy?<p className="p-3 text-sm text-slate-500" role="status">{t("loading")}</p>:null}
+      {busy?<p className="p-3 text-sm text-slate-500" role="status">{aiCapabilities?.chat.provider==='ollama'?(locale==='vi'?'Nova đang đọc chứng cứ bằng model local. Lần đầu trên CPU có thể hơn một phút; chưa có kết quả được phê duyệt.':locale==='de'?'Nova liest die Belege mit dem lokalen Modell. Der erste CPU-Aufruf kann über eine Minute dauern; noch kein geprüftes Ergebnis.':'Nova is reading evidence with the local model. The first CPU request can take over a minute; no approved result yet.'):t("loading")}</p>:null}
       {error?<div className="notice-error" role="alert"><p>{error.message.includes("AI_SAFETY_FILTER")?novaSafetyMessage(locale):limit||error.message.toLowerCase().includes("limit")?novaLimitMessage(limit,locale):t("error")}</p><p>{customerUx(locale).question}</p></div>:null}
       <NovaSuggestions locale={locale} page={currentTab} select={setText} disabled={busy}/>
       <div className="nova-chat-shortcuts"><button className="button-link" onClick={()=>guide(novaGuideLabels(locale).actions,true)} disabled={busy}><Compass size={14}/>{novaGuideLabels(locale).actions}</button></div>

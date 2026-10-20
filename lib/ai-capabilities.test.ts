@@ -30,6 +30,13 @@ describe("AI identity and honest provenance",()=>{
     expect(chatEngine(undefined,"en").kind).toBe("unknown");
     expect(chatEngine(capabilities,"en",true).kind).toBe("demo");
   });
+  it("labels local Nova honestly without claiming Azure inference",()=>{
+    const local={...capabilities,chat:{provider:'ollama' as const,modelId:'qwen3:4b',configured:true}};
+    expect(aiCapabilitiesSchema.safeParse(local).success).toBe(true);
+    expect(chatEngine(local,'en').engine).toBe('Ollama · Local LLM');
+    const html=renderToStaticMarkup(createElement(AIChatIdentity,{locale:'en',capabilities:local,mode:'local-ollama'}));
+    expect(html).toContain('qwen3:4b');expect(html).not.toContain('Azure OpenAI');
+  });
   it("distinguishes Azure source analysis from fixture reference values",()=>{
     expect(documentAI({analysisProvider:"azure-document-intelligence",modelId:"prebuilt-layout",status:"review"},"en").kind).toBe("ai");
     expect(documentAI({analysisProvider:"datev-reference-values",status:"review"},"en").kind).toBe("demo");
