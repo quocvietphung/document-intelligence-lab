@@ -5,7 +5,7 @@ import java.util.*;
 /** App-owned tasks, not user-programmable agents. No write/payment tools. */
 public final class TrustCatalog {
   private TrustCatalog() {}
-  public static final String PROMPT_VERSION="nova-document-domains-2026-10-v6";
+  public static final String PROMPT_VERSION="nova-document-domains-2026-10-v7";
   public static final String TASK_PATTERN="summary|reconcile|explain|request-documents|review-checklist|terminology|bilingual-summary|timeline|obligations|privacy-review";
   public static final List<String> TASKS=List.of("summary","reconcile","explain","request-documents","review-checklist","terminology","bilingual-summary","timeline","obligations","privacy-review");
   public static List<Map<String,Object>> features() {

@@ -78,14 +78,20 @@ public class CreditAssistantService {
     String answer;
     try {
       if(localChat){
-        var generated=AiServices.builder(DocumentReviewModel.class).chatModel(model.get()).build().review(boundedLocalReview?reviewPrompt(item,request,sources):prompt);
+        if(boundedLocalReview){
+          var generated=StructuredReview.generate(model.get(),reviewPrompt(item,request,sources),request.taskId(),sources);
+          answer=StructuredReview.render(generated,request.taskId(),request.locale(),sources);
+        }else{
+        var generated=AiServices.builder(DocumentReviewModel.class).chatModel(model.get()).build().review(prompt);
         if(generated.finishReason()!=dev.langchain4j.model.output.FinishReason.STOP)
           throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Local generation did not complete; partial output is not an answer");
         answer=generated.content();
+        }
       }else answer=assistant.chat(prompt);
     }
-    catch(RuntimeException error) { log.warn("Nova provider failure: {}",safeFailure(error));throw new ResponseStatusException(providerStatus(error),"The selected Nova model did not complete this request; no provider fallback was attempted"); }
+    catch(RuntimeException error) { if(error instanceof ResponseStatusException r&&r.getStatusCode().value()==422)throw r;log.warn("Nova provider failure: {}",safeFailure(error));throw new ResponseStatusException(providerStatus(error),"The selected Nova model did not complete this request; no provider fallback was attempted"); }
     if(answer==null||answer.isBlank()) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Nova model returned no answer");
+    if(localChat)answer=SourceCitations.validate(answer,sources);
     String mode=chatProvider.equals("ollama")?"local-ollama":credentialType.equals("default")?"azure-managed-identity":"azure-entra";
     cases.recordAiUse(requestId,tenant,item.id(),actor,mode);
     if(platform!=null)platform.record(tenant,item.id(),requestId,mode,plan,answer,evidenceHits(sources),(System.nanoTime()-start)/1_000_000);
@@ -106,7 +112,7 @@ public class CreditAssistantService {
     };
     return "Selected document domain: "+item.domain()+". Untrusted original excerpts (at most three pages, 2,000 characters each):\n"+sources.stream().map(s->"["+s.id()+"] "+s.text()).reduce("",(a,b)->a+"\n"+b)
         +"\nEnd of untrusted evidence. Selected request: "+request.question()+"\n"+task
-        +"\nReply in "+language(request.locale())+" using at most three short bullets. Every factual bullet needs its exact supporting source ID in single square brackets. No introduction or repeated field summary. Missing evidence is unknown, not a finding about the whole document. Draft only; human review is required.";
+        +"\nTask: "+request.taskId()+". Return JSON with items: [{sourceId,quote,date,category}] and missing. At most three items. Preserve literal quotes and dates; do not translate the source quote. Missing evidence is unknown, not a finding about the whole document. Draft only; human review is required.";
   }
 
   private AssistantResponse response(CreditCase item,String actor,String question,String answer,String mode,List<Source> sources,String requestId,long start,String revisionOf){

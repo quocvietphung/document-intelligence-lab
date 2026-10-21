@@ -1,0 +1,8 @@
+name: document_etl
+version: '1.0'
+config-version: 2
+profile: document_etl
+model-paths: [models]
+models:
+  document_etl:
+    +materialized: table

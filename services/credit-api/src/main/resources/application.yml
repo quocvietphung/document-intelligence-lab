@@ -78,6 +78,8 @@ app.platform.blob-endpoint: ${AZURE_BLOB_ENDPOINT:}
 app.platform.blob-container: ${AZURE_BLOB_CONTAINER:lab-documents}
 app.platform.retention-days: ${DOCUMENT_RETENTION_DAYS:30}
 app.platform.worker-enabled: ${DOCUMENT_WORKER_ENABLED:true}
+app.platform.etl-enabled: ${LOCAL_ETL_ENABLED:false}
+app.platform.etl-root: ${LOCAL_ETL_ROOT:/app/etl}
 spring.task.scheduling.pool.size: 3
 management.metrics.tags.application: credit-api
 management.health.redis.enabled: ${REDIS_LIMITS_ENABLED:false}

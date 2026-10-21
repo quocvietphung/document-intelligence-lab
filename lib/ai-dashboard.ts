@@ -28,7 +28,7 @@ export const dashboardFeatures=[
   {id:'classification',category:'control',engine:'rules',target:{page:'documents'}},
   {id:'field-profiles',category:'control',engine:'rules',target:{page:'pipeline',panel:'batches'}},
   {id:'batches',category:'control',engine:'rules',target:{page:'pipeline',panel:'batches'}},
-  {id:'lineage',category:'control',engine:'rules',target:{page:'pipeline',panel:'processing'}},
+  {id:'lineage',category:'control',engine:'rules',target:{page:'pipeline',panel:'assets'}},
   {id:'experiments',category:'control',engine:'rules',target:{page:'experiments'}},
   {id:'citations',category:'control',engine:'rules',target:{trust:'history'}},
   {id:'feedback',category:'control',engine:'human',target:{trust:'history'}},

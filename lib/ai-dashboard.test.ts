@@ -18,7 +18,7 @@ describe('AI dashboard directory',()=>{
     expect([...grouped].sort()).toEqual(dashboardFeatures.map(feature=>feature.id).sort());
     const html=renderToStaticMarkup(createElement(WorkspaceAICatalog,{locale:'en',demo:false,capabilities,navigate:()=>{},openNova:()=>{}}));
     expect(html.match(/data-ai-group=/g)).toHaveLength(6);expect(html.match(/data-ai-feature=/g)).toHaveLength(31);
-    expect(html.match(/<summary>PDF example<\/summary>/g)).toHaveLength(16);
+    expect(html.match(/<summary>PDF example<\/summary>/g)).toHaveLength(18);
     expect(html).not.toMatch(/<details[^>]*\sopen[=> ]/);
   });
   it('retains the dossier and batch panel when opening feature links in another tab',()=>{

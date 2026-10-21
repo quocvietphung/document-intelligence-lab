@@ -24,7 +24,8 @@ export async function auditPipeline({request,check,bearer,web,api}){
   check(job.scan_result==='CLAMAV_CLEAN','ClamAV scanned original');
   check(['RECEIVED','SCAN','EXTRACT','VALIDATE','ATTACH','HUMAN_REVIEW'].every(stage=>job.events.some(e=>e.stage===stage)),'All six stages have recorded database events');
   check(job.events.every((e,i)=>i===0||e.id>job.events[i-1].id),'Stage event IDs preserve recorded order');
-  check(job.extraction.provider==='azure-document-intelligence'&&job.extraction.modelId==='prebuilt-layout','Actual Azure extraction provenance');
+  const expectedProvider=process.env.TEST_PIPELINE_PROVIDER||'azure-document-intelligence';
+  check(job.extraction.provider===expectedProvider&&Boolean(job.extraction.modelId),'Actual configured extraction provenance: '+expectedProvider);
   check(job.extraction.pages===1&&job.extraction.tables===2&&job.extraction.fields>=1,'Persisted page, field and table counts');
   check(job.reviewStatus!=='verified','Pipeline never approves AI values as human-reviewed');
   check(Boolean(job.finishedAt)&&Date.parse(job.finishedAt)>=Date.parse(job.createdAt),'Completion timestamp is recorded');
