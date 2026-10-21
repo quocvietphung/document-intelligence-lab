@@ -91,9 +91,13 @@ Try synthetic invoice **51109301** in a **General documents** dossier. After con
 
 ### English screen walkthrough
 
-![Edited local walkthrough: Keycloak, 16-workflow overview, saved Docling result, protected PDF, evidence search and a pending Nova question](docs/screenshots/document-to-nova-flow-en-2026-10-21.gif)
+![English walkthrough: Keycloak, overview, saved Docling extraction, original PDF, processing receipt, hybrid search, saved Nova answer with citations, local ETL, quality findings and prompt experiments](docs/screenshots/document-research-walkthrough-en-2026-10-21-v2.gif)
 
-Captured from the running English Docker workspace on **21 October 2026**. This is an **edited sequence of nine real screenshots**, not continuous video or a latency benchmark; each scene is held for reading and waits are omitted. The invoice extraction/processing receipt was saved on **20 October** and opened again, not re-uploaded for the animation. The last scene shows a real submitted Nova question **still awaiting a response**; no completed answer or human approval is depicted. The Keycloak password field is empty. See the [full-size screen gallery](#workspace-tour) and [known model limitations](#local-docker-with-nova).
+Captured from the running English Docker workspace on **21 October 2026**: **10 real screenshots, 58 seconds**, with English captions outside the unmodified UI captures. Follow Keycloak sign-in → the 16-workflow overview → saved Docling results → the original invoice PDF → processing stages → hybrid evidence search → Nova answer history → local Bronze/Silver/Gold ETL → source-linked quality findings → zero-shot/few-shot experiments. This is an **edited walkthrough**, not continuous video or a latency benchmark; waits are omitted. The Keycloak password field is empty.
+
+**What the recording demonstrates:** the invoice extraction was saved on **20 October** and reopened, not uploaded again. Building data layers reused the completed **21 October** DuckDB/dbt receipt for the unchanged source: **Bronze 1, Silver 2, Gold 0**; unreviewed fields remain outside Gold. The ambiguous date is preserved and linked to its source. The experiment shows a correct zero-shot field and a few-shot abstention on one labelled sample, not general model accuracy.
+
+**Nova recording limitation:** two fresh CPU Ollama requests timed out during this capture session. Scene 7 therefore opens the genuine, previously saved English response from **21 October, 22:00:33 Europe/Berlin**, with its model, prompt version, source citations and **not human-approved** label visible. It does **not** depict a new successful generation, and linked citations are not automatic fact-checking. Earlier scoped acceptance results do not remove this observed reliability limitation. See the [full-size screen gallery](#workspace-tour) and [local Nova setup and limitations](#local-docker-with-nova).
 
 ## Open-source scope
 
