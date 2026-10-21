@@ -10,6 +10,8 @@ The current workspace brings those experiments into one evidence-first workflow:
 - **Find and explain evidence:** compare keyword/vector/hybrid retrieval, then ask Nova source-based questions through local Ollama or Azure OpenAI.
 - **Review the result:** compare fields with the private original, record corrections and keep AI output separate from human approval.
 - **Measure, not assume:** create checked reference versions and evaluate extraction or retrieval on those specific documents.
+- **Compare research methods:** benchmark fixed, recursive, embedding-semantic and hierarchical-child chunking on the same checked PDF pages; compare zero-shot/few-shot JSON-schema extraction with a reference hidden from the model.
+- **Build local data products:** run private DuckDB/dbt ETL in Docker, with Bronze/Silver/Gold Parquet, quality findings, SCD Type 2 history and currency-separated, reviewer-confirmed aggregates.
 - **Operate locally:** sign in through Keycloak; follow durable processing jobs, batch receipts and activity history in Docker.
 
 Seven main destinations replace a long flat menu. Overview keeps **31 capabilities in six expandable groups**: **16 AI-assisted workflows** and **15 rule-based, navigation or human-review controls**, not 31 AI models. The three new source-based Nova tasks are **document chronology**, **clause/obligation review** and **sensitive-data review drafts**. Every AI workflow has a collapsible PDF exercise, not an invented passing result.
@@ -17,6 +19,56 @@ Seven main destinations replace a long flat menu. Overview keeps **31 capabiliti
 Start with **local Docker: Docling reads documents and Ollama runs Nova on your computer**. Model preparation is an explicit download, stored once in a named Docker volume. No Azure account or API charges are required for this profile. The separate Azure walkthrough below connects the same app to your own Azure OpenAI and Document Intelligence resources; confirmed cloud inference can be billable. Providers are selected explicitly, never used as silent fallbacks.
 
 **Java 21 · Spring Boot · LangChain4j · Azure Document Intelligence · Azure OpenAI · Next.js · PostgreSQL · Qdrant · Keycloak · Docker**
+
+### New local research and ETL exercises
+
+The normal `node scripts/docker-local.mjs` startup now includes the small CPU-only ETL worker. It has **no network access or public port**, no database password and no AI/model download. Its private `lab_etl` Docker volume contains extracted document data and derived artifacts. Do not publish that volume. The selected local Nova model is reused for explicit prompt comparisons; no Azure fallback is selected.
+
+| Capability | Concrete PDF exercise | What is actually measured or stored |
+| --- | --- | --- |
+| Chunking comparison | Import the private Shelter conditions excerpt. Independently label the page that states `POLICY COVERAGE PERIOD`. In **AI Experiments**, save the question/page reference and choose **Compare chunking strategies**. | Fixed 780/160, boundary-aware recursive, embedding-similarity semantic, and hierarchical parent-labelled child chunks. Same page targets and hybrid ranker; chunk counts, hit rate@5 and MRR@5. Evaluation never replaces the live Qdrant index. Parent-context expansion is not implemented. |
+| Prompt/schema comparison | On `kaggle-invoice-51109301.pdf`, check `invoiceNumber = 51109301`, page 1, in the original. Save it as the first field in a reference version, then choose **Compare zero-shot / few-shot JSON**. | Two real local model calls. Expected values are evaluator-only. Reports JSON parsing/schema validity, exact quote/value support, reference match and runtime for this single field, not universal factuality. |
+| Bounded Nova drafts | Ask for chronology, obligations or identifier categories on the same invoice. | Schema-constrained model output, exact original quote/ID checks, literal dated phrases and category-only privacy rendering. An invalid draft is rejected; no fabricated successful replacement. Absence is limited to the inspected excerpts. |
+| Cross-document comparison | Import invoices `51109301` and `51109302` into the same **General documents** dossier. Ask Nova to compare their numbers, dates, currencies and totals separately, with sources. | These are different invoices, not matching payment evidence. No inferred settlement, merged identities or cross-currency totals. |
+| Bronze/Silver/Gold ETL | On invoice `51109301`, open **Data Pipelines → Data layers & exports**, read the copy/retention notice, consent and choose **Build data layers**. | Immutable source snapshots, original hashes where recorded, preserved raw values, locale-aware amount parsing, unknown/ambiguous-date findings, source-version receipts and actual Parquet. Bronze references do not copy PDF bytes. |
+| Reviewed Gold and SCD Type 2 | Compare the original INR `1,844,673.60` and literal `03/07/2023`. An authorized reviewer can confirm the evidence, then rerun ETL after refreshing the dossier. | Unreviewed fields stay out of Gold. Amounts are grouped by field and currency. Changed document snapshots close the prior dimension version; unchanged snapshots reuse the last completed receipt without another OCR call. SCD dates are observation times, not inferred business-effective dates. |
+
+The UI keeps the original **16 AI-assisted workflows**; research comparisons and ETL extend the existing control entries, rather than being counted as extra deployed AI models. The PDF exercise directory now covers **18 entries: 16 AI workflows plus the research-comparison and data-lineage controls**. A completed ETL run does not certify that a model answer is correct.
+
+The first live schema comparison on the pinned invoice found an exact, source-supported result with zero-shot, while few-shot abstained. That failed sample remains visible as a zero reference match: few-shot is not assumed to be better. The acceptance script verifies schema output and independently recomputes source/reference matches; it does not force every experimental variant to score 100%.
+
+The ETL worker writes Bronze/Silver snapshots before dbt validates Gold. Only a successful, current-source receipt is displayed as current in the app. Failed/stale runs do not replace a current app result. Artifacts remain private; **expiry of an original PDF does not delete analytical exports, chat history or research labels**. Remove only identified disposable test artifacts after reviewing your retention requirements; never use `docker compose down -v` against a lab you intend to keep.
+
+For a non-destructive SQL deduplication exercise, inspect the private DuckDB `silver_fields` table. Conflicting field candidates must be quarantined, not silently selected as correct:
+
+```sql
+SELECT run_id, document_id, page, field_key, COUNT(*) AS candidates
+FROM silver_fields
+GROUP BY run_id, document_id, page, field_key
+HAVING COUNT(*) > 1;
+
+WITH ranked AS (
+  SELECT *, ROW_NUMBER() OVER (
+    PARTITION BY run_id, document_id, page, field_key
+    ORDER BY rowid
+  ) AS candidate_number
+  FROM silver_fields
+)
+SELECT * FROM ranked WHERE candidate_number > 1;
+```
+
+Explicit local verification after preparing the pinned private invoice:
+
+```bash
+TEST_DOCUMENT_UPGRADE=1 TEST_PROMPTING=1 node scripts/test-oauth.mjs
+TEST_PIPELINE=1 TEST_PIPELINE_PROVIDER=docling node scripts/test-oauth.mjs
+TEST_NOVA_LOCAL=1 TEST_NOVA_CASE=CR-485a8c32-047 TEST_NOVA_TASKS=1 node scripts/test-oauth.mjs
+python3 -B scripts/test_practice_document_data.py
+```
+
+The first command uses the existing synthetic-invoice dossier `CR-485a8c32-047`; set `TEST_UPGRADE_CASE` to your own dossier containing the same prepared original. It creates private references, measured experiment records and ETL receipts, including `.local/verification/document-upgrade-latest.json`; keep that report private. The second creates an isolated processing-test dossier, scans actual PDFs and exercises duplicate/cancel/security boundaries. The third checks real Nova responses on the prepared dossier, including chronology, clause absence, identifier categories and EN/DE/VI source citations. Set `TEST_NOVA_CASE` to your own matching dossier. CPU inference takes minutes, not the sub-second time of a configuration check. None of these commands calls Azure in the local profile. PDF preparation instructions below still apply; PDFs are not bundled in Git.
+
+Python parity/primality, class weights, training-only over/undersampling and macro/micro/weighted F1 are isolated interview exercises in `scripts/practice-document-data.py`, not application AI features. Export a private research bundle and run `python3 scripts/practice-document-data.py /private/path/bundle.json` to exercise its actual PDF page metadata. SCD Type 0 means preserve the original value, Type 1 overwrites it, and this ETL implements Type 2 historical snapshots. Split datasets by source PDF before any resampling; these ten prepared documents are not a representative ML training benchmark. SMOTE, LangGraph, autonomous local tools, full multimodal image retrieval, cloud evaluation, HA and a backup/restore SLA are not claimed by these additions.
 
 [Document walkthrough](#document-walkthrough) · [16 AI workflows](#ai-workflow-directory) · [Local Docker](#local-docker-with-nova) · [Azure setup](#local-setup-with-azure-ai) · [Document pipeline](#document-pipeline-operations) · [Nova & page guides](#meet-nova-and-replay-a-page-guide) · [Troubleshooting](#troubleshooting) · [Screenshots](#workspace-tour) · [Architecture](#architecture)
 
@@ -139,7 +191,7 @@ curl --fail http://localhost:8081/actuator/health
 
 `storage-init` exiting with code **0** is expected. A healthy service is not proof of answer quality. For this profile, a new Nova evidence answer should identify **Ollama · Local LLM**. Previous saved Azure results retain their original provider; switching profiles does not rerun or relabel them. Keep the original PDF and check its amounts, currency and page citations independently.
 
-**Validation status:** application builds and automated unit/contract tests passed on **20 October 2026**. The real local-model acceptance run is **not passing**: chronology preserved the invoice date and valid page citations, but also included unrelated, undated VAT/total details. The run stopped at that assertion; the remaining task and language checks were not completed for this checkpoint. On **21 October**, the Docker stack was restarted and the English UI was inspected through Keycloak sign-in, saved Docling evidence, retrieval and question submission. The new captures do not establish a completed Nova response or resolve the failed acceptance test. Local Nova remains experimental; no Azure or Vercel deployment is included.
+**Validation status — 21 October 2026:** production-format Docker builds passed, alongside **278 frontend tests**, **276 Java tests (two skipped)**, **seven ETL tests including real dbt**, and **four separate Python exercises**. Explicit local acceptance passed **46 document-research/ETL checks**, **34 OAuth/document-pipeline checks** and **70 Nova checks** using the pinned synthetic invoice. On the rebuilt Nova path, chronology, clause absence and identifier-category checks passed; English, German and Vietnamese responses preserved the invoice identifier with exact available citations, and English also preserved the independently inspected INR gross total. A question without passport evidence was answered as unavailable, and the tested instruction-override request was blocked. The earlier chronology and nested-citation failures remain historical unapproved drafts; the current local contract rejects invalid evidence/citations rather than inventing replacements. These are scoped checks on one invoice, not a claim that all 16 workflows, arbitrary PDFs or optional model/cloud adapters are accurate or protected against every attack. Few-shot still abstains in the recorded comparison above. No Azure or Vercel deployment is included.
 
 ## Local setup with Azure AI
 
@@ -522,7 +574,7 @@ The sidebar has seven destinations. Related research and operations pages use lo
 
 Existing `#banking`, `#evaluation` and `#audit` links still open the correct section. Navigation, directory filters and page guides never start inference automatically. The optional Docling provider and the active Azure configuration are unchanged by the UI grouping.
 
-All interface screenshots embedded in this README were freshly captured from the local app on **21 October 2026**, in English, at the browser's **1280 × 720** viewport. They show the new **16-workflow directory, PDF exercises and Ollama configuration**, alongside an existing synthetic invoice dossier. They are not preloaded results in a fresh clone and do not prove every optional integration works. The displayed extraction/receipt retains its original **20 October** processing date. Original document wording, identifiers and INR formatting are preserved; the example invoice is declared synthetic by its Kaggle author. No passwords, access tokens or real customer documents are shown.
+Interface screenshots were captured from the local app on **21 October 2026**, in English. The existing gallery uses a **1280 × 720** browser viewport; the new ETL quality capture below uses the actual compact in-app browser viewport. They show the **16-workflow directory, PDF exercises and Ollama configuration**, alongside an existing synthetic invoice dossier. They are not preloaded results in a fresh clone and do not prove every optional integration works. The displayed extraction/receipt retains its original **20 October** processing date. Original document wording, identifiers and INR formatting are preserved; the example invoice is declared synthetic by its Kaggle author. No passwords, access tokens or real customer documents are shown.
 
 ### Multi-domain overview
 
@@ -548,13 +600,25 @@ For payroll, keep **Netto-Verdienst** and **Auszahlungsbetrag** separate; use th
 
 ### Document processing control room
 
-The queue shows the saved invoice extraction as **Ready for review**, not reviewer-confirmed. One set of status chips filters submissions; **Batch intake** and **Data assets & Azure** are separate tabs. Expand processing/storage settings only when needed. ClamAV remains enabled.
+The queue shows the saved invoice extraction as **Ready for review**, not reviewer-confirmed. One set of status chips filters submissions; **Batch intake** and **Data layers & exports** are separate tabs. Expand processing/storage settings only when needed. ClamAV remains enabled. Earlier gallery captures retain the prior assets-tab label; the new local ETL capture below shows the added data-layer workflow.
 
 ![21 October capture: Data Pipelines with queue, batch/assets tabs, scanner settings and review-state filters](docs/screenshots/document-pipeline-en-2026-10-21.jpg)
 
 Open **Processing details** for source identity, actual extraction counts and recorded events. The pictured receipt records **one page, two fields and two tables**, the Docling provider and its original submission/finish times. **Download processing manifest** exports metadata only. Reopening this receipt is not a new model run, and the human-review stage is not approval.
 
 ![21 October capture: saved processing receipt with source hash, recorded stages and real Docling extraction counts](docs/screenshots/document-pipeline-details-en-2026-10-21.jpg)
+
+### Actual local ETL and quality findings
+
+The new Docker worker processed the scanned synthetic invoice into **one Bronze snapshot and two Silver fields**. **Gold is zero because the source has not been reviewer-confirmed**, not because the transform failed. The receipt passed real dbt checks. The ambiguous literal date `03/07/2023` is preserved and linked back to page 1 of the original. Parquet downloads are private and require consent plus authentication. This is a single measured run, not a general quality benchmark.
+
+![21 October compact-browser capture: actual Bronze/Silver/Gold counts, passed dbt checks and an ambiguous-date finding linked to the invoice PDF](docs/screenshots/local-etl-quality-en-2026-10-21.jpg)
+
+### Compare prompts without hiding failures
+
+On the independently checked invoice-number field, zero-shot matched the exact source/reference. Few-shot produced valid JSON but no supported value. The UI retains **0% reference/quote match**, the empty observation and a direct link to the original. The **100% schema validity** in this one-sample experiment means format compliance only, not accuracy. Four chunking strategies are measured separately on the same checked page.
+
+![21 October compact-browser capture: a real few-shot abstention retained as a failed reference match, with original-PDF inspection](docs/screenshots/prompt-comparison-en-2026-10-21.jpg)
 
 ### Retrieve evidence in AI Studio
 
@@ -607,6 +671,14 @@ flowchart TD
         L -.-> VL[Optional separate page-vision model]
         J --> E[Source-bound extraction and retrieval experiments]
         E --> P
+        E --> CK[Fixed / recursive / semantic / hierarchical-child comparisons]
+        E -->|Explicit zero-shot / few-shot schema experiment| OL
+        J -->|Consent and version-bound private spool| ET[Offline DuckDB + dbt worker]
+        ET --> BR[Bronze · source snapshots and recorded hashes]
+        BR --> SI[Silver · normalized fields and quality findings]
+        SI -->|Explicitly reviewed values only| GO[Gold · currency-separated aggregates]
+        ET --> PV[Private Parquet and SCD Type 2 history]
+        ET -->|Scoped immutable receipt, reject changed sources| P
         J --> X[Redis quotas / optional OpenTelemetry]
         A[Azure CLI token-renewal helper]
     end
@@ -651,6 +723,8 @@ Two separate identities:
 | `clamav` | Scans uploads before extraction; persistent signature volume |
 | `docling` | Optional internal CPU parser, isolated network and temporary scratch storage; enabled with the separate Docling Compose profile |
 | `ollama` | CPU-only local Nova engine on an internal network; weights persist separately in `lab_ollama`; no host port |
+| `etl` | Offline DuckDB/dbt transforms, SCD Type 2 and private Parquet in `lab_etl`; no network or host port |
+| `etl-init` | One-shot ownership setup for the private analytical volume; exit code 0 is expected |
 | `storage-init` | One-shot private-volume ownership task |
 | `otel-collector` | Optional local tracing override; no automatic cloud export |
 

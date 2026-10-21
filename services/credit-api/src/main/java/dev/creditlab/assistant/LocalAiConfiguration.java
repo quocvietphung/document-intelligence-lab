@@ -21,6 +21,7 @@ public class LocalAiConfiguration {
       @Value("${app.ai.local-model:}") String model) {
     return OllamaChatModel.builder().baseUrl(LocalModelEndpoint.validate(endpoint))
         .modelName(LocalModelEndpoint.model(model)).temperature(0.0).think(false).numCtx(4096).numPredict(420)
-        .timeout(Duration.ofSeconds(180)).maxRetries(0).logRequests(false).logResponses(false).build();
+        .timeout(Duration.ofSeconds(180)).maxRetries(0).logRequests(false).logResponses(false)
+        .supportedCapabilities(dev.langchain4j.model.chat.Capability.RESPONSE_FORMAT_JSON_SCHEMA).build();
   }
 }

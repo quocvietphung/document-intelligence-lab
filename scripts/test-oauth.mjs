@@ -146,18 +146,18 @@ check(
   "Access token has API audience, tenant and advisor role",
 );
 const bearer = { Authorization: `Bearer ${tokens.access_token}` };
+let expiresAt=Number(claims.exp)*1000;
+// CPU acceptance can outlive a short access token. Refresh normally, never extend realm TTL.
+const localRequest=async(url,options={})=>{
+  if(options.headers?.Authorization===bearer.Authorization&&[new URL(web).origin,new URL(api).origin].includes(new URL(url).origin)&&Date.now()>expiresAt-30000){
+    const refreshed=await exchange({grant_type:'refresh_token',client_id:clientId,refresh_token:tokens.refresh_token});
+    check(refreshed.ok,'Local model test session refreshes through Keycloak');Object.assign(tokens,await refreshed.json());
+    bearer.Authorization=`Bearer ${tokens.access_token}`;expiresAt=Number(JSON.parse(Buffer.from(tokens.access_token.split('.')[1],'base64url')).exp)*1000;
+    options={...options,headers:{...options.headers,...bearer}};
+  }
+  return request(url,options);
+};
 if(process.env.TEST_NOVA_LOCAL==='1') {
-  let expiresAt=Number(claims.exp)*1000;
-  // CPU acceptance can outlive a short access token. Refresh normally, never extend realm TTL.
-  const localRequest=async(url,options={})=>{
-    if(options.headers?.Authorization===bearer.Authorization&&[new URL(web).origin,new URL(api).origin].includes(new URL(url).origin)&&Date.now()>expiresAt-30000){
-      const refreshed=await exchange({grant_type:'refresh_token',client_id:clientId,refresh_token:tokens.refresh_token});
-      check(refreshed.ok,'Local model test session refreshes through Keycloak');Object.assign(tokens,await refreshed.json());
-      bearer.Authorization=`Bearer ${tokens.access_token}`;expiresAt=Number(JSON.parse(Buffer.from(tokens.access_token.split('.')[1],'base64url')).exp)*1000;
-      options={...options,headers:{...options.headers,...bearer}};
-    }
-    return request(url,options);
-  };
   const {auditNovaLocal}=await import('./test-nova-local.mjs');await auditNovaLocal({request:localRequest,check,bearer,web,api});
   const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
   check(ended.status===204,'Local Nova verification session logged out');console.log(`${checks} ${process.env.TEST_NOVA_PREPARE_ONLY==='1'?'document-preparation (no LLM)':'local Nova acceptance'} checks passed.`);process.exit(0);
@@ -170,6 +170,11 @@ if(process.env.TEST_INTEGRATIONS==='1') {
 if(process.env.TEST_BATCHES==='1') {
   const {auditBatches}=await import('./test-batches.mjs');await auditBatches({request,check,bearer,web,api});
   console.log(`PASS ${checks} OAuth and batch intake checks`);process.exit(0);
+}
+if(process.env.TEST_DOCUMENT_UPGRADE==='1') {
+  const {auditDocumentUpgrade}=await import('./test-document-upgrade.mjs');await auditDocumentUpgrade({request:localRequest,check,bearer,web,api});
+  const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
+  check(ended.status===204,'Upgrade acceptance session logged out');console.log(`PASS ${checks} local document research and ETL checks`);process.exit(0);
 }
 if(process.env.TEST_PIPELINE==='1') {
   const {auditPipeline}=await import('./test-pipeline.mjs');await auditPipeline({request,check,bearer,web,api});

@@ -17,6 +17,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics
 class CreditSecurityTest {
   @Autowired MockMvc mvc;
+  @Test void localEtlRequiresTenantAndSeparatesReadAndWriteRoles()throws Exception{
+    String path="/api/cases/CR-2026-1048/platform/etl",artifact=path+"/etl-12345678-1234-1234-1234-123456789abc/bronze";
+    var advisor=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"));
+    var reviewer=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_REVIEWER"));
+    for(String route:new String[]{path,artifact}){
+      mvc.perform(get(route)).andExpect(status().isUnauthorized());
+      mvc.perform(get(route).with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADVISOR")))).andExpect(status().isForbidden());
+      mvc.perform(get(route).with(jwt().jwt(j->j.claim("tenant_id","foreign")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR")))).andExpect(status().isNotFound());
+      mvc.perform(get(route).with(jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_CUSTOMER")))).andExpect(status().isForbidden());
+    }
+    mvc.perform(get(path).with(advisor)).andExpect(status().isOk()).andExpect(jsonPath("$.enabled").value(false)).andExpect(jsonPath("$.runs.length()").value(0));
+    mvc.perform(get(path).with(reviewer)).andExpect(status().isOk());
+    mvc.perform(post(path).with(reviewer).contentType("application/json").content("{\"caseVersion\":0,\"requestId\":\"00000000-0000-0000-0000-000000000001\",\"consent\":true}")).andExpect(status().isForbidden());
+    mvc.perform(post(path).with(advisor).contentType("application/json").content("{\"caseVersion\":0,\"requestId\":\"00000000-0000-0000-0000-000000000001\",\"consent\":false}")).andExpect(status().isBadRequest());
+  }
   @Test void integrationsAreTenantScopedReadOnlyConfigurationNotFakeLiveHealth()throws Exception{
     String path="/api/cases/CR-2026-1048/platform/integrations";
     var advisor=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"));

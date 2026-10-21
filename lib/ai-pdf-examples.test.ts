@@ -16,4 +16,12 @@ describe('PDF exercises',()=>{
     expect(pdfExampleCopy('en').hint).toContain('not a passing result');
     expect(workflowPdfExample('payment','en')).toBeUndefined();
   });
+  it('anchors the new chunking, prompting, ETL and cross-document exercises to concrete PDFs',()=>{
+    for(const locale of ['en','de','vi'])for(const id of ['experiments','lineage','reconcile']){
+      const example=workflowPdfExample(id,locale);expect(example?.file).toBe('kaggle-invoice-51109301.pdf');expect(example?.question).toContain('51109301');
+    }
+    expect(workflowPdfExample('reconcile','en')?.question).toContain('51109302');
+    expect(workflowPdfExample('experiments','en')?.question).toContain('schema');
+    expect(workflowPdfExample('lineage','en')?.question).toContain('Gold');
+  });
 });

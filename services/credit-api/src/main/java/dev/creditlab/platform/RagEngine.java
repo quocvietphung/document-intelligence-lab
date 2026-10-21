@@ -57,15 +57,18 @@ public class RagEngine {
     if(cache.size()>2500)cache.clear();cache.put(key,value);return value;
   }
   public List<Chunk> chunks(CreditCase item) {
+    return chunks(item,DocumentChunking.Strategy.FIXED);
+  }
+  public List<Chunk> chunks(CreditCase item,DocumentChunking.Strategy strategy) {
+    if(strategy==DocumentChunking.Strategy.SEMANTIC&&!semantic)throw new IllegalStateException("Semantic chunking requires a configured embedding model");
     var out=new ArrayList<Chunk>();
     for(var d:item.documents()) {
       if(d.status().equals("missing")||!d.originalAvailable()) continue;
       for(var p:d.pages()) {
-        String text=p.text();int index=0;
-        for(int start=0;start<text.length();start+=620) {
-          String part=text.substring(start,Math.min(text.length(),start+780));
-          out.add(new Chunk(d.id()+":p"+p.number()+":c"+(++index),d.id(),d.name(),p.number(),"page",part));
-          if(start+780>=text.length())break;
+        int index=0;
+        for(var part:DocumentChunking.split(p.text(),strategy,(a,b)->cosine(vector(a),vector(b)))) {
+          String parent=part.parent()==0?"":":parent"+part.parent();
+          out.add(new Chunk(d.id()+":p"+p.number()+parent+":c"+(++index),d.id(),d.name(),p.number(),part.parent()==0?"page":"hierarchical-child",part.text()));
         }
       }
       d.fields().stream().collect(java.util.stream.Collectors.groupingBy(CreditCase.Field::page,TreeMap::new,java.util.stream.Collectors.toList())).forEach((page,fields)->out.add(new Chunk(d.id()+":p"+page+":fields",d.id(),d.name(),page,"fields",fields.stream().map(f->f.label()+": "+f.value()+"; evidence="+f.evidence()).reduce("",(a,b)->a+"\n"+b))));

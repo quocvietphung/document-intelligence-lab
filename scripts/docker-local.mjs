@@ -6,7 +6,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const localModel='qwen3:4b-instruct-2507-q4_K_M';
 export const ollamaImage='document-lab-ollama-cpu:0.40.6';
 export function validateModel(value){if(!/^[a-zA-Z0-9][a-zA-Z0-9_.:/-]{0,99}$/.test(value)||value.includes('..')||value.includes('://')||/(?:-cloud|:cloud)(?::.*)?$/i.test(value))throw Error('Select a local model identifier, not a URL or cloud model');return value;}
-export function localCompose(model=localModel){return {args:['compose','-f','docker-compose.yml','-f','docker-compose.platform.yml','-f','docker-compose.docling.yml','-f','docker-compose.nova-local.yml'],env:{...process.env,OLLAMA_CHAT_MODEL:validateModel(model)}};}
+export function localCompose(model=localModel){return {args:['compose','-f','docker-compose.yml','-f','docker-compose.platform.yml','-f','docker-compose.docling.yml','-f','docker-compose.nova-local.yml','-f','docker-compose.etl.yml'],env:{...process.env,OLLAMA_CHAT_MODEL:validateModel(model)}};}
 export function warmupRequest(model=localModel){return JSON.stringify({model:validateModel(model),prompt:'',stream:false,keep_alive:'30m',options:{num_ctx:4096}});}
 function run(args,options={}){const result=spawnSync('docker',args,{cwd:root,stdio:'inherit',...options});if(result.error||result.status!==0)throw Error('Docker step failed; existing documents and databases were not removed');return result;}
 function output(args){return execFileSync('docker',args,{cwd:root,encoding:'utf8',timeout:15000,stdio:['ignore','pipe','pipe']}).trim();}
@@ -43,7 +43,7 @@ async function main(){
   if(!flags.includes('--no-build')){
     // Do not compete with resident model/cache RAM while rebuilding the app.
     run([...args,'stop','ollama'],{env});
-    run([...args,'build','web','credit-api'],{env});
+    run([...args,'build','web','credit-api','etl'],{env});
   }
   run([...args,'up','-d','--no-build','--wait','--wait-timeout','420'],{env});
   console.log('Loading the selected local model into RAM; no document or question is sent.');

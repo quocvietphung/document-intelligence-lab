@@ -1,0 +1,41 @@
+# Private CPU-only analytical worker. No public port, database credentials or cloud access.
+services:
+  etl-init:
+    image: busybox:1.37
+    user: root
+    command: ["sh", "-c", "chown 1000:1000 /data && chmod 700 /data"]
+    volumes: ["lab_etl:/data"]
+  etl:
+    build: ./services/document-etl
+    image: document-lab-etl:1
+    user: "1000:1000"
+    restart: unless-stopped
+    network_mode: none
+    read_only: true
+    tmpfs: ["/tmp:size=128m,mode=1777"]
+    environment:
+      ETL_ROOT: /data
+      DBT_SEND_ANONYMOUS_USAGE_STATS: "false"
+      DO_NOT_TRACK: "1"
+      HOME: /tmp
+    volumes: ["lab_etl:/data"]
+    mem_limit: 512m
+    cpus: 1
+    depends_on:
+      etl-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "from pathlib import Path; import time; assert time.time()-Path('/data/heartbeat').stat().st_mtime<90"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+  credit-api:
+    environment:
+      LOCAL_ETL_ENABLED: "true"
+      LOCAL_ETL_ROOT: /app/etl
+    volumes: ["lab_etl:/app/etl"]
+    depends_on:
+      etl:
+        condition: service_healthy
+volumes:
+  lab_etl:

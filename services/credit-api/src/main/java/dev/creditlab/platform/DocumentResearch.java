@@ -22,13 +22,15 @@ public class DocumentResearch {
   public record DatasetRequest(@Min(0) long caseVersion, @NotBlank @Size(max=100) String name,
       @NotNull @Size(max=100) List<@NotNull @Valid FieldLabel> fields,
       @NotNull @Size(max=30) List<@NotNull @Valid QuestionLabel> questions, @AssertTrue boolean sourceChecked) {}
-  public enum Suite { EXTRACTION, RETRIEVAL }
+  public enum Suite { EXTRACTION, RETRIEVAL, CHUNKING, PROMPTING }
   public record RunRequest(@Min(0) long caseVersion, @NotBlank @Size(max=80) String datasetId, @NotNull Suite suite) {}
   public record ExportRequest(@Min(0) long caseVersion) {}
   private final CreditCaseService cases;
   private final LabStore store;
   private final RagEngine rag;
   private final DistributedLimits limits;
+  @org.springframework.beans.factory.annotation.Autowired(required=false) private dev.langchain4j.model.chat.ChatModel promptModel;
+  @org.springframework.beans.factory.annotation.Value("${app.ai.provider:azure}") private String chatProvider="azure";
   @org.springframework.beans.factory.annotation.Value("${app.platform.worker-enabled:true}") private boolean workerEnabled=true;
 
   public DocumentResearch(CreditCaseService cases, LabStore store, RagEngine rag, DistributedLimits limits) {
@@ -74,7 +76,8 @@ public class DocumentResearch {
   private Map<String,Object> reference(String tenant,String id,CreditCase item,RunRequest request) {
     var dataset=store.find(tenant,id,"document-reference",request.datasetId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
     if(!fingerprint(item).equals(dataset.get("sourceHash")))throw new ResponseStatusException(HttpStatus.CONFLICT,"Source documents changed; create a new checked reference version");
-    if(rows(dataset.get(request.suite()==Suite.EXTRACTION?"fields":"questions")).isEmpty())bad("No labels for this experiment");
+    if(rows(dataset.get(request.suite()==Suite.EXTRACTION||request.suite()==Suite.PROMPTING?"fields":"questions")).isEmpty())bad("No labels for this experiment");
+    if(request.suite()==Suite.PROMPTING&&(promptModel==null||!chatProvider.equals("ollama")))throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Prompt comparison requires the configured local Nova model; no cloud fallback");
     return dataset;
   }
   public Map<String,Object> enqueue(String tenant,String id,String actor,RunRequest request) {
@@ -111,18 +114,29 @@ public class DocumentResearch {
   private Map<String,Object> run(String tenant,String id,String actor,RunRequest request,String resultId,boolean reserve) {
     cases.allowWrite(); var item=current(tenant,id,request.caseVersion());
     var dataset=reference(tenant,id,item,request);
-    var labels=rows(dataset.get(request.suite()==Suite.EXTRACTION?"fields":"questions"));
+    var labels=rows(dataset.get(request.suite()==Suite.EXTRACTION||request.suite()==Suite.PROMPTING?"fields":"questions"));
     if(labels.isEmpty())bad("No labels for this experiment");
     if(reserve)limits.reserve(tenant,actor,"document-experiment",6);
     long start=System.nanoTime();
     var variants=new ArrayList<Map<String,Object>>();
     if(request.suite()==Suite.EXTRACTION)variants.add(extraction(item,labels));
-    else for(var strategy:RagEngine.Strategy.values())variants.add(retrieval(item,labels,strategy));
+    else if(request.suite()==Suite.PROMPTING){
+      var label=labels.getFirst();var doc=source(item,label.get("documentId").toString(),number(label.get("page")));
+      variants.addAll(dev.creditlab.assistant.PromptExperiment.compare(promptModel,doc,number(label.get("page")),label.get("field").toString(),label.get("expected").toString()));
+    }
+    else if(request.suite()==Suite.RETRIEVAL)for(var strategy:RagEngine.Strategy.values())variants.add(retrieval(item,labels,strategy,rag.chunks(item),strategy.name()));
+    else for(var strategy:DocumentChunking.Strategy.values()) {
+      if(strategy==DocumentChunking.Strategy.SEMANTIC&&!Boolean.TRUE.equals(rag.configuration().get("semantic")))continue;
+      long prepare=System.nanoTime();var chunks=rag.chunks(item,strategy);
+      var variant=new LinkedHashMap<>(retrieval(item,labels,RagEngine.Strategy.HYBRID,chunks,strategy.name()));
+      variant.put("preparationMs",(System.nanoTime()-prepare)/1_000_000);variants.add(variant);
+    }
     var result=new LinkedHashMap<String,Object>();
     result.put("id",resultId);result.put("time",Instant.now().toString());result.put("actor",actor);
     result.put("caseVersion",item.version());result.put("sourceHash",fingerprint(item));result.put("datasetId",dataset.get("id"));
     result.put("datasetName",dataset.get("name"));result.put("suite",request.suite().name());result.put("variants",variants);
     result.put("durationMs",(System.nanoTime()-start)/1_000_000);result.put("azureCalls",0);
+    result.put("localModelCalls",request.suite()==Suite.PROMPTING?2:0);
     result.put("methodVersion","source-evaluation-v1");result.put("configuration",rag.configuration());
     store.insert(tenant,id,"document-experiment",result.get("id").toString(),result);return result;
   }
@@ -141,9 +155,9 @@ public class DocumentResearch {
     metrics.put("precision",ratio(tp,tp+fp));metrics.put("recall",ratio(tp,tp+fn));metrics.put("f1",ratio(2*tp,2*tp+fp+fn));
     return Map.of("method","EXTRACTION","samples",labels.size(),"metrics",metrics,"rows",results);
   }
-  private Map<String,Object> retrieval(CreditCase item,List<Map<String,Object>> labels,RagEngine.Strategy strategy) {
+  private Map<String,Object> retrieval(CreditCase item,List<Map<String,Object>> labels,RagEngine.Strategy strategy,List<RagEngine.Chunk> chunks,String method) {
     // Only actual original pages/fields/tables. No generated case summary or policy can be a gold hit.
-    var corpus=rag.chunks(item).stream().filter(c->originals(item).stream().anyMatch(d->d.id().equals(c.documentId()))).toList();
+    var corpus=chunks.stream().filter(c->originals(item).stream().anyMatch(d->d.id().equals(c.documentId()))).toList();
     var results=new ArrayList<Map<String,Object>>();double reciprocal=0;int found=0;
     for(var label:labels) {
       var search=rag.benchmark(item,corpus,label.get("question").toString(),5,strategy);
@@ -151,7 +165,8 @@ public class DocumentResearch {
       if(rank>0){found++;reciprocal+=1.0/rank;}
       var row=new LinkedHashMap<>(label);row.put("rank",rank);row.put("passed",rank>0);row.put("hits",search.hits().stream().map(h->Map.of("id",h.id(),"documentId",h.documentId(),"page",h.page(),"score",h.score())).toList());results.add(row);
     }
-    return Map.of("method",strategy.name(),"samples",labels.size(),"metrics",Map.of("hitRateAt5",ratio(found,labels.size()),"mrrAt5",Math.round(reciprocal/labels.size()*10000)/100.0),"rows",results);
+    return Map.of("method",method,"samples",labels.size(),"chunks",corpus.size(),"averageCharacters",Math.round(corpus.stream().mapToInt(c->c.text().length()).average().orElse(0)),
+        "metrics",Map.of("hitRateAt5",ratio(found,labels.size()),"mrrAt5",Math.round(reciprocal/labels.size()*10000)/100.0),"rows",results);
   }
   /** Private, explicit download. Original PDFs never leave their private store through this export. */
   public Map<String,Object> export(String tenant,String id,String actor,long version) {

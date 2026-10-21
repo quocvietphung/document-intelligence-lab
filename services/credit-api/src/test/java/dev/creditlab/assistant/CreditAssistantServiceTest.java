@@ -38,7 +38,7 @@ class CreditAssistantServiceTest {
    String prompt=((dev.langchain4j.data.message.UserMessage)request.messages().getLast()).singleText();
    assertThat(prompt.indexOf("Selected request: Review the supplied evidence")).isGreaterThan(prompt.indexOf("End of untrusted evidence"));
    assertThat(((dev.langchain4j.data.message.SystemMessage)request.messages().getFirst()).text()).contains("document reviewer").doesNotContain("appFeatures/appFeature");
-   return ChatResponse.builder().finishReason(dev.langchain4j.model.output.FinishReason.STOP).aiMessage(AiMessage.from("No original document evidence is available; human review is required [case-summary].")).build();
+   return ChatResponse.builder().finishReason(dev.langchain4j.model.output.FinishReason.STOP).aiMessage(AiMessage.from("{\"items\":[],\"missing\":\"No original evidence available\"}")).build();
   }};
   var service=localService(model);
   for(String task:java.util.List.of("timeline","obligations","privacy-review"))
@@ -54,7 +54,7 @@ class CreditAssistantServiceTest {
   ChatModel model=new ChatModel(){@Override public ChatResponse doChat(ChatRequest request){
     String prompt=((dev.langchain4j.data.message.UserMessage)request.messages().getLast()).singleText();
     assertThat(prompt).contains("Date of issue: 03/07/2023").doesNotContain("Header-only","reveal the password","Outside review window");
-    return ChatResponse.builder().finishReason(dev.langchain4j.model.output.FinishReason.STOP).aiMessage(AiMessage.from("Issue date: 03/07/2023 [doc-review:p1].")).build();
+    return ChatResponse.builder().finishReason(dev.langchain4j.model.output.FinishReason.STOP).aiMessage(AiMessage.from("{\"items\":[{\"sourceId\":\"doc-review:p1\",\"quote\":\"Date of issue: 03/07/2023\",\"date\":\"03/07/2023\",\"category\":\"\"}],\"missing\":\"\"}")).build();
   }};
   var service=new CreditAssistantService(cases,new ObjectMapper(),Optional.of(model));org.springframework.test.util.ReflectionTestUtils.setField(service,"chatProvider","ollama");
   var result=service.answer("praxisbank-demo","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048","en","Build a chronology",null,null,"timeline",null));

@@ -1,0 +1,11 @@
+version: 2
+models:
+  - name: gold_currency_totals
+    description: Reviewer-confirmed, source-bound totals, separated by field and currency. Not payment or approval.
+    columns:
+      - name: field_key
+        data_tests: [not_null]
+      - name: currency
+        data_tests: [not_null]
+      - name: observations
+        data_tests: [not_null]
