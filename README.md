@@ -37,7 +37,11 @@ flowchart LR
 
 Try synthetic invoice **51109301** in a **General documents** dossier. After confirming **Import & analyze**, follow its job in **Data Pipelines**, then open **View result & PDF** from **Analysis results**. Ask Nova: *“What invoice number, currency and gross total are stated? Cite the source page.”* Open each citation and compare the original; a generated answer is not human approval. Local CPU generation can take minutes and can fail or return an incorrect draft; see the [validation status and setup](#local-docker-with-nova).
 
-This is a navigation diagram, **not a screen recording or proof of a passing run**. Recorded English walkthrough media has not yet been added; the dated screenshots below remain historical captures.
+### English screen walkthrough
+
+![Edited local walkthrough: Keycloak, 16-workflow overview, saved Docling result, protected PDF, evidence search and a pending Nova question](docs/screenshots/document-to-nova-flow-en-2026-10-21.gif)
+
+Captured from the running English Docker workspace on **21 October 2026**. This is an **edited sequence of nine real screenshots**, not continuous video or a latency benchmark; each scene is held for reading and waits are omitted. The invoice extraction/processing receipt was saved on **20 October** and opened again, not re-uploaded for the animation. The last scene shows a real submitted Nova question **still awaiting a response**; no completed answer or human approval is depicted. The Keycloak password field is empty. See the [full-size screen gallery](#workspace-tour) and [known model limitations](#local-docker-with-nova).
 
 ## Open-source scope
 
@@ -135,7 +139,7 @@ curl --fail http://localhost:8081/actuator/health
 
 `storage-init` exiting with code **0** is expected. A healthy service is not proof of answer quality. For this profile, a new Nova evidence answer should identify **Ollama · Local LLM**. Previous saved Azure results retain their original provider; switching profiles does not rerun or relabel them. Keep the original PDF and check its amounts, currency and page citations independently.
 
-**Validation status (20 October 2026):** application builds and automated unit/contract tests passed. The real local-model acceptance run is **not passing**: chronology preserved the invoice date and valid page citations, but also included unrelated, undated VAT/total details. The run stopped at that assertion; the remaining task and language checks were not completed for this checkpoint. Local Nova is experimental, not a production-certified document reviewer. Browser visual verification and refreshed screenshots are also pending; no Azure or Vercel deployment is included in this update.
+**Validation status:** application builds and automated unit/contract tests passed on **20 October 2026**. The real local-model acceptance run is **not passing**: chronology preserved the invoice date and valid page citations, but also included unrelated, undated VAT/total details. The run stopped at that assertion; the remaining task and language checks were not completed for this checkpoint. On **21 October**, the Docker stack was restarted and the English UI was inspected through Keycloak sign-in, saved Docling evidence, retrieval and question submission. The new captures do not establish a completed Nova response or resolve the failed acceptance test. Local Nova remains experimental; no Azure or Vercel deployment is included.
 
 ## Local setup with Azure AI
 
@@ -253,7 +257,7 @@ Open **[http://localhost:3000/en](http://localhost:3000/en)**. German: `/de`; Vi
 2. On **Sign in to your account**, enter username **`advisor.demo`** and password **`demo-password`**, then click **Sign In**. Use the app account here, not the Keycloak administrator account.
 3. Keycloak redirects back to `http://localhost:3000/en`. The workspace and **Sign out** button confirm the browser session is active; open a dossier to access its protected data.
 
-![English Keycloak sign-in screen for the local Document Intelligence Lab, with the example username and an empty password field](docs/screenshots/keycloak-login-en-2026-10-18.jpg)
+![21 October capture: local English Keycloak sign-in screen, example username and an empty password field](docs/screenshots/keycloak-login-en-2026-10-21.jpg)
 
 This is the real local Keycloak screen; the password field is intentionally empty in the screenshot. If you are already signed in, the app may reuse the existing session without displaying this form. Start each login from the app instead of bookmarking a temporary Keycloak authentication URL.
 
@@ -388,7 +392,7 @@ The helper downloads only allowlisted files, verifies source/version hashes and 
 
 Keep the Azure token-renewal helper running for cloud analysis. Missing or modified private PDFs disable their cards; the web app never silently downloads a replacement. The old `prepare-insurance-references.py` entry point remains compatible and prepares only the four insurance references.
 
-![18 October capture: English insurance reference library with source-page mapping and rights disclosures](docs/screenshots/insurance-kaggle-library-en-2026-10-18.jpg)
+The [current screen gallery](#workspace-tour) uses the synthetic invoice example. Insurance and DATEV follow the same protected result/PDF workflow, but those domains were not freshly recorded in this walkthrough; their publisher PDFs remain private.
 
 With the Azure Docker stack running and all eight private files prepared, this explicit integration test creates two local research dossiers, scans/analyzes all eight PDFs and checks Nova's source links and original INR currency. It uses your configured Azure inference and may incur usage charges:
 
@@ -518,39 +522,45 @@ The sidebar has seven destinations. Related research and operations pages use lo
 
 Existing `#banking`, `#evaluation` and `#audit` links still open the correct section. Navigation, directory filters and page guides never start inference automatically. The optional Docling provider and the active Azure configuration are unchanged by the UI grouping.
 
-Interface screenshots below and in the setup/sample sections were captured from the local app on **18 October 2026**, in English. They predate the **20 October additions: 16 AI workflows, PDF exercises and local Nova**; older counts/provider badges in images are historical, not current runtime metadata. They show existing research dossiers and saved results, not dossiers preloaded into a fresh clone. German labels and number formatting inside source evidence are deliberately preserved.
+All interface screenshots embedded in this README were freshly captured from the local app on **21 October 2026**, in English, at the browser's **1280 × 720** viewport. They show the new **16-workflow directory, PDF exercises and Ollama configuration**, alongside an existing synthetic invoice dossier. They are not preloaded results in a fresh clone and do not prove every optional integration works. The displayed extraction/receipt retains its original **20 October** processing date. Original document wording, identifiers and INR formatting are preserved; the example invoice is declared synthetic by its Kaggle author. No passwords, access tokens or real customer documents are shown.
 
 ### Multi-domain overview
 
-![18 October capture: English overview before the 16-workflow update](docs/screenshots/workspace-overview-en-2026-10-18.jpg)
+![21 October capture: English Overview with 16 AI workflows and explicit Docling, MiniLM and Ollama configuration](docs/screenshots/workspace-overview-en-2026-10-21.jpg)
 
 The directory separates AI from rules and human review. Expand a group or search for a task to find its engine, limits and direct destination; opening a destination does not run inference.
 
-![18 October capture: six capability groups and AI-assisted versus human-review filters](docs/screenshots/ai-capability-directory-en-2026-10-18.jpg)
+![21 October capture: AI capability directory with an expanded invoice PDF exercise and direct tool link](docs/screenshots/ai-capability-directory-en-2026-10-21.jpg)
 
 ### Results first, references when needed
 
 **Analysis results** is the destination after import. Each compact result links directly to **View result & PDF** and Nova; the reference library stays collapsed until needed. Field/page/table counts describe extraction output, not accuracy.
 
-![18 October capture: DATEV result list with separate net earnings and payout](docs/screenshots/document-results-en-2026-10-18.jpg)
+![21 October capture: Documents and review with Docling intake and the saved invoice result list](docs/screenshots/document-results-en-2026-10-21.jpg)
 
-### DATEV original and extraction
+### Original PDF and extraction
 
-The current viewer places the private original beside extracted fields, source quotations and page links. **Net earnings and payout are separate values.** OCR confidence is inspectable under recognition details; it is not measured accuracy. The visible DATEV excerpt is from a fictional publisher sample, not a redistributed original PDF.
+The viewer places the protected original beside extracted fields, source quotations and page links. This fresh capture shows synthetic invoice **51109301** and the original **INR 1,844,673.60** gross total, not a converted EUR amount. OCR signals are inspectable under recognition details; they are not measured accuracy. Extraction remains awaiting independent human review.
 
-![18 October capture: DATEV PDF viewer with extracted fields and source evidence](docs/screenshots/datev-evidence-en-2026-10-18.jpg)
+![21 October capture: synthetic invoice original beside Docling fields, page citations and Nova field-explanation actions](docs/screenshots/invoice-evidence-en-2026-10-21.jpg)
 
-For insurance and invoices, the same workflow uses the [private Kaggle reference library](#kaggle-document-library), with explicit source and rights information. Full originals remain private.
+For payroll, keep **Netto-Verdienst** and **Auszahlungsbetrag** separate; use the [private DATEV references](#datev-payroll-references). Insurance uses the [private Kaggle reference library](#kaggle-document-library) with explicit source/rights information. The screenshot is a reviewed UI illustration, not redistribution of the source PDF bundle; full originals remain private.
 
 ### Document processing control room
 
-The current queue shows a saved DATEV extraction and its reviewer-confirmed state. One set of status chips filters submissions; **Batch intake** and **Data assets & Azure** are separate tabs. Expand processing/storage settings only when needed.
+The queue shows the saved invoice extraction as **Ready for review**, not reviewer-confirmed. One set of status chips filters submissions; **Batch intake** and **Data assets & Azure** are separate tabs. Expand processing/storage settings only when needed. ClamAV remains enabled.
 
-![18 October capture: document pipeline before the wider lifecycle guide was added](docs/screenshots/document-pipeline-en-2026-10-18.jpg)
+![21 October capture: Data Pipelines with queue, batch/assets tabs, scanner settings and review-state filters](docs/screenshots/document-pipeline-en-2026-10-21.jpg)
 
-Open **Processing details** for the source identity, actual extraction counts and recorded events. **Download processing manifest** exports metadata only. The pictured historical job predates detailed event recording; its missing timestamps are not reconstructed or presented as a new successful run.
+Open **Processing details** for source identity, actual extraction counts and recorded events. The pictured receipt records **one page, two fields and two tables**, the Docling provider and its original submission/finish times. **Download processing manifest** exports metadata only. Reopening this receipt is not a new model run, and the human-review stage is not approval.
 
-![18 October capture: processing receipt and historical timestamp limitations](docs/screenshots/document-pipeline-details-en-2026-10-18.jpg)
+![21 October capture: saved processing receipt with source hash, recorded stages and real Docling extraction counts](docs/screenshots/document-pipeline-details-en-2026-10-21.jpg)
+
+### Retrieve evidence in AI Studio
+
+Search the selected dossier for **invoice number and gross total**, then inspect the ranked snippets and **Open source** links. This capture shows a real local retrieval over seven indexed chunks; the time and scores belong to this single request, not a benchmark. Route cards are application metadata, not proof that an LLM invoked the listed tools. MiniLM is English-focused and relevance scores are not answer-accuracy percentages.
+
+![21 October capture: local MiniLM, Qdrant and BM25 retrieval with invoice field evidence](docs/screenshots/ai-studio-evidence-en-2026-10-21.jpg)
 
 ### Meet Nova and replay a page guide
 
@@ -560,15 +570,15 @@ Nova's portrait is an **AI-generated fictional character**, not a real advisor. 
 
 Open the portrait button at the bottom right. Choose **App guidance** for local instructions and links, or **Evidence analysis** for source-based questions to the explicitly configured local/Azure model. The **compass icon** starts a step-by-step guide for the current page; **Expand reading area** gives longer answers more room. Enter sends; Shift+Enter adds a line break.
 
-The screenshot shows **local App guidance**, not an Azure OpenAI answer. To test the generative model, follow [Test Nova](#7-analyze-a-document-and-test-nova), select **Evidence analysis**, send a question and independently check its page sources. Source links make an answer inspectable; they do not replace human verification.
+The fresh screenshot shows **Evidence analysis** immediately after pressing Enter on a question about the invoice number and currency. **Generation is still pending**; it is not a completed local/Azure answer or an approved result. To test the model, follow [Local Docker with Nova](#local-docker-with-nova) or [Azure Test Nova](#7-analyze-a-document-and-test-nova), wait for a completed answer and independently inspect its sources. Source links do not replace human verification.
 
-![18 October capture: Nova app guidance, not a local Ollama inference result](docs/screenshots/nova-profile-guide-en-2026-10-18.jpg)
+![21 October capture: Nova portrait and a submitted local-model question while generation is pending](docs/screenshots/nova-local-question-en-2026-10-21.jpg)
 
 ### Source-bound experiments
 
 The **Research lab** groups **Experiments**, **Domain insights** and **Document inventory** as local tabs. Read labels independently from the original, save a reference version, then evaluate extraction or compare BM25/vector/hybrid retrieval. Results belong to that labelled sample, not general model accuracy. Operations similarly keeps **Activity log** inside its section rather than adding another main-menu entry.
 
-![18 October capture: English source-bound AI experiment workspace](docs/screenshots/research-experiments-en-2026-10-18.jpg)
+![21 October capture: Research lab reference-creation screen with no fabricated experiment scores](docs/screenshots/research-experiments-en-2026-10-21.jpg)
 
 ## Architecture
 
