@@ -82,14 +82,16 @@ public class CreditAssistantService {
           var generated=StructuredReview.generate(model.get(),reviewPrompt(item,request,sources),request.taskId(),sources);
           answer=StructuredReview.render(generated,request.taskId(),request.locale(),sources);
         }else{
-        var generated=AiServices.builder(DocumentReviewModel.class).chatModel(model.get()).build().review(prompt);
+        String localPrompt=DocumentReviewModel.prompt(item.domain(),"bilingual-summary".equals(request.taskId())?"paired German and Vietnamese paragraphs":language(request.locale()),question,sources);
+        if(request.revisionOf()!=null&&!request.revisionOf().isBlank())localPrompt+="\nRevised draft: independently recheck the current evidence, not the previous answer.";
+        var generated=AiServices.builder(DocumentReviewModel.class).chatModel(model.get()).build().review(localPrompt);
         if(generated.finishReason()!=dev.langchain4j.model.output.FinishReason.STOP)
           throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Local generation did not complete; partial output is not an answer");
         answer=generated.content();
         }
       }else answer=assistant.chat(prompt);
     }
-    catch(RuntimeException error) { if(error instanceof ResponseStatusException r&&r.getStatusCode().value()==422)throw r;log.warn("Nova provider failure: {}",safeFailure(error));throw new ResponseStatusException(providerStatus(error),"The selected Nova model did not complete this request; no provider fallback was attempted"); }
+    catch(RuntimeException error) { if(error instanceof LocalInferenceException)throw error;if(error instanceof ResponseStatusException r&&r.getStatusCode().value()==422)throw r;log.warn("Nova provider failure: {}",safeFailure(error));throw new ResponseStatusException(providerStatus(error),"The selected Nova model did not complete this request; no provider fallback was attempted"); }
     if(answer==null||answer.isBlank()) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Nova model returned no answer");
     if(localChat)answer=SourceCitations.validate(answer,sources);
     String mode=chatProvider.equals("ollama")?"local-ollama":credentialType.equals("default")?"azure-managed-identity":"azure-entra";

@@ -11,6 +11,13 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
 class CreditAssistantServiceTest {
+ @Test void busyAndTimeoutCodesSurviveTheAssistantBoundary(){
+  for(String code:java.util.List.of("LOCAL_MODEL_BUSY","LOCAL_MODEL_TIMEOUT")){
+    ChatModel model=new ChatModel(){@Override public ChatResponse doChat(ChatRequest request){throw new LocalInferenceException(code);}};
+    assertThatThrownBy(()->localService(model).answer("praxisbank-demo","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048","en","What is the invoice number?")))
+      .isInstanceOfSatisfying(LocalInferenceException.class,e->assertThat(e.code()).isEqualTo(code));
+  }
+ }
  @Test void azureToolRoundCanFinishWithAnAnswer(){
   var calls=new java.util.concurrent.atomic.AtomicInteger();
   ChatModel model=new ChatModel(){@Override public ChatResponse doChat(ChatRequest request){

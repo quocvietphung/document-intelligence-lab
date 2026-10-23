@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 /** Authenticated snapshot -> private Docker spool -> immutable analytics receipt. No cloud or OCR call. */
 @Service
 public class LocalDataPipeline {
+  static final String METHOD="document-medallion-v2";
   public record Request(@Min(0) long caseVersion,@NotNull UUID requestId,@AssertTrue boolean consent) {}
   private final CreditCaseService cases;private final LabStore store;private final DocumentResearch research;
   private final Path root;private final boolean enabled;private final DistributedLimits limits;
@@ -24,7 +25,7 @@ public class LocalDataPipeline {
   public Map<String,Object> read(String tenant,String id){
     var item=cases.require(tenant,id);String hash=research.fingerprint(item);
     return Map.of("caseId",id,"caseVersion",item.version(),"sourceHash",hash,"enabled",enabled,"workerReady",ready(),"cloudCalls",0,
-        "runs",store.list(tenant,id,"medallion-run").stream().map(r->{var value=new LinkedHashMap<>(r);value.put("current",hash.equals(r.get("sourceHash")));return value;}).toList());
+        "runs",store.list(tenant,id,"medallion-run").stream().map(r->{var value=new LinkedHashMap<>(r);value.put("current",hash.equals(r.get("sourceHash"))&&(!"COMPLETE".equals(r.get("status"))||currentMethod(r)));return value;}).toList());
   }
   public Map<String,Object> enqueue(String tenant,String id,String actor,Request request){
     cases.allowWrite();var item=cases.require(tenant,id);
@@ -39,7 +40,7 @@ public class LocalDataPipeline {
     }
     var previous=store.find(tenant,id,"medallion-run",runId);
     if(previous.isPresent()){if(!hash.equals(previous.get().get("sourceHash")))throw fail(409,"Request ID already used for another snapshot");return previous.get();}
-    var reusable=store.list(tenant,id,"medallion-run").stream().filter(r->"COMPLETE".equals(r.get("status"))&&hash.equals(r.get("sourceHash"))).findFirst();
+    var reusable=store.list(tenant,id,"medallion-run").stream().filter(r->"COMPLETE".equals(r.get("status"))&&hash.equals(r.get("sourceHash"))&&currentMethod(r)).findFirst();
     if(reusable.isPresent()){
       store.insert(tenant,id,"medallion-request",runId,Map.of("id",runId,"actualId",reusable.get().get("id"),"sourceHash",hash,"time",Instant.now().toString()));
       var replay=new LinkedHashMap<>(reusable.get());replay.put("reused",true);return replay;
@@ -65,6 +66,7 @@ public class LocalDataPipeline {
     }catch(Exception e){var failed=new LinkedHashMap<>(job);failed.put("status","FAILED");failed.put("errorCode","ETL_SPOOL_UNAVAILABLE");store.replace(tenant,id,"medallion-run",runId,job,failed);throw fail(503,"Private ETL spool unavailable");}
     return job;
   }
+  static boolean currentMethod(Map<String,Object> run){return run.get("result") instanceof Map<?,?> result&&METHOD.equals(result.get("method"));}
   public byte[] artifact(String tenant,String caseId,String id,String layer){
     cases.require(tenant,caseId);
     if(!enabled||!id.matches("etl-[a-f0-9-]{36}")||!Set.of("bronze","silver","gold").contains(layer))throw fail(404,"Artifact unavailable");

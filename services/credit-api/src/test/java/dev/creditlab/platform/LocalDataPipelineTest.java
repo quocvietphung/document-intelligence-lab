@@ -11,6 +11,11 @@ import org.junit.jupiter.api.io.TempDir;
 
 class LocalDataPipelineTest {
   @TempDir Path root;
+  @Test void oldMoneyNormalizationReceiptsAreNotReusedAsCurrent(){
+    assertThat(LocalDataPipeline.currentMethod(Map.of("result",Map.of("method","document-medallion-v1")))).isFalse();
+    assertThat(LocalDataPipeline.currentMethod(Map.of("result",Map.of("method","document-medallion-v2")))).isTrue();
+    assertThat(LocalDataPipeline.currentMethod(Map.of())).isFalse();
+  }
   @Test void disabledPipelineCannotQueueAndNeverCreatesSampleScores(){
     var cases=new CreditCaseService();var store=new LabStore(Optional.empty(),new ObjectMapper());var research=new DocumentResearch(cases,store,new RagEngine(false,""),mock(DistributedLimits.class));
     var etl=new LocalDataPipeline(cases,store,research,mock(DistributedLimits.class),false,root.toString());

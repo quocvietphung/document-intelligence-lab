@@ -14,7 +14,7 @@ from pathlib import Path
 
 import duckdb
 
-VERSION = "document-medallion-v1"
+VERSION = "document-medallion-v2"
 MONEY_FIELDS = {"invoiceTotal", "netIncome", "payoutAmount", "premium", "deductible"}
 
 
@@ -34,7 +34,7 @@ def normalize_money(raw, context):
     if len(currencies) != 1:
         return None, None, "CURRENCY_UNKNOWN_OR_AMBIGUOUS"
     value = re.sub(r"EUR|INR|USD|GBP|[€₹£\s]", "", raw).strip()
-    if re.fullmatch(r"-?\d{1,3}(?:\.\d{3})*,\d{2}", value):
+    if re.fullmatch(r"-?(?:\d+|\d{1,3}(?:\.\d{3})+),\d{2}", value):
         value = value.replace(".", "").replace(",", ".")
     elif re.fullmatch(r"-?\d{1,3}(?:,\d{3})+\.\d{2}", value):
         value = value.replace(",", "")

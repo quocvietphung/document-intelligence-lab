@@ -3,7 +3,6 @@ package dev.creditlab.assistant;
 import dev.creditlab.security.LocalModelEndpoint;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.ollama.OllamaChatModel;
-import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -19,9 +18,9 @@ public class LocalAiConfiguration {
   @ConditionalOnProperty(name="app.ai.provider",havingValue="ollama")
   ChatModel localChatModel(@Value("${app.ai.local-url:http://ollama:11434}") String endpoint,
       @Value("${app.ai.local-model:}") String model) {
-    return OllamaChatModel.builder().baseUrl(LocalModelEndpoint.validate(endpoint))
+    return new LocalInferenceModel(OllamaChatModel.builder().baseUrl(LocalModelEndpoint.validate(endpoint))
         .modelName(LocalModelEndpoint.model(model)).temperature(0.0).think(false).numCtx(4096).numPredict(420)
-        .timeout(Duration.ofSeconds(180)).maxRetries(0).logRequests(false).logResponses(false)
-        .supportedCapabilities(dev.langchain4j.model.chat.Capability.RESPONSE_FORMAT_JSON_SCHEMA).build();
+        .timeout(LocalInferenceModel.TIMEOUT).maxRetries(0).logRequests(false).logResponses(false)
+        .supportedCapabilities(dev.langchain4j.model.chat.Capability.RESPONSE_FORMAT_JSON_SCHEMA).build());
   }
 }

@@ -4,6 +4,7 @@ export const workspaceTabs=["overview","studio","experiments","documents","pipel
 export type WorkspaceTab=typeof workspaceTabs[number];
 export const guideSchema=z.object({features:z.array(z.enum(workspaceTabs)).max(workspaceTabs.length),query:z.string().max(2000)});
 export type NovaGuide=z.infer<typeof guideSchema>;
+export function novaSendRoute(mode:'guide'|'analysis'){return mode==='guide'?'guide':'analysis';}
 const normalize=(text:string)=>text.normalize("NFKD").replace(/\p{M}/gu,"").toLowerCase().replace(/ß/g,"ss");
 export function novaFeature(id:WorkspaceTab,locale:string){const row=catalog.find(f=>f.id===id)!;return locale==="de"?row.de:locale==="vi"?row.vi:row.en;}
 export function workspaceTarget(hash:string):WorkspaceTab|undefined{const id=hash.replace(/^#/,"");return workspaceTabs.find(tab=>tab===id);}
@@ -16,7 +17,7 @@ export function novaGuideFor(question:string,current?:WorkspaceTab,fallbackAll=f
   if(current&&!ids.length&&/this (page|section)|muc nay|trang nay|dieser bereich|diese seite/.test(q))return {features:[current],query:question};
   // Location questions about payroll AI are product help, not a cloud extraction request.
   if(/phan nao|muc nao|o dau|where|wo .*|welcher bereich/.test(q)&&/ai|chuc nang|tinh nang|itnsh nang|feature|funktion/.test(q)&&/bang luong|payroll|payslip|gehaltsabrechnung|datev/.test(q))return {features:["documents","pipeline","controls"],query:question};
-  const help=/what.*(can|does|is|feature)|how.*(use|open|upload)|show|open|where|guide|help|features|search|co.*gi|cach|huong dan|o dau|chuc nang|mo |dieu huong|tim |was.*(kann|ist|gibt)|wie|offne|funktion|zeig|suchen/.test(q);
+  const help=/\bwhat\b.*\b(can|does|features?)\b|\bhow\b.*\b(use|open|upload)\b|\b(show|open|where|guide|help|features|search)\b|co.*gi|cach|huong dan|o dau|chuc nang|\bmo\b|dieu huong|\btim\b|\bwas\b.*\b(kann|gibt)\b|\b(wie|offne|funktion|zeig|suchen)\b/.test(q);
   if(ids.length&&help)return {features:ids,query:question};
   if(/all.*features|app.*(can|features)|tat ca.*chuc nang|app.*co.*gi|ung dung.*co.*gi|alle.*funktion/.test(q))return {features:[...workspaceTabs],query:question};
   if(fallbackAll)return {features:[...workspaceTabs],query:question};
