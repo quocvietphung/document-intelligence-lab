@@ -46,6 +46,7 @@ export async function auditDocumentUpgrade({request,check,bearer,web,api}){
   let finished;const deadline=Date.now()+240000;
   while(Date.now()<deadline){const state=await get(etl);finished=state.runs.find(r=>r.id===receipt.id);assert.ok(!['FAILED','STALE'].includes(finished?.status),finished?.errorCode);if(finished?.status==='COMPLETE')break;await new Promise(resolve=>setTimeout(resolve,2000));}
   check(finished?.status==='COMPLETE'&&finished.result.dbtVerified,'Real DuckDB transforms and dbt checks completed');
+  check(finished.result.method==='document-medallion-v2','Current ETL normalization method, not a reused v1 receipt');
   check(finished.result.documents.some(d=>d.id===doc.id)&&finished.result.bronze>=1&&finished.result.silver>=2,'Bronze/Silver contain the actual extracted invoice');
   if(item.documents.every(d=>d.status!=='verified'))check(finished.result.gold===0,'Unreviewed evidence is excluded from Gold, not silently approved');
   check(finished.result.qualityIssues.some(q=>q.code==='AMBIGUOUS_DATE_PRESERVED'),'Day/month ambiguity is recorded, not guessed');

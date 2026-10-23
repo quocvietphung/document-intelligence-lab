@@ -2,7 +2,7 @@ import { createUIMessageStream,createUIMessageStreamResponse,type UIMessage } fr
 import { conversationSchema,messageText } from "@/lib/credit-chat";
 import { boundedBody } from "@/lib/request-body";
 import { hasAllowedOrigin } from "@/lib/request-origin";
-import {novaLimit} from "@/lib/nova-limits";
+import {novaLimit,novaModelFailure} from "@/lib/nova-limits";
 import {trustAnswerSchema} from "@/lib/nova-trust";
 export const runtime="nodejs";
 export const maxDuration=420;
@@ -27,9 +27,13 @@ export async function POST(request:Request) {
     });
     if(!response.ok) {
       if(response.status===422)return Response.json({error:"AI_SAFETY_FILTER"},{status:422,headers:{"Cache-Control":"no-store"}});
+      const failure=[429,504].includes(response.status)?await response.json().catch(()=>undefined):undefined;
+      const code=novaModelFailure(failure);
+      if(response.status===429&&code==='LOCAL_MODEL_BUSY'||response.status===504&&code==='LOCAL_MODEL_TIMEOUT')
+        return Response.json({error:code},{status:response.status,headers:{'Cache-Control':'no-store',...(code==='LOCAL_MODEL_BUSY'?{'Retry-After':'5'}:{})}});
       if(response.status===429){
         // Only known safe limit metadata may cross the proxy; never forward provider errors.
-        const limit=novaLimit(await response.json().catch(()=>undefined));
+        const limit=novaLimit(failure);
         const seconds=response.headers.get("Retry-After");
         const headers:Record<string,string>={"Cache-Control":"no-store"};
         if(seconds&&/^\d{1,5}$/.test(seconds)&&Number(seconds)>0&&Number(seconds)<=86400)headers["Retry-After"]=seconds;
@@ -49,9 +53,11 @@ export async function POST(request:Request) {
       writer.write({type:"text-end",id}); writer.write({type:"finish",finishReason:"stop"});
     },onError:()=>"AI_UNAVAILABLE"});
     return createUIMessageStreamResponse({headers:{"Cache-Control":"no-store","X-Request-ID":requestId,"X-AI-Mode":result.mode||"unknown"},stream});
-  } catch {
+  } catch(error) {
     // No prompts, tokens, document contents or provider error payloads enter application logs.
     console.error("credit-chat-failed",{requestId});
+    if(process.env.NOVA_PROVIDER==='ollama'&&error instanceof Error&&error.name==='TimeoutError')
+      return Response.json({error:'LOCAL_MODEL_TIMEOUT',requestId},{status:504,headers:{'Cache-Control':'no-store'}});
     return Response.json({error:"Chat unavailable",requestId},{status:503});
   }
 }

@@ -34,8 +34,8 @@ import {novaWelcomeMessage,welcomeSessionKey} from "@/lib/nova-welcome";
 import {NovaGuideCard} from "./NovaGuideCard";
 import {NovaMessageText} from "./NovaMessageText";
 import {datevReference,hasOnlyDatevPayroll,legacyPayroll,datevLibraryUx} from "@/lib/datev-reference";
-import {novaGuideFor,novaGuideIntro,novaGuideLabels,workspaceTabs,workspaceTarget,type WorkspaceTab} from "@/lib/nova-guide";
-import {novaLimit,novaLimitMessage,novaQuotaNotice,novaSafetyMessage,type NovaLimit} from "@/lib/nova-limits";
+import {novaGuideFor,novaSendRoute,novaGuideIntro,novaGuideLabels,workspaceTabs,workspaceTarget,type WorkspaceTab} from "@/lib/nova-guide";
+import {novaLimit,novaLimitMessage,novaQuotaNotice,novaSafetyMessage,novaModelMessage,type NovaLimit} from "@/lib/nova-limits";
 import {showCaseEmpty,workspaceCaseFromSearch,workspaceErrorKey,workspaceLocalePath,workspaceSectionFromSearch} from "@/lib/workspace-ux";
 import {WorkspaceAIOverview} from "./WorkspaceAIOverview";
 import {NovaConversation,NovaCopyAnswer,NovaSuggestions} from "./NovaConversation";
@@ -63,7 +63,7 @@ function Copilot({item,locale,open,onOpen,close,initialQuestion,initialOptions,o
   const busy=status==="submitted"||status==="streaming";
   useEffect(()=>{if(initialQuestion===undefined)return;const timer=window.setTimeout(()=>{setText(initialQuestion);setSupportMode('analysis');setDraftOptions(initialOptions);},0);return()=>window.clearTimeout(timer);},[initialQuestion,initialOptions]);
   function guide(question:string,all=false){const data=novaGuideFor(question,currentTab,all);if(!data)return false;clearError();setLimit(undefined);setMessages(previous=>[...previous,{id:crypto.randomUUID(),role:"user",parts:[{type:"text",text:question}]},{id:crypto.randomUUID(),role:"assistant",parts:[{type:"text",text:novaGuideIntro(locale)},{type:"data-nova-guide",data}]}]);setMode("app-guide");return true;}
-  function send(event?:FormEvent) { event?.preventDefault();if(!text.trim()||busy||sending.current||!auth.token)return;pendingQuestion.current=text.trim();clearError();setLimit(undefined);setMode(undefined);if(supportMode==='guide'){guide(text.trim(),true);}else if(draftOptions||!guide(text.trim())){sending.current=true;void sendMessage({text:text.trim()},{body:draftOptions}).catch(()=>{}).finally(()=>{sending.current=false;});}setText(""); }
+  function send(event?:FormEvent) { event?.preventDefault();if(!text.trim()||busy||sending.current||!auth.token)return;pendingQuestion.current=text.trim();clearError();setLimit(undefined);setMode(undefined);if(novaSendRoute(supportMode)==='guide'){if(!guide(text.trim(),true))return;}else{sending.current=true;void sendMessage({text:text.trim()},{body:draftOptions}).catch(()=>{}).finally(()=>{sending.current=false;});}setText(""); }
   return <NovaChatSurface aiCapabilities={aiCapabilities} title={t("nova")} locale={locale} open={open} onOpen={onOpen} close={close} onPageGuide={onPageGuide} pageGuideLabel={pageGuideLabel} onTrust={onTrust}>
     <div className="nova-mode-switch" role="group" aria-label={trust.modeHint}>{(['guide','analysis'] as const).map(value=><button type="button" key={value} disabled={busy} aria-pressed={supportMode===value} onClick={()=>{setSupportMode(value);if(value==='guide'){setDraftOptions(undefined);}}}>{value==='guide'?trust.guideMode:trust.analysisMode}</button>)}</div>
     <NovaConversation open={open} messages={messages} label={t("nova")} locale={locale}>
@@ -78,7 +78,7 @@ function Copilot({item,locale,open,onOpen,close,initialQuestion,initialOptions,o
         {record.success?<NovaAnswerActions answer={record.data} caseId={item.id} caseVersion={item.version||0} locale={locale} onDraft={onDraft} openSource={openSource}/>:null}
       </article>;})}
       {busy?<p className="p-3 text-sm text-slate-500" role="status">{aiCapabilities?.chat.provider==='ollama'?(locale==='vi'?'Nova đang đọc chứng cứ bằng model local. Lần đầu trên CPU có thể hơn một phút; chưa có kết quả được phê duyệt.':locale==='de'?'Nova liest die Belege mit dem lokalen Modell. Der erste CPU-Aufruf kann über eine Minute dauern; noch kein geprüftes Ergebnis.':'Nova is reading evidence with the local model. The first CPU request can take over a minute; no approved result yet.'):t("loading")}</p>:null}
-      {error?<div className="notice-error" role="alert"><p>{error.message.includes("AI_SAFETY_FILTER")?novaSafetyMessage(locale):limit||error.message.toLowerCase().includes("limit")?novaLimitMessage(limit,locale):t("error")}</p><p>{customerUx(locale).question}</p></div>:null}
+      {error?<div className="notice-error" role="alert"><p>{novaModelMessage(error.message,locale)||(error.message.includes("AI_SAFETY_FILTER")?novaSafetyMessage(locale):limit||error.message.toLowerCase().includes("limit")?novaLimitMessage(limit,locale):t("error"))}</p><p>{customerUx(locale).question}</p></div>:null}
       <NovaSuggestions locale={locale} page={currentTab} select={setText} disabled={busy}/>
       <div className="nova-chat-shortcuts"><button className="button-link" onClick={()=>guide(novaGuideLabels(locale).actions,true)} disabled={busy}><Compass size={14}/>{novaGuideLabels(locale).actions}</button></div>
     </NovaConversation>

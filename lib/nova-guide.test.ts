@@ -1,11 +1,13 @@
 import {afterEach,describe,expect,it,vi} from "vitest";
-import {featureHref,novaFeature,novaGuideFor,workspaceTabs,workspaceTarget,guideSchema} from "./nova-guide";
+import {featureHref,novaFeature,novaGuideFor,novaSendRoute,workspaceTabs,workspaceTarget,guideSchema} from "./nova-guide";
 import {novaReadTool} from "./nova-read-tools";
 import {publicDemoCase} from "./public-demo";
 import {datevLabels,datevReferences,datevReference,officialPayrollReference} from "./datev-reference";
 import {GET} from "../app/api/payroll-references/route";
 afterEach(()=>{vi.unstubAllEnvs();vi.unstubAllGlobals();});
 describe("Nova application guide",()=>{
+ it("never overrides the explicitly selected mode, even for app-like wording",()=>{expect(novaSendRoute('analysis')).toBe('analysis');expect(novaSendRoute('guide')).toBe('guide');});
+ it.each(["What is the invoice number stated in this PDF? Answer in one short English sentence and cite the exact source page.","What is in this document?","Was ist die Rechnungsnummer in diesem PDF?","Số hóa đơn trong tài liệu này là gì?"])("does not misclassify a PDF question: %s",question=>{expect(novaGuideFor(question,'documents')).toBeUndefined();});
  it("answers payroll-AI location questions locally, including the observed typo",()=>{expect(novaGuideFor("xem phần nào có itnsh năng AI cho bảng lương")?.features).toEqual(["documents","pipeline","controls"]);expect(novaGuideFor("Where is the payslip AI feature?")?.features).toContain("documents");expect(novaGuideFor("Explain the net income in my payslip")).toBeUndefined();});
  it("understands the current workspace without sending UI preferences to Azure",()=>{expect(novaGuideFor("Mục này có gì?","pipeline")?.features).toEqual(["pipeline"]);expect(novaGuideFor("What does this section do?","documents")?.features).toEqual(["documents"]);});
  it("knows every actual section in all three languages",()=>{for(const id of workspaceTabs)for(const locale of ["en","de","vi"]){const f=novaFeature(id,locale);expect(f.title.length).toBeGreaterThan(2);expect(f.steps).toHaveLength(3);expect(workspaceTarget(featureHref(locale,id).split("#")[1])).toBe(id);}});

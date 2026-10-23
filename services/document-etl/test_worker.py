@@ -27,6 +27,24 @@ class MoneyTest(unittest.TestCase):
         for raw, context in [("1.234", "EUR"), ("100", "EUR USD"), ("100", "")]:
             self.assertIsNone(worker.normalize_money(raw, context)[0])
 
+    def test_decimal_comma_without_thousands_separator(self):
+        for raw, expected in [("2967,11 EUR", "2967.11"), ("1000,00 EUR", "1000.00"), ("-12345,67 €", "-12345.67"), ("2.967,11 EUR", "2967.11")]:
+            with self.subTest(raw=raw):
+                self.assertEqual(worker.normalize_money(raw, ""), (Decimal(expected), "EUR", "VALID"))
+        for raw in ["29.67,11 EUR", "2.96.711,00 EUR", "2967,1 EUR", "1,234 EUR"]:
+            self.assertIsNone(worker.normalize_money(raw, "")[0])
+
+    @unittest.skipUnless(shutil.which("dbt"), "Install the pinned ETL dependencies for the real dbt check")
+    def test_reviewed_decimal_comma_amount_reaches_gold_without_changing_raw_value(self):
+        with tempfile.TemporaryDirectory() as folder:
+            payload = snapshot("2967,11 EUR", reviewed=True)
+            payload["documents"][0]["pages"][0]["text"] = "Invoice total: 2967,11 EUR"
+            result = worker.transform(payload, Path(folder) / payload["id"], use_dbt=True)
+            self.assertEqual(result["gold"], 1)
+            self.assertEqual(result["totals"][0]["total"], "2967.110000")
+            self.assertEqual(result["totals"][0]["currency"], "EUR")
+            self.assertEqual(payload["documents"][0]["fields"][0]["value"], "2967,11 EUR")
+
     def test_gold_requires_human_review_and_records_ambiguous_dates(self):
         with tempfile.TemporaryDirectory() as folder:
             payload = snapshot()

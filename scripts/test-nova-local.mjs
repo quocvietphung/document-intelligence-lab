@@ -70,7 +70,15 @@ export async function auditNovaLocal({request,check,bearer,web,api}){
     ['vi','Số hóa đơn trong tài liệu là gì? Trả lời ngắn bằng tiếng Việt, kèm nguồn trang.'],
   ];
   for(const [locale,question] of prompts){
-    const start=Date.now();const reply=await send(web+'/api/chat',{caseId:item.id,locale,caseVersion:item.version,messages:[{id:randomUUID(),role:'user',parts:[{type:'text',text:question}]}]});
+    const body={caseId:item.id,locale,caseVersion:item.version,messages:[{id:randomUUID(),role:'user',parts:[{type:'text',text:question}]}]};
+    const start=Date.now();const pending=send(web+'/api/chat',body);
+    const probe=locale==='en'&&process.env.TEST_NOVA_CONCURRENCY==='1'?(async()=>{
+      await new Promise(resolve=>setTimeout(resolve,1500));const began=Date.now();
+      const blocked=await send(web+'/api/chat',{...body,messages:[{id:randomUUID(),role:'user',parts:[{type:'text',text:'What is the invoice number stated in this PDF?'}]}]});
+      check(blocked.status===429&&(await blocked.json()).error==='LOCAL_MODEL_BUSY','Concurrent local request gets explicit busy response, not queued generation or quota error');
+      check(blocked.headers.get('Retry-After')==='5'&&Date.now()-began<10000,'Busy request returns promptly with bounded retry guidance; no automatic retry');
+    })():Promise.resolve();
+    const [reply]=await Promise.all([pending,probe]);
     check(reply.ok&&reply.headers.get('x-ai-mode')==='local-ollama',`${locale}: actual local Ollama response through the web proxy (HTTP ${reply.status})`);
     const events=(await reply.text()).split('\n').filter(line=>line.startsWith('data: ')&&line!=='data: [DONE]').map(line=>JSON.parse(line.slice(6)));
     const answer=events.filter(e=>e.type==='text-delta').map(e=>e.delta||'').join('');const trust=events.find(e=>e.type==='data-nova-trust')?.data;

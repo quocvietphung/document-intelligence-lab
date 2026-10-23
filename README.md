@@ -14,15 +14,15 @@ The current workspace brings those experiments into one evidence-first workflow:
 - **Build local data products:** run private DuckDB/dbt ETL in Docker, with Bronze/Silver/Gold Parquet, quality findings, SCD Type 2 history and currency-separated, reviewer-confirmed aggregates.
 - **Operate locally:** sign in through Keycloak; follow durable processing jobs, batch receipts and activity history in Docker.
 
-Seven main destinations replace a long flat menu. Overview keeps **31 capabilities in six expandable groups**: **16 AI-assisted workflows** and **15 rule-based, navigation or human-review controls**, not 31 AI models. The three new source-based Nova tasks are **document chronology**, **clause/obligation review** and **sensitive-data review drafts**. Every AI workflow has a collapsible PDF exercise, not an invented passing result.
+The workspace has seven main destinations. Overview organizes **31 capabilities in six expandable groups**: **16 AI-assisted workflows** and **15 rule-based, navigation or human-review controls**. Nova supports source-based tasks such as **document chronology**, **clause/obligation review** and **sensitive-data review drafts**. Every AI workflow includes a collapsible PDF exercise with a sample, suggested question and review focus.
 
 Start with **local Docker: Docling reads documents and Ollama runs Nova on your computer**. Model preparation is an explicit download, stored once in a named Docker volume. No Azure account or API charges are required for this profile. The separate Azure walkthrough below connects the same app to your own Azure OpenAI and Document Intelligence resources; confirmed cloud inference can be billable. Providers are selected explicitly, never used as silent fallbacks.
 
 **Java 21 · Spring Boot · LangChain4j · Azure Document Intelligence · Azure OpenAI · Next.js · PostgreSQL · Qdrant · Keycloak · Docker**
 
-### New local research and ETL exercises
+### Local research and ETL exercises
 
-The normal `node scripts/docker-local.mjs` startup now includes the small CPU-only ETL worker. It has **no network access or public port**, no database password and no AI/model download. Its private `lab_etl` Docker volume contains extracted document data and derived artifacts. Do not publish that volume. The selected local Nova model is reused for explicit prompt comparisons; no Azure fallback is selected.
+The `node scripts/docker-local.mjs` startup includes a CPU-only ETL worker. It has **no network access or public port**, no database password and no AI/model download. Its private `lab_etl` Docker volume contains extracted document data and derived artifacts. Do not publish that volume. The selected local Nova model is reused for explicit prompt comparisons; no Azure fallback is selected.
 
 | Capability | Concrete PDF exercise | What is actually measured or stored |
 | --- | --- | --- |
@@ -33,9 +33,9 @@ The normal `node scripts/docker-local.mjs` startup now includes the small CPU-on
 | Bronze/Silver/Gold ETL | On invoice `51109301`, open **Data Pipelines → Data layers & exports**, read the copy/retention notice, consent and choose **Build data layers**. | Immutable source snapshots, original hashes where recorded, preserved raw values, locale-aware amount parsing, unknown/ambiguous-date findings, source-version receipts and actual Parquet. Bronze references do not copy PDF bytes. |
 | Reviewed Gold and SCD Type 2 | Compare the original INR `1,844,673.60` and literal `03/07/2023`. An authorized reviewer can confirm the evidence, then rerun ETL after refreshing the dossier. | Unreviewed fields stay out of Gold. Amounts are grouped by field and currency. Changed document snapshots close the prior dimension version; unchanged snapshots reuse the last completed receipt without another OCR call. SCD dates are observation times, not inferred business-effective dates. |
 
-The UI keeps the original **16 AI-assisted workflows**; research comparisons and ETL extend the existing control entries, rather than being counted as extra deployed AI models. The PDF exercise directory now covers **18 entries: 16 AI workflows plus the research-comparison and data-lineage controls**. A completed ETL run does not certify that a model answer is correct.
+The PDF exercise directory covers **18 entries: 16 AI workflows plus the research-comparison and data-lineage controls**. Research comparisons and ETL are not counted as extra deployed AI models. A completed ETL run does not certify that a model answer is correct.
 
-The first live schema comparison on the pinned invoice found an exact, source-supported result with zero-shot, while few-shot abstained. That failed sample remains visible as a zero reference match: few-shot is not assumed to be better. The acceptance script verifies schema output and independently recomputes source/reference matches; it does not force every experimental variant to score 100%.
+Prompt comparisons retain successful results, abstentions and failed reference matches. The acceptance script checks schema output and independently recomputes source/reference matches; few-shot prompting is not assumed to outperform zero-shot.
 
 The ETL worker writes Bronze/Silver snapshots before dbt validates Gold. Only a successful, current-source receipt is displayed as current in the app. Failed/stale runs do not replace a current app result. Artifacts remain private; **expiry of an original PDF does not delete analytical exports, chat history or research labels**. Remove only identified disposable test artifacts after reviewing your retention requirements; never use `docker compose down -v` against a lab you intend to keep.
 
@@ -87,17 +87,17 @@ flowchart LR
     E --> F[Human review<br/>Compare with the original]
 ```
 
-Try synthetic invoice **51109301** in a **General documents** dossier. After confirming **Import & analyze**, follow its job in **Data Pipelines**, then open **View result & PDF** from **Analysis results**. Ask Nova: *“What invoice number, currency and gross total are stated? Cite the source page.”* Open each citation and compare the original; a generated answer is not human approval. Local CPU generation can take minutes and can fail or return an incorrect draft; see the [validation status and setup](#local-docker-with-nova).
+Try synthetic invoice **51109301** in a **General documents** dossier. After confirming **Import & analyze**, follow its job in **Data Pipelines**, then open **View result & PDF** from **Analysis results**. Ask Nova: *“What invoice number, currency and gross total are stated? Cite the source page.”* Open each citation and compare the original; a generated answer is not human approval. Local CPU generation can take minutes and can fail or return an incorrect draft; see the [local setup and limitations](#local-docker-with-nova).
 
 ### English screen walkthrough
 
 ![English walkthrough: Keycloak, overview, saved Docling extraction, original PDF, processing receipt, hybrid search, saved Nova answer with citations, local ETL, quality findings and prompt experiments](docs/screenshots/document-research-walkthrough-en-2026-10-21-v2.gif)
 
-Captured from the running English Docker workspace on **21 October 2026**: **10 real screenshots, 58 seconds**, with English captions outside the unmodified UI captures. Follow Keycloak sign-in → the 16-workflow overview → saved Docling results → the original invoice PDF → processing stages → hybrid evidence search → Nova answer history → local Bronze/Silver/Gold ETL → source-linked quality findings → zero-shot/few-shot experiments. This is an **edited walkthrough**, not continuous video or a latency benchmark; waits are omitted. The Keycloak password field is empty.
+Follow the English Docker workspace through Keycloak sign-in, document results, original-PDF inspection, processing stages, hybrid search, Nova, local ETL and prompt experiments. This is an **edited walkthrough of an existing dossier**, not a fresh installation, continuous recording or latency benchmark. Waiting periods are omitted; the Keycloak password field is empty.
 
-**What the recording demonstrates:** the invoice extraction was saved on **20 October** and reopened, not uploaded again. Building data layers reused the completed **21 October** DuckDB/dbt receipt for the unchanged source: **Bronze 1, Silver 2, Gold 0**; unreviewed fields remain outside Gold. The ambiguous date is preserved and linked to its source. The experiment shows a correct zero-shot field and a few-shot abstention on one labelled sample, not general model accuracy.
+The walkthrough reopens saved extraction and ETL results. **Bronze 1, Silver 2, Gold 0** reflects one document with two extracted fields that have not been reviewer-confirmed. The ambiguous document date remains linked to its source. The prompt comparison shows a zero-shot match and a few-shot abstention on one labelled sample, not general model accuracy.
 
-**Nova recording limitation:** two fresh CPU Ollama requests timed out during this capture session. Scene 7 therefore opens the genuine, previously saved English response from **21 October, 22:00:33 Europe/Berlin**, with its model, prompt version, source citations and **not human-approved** label visible. It does **not** depict a new successful generation, and linked citations are not automatic fact-checking. Earlier scoped acceptance results do not remove this observed reliability limitation. See the [full-size screen gallery](#workspace-tour) and [local Nova setup and limitations](#local-docker-with-nova).
+**Recording limitation:** the Nova segment opens a saved, unapproved answer after local CPU requests timed out; it does not show a new successful generation. Source links support inspection, not automatic fact-checking. See the [screen gallery](#workspace-tour) and [local Nova setup](#local-docker-with-nova) to try the workflow yourself.
 
 ## Open-source scope
 
@@ -136,7 +136,7 @@ Overview lists **16 workflows**, not 16 independently deployed models. Extractio
 | 15 | Clause & obligation review | Review & trust → Task library | Insurance conditions and exclusions; no coverage decision |
 | 16 | Sensitive-data review draft | Review & trust → Task library | Invoice identifier categories; no automatic redaction |
 
-Prepare the private [Kaggle](#kaggle-document-library) or [DATEV](#datev-payroll-references) samples, or use your own permitted PDF. Choose the matching **General documents**, **Insurance** or **Banking & payroll** dossier. Library metadata is not analyzed evidence: import, wait for the scanned extraction and open its result before asking Nova. These are research exercises, not claims of passing model benchmarks; see the [current validation status](#local-docker-with-nova).
+Prepare the private [Kaggle](#kaggle-document-library) or [DATEV](#datev-payroll-references) samples, or use your own permitted PDF. Choose the matching **General documents**, **Insurance** or **Banking & payroll** dossier. Library metadata is not analyzed evidence: import, wait for the scanned extraction and open its result before asking Nova. These are research exercises, not model-quality benchmarks; see the [setup and verification guidance](#local-docker-with-nova).
 
 The other **15 controls** cover classification/field rules, batch intake, lineage, source-bound evaluation, citation checks, feedback, human review, transparency, governance, observed metrics, app guidance and injection guards. They are not extra models. [Optional adapters](docs/AI_INTEGRATIONS.md) for PaddleOCR, BGE, reranking, vision and Azure services require separate setup and live verification.
 
@@ -154,6 +154,10 @@ node scripts/docker-local.mjs --prepare-model
 The explicit first setup builds the app and a CPU-only Ollama image from a pinned official release, then downloads **[`qwen3:4b-instruct-2507-q4_K_M`](https://ollama.com/library/qwen3:4b-instruct-2507-q4_K_M) (~2.5 GB)**. This explicit non-thinking checkpoint is intentional; a generic `qwen3:4b` reasoning alias is not an equivalent replacement. The upstream build input is larger because it bundles GPU backends; those are omitted from the final CPU image. Measured on **Linux ARM64 / Ollama 0.40.6**, the CPU runtime is **181 MB**, versus **4.24 GB** for the official full image (about 96% smaller); other architectures can differ. Weights remain separate. Leave at least **8 GiB free inside Docker** for preparation; the full document stack and first-build cache need additional space. The helper checks free space before starting and never prunes images or data automatically. No model weights are committed or embedded in the application image.
 
 After services start, the helper explicitly loads the selected model into RAM using an empty prompt (no PDF or question) and keeps it warm for 30 minutes. Wait for the final workspace message. On a memory-constrained Mac, loading can take several minutes; close unnecessary heavy apps before starting. Warmup is not a document-answer quality test. The smaller 0.6B/1.7B trials were not selected: they confused identifiers, document clauses or privacy categories. Local chat reads authorized context without autonomous tool calls; Azure's separately configured read-only agent remains available.
+
+**Local reliability controls:** Evidence analysis never silently switches to App guidance. One CPU inference is admitted at a time in the local Java process, including prompt experiments; concurrent requests get an explicit busy message. The model has a 360-second limit inside the 380-second web deadline, with a distinct timeout message and no automatic retry/cloud fallback. Repeated prompt instructions are removed without dropping selected source excerpts. Keep the model warm; these limits do not guarantee that a constrained machine can finish every request.
+
+**ETL normalization:** method `document-medallion-v2` accepts both `2967,11 EUR` and `2.967,11 EUR` while preserving their raw values. Ambiguous/malformed separators remain quality findings; unreviewed values still cannot enter Gold. Earlier ETL receipts remain downloadable history but are not reused as current v2 results. Build data layers again explicitly to produce a new receipt; upgrading never changes past exports or auto-confirms a document.
 
 Subsequent starts reuse both the model and the existing databases:
 
@@ -185,6 +189,8 @@ TEST_NOVA_LOCAL=1 TEST_NOVA_TASKS=1 node scripts/test-oauth.mjs
 
 This creates a labelled local test dossier and retains its evidence/history. It does not call Azure. Passing these sample checks is not a general accuracy or prompt-injection guarantee. See [optional integrations](docs/AI_INTEGRATIONS.md) for model limits and separately reviewed experiments.
 
+Add `TEST_NOVA_CONCURRENCY=1` to also submit a competing local request during the English answer and verify the explicit busy response. `TEST_NOVA_CASE=CR-...` reuses your existing prepared synthetic-invoice dossier instead of creating another. Tests save unapproved answers; they never perform human approval.
+
 To inspect the exact local profile without changing it:
 
 ```bash
@@ -195,7 +201,7 @@ curl --fail http://localhost:8081/actuator/health
 
 `storage-init` exiting with code **0** is expected. A healthy service is not proof of answer quality. For this profile, a new Nova evidence answer should identify **Ollama · Local LLM**. Previous saved Azure results retain their original provider; switching profiles does not rerun or relabel them. Keep the original PDF and check its amounts, currency and page citations independently.
 
-**Validation status — 21 October 2026:** production-format Docker builds passed, alongside **278 frontend tests**, **276 Java tests (two skipped)**, **seven ETL tests including real dbt**, and **four separate Python exercises**. Explicit local acceptance passed **46 document-research/ETL checks**, **34 OAuth/document-pipeline checks** and **70 Nova checks** using the pinned synthetic invoice. On the rebuilt Nova path, chronology, clause absence and identifier-category checks passed; English, German and Vietnamese responses preserved the invoice identifier with exact available citations, and English also preserved the independently inspected INR gross total. A question without passport evidence was answered as unavailable, and the tested instruction-override request was blocked. The earlier chronology and nested-citation failures remain historical unapproved drafts; the current local contract rejects invalid evidence/citations rather than inventing replacements. These are scoped checks on one invoice, not a claim that all 16 workflows, arbitrary PDFs or optional model/cloud adapters are accurate or protected against every attack. Few-shot still abstains in the recorded comparison above. No Azure or Vercel deployment is included.
+**Verification scope:** automated suites cover frontend contracts, Java services and ETL transformations. The explicit Docker acceptance scripts exercise Keycloak login, protected APIs and PDFs, source-linked answers, concurrent-request handling and local data layers. Model checks use a pinned synthetic invoice and independently inspected source values; they are not a representative accuracy benchmark or a security certification. Optional cloud and model adapters need separate live verification. See [AI integrations and test scope](docs/AI_INTEGRATIONS.md) for details.
 
 ## Local setup with Azure AI
 
@@ -313,7 +319,7 @@ Open **[http://localhost:3000/en](http://localhost:3000/en)**. German: `/de`; Vi
 2. On **Sign in to your account**, enter username **`advisor.demo`** and password **`demo-password`**, then click **Sign In**. Use the app account here, not the Keycloak administrator account.
 3. Keycloak redirects back to `http://localhost:3000/en`. The workspace and **Sign out** button confirm the browser session is active; open a dossier to access its protected data.
 
-![21 October capture: local English Keycloak sign-in screen, example username and an empty password field](docs/screenshots/keycloak-login-en-2026-10-21.jpg)
+![English Keycloak sign-in screen with an example username and an empty password field](docs/screenshots/keycloak-login-en-2026-10-21.jpg)
 
 This is the real local Keycloak screen; the password field is intentionally empty in the screenshot. If you are already signed in, the app may reuse the existing session without displaying this form. Start each login from the app instead of bookmarking a temporary Keycloak authentication URL.
 
@@ -576,59 +582,59 @@ The sidebar has seven destinations. Related research and operations pages use lo
 | Review & trust | Inspect deterministic warnings and the case-scoped human-review workflow. |
 | Operations | Inspect configuration/runbooks or switch to **Activity log**. |
 
-Existing `#banking`, `#evaluation` and `#audit` links still open the correct section. Navigation, directory filters and page guides never start inference automatically. The optional Docling provider and the active Azure configuration are unchanged by the UI grouping.
+Existing `#banking`, `#evaluation` and `#audit` links open the corresponding section. Navigation, directory filters and page guides never start inference automatically or change the configured provider.
 
-Interface screenshots were captured from the local app on **21 October 2026**, in English. The existing gallery uses a **1280 × 720** browser viewport; the new ETL quality capture below uses the actual compact in-app browser viewport. They show the **16-workflow directory, PDF exercises and Ollama configuration**, alongside an existing synthetic invoice dossier. They are not preloaded results in a fresh clone and do not prove every optional integration works. The displayed extraction/receipt retains its original **20 October** processing date. Original document wording, identifiers and INR formatting are preserved; the example invoice is declared synthetic by its Kaggle author. No passwords, access tokens or real customer documents are shown.
+The English screenshots show the local workspace, its **16-workflow directory**, PDF exercises and Ollama configuration using a synthetic invoice dossier. Saved results are not included in a fresh clone. Some images use a compact browser layout; the gallery illustrates workflows, not the availability of every optional integration. The invoice is declared synthetic by its Kaggle author; source wording, identifiers and INR formatting are preserved. No passwords, access tokens or real customer documents are shown.
 
 ### Multi-domain overview
 
-![21 October capture: English Overview with 16 AI workflows and explicit Docling, MiniLM and Ollama configuration](docs/screenshots/workspace-overview-en-2026-10-21.jpg)
+![English Overview with 16 AI workflows and explicit Docling, MiniLM and Ollama configuration](docs/screenshots/workspace-overview-en-2026-10-21.jpg)
 
 The directory separates AI from rules and human review. Expand a group or search for a task to find its engine, limits and direct destination; opening a destination does not run inference.
 
-![21 October capture: AI capability directory with an expanded invoice PDF exercise and direct tool link](docs/screenshots/ai-capability-directory-en-2026-10-21.jpg)
+![AI capability directory with an expanded invoice PDF exercise and direct tool link](docs/screenshots/ai-capability-directory-en-2026-10-21.jpg)
 
 ### Results first, references when needed
 
 **Analysis results** is the destination after import. Each compact result links directly to **View result & PDF** and Nova; the reference library stays collapsed until needed. Field/page/table counts describe extraction output, not accuracy.
 
-![21 October capture: Documents and review with Docling intake and the saved invoice result list](docs/screenshots/document-results-en-2026-10-21.jpg)
+![Documents and review with Docling intake and the saved invoice result list](docs/screenshots/document-results-en-2026-10-21.jpg)
 
 ### Original PDF and extraction
 
-The viewer places the protected original beside extracted fields, source quotations and page links. This fresh capture shows synthetic invoice **51109301** and the original **INR 1,844,673.60** gross total, not a converted EUR amount. OCR signals are inspectable under recognition details; they are not measured accuracy. Extraction remains awaiting independent human review.
+The viewer places the protected original beside extracted fields, source quotations and page links. The example shows synthetic invoice **51109301** and the original **INR 1,844,673.60** gross total, not a converted EUR amount. OCR signals are inspectable under recognition details; they are not measured accuracy. Extraction remains awaiting independent human review.
 
-![21 October capture: synthetic invoice original beside Docling fields, page citations and Nova field-explanation actions](docs/screenshots/invoice-evidence-en-2026-10-21.jpg)
+![Synthetic invoice original beside Docling fields, page citations and Nova field-explanation actions](docs/screenshots/invoice-evidence-en-2026-10-21.jpg)
 
 For payroll, keep **Netto-Verdienst** and **Auszahlungsbetrag** separate; use the [private DATEV references](#datev-payroll-references). Insurance uses the [private Kaggle reference library](#kaggle-document-library) with explicit source/rights information. The screenshot is a reviewed UI illustration, not redistribution of the source PDF bundle; full originals remain private.
 
 ### Document processing control room
 
-The queue shows the saved invoice extraction as **Ready for review**, not reviewer-confirmed. One set of status chips filters submissions; **Batch intake** and **Data layers & exports** are separate tabs. Expand processing/storage settings only when needed. ClamAV remains enabled. Earlier gallery captures retain the prior assets-tab label; the new local ETL capture below shows the added data-layer workflow.
+The queue shows the saved invoice extraction as **Ready for review**, not reviewer-confirmed. Status chips filter submissions; **Batch intake** and **Data layers & exports** are separate tabs. Expand processing/storage settings only when needed. ClamAV remains enabled. The queue screenshot uses the earlier **Data assets** label for the data-layer tab; the ETL screenshot below shows its expanded workflow.
 
-![21 October capture: Data Pipelines with queue, batch/assets tabs, scanner settings and review-state filters](docs/screenshots/document-pipeline-en-2026-10-21.jpg)
+![Data Pipelines with queue, batch/assets tabs, scanner settings and review-state filters](docs/screenshots/document-pipeline-en-2026-10-21.jpg)
 
 Open **Processing details** for source identity, actual extraction counts and recorded events. The pictured receipt records **one page, two fields and two tables**, the Docling provider and its original submission/finish times. **Download processing manifest** exports metadata only. Reopening this receipt is not a new model run, and the human-review stage is not approval.
 
-![21 October capture: saved processing receipt with source hash, recorded stages and real Docling extraction counts](docs/screenshots/document-pipeline-details-en-2026-10-21.jpg)
+![Saved processing receipt with source hash, recorded stages and Docling extraction counts](docs/screenshots/document-pipeline-details-en-2026-10-21.jpg)
 
-### Actual local ETL and quality findings
+### Local ETL and quality findings
 
-The new Docker worker processed the scanned synthetic invoice into **one Bronze snapshot and two Silver fields**. **Gold is zero because the source has not been reviewer-confirmed**, not because the transform failed. The receipt passed real dbt checks. The ambiguous literal date `03/07/2023` is preserved and linked back to page 1 of the original. Parquet downloads are private and require consent plus authentication. This is a single measured run, not a general quality benchmark.
+The Docker worker transforms the scanned invoice into **one Bronze snapshot and two Silver fields**. **Gold is zero because the source has not been reviewer-confirmed**, not because the transform failed. The example receipt passed dbt checks. The ambiguous literal date `03/07/2023` is preserved and linked back to page 1 of the original. Parquet downloads are private and require consent plus authentication. These results describe the example document, not a general quality benchmark.
 
-![21 October compact-browser capture: actual Bronze/Silver/Gold counts, passed dbt checks and an ambiguous-date finding linked to the invoice PDF](docs/screenshots/local-etl-quality-en-2026-10-21.jpg)
+![Bronze/Silver/Gold counts, passed dbt checks and an ambiguous-date finding linked to the invoice PDF](docs/screenshots/local-etl-quality-en-2026-10-21.jpg)
 
 ### Compare prompts without hiding failures
 
 On the independently checked invoice-number field, zero-shot matched the exact source/reference. Few-shot produced valid JSON but no supported value. The UI retains **0% reference/quote match**, the empty observation and a direct link to the original. The **100% schema validity** in this one-sample experiment means format compliance only, not accuracy. Four chunking strategies are measured separately on the same checked page.
 
-![21 October compact-browser capture: a real few-shot abstention retained as a failed reference match, with original-PDF inspection](docs/screenshots/prompt-comparison-en-2026-10-21.jpg)
+![Few-shot abstention retained as a failed reference match, with original-PDF inspection](docs/screenshots/prompt-comparison-en-2026-10-21.jpg)
 
 ### Retrieve evidence in AI Studio
 
 Search the selected dossier for **invoice number and gross total**, then inspect the ranked snippets and **Open source** links. This capture shows a real local retrieval over seven indexed chunks; the time and scores belong to this single request, not a benchmark. Route cards are application metadata, not proof that an LLM invoked the listed tools. MiniLM is English-focused and relevance scores are not answer-accuracy percentages.
 
-![21 October capture: local MiniLM, Qdrant and BM25 retrieval with invoice field evidence](docs/screenshots/ai-studio-evidence-en-2026-10-21.jpg)
+![Local MiniLM, Qdrant and BM25 retrieval with invoice field evidence](docs/screenshots/ai-studio-evidence-en-2026-10-21.jpg)
 
 ### Meet Nova and replay a page guide
 
@@ -638,15 +644,15 @@ Nova's portrait is an **AI-generated fictional character**, not a real advisor. 
 
 Open the portrait button at the bottom right. Choose **App guidance** for local instructions and links, or **Evidence analysis** for source-based questions to the explicitly configured local/Azure model. The **compass icon** starts a step-by-step guide for the current page; **Expand reading area** gives longer answers more room. Enter sends; Shift+Enter adds a line break.
 
-The fresh screenshot shows **Evidence analysis** immediately after pressing Enter on a question about the invoice number and currency. **Generation is still pending**; it is not a completed local/Azure answer or an approved result. To test the model, follow [Local Docker with Nova](#local-docker-with-nova) or [Azure Test Nova](#7-analyze-a-document-and-test-nova), wait for a completed answer and independently inspect its sources. Source links do not replace human verification.
+The screenshot shows **Evidence analysis** after sending a question about the invoice number and currency. **Generation is pending** in this image; it does not show a completed or approved answer. To try Nova, follow [Local Docker with Nova](#local-docker-with-nova) or the [Azure setup](#7-analyze-a-document-and-test-nova), wait for a completed answer and inspect its source pages independently.
 
-![21 October capture: Nova portrait and a submitted local-model question while generation is pending](docs/screenshots/nova-local-question-en-2026-10-21.jpg)
+![Nova portrait and a submitted local-model question while generation is pending](docs/screenshots/nova-local-question-en-2026-10-21.jpg)
 
 ### Source-bound experiments
 
 The **Research lab** groups **Experiments**, **Domain insights** and **Document inventory** as local tabs. Read labels independently from the original, save a reference version, then evaluate extraction or compare BM25/vector/hybrid retrieval. Results belong to that labelled sample, not general model accuracy. Operations similarly keeps **Activity log** inside its section rather than adding another main-menu entry.
 
-![21 October capture: Research lab reference-creation screen with no fabricated experiment scores](docs/screenshots/research-experiments-en-2026-10-21.jpg)
+![Research lab reference-creation screen before running an experiment](docs/screenshots/research-experiments-en-2026-10-21.jpg)
 
 ## Architecture
 
