@@ -157,6 +157,14 @@ const localRequest=async(url,options={})=>{
   }
   return request(url,options);
 };
+if(process.env.TEST_PYTHON_SDK==='1') {
+  execFileSync(process.env.TEST_PYTHON_EXECUTABLE||'python3',['python/tools/check_live_platform.py'],{
+    env:{...process.env,LAB_API_URL:api,LAB_CASE_ID:process.env.TEST_PYTHON_CASE||'CR-485a8c32-047',LAB_ACCESS_TOKEN:tokens.access_token},
+    stdio:'inherit',timeout:60000,
+  });
+  const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
+  check(ended.status===204,'Python SDK verification session logged out');process.exit(0);
+}
 if(process.env.TEST_NOVA_LOCAL==='1') {
   const {auditNovaLocal}=await import('./test-nova-local.mjs');await auditNovaLocal({request:localRequest,check,bearer,web,api});
   const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});

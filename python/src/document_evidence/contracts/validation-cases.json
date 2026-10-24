@@ -1,0 +1,27 @@
+{
+  "version": "validation-fixtures-v1",
+  "scope": "Synthetic strings only. Citation parity with Java; strict money parity with Python ETL. Java money comparison is checked only where javaComparison is supplied, not claimed equivalent on ambiguous inputs.",
+  "citations": [
+    {"answer": "Invoice 51109301 [doc-actual:p1:fields].", "ids": ["doc-actual:p1:fields"], "valid": true, "canonical": "Invoice 51109301 [doc-actual:p1:fields]."},
+    {"answer": "Invoice [[ doc-actual:p1:fields ]].", "ids": ["doc-actual:p1:fields"], "valid": true, "canonical": "Invoice [doc-actual:p1:fields]."},
+    {"answer": "Invoice 51109301", "ids": ["doc-actual:p1:fields"], "valid": false},
+    {"answer": "Invoice [doc-guessed:p1]", "ids": ["doc-actual:p1:fields"], "valid": false},
+    {"answer": "Invoice [doc-actual:p1:fields] [1]", "ids": ["doc-actual:p1:fields"], "valid": false},
+    {"answer": "Invoice [doc-actual:p1:fields] [unfinished", "ids": ["doc-actual:p1:fields"], "valid": false},
+    {"answer": "No sources supplied.", "ids": [], "valid": true, "canonical": "No sources supplied."},
+    {"answer": "", "ids": [], "valid": false}
+  ],
+  "money": [
+    {"raw": "2967,11 EUR", "context": "", "amount": "2967.11", "currency": "EUR", "status": "VALID", "javaComparison": "2967.11"},
+    {"raw": "2.967,11 EUR", "context": "", "amount": "2967.11", "currency": "EUR", "status": "VALID", "javaComparison": "2967.11"},
+    {"raw": "EUR 1,250.00", "context": "", "amount": "1250.00", "currency": "EUR", "status": "VALID", "javaComparison": "1250"},
+    {"raw": "INR 1,844,673.60", "context": "", "amount": "1844673.60", "currency": "INR", "status": "VALID", "javaComparison": "1844673.6"},
+    {"raw": "-12345,67 €", "context": "", "amount": "-12345.67", "currency": "EUR", "status": "VALID", "javaComparison": "-12345.67"},
+    {"raw": "100", "context": "EUR", "amount": "100", "currency": "EUR", "status": "VALID", "javaComparison": "100"},
+    {"raw": "1.234 EUR", "context": "", "amount": null, "currency": "EUR", "status": "AMOUNT_FORMAT_AMBIGUOUS"},
+    {"raw": "29.67,11 EUR", "context": "", "amount": null, "currency": "EUR", "status": "AMOUNT_FORMAT_AMBIGUOUS"},
+    {"raw": "100 EUR", "context": "USD", "amount": null, "currency": null, "status": "CURRENCY_UNKNOWN_OR_AMBIGUOUS"},
+    {"raw": "100", "context": "", "amount": null, "currency": null, "status": "CURRENCY_UNKNOWN_OR_AMBIGUOUS"},
+    {"raw": "1000000000000000 EUR", "context": "", "amount": null, "currency": "EUR", "status": "AMOUNT_OUT_OF_RANGE"}
+  ]
+}

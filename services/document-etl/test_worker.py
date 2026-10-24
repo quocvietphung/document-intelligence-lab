@@ -19,6 +19,15 @@ def snapshot(value="1,844,673.60", reviewed=False):
 
 
 class MoneyTest(unittest.TestCase):
+    def test_shared_python_library_money_contract(self):
+        fixture = json.loads((Path(__file__).resolve().parents[2] / "python/src/document_evidence/contracts/validation-cases.json").read_text())
+        for row in fixture["money"]:
+            with self.subTest(raw=row["raw"]):
+                amount, currency, quality = worker.normalize_money(row["raw"], row["context"])
+                self.assertEqual(str(amount) if amount is not None else None, row["amount"])
+                self.assertEqual(currency, row["currency"])
+                self.assertEqual(quality, row["status"])
+
     def test_locale_and_signs_preserve_currency(self):
         self.assertEqual(worker.normalize_money("2.967,11 EUR", ""), (Decimal("2967.11"), "EUR", "VALID"))
         self.assertEqual(worker.normalize_money("-1,844,673.60", "INR"), (Decimal("-1844673.60"), "INR", "VALID"))

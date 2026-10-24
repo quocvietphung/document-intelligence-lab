@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "document-evidence-lab"
+version = "0.1.0a1"
+description = "Local PDF evidence and validation, with an optional authenticated Java platform SDK"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Viet Phung"}]
+keywords = ["pdf", "docling", "evidence", "validation", "document-ai"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+dependencies = []
+
+[project.optional-dependencies]
+docling = ["docling==2.142.1", "pypdf>=6,<7"]
+dev = ["build>=1.2,<2", "twine>=6,<7"]
+
+[project.scripts]
+document-evidence = "document_evidence.cli:main"
+
+[project.urls]
+Repository = "https://github.com/quocvietphung/document-intelligence-lab"
+Documentation = "https://github.com/quocvietphung/document-intelligence-lab#python-quick-start"
+Issues = "https://github.com/quocvietphung/document-intelligence-lab/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+document_evidence = ["py.typed", "contracts/*.json"]
