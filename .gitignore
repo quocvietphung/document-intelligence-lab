@@ -1,5 +1,8 @@
 # Logs
 __pycache__/
+.venv/
+*.egg-info/
+/python/build/
 # Private infrastructure state and model artifacts must not enter the public source.
 **/.terraform/
 **/*.tfstate

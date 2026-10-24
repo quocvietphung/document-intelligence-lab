@@ -1,0 +1,62 @@
+name: Verify Python library
+
+on:
+  pull_request:
+    paths: ['python/**', '.github/workflows/python-*.yml']
+  push:
+    branches: [master, develop, 'feature/**']
+    paths: ['python/**', '.github/workflows/python-*.yml']
+  workflow_dispatch:
+    inputs:
+      docling_smoke:
+        description: 'Download Docling dependencies/models and convert the synthetic regression PDF'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '${{ matrix.python }}'
+          cache: pip
+          cache-dependency-path: python/pyproject.toml
+      - run: python -m pip install ./python
+      - run: python -m unittest discover -s python/tests -v
+      - name: Build wheel and sdist
+        if: matrix.python == '3.12'
+        run: |
+          python -m pip install './python[dev]'
+          python -m build python
+          python -m twine check python/dist/*
+          python python/tools/check_distribution.py python/dist
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == '3.12'
+        with:
+          name: python-distributions
+          path: python/dist/*
+
+  docling-smoke:
+    if: github.event_name == 'workflow_dispatch' && inputs.docling_smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install './python[docling]'
+      - run: python -m unittest discover -s python/tests -p test_docling_smoke.py -v
+        env:
+          TEST_PYTHON_PDF: services/credit-api/src/test/resources/legacy-research/invoice-fictional.pdf
+          TEST_ALLOW_MODEL_DOWNLOAD: '1'
+          TEST_DOCLING_TIMEOUT: '900'
