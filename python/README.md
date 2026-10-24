@@ -4,9 +4,17 @@ Local PDF parsing, deterministic validation and traceable evidence for document 
 
 The **Python library runs without Java, Docker, an Azure account or an LLM**. It adds evidence checks around Docling rather than replacing Docling's parser. The optional SDK connects to the existing Java platform for authenticated workflows and audit history.
 
-## Install from source
+## Install
 
-This is an alpha package prepared for publication. A PyPI release is not assumed to exist.
+Use Python 3.10 or newer. Pin the alpha release and choose whether to install the optional parser:
+
+```bash
+python -m pip install 'document-evidence-lab[docling]==0.1.0a1'
+```
+
+For the dependency-free validation core and authenticated SDK, use `document-evidence-lab==0.1.0a1` without `[docling]`. Installing the extra does not itself authorize a model download. This is research software; alpha releases are not production certifications.
+
+### Install from source
 
 ```bash
 git clone https://github.com/quocvietphung/document-intelligence-lab.git
