@@ -34,7 +34,15 @@ The Python package adds **validation around Docling's output** rather than repla
 
 ## Python Quick Start
 
-Use **Python 3.10+**. From a new checkout:
+Use **Python 3.10+**. Install the pinned alpha package with local Docling support:
+
+```bash
+python -m pip install 'document-evidence-lab[docling]==0.1.0a1'
+```
+
+For the lightweight validation core and SDK only, omit `[docling]`. The extra installs the parser dependencies; model downloads still require explicit first-use permission. This is an **alpha**, not a production-certified document validation service.
+
+To run or contribute from source instead:
 
 ```bash
 git clone https://github.com/quocvietphung/document-intelligence-lab.git
@@ -44,7 +52,7 @@ source .venv/bin/activate
 python -m pip install './python[docling]'
 ```
 
-On Windows, activate with `.venv\Scripts\Activate.ps1`. Install `./python` without extras for the dependency-free validation core and SDK. The package is an **alpha prepared for publication**; source installation works without claiming a PyPI release already exists.
+On Windows, activate with `.venv\Scripts\Activate.ps1`. Install `./python` without extras for the dependency-free validation core and SDK. [Package on PyPI](https://pypi.org/project/document-evidence-lab/).
 
 ### Read a local PDF
 
