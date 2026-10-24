@@ -4,6 +4,8 @@
 
 An MIT-licensed project for turning PDFs into structured data, traceable answers and reviewable findings. It studies **general business documents**, **insurance wording** and **DATEV payroll/banking documents**, without making credit, underwriting, settlement or payment decisions.
 
+**Published Python alpha:** [document-evidence-lab 0.1.0a1 on PyPI](https://pypi.org/project/document-evidence-lab/0.1.0a1/) · [release source](https://github.com/quocvietphung/document-intelligence-lab/tree/python-v0.1.0a1). Install the standalone library from PyPI, or clone this repository for the full Docker workspace.
+
 | Entry point | Use it for | Runtime |
 | --- | --- | --- |
 | **Python library** | Read local PDFs with Docling; inspect page/table evidence; validate amounts, literal text labels and citations | Python only; no Java, Docker, login or LLM |
@@ -34,13 +36,21 @@ The Python package adds **validation around Docling's output** rather than repla
 
 ## Python Quick Start
 
-Use **Python 3.10+**. Install the pinned alpha package with local Docling support:
+Use **Python 3.10+**; check `python3 --version` first and use a supported interpreter if your system Python is older. Create an isolated environment, then install the published alpha with local Docling support:
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 python -m pip install 'document-evidence-lab[docling]==0.1.0a1'
 ```
 
-For the lightweight validation core and SDK only, omit `[docling]`. The extra installs the parser dependencies; model downloads still require explicit first-use permission. This is an **alpha**, not a production-certified document validation service.
+On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1` instead. For the dependency-free validation core and SDK only, use this install command in the environment:
+
+```bash
+python -m pip install 'document-evidence-lab==0.1.0a1'
+```
+
+The `[docling]` extra installs parser dependencies; model downloads still require explicit first-use permission. No models or publisher PDFs are bundled. Installing either variant does **not** start the web UI or Nova; use the [Docker workspace](#local-docker-workspace) for those. This is an **alpha**, not a production-certified document validation service.
 
 To run or contribute from source instead:
 
@@ -52,7 +62,7 @@ source .venv/bin/activate
 python -m pip install './python[docling]'
 ```
 
-On Windows, activate with `.venv\Scripts\Activate.ps1`. Install `./python` without extras for the dependency-free validation core and SDK. [Package on PyPI](https://pypi.org/project/document-evidence-lab/).
+Install `./python` without extras for the dependency-free validation core and SDK. The distribution is named `document-evidence-lab`, Python imports use `document_evidence`, and the CLI is `document-evidence`.
 
 ### Read a local PDF
 
@@ -100,7 +110,7 @@ Normalized results contain a **SHA-256 identity**, page-bound IDs, optional top-
 
 ## Python SDK for the Java platform
 
-Install `./python`, start the [Docker workspace](#local-docker-workspace) separately and supply an existing Keycloak **access token**:
+Install the lightweight `document-evidence-lab==0.1.0a1` package from PyPI (or `./python` from source), start the [Docker workspace](#local-docker-workspace) separately and supply an existing Keycloak **access token**:
 
 ```python
 import os
@@ -371,20 +381,22 @@ Acceptance tests need the running stack and prepared samples. They create labell
 
 `python-package.yml` checks Python **3.10–3.14**, builds wheel/sdist and checks metadata, license and distribution contents. A manually enabled Docling smoke job converts a synthetic regression PDF and explicitly downloads its dependencies/models.
 
-Pushing a branch does **not** publish the package. For a release:
+The published alpha is [0.1.0a1](https://pypi.org/project/document-evidence-lab/0.1.0a1/), built from tag [`python-v0.1.0a1`](https://github.com/quocvietphung/document-intelligence-lab/tree/python-v0.1.0a1). The `pypi` environment uses a required owner review and a `python-v*` tag policy. Its Trusted Publisher is scoped to `quocvietphung/document-intelligence-lab`, `python-publish.yml` and environment `pypi`.
 
-1. Confirm the final package name/version and registry availability.
-2. Configure a Trusted Publisher for this repository and `python-publish.yml`, plus protected `testpypi`/`pypi` environments with required reviewers.
-3. Create a reviewed matching tag, such as `python-v0.1.0a1`.
-4. Run the manual publish workflow on that tag, choosing **TestPyPI first**. Inspect a clean install before approving PyPI.
+Pushing `master` or `develop` does **not** publish a Python release or deploy Azure/Vercel. For a future package release:
 
-The workflow checks tag/version and uses job-scoped OIDC, not a stored API token. Local setup creates no publisher, account, tag or release. [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/using-a-publisher/).
+1. Bump the package version, review the distribution contents and pass the Python checks. Existing PyPI release files cannot be replaced; do not reuse `0.1.0a1`.
+2. Create a reviewed `python-v<version>` tag matching `python/pyproject.toml`.
+3. Run [Publish Python package (manual)](https://github.com/quocvietphung/document-intelligence-lab/actions/workflows/python-publish.yml) on that tag, select the configured registry **`pypi`**, and approve the protected environment after inspecting the build.
+4. Verify installation from PyPI in a clean virtual environment before announcing the release.
+
+The workflow defaults to `testpypi`, but **TestPyPI is not configured for this project**. To stage there, first configure its separate Trusted Publisher and protected `testpypi` environment; a PyPI publisher does not grant TestPyPI access. The workflow checks tag/version and uses job-scoped OIDC, not a stored API token. Local setup creates no publisher, account, tag or release. GitHub README edits do not update an already published PyPI version's description. [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/using-a-publisher/).
 
 ## Storage and troubleshooting
 
 - **Private data:** keep PDFs, exports, models, tokens, `.env.azure.local`, dumps and Terraform state out of Git. See [SECURITY](SECURITY.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 - **Retained volumes:** databases, originals, models and ETL use named Docker volumes. Do not troubleshoot with `down -v`, volume prune or system prune.
-- **Python parser unavailable:** install `./python[docling]` and explicitly prepare models before offline use. Errors return safe codes, not document content or parser tracebacks.
+- **Python parser unavailable:** install `document-evidence-lab[docling]==0.1.0a1` from PyPI or `./python[docling]` from source, then explicitly prepare models before offline use. Errors return safe codes, not document content or parser tracebacks.
 - **Nova slow/busy:** wait for warmup and avoid simultaneous large experiments. There is no automatic retry/cloud fallback.
 - **SDK unauthorized:** use an unexpired Keycloak access token with the API audience and allowed tenant/role; refresh through your approved client flow.
 - **Azure unavailable:** check renewal, endpoint, deployment, resource-scoped role, network and quota. App login is separate from Azure login.

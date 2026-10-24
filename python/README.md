@@ -2,17 +2,27 @@
 
 Local PDF parsing, deterministic validation and traceable evidence for document AI experiments. Part of [Document Intelligence Lab](https://github.com/quocvietphung/document-intelligence-lab).
 
+**Published alpha:** [document-evidence-lab 0.1.0a1 on PyPI](https://pypi.org/project/document-evidence-lab/0.1.0a1/) · [release source](https://github.com/quocvietphung/document-intelligence-lab/tree/python-v0.1.0a1).
+
 The **Python library runs without Java, Docker, an Azure account or an LLM**. It adds evidence checks around Docling rather than replacing Docling's parser. The optional SDK connects to the existing Java platform for authenticated workflows and audit history.
 
 ## Install
 
-Use Python 3.10 or newer. Pin the alpha release and choose whether to install the optional parser:
+Use Python 3.10 or newer; check `python3 --version` and choose a supported interpreter if needed. Create a virtual environment and install the published alpha with the optional parser:
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 python -m pip install 'document-evidence-lab[docling]==0.1.0a1'
 ```
 
-For the dependency-free validation core and authenticated SDK, use `document-evidence-lab==0.1.0a1` without `[docling]`. Installing the extra does not itself authorize a model download. This is research software; alpha releases are not production certifications.
+On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1` instead. For only the dependency-free validation core and authenticated SDK, use this install command in the environment:
+
+```bash
+python -m pip install 'document-evidence-lab==0.1.0a1'
+```
+
+Installing the extra does not itself authorize a model download. Neither variant bundles models or publisher PDFs, nor starts Nova or the web UI. The distribution name is `document-evidence-lab`, the import is `document_evidence`, and the CLI is `document-evidence`. This is research software; alpha releases are not production certifications.
 
 ### Install from source
 
@@ -64,6 +74,8 @@ Supported currency codes are EUR, INR, USD and GBP; ambiguous separators and unk
 Normalized results contain a SHA-256 document identity, page-bound source IDs, optional bounding boxes, table cells/spans and unknown confidence represented by `None`. These IDs identify this conversion; they are **not** interchangeable with Java dossier IDs. No human approval is inferred.
 
 ## Optional Java SDK
+
+The core PyPI install includes the SDK; Docling is not needed for API access. Start the Java/Docker platform separately before using it.
 
 ```python
 import os
