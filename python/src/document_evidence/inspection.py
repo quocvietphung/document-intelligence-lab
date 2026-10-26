@@ -70,13 +70,38 @@ def read_pdf_structure(path: str | Path, *, timeout_seconds: int = 60):
     return pdf_structure_from_dict(_inspect(path, "structure", {}, timeout_seconds)["structure"])
 
 
+def inspect_evidence(path: str | Path, value: str, *, page: int = 1, recorded_text: str = "",
+                     recorded_bbox: tuple[float, float, float, float] | None = None,
+                     recorded_page_size: tuple[float, float] | None = None,
+                     languages: str = "eng", timeout_seconds: int = 120) -> dict:
+    """Locate candidates and optionally compare a stored upright provider crop with Tesseract.
+
+    A provider crop must include its original page dimensions. Rotation/ratio mismatch
+    abstains. This never changes the PDF, stored OCR, an answer or human approval.
+    """
+    if not isinstance(value, str) or not value.strip() or len(value) > 500 or type(page) is not int or not 1 <= page <= 4:
+        raise ValueError("A page between 1 and 4 and a value of at most 500 characters are required")
+    if not isinstance(recorded_text, str) or len(recorded_text) > 1000 or not re.fullmatch(r"[a-z]{3}(?:\+[a-z]{3}){0,3}", languages):
+        raise ValueError("Invalid recorded text or installed language codes")
+    import math
+    for values, length in ((recorded_bbox,4),(recorded_page_size,2)):
+        if values is not None and (len(values)!=length or any(type(v) not in (int,float) or not math.isfinite(v) for v in values)):
+            raise ValueError("Invalid recorded geometry")
+    if recorded_bbox is not None and not (0<=recorded_bbox[0]<recorded_bbox[2]<=1 and 0<=recorded_bbox[1]<recorded_bbox[3]<=1):
+        raise ValueError("Invalid recorded bounds")
+    if recorded_page_size is not None and any(v<=0 for v in recorded_page_size):
+        raise ValueError("Invalid recorded page size")
+    return _inspect(path,"inspect",{"value":value,"page":page,"ocr":True,"deskew":True,"languages":languages,
+                    "recordedText":recorded_text,"recordedBox":recorded_bbox,"recordedPageSize":recorded_page_size},timeout_seconds)
+
+
 def ground_pdf(path: str | Path, value: str, *, page: int | None = None,
                occurrence_id: str | None = None, ocr: bool = True, deskew: bool = True,
                languages: str = "eng", timeout_seconds: int = 60) -> GroundingResult:
     """Find exact occurrences locally; duplicates never silently select the first.
 
     Native glyph boxes use PDFium's page-to-device transform (rotation/crop included).
-    Image-only pages may use Tesseract. Deskewed OCR polygons are mapped back to the
+    Pages without an exact native-text match may use Tesseract. Deskewed OCR polygons are mapped back to the
     original rendered page. No LLM, URLs, API, automatic downloads or PDF rewriting.
     """
     if not isinstance(value, str) or not value.strip() or len(value) > 500:

@@ -58,9 +58,35 @@ In **Documents & review → View result & PDF → Document structure & reading o
 
 The **Python source/wheel preview `0.2.0a1`** adds standalone `read_pdf_structure`, `ground_pdf` and `validate_structure`. The published PyPI alpha remains `0.1.0a1`; the new APIs require the source preview or a locally built wheel. [Installation, examples and wheel checks](python/README.md#inspect-native-tags-and-exact-pdf-locations).
 
-Python inspection uses native PDFium glyph boxes or page-selective Tesseract on image-only pages. Native rotation/crop offsets and inverse-projected coordinates after conservative Hough-line deskew are covered by real regression tests. Repeated values stay ambiguous until explicitly selected; no currency/digit repair, LLM call, automatic cloud fallback or PDF rewrite occurs. Boxes are relative to the original displayed page. Inspecting a match does not establish factual correctness; mixed-content pages and arbitrary visual scan orientations remain evaluation cases.
+Python inspection uses native PDFium glyph boxes or selective Tesseract when native text cannot match the requested value. Native rotation/crop offsets and inverse-projected coordinates after conservative Hough-line deskew are covered by real regression tests. Repeated values stay ambiguous until explicitly selected; no currency/digit repair, LLM call, automatic cloud fallback or PDF rewrite occurs. Boxes are relative to the original displayed page. Inspecting a match does not establish factual correctness; mixed-content pages and arbitrary visual scan orientations remain evaluation cases.
 
 Use the [two-column/tagged fixture](services/credit-api/src/test/resources/evidence/structure-regression.pdf) and [upright/skewed scans](services/credit-api/src/test/resources/evidence/scanned-skew-regression.pdf). Their generator is `scripts/build-structure-regression.py`; all examples are self-authored, with no customer/publisher data. The tagged fixture deliberately draws the right column before the left and is **not** a valid PDF/UA reference. Accessibility auditing remains a separate task; PDF4WCAG/veraPDF are not bundled or silently called.
+
+### Local evidence quality workflow
+
+In **Documents & review → View result & PDF**, select a recorded occurrence, expand **Check source location & OCR**, review the exact text and consent, then choose **Inspect locally**. The existing offline ETL worker runs the Python library with PDFium/Tesseract; no new HTTP service, Docling model download or Azure call is required. The full local Docker profile enables this worker. A queued receipt is not a completed inspection; source changes mark old receipts historical.
+
+![English local inspection: original crop, recorded OCR and independent Tesseract observation, with a private report](docs/screenshots/local-inspection-en.jpg)
+
+Completed inspection of the self-authored `8,500` regression cell. Both observations agree; the UI deliberately retains **not verified** and keeps previous inspections separate.
+
+- **Source candidates:** repeated text returns separate locations. Choose one explicitly to highlight it in the original, including supported native rotations and mild scan skew. Mixed pages can invoke OCR when their native layer has no exact requested text. Arbitrary visual 90°/180° scan orientation remains unsupported.
+- **Independent observation:** for an upright provider region with matching page proportions, inspect its source crop, stored OCR and a separate Tesseract reading. A disagreement, including `3,500` versus `8,500`, is reported without selecting a winner or changing stored evidence. Agreement is labelled **not verified**. Unsupported geometry remains unavailable.
+- **Private report:** download a receipt with original hash, engine/code versions, options, coordinates, OCR observations, reviewer corrections and up to ten saved answers referencing that document. Sharing a document ID does not prove an answer is supported. Reports contain private text/crops; keep them private. They omit the whole PDF. Temporary inspection source copies are removed after processing; saved reports/history have no automatic purge.
+- **Nova lifecycle:** each question has a request ID. **Stop waiting & request cancellation** requests backend interruption and tracks the result; repeated request IDs never dispatch twice in the same API process. A cancelled result is discarded before answer persistence. Provider-side termination is not confirmed. Status is process-local, expires after 30 minutes once terminal, and is unavailable after API restart; consult saved answer history when status is unknown.
+- **Sign-in navigation:** restrictive-browser silent SSO falls back to explicit sign-in. The app restores a recent, same-origin dossier/page location after successful authentication; tokens remain in memory.
+
+Try the included `structure-regression.pdf` for its `8,500` table cell and `scanned-skew-regression.pdf` page 2 for four repeated `Total: $500` values. `TEST_EVIDENCE_QUALITY=1 TEST_QUALITY_CASE=<structure-test-case> node scripts/test-oauth.mjs` exercises the actual queue and private export. Add `TEST_QUALITY_NOVA_CANCEL=1` to also test cancellation during **local** model generation; use `TEST_QUALITY_NOVA_CANCEL=only` for a separate Nova-only pass against that existing dossier on a constrained machine. The cancellation test refuses Azure.
+
+The [32-PDF synthetic location report](docs/benchmarks/synthetic-grounding.json) records **112/128 locations at IoU ≥ 0.5**: native 48/48, mild-skew scans 32/32, mixed pages 32/32, visual-90° challenge scans 0/16. Labels come from known generated content/geometry, **not human-approved or representative business ground truth**. Reading-order correctness, table semantics and general OCR accuracy are not measured by this location suite. Timings depend on hardware and warm caches. The unmatched challenge cases remain in the denominator.
+
+```bash
+python -m pip install './python[inspection]' reportlab
+python scripts/build-quality-corpus.py /private/path/quality-corpus
+python -m document_evidence.benchmark /private/path/quality-corpus/manifest.json --output /private/path/quality-results.json
+```
+
+Existing corpus/report files are never overwritten. The PDFs are generated locally rather than bundled into the package or repository. [OmniDocBench](https://github.com/opendatalab/OmniDocBench) informed the separation of evaluation dimensions; this lightweight location suite is not an OmniDocBench/TEDS implementation or score.
 
 ## Python Quick Start
 
@@ -173,7 +199,7 @@ A receipt is **not finished OCR**. Inspect `batches(case_id)` and `workflow(case
 
 ## Local Docker workspace
 
-Requirements: Git, **Node.js 22+**, Docker Desktop/Engine with Compose v2, and free ports **3000, 8080, 8081**. Allow at least four CPUs and 8 GB Docker RAM. Keep at least 8 GiB free **inside Docker** for model preparation; images, documents and build cache need additional storage. Parsing and generation compete for memory.
+Requirements: Git, **Node.js 22+**, Docker Desktop/Engine with Compose v2, and free ports **3000, 8080, 8081**. Allow at least four CPUs and 8 GB Docker RAM, with additional host memory for the browser and operating system. Keep at least 8 GiB free **inside Docker** for model preparation; images, documents and build cache need additional storage. Parsing and generation compete for memory: on a constrained laptop, run OCR/ETL acceptance and Nova inference separately. Swapping can exhaust their deadlines even when containers remain healthy; do not increase timeouts or treat health checks as completed inference.
 
 From the repository root:
 
@@ -364,8 +390,10 @@ flowchart TD
     R --> LC[LangChain4j · authorized evidence context]
     LC --> OL[Ollama CPU · local Nova]
     LC --> AZO[Azure OpenAI · opt-in]
-    JAVA --> ETL[Private DuckDB / dbt worker]
-    ETL --> LAYERS[Bronze / Silver / reviewed Gold · Parquet]
+    JAVA --> ETL[Offline Python worker · private spool]
+    ETL -->|Bounded original PDF inspection| INSPECT
+    ETL --> DUCK[DuckDB / dbt · versioned transformations]
+    DUCK --> LAYERS[Bronze / Silver / reviewed Gold · Parquet]
     JAVA --> OBS[Redis quotas · optional OpenTelemetry]
 ```
 

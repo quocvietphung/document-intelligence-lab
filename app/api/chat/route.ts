@@ -21,7 +21,7 @@ export async function POST(request:Request) {
     const latest=[...messages].reverse().find(m=>m.role==="user");
     if(!latest || !messageText(latest)) return Response.json({error:"Question required"},{status:400});
     const response=await fetch(`${root.replace(/\/$/,"")}/api/assistant/chat`,{
-      method:"POST",headers:{Authorization:authorization,"Content-Type":"application/json"},
+      method:"POST",headers:{Authorization:authorization,"Content-Type":"application/json","X-Nova-Request-Id":body.requestId||requestId},
       body:JSON.stringify({caseId:body.caseId,locale:body.locale,question:messageText(latest),revisionOf:body.revisionOf,feedbackId:body.feedbackId,taskId:body.taskId,caseVersion:body.caseVersion}),
       cache:"no-store",signal:AbortSignal.any([request.signal,AbortSignal.timeout(process.env.NOVA_PROVIDER==='ollama'?380_000:45_000)]),
     });

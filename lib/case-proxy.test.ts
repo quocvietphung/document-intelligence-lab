@@ -7,6 +7,17 @@ afterEach(() => {
 });
 
 describe("document analysis status transport", () => {
+  it('scopes inspection reports and Nova lifecycle to their exact authenticated routes',async()=>{
+    vi.stubEnv('CREDIT_API_URL','http://java:8080');vi.stubGlobal('fetch',vi.fn().mockResolvedValue(Response.json({})));
+    const uuid='12345678-1234-1234-1234-123456789abc',headers={Authorization:'Bearer fixture'};
+    for(const [path,method] of [[['C','platform','inspection'],'POST'],[['C','platform','inspection',`insp-${uuid}`,'report'],'GET'],[['C','platform','nova-runs',uuid],'GET'],[['C','platform','nova-runs',uuid,'cancel'],'POST']] as const){
+      const url='http://localhost:3000/api/cases/'+path.join('/');
+      expect((await proxyCase(new Request(url,{headers,method}),[...path])).status).toBe(200);
+      expect((await proxyCase(new Request(url,{method}),[...path])).status).toBe(401);
+    }
+    const path=['C','platform','inspection',`insp-${uuid}`,'report'];
+    expect((await proxyCase(new Request('http://localhost:3000/api/cases/'+path.join('/'),{headers,method:'POST'}),path)).status).toBe(405);
+  });
   it('allows only authenticated POST cancellation without exposing arbitrary job operations',async()=>{
     vi.stubEnv('CREDIT_API_URL','http://java:8080');vi.stubGlobal('fetch',vi.fn().mockResolvedValue(Response.json({status:'CANCELLED'})));
     const path=['C','platform','jobs','job-test','cancel'],url='http://localhost:3000/api/cases/'+path.join('/'),headers={Authorization:'Bearer fixture'};

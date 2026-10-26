@@ -18,6 +18,7 @@ import {InsuranceReferenceNotice} from './InsuranceReferenceNotice';
 import {AIDocumentBadge} from './AITransparency';
 import {DocumentRecognitionDetails} from './DocumentResults';
 import {OcrCorrectionForm} from './OcrCorrectionForm';
+import {LocalInspectionPanel} from './LocalInspectionPanel';
 
 export function DocumentEvidence({doc,caseId,locale,editable,values,onChange,onExplain,initialPage=1,context,caseVersion=0,onOcrSaved}:{doc:CreditDocument;caseId:string;locale:string;editable:boolean;values:string[];onChange:(index:number,value:string)=>void;onExplain?:(question:string)=>void;initialPage?:number;context?:EvidenceContext;caseVersion?:number;onOcrSaved?:(item:WorkspaceCase)=>void}) {
   const auth=useAuth(),t=workspaceText(locale),d=documentText(locale),copy=inspectionText(locale);
@@ -54,7 +55,10 @@ export function DocumentEvidence({doc,caseId,locale,editable,values,onChange,onE
       <h3 ref={sourceHeading} className="section-heading mb-4">{sourceLabel}</h3>
       {sampleUrl?<PdfPreview key={doc.id} url={sampleUrl} {...previewProps}/>:doc.originalAvailable&&isPdf?<PdfPreview key={doc.id} url={`/api/cases/${caseId}/documents/${doc.id}/original`} token={auth.token||undefined} {...previewProps}/>:doc.originalAvailable&&isImage&&auth.token?<ImagePreview key={doc.id} url={`/api/cases/${caseId}/documents/${doc.id}/original`} token={auth.token} locale={locale}/>:<p className="notice-lab">{doc.originalAvailable?d('text'):d('fixture')}</p>}
       {doc.pages?.some(p=>p.regions?.length)?<label className="evidence-occurrence-picker">{copy.choose}<select value={selection?.page===page&&selection.region?selection.sourceId:''} onChange={e=>selectRegion(page,e.target.value)}><option value="" disabled>{copy.choose}</option>{doc.pages?.find(p=>p.number===page)?.regions?.map(r=><option key={r.id} value={r.id}>{r.id} · {r.text.slice(0,90)}{r.row!=null?` · ${copy.row} ${r.row+1}, ${copy.column} ${(r.column??0)+1}`:''}</option>)}</select><small>{copy.manual}</small></label>:null}
-      {selection&&editable&&onOcrSaved?<OcrCorrectionForm key={`${selection.page}:${selection.sourceId}`} doc={doc} selection={selection} caseId={caseId} caseVersion={caseVersion} locale={locale} onSaved={onOcrSaved}/>:null}
+      {isPdf&&doc.originalAvailable&&auth.token?<LocalInspectionPanel key={`${doc.id}:${page}:${selection?.sourceId||''}`} caseId={caseId} documentId={doc.id} caseVersion={caseVersion} page={page} selection={selection} locale={locale} onSelect={candidate=>{
+        setPage(candidate.page);setSelection({page:candidate.page,sourceId:candidate.id,ocrText:candidate.text,value:candidate.text,canonicalBox:candidate.bbox,inspectionMethod:candidate.method});sourceHeading.current?.scrollIntoView({block:'start'});
+      }}/>:null}
+      {selection&&!selection.canonicalBox&&editable&&onOcrSaved?<OcrCorrectionForm key={`${selection.page}:${selection.sourceId}`} doc={doc} selection={selection} caseId={caseId} caseVersion={caseVersion} locale={locale} onSaved={onOcrSaved}/>:null}
       {doc.ocrCorrections?.length?<details className="document-text-evidence"><summary>{copy.history} · {doc.ocrCorrections.length}</summary><p>{copy.pending}</p>{doc.ocrCorrections.map(c=><section key={c.id}><strong>{t('page')} {c.page} · {c.sourceId}</strong><blockquote>{c.originalText}</blockquote><p>→ {c.correctedText}</p><small>{c.reason} · {c.actor} · {c.time}</small></section>)}</details>:null}
       <details className="document-text-evidence"><summary>{d('text')}</summary>{(doc.pages||[]).map(source=><section className="source-page" key={source.number}><header>{t('page')} {source.number} · {t('method')}: {source.method}</header><pre>{source.text}</pre></section>)}</details>
       <TableEvidence doc={doc} locale={locale} select={selectRegion}/>

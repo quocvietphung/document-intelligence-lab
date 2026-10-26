@@ -1,4 +1,4 @@
-"""Private, single-writer document ETL. No model, network, public bucket or source-PDF copy."""
+"""Private single-writer ETL and evidence inspection. Temporary PDFs never become analytics."""
 from __future__ import annotations
 
 import hashlib
@@ -168,6 +168,8 @@ def work(root):
     root.mkdir(parents=True, exist_ok=True)
     while True:
         (root / "heartbeat").touch()
+        from evidence_worker import process_evidence
+        process_evidence(root)
         for path in sorted((root / "queue").glob("*/*.input.json"), key=lambda p: p.stat().st_mtime)[:100]:
             result_path = path.with_name(path.name.replace(".input.json", ".result.json"))
             if result_path.exists() or path.is_symlink() or path.stat().st_size > 8_000_000:

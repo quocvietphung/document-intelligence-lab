@@ -18,7 +18,7 @@ final class LocalInferenceModel implements ChatModel {
   @Override public Set<dev.langchain4j.model.chat.Capability> supportedCapabilities(){return delegate.supportedCapabilities();}
   @Override public ChatResponse doChat(ChatRequest request){
     if(!slot.tryAcquire())throw new LocalInferenceException("LOCAL_MODEL_BUSY");
-    try{return delegate.chat(request);}
+    try{AssistantRuns.markInference();return delegate.chat(request);}
     catch(RuntimeException error){
       int depth=0;
       for(Throwable cause=error;cause!=null&&depth++<8;cause=cause.getCause())

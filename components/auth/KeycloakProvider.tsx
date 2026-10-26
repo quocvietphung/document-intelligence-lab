@@ -1,7 +1,7 @@
 "use client";
 
 import type Keycloak from "keycloak-js";
-import {authDeadline,keycloakInitOptions} from '@/lib/auth-initialization';
+import {authCallback,authDeadline,keycloakInitOptions,restoredWorkspacePath,workspaceReturnPath} from '@/lib/auth-initialization';
 import {
   createContext,
   useCallback,
@@ -45,13 +45,22 @@ const signedOut: Session = {
 let initialization: Promise<Keycloak> | undefined;
 function initialize(interactive=false) {
   initialization ??= authDeadline(import("keycloak-js").then(async ({ default: Client }) => {
-    const client = new Client({
+    const configuration = {
       url: process.env.NEXT_PUBLIC_KEYCLOAK_URL!,
       realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM || "credit-intelligence",
       clientId:
         process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || "credit-intelligence-web",
-    });
-    await client.init(keycloakInitOptions(window.location.href,interactive));
+    };
+    let client = new Client(configuration);
+    try{await authDeadline(client.init(keycloakInitOptions(window.location.href,interactive)),interactive||authCallback(window.location.href)?15000:4000);}
+    catch(error){
+      if(interactive||authCallback(window.location.href))throw error;
+      // Restrictive browsers may block silent SSO. An explicit sign-in remains available.
+      client=new Client(configuration);await client.init(keycloakInitOptions(window.location.href,true));
+    }
+    if(client.authenticated){
+      try{const target=restoredWorkspacePath(sessionStorage.getItem('lab-auth-return'),window.location.href);sessionStorage.removeItem('lab-auth-return');if(target){window.history.replaceState(null,'',target);window.dispatchEvent(new PopStateEvent('popstate'));}}catch{/* Storage may be unavailable; authentication still succeeds. */}
+    }
     return client;
   })).catch(error=>{initialization=undefined;throw error;});
   return initialization;
@@ -129,6 +138,7 @@ export function KeycloakProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(() => {
     if (!configured) return;
+    try{sessionStorage.setItem('lab-auth-return',JSON.stringify({path:workspaceReturnPath(window.location.href),time:Date.now()}));}catch{/* No credentials are persisted. */}
     void initialize(true)
       .then((client) =>
         client.login({

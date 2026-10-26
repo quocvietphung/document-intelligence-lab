@@ -16,7 +16,7 @@ export function PdfPreview({url,token,locale,requestedPage=1,highlightText,selec
   const labels=inspectionText(locale),cropCanvas=useRef<HTMLCanvasElement>(null);
   const [locations,setLocations]=useState<{key:string;boxes:PixelRegion[];provider:boolean}>();
   const [picked,setPicked]=useState<{key:string;index:number}>();
-  const evidenceKey=JSON.stringify([page,zoom,width,selection?.sourceId,selection?.region?.id,selection?.ocrText,selection?.value]);
+  const evidenceKey=JSON.stringify([page,zoom,width,selection?.sourceId,selection?.region?.id,selection?.ocrText,selection?.value,selection?.canonicalBox]);
   const matches=locations?.key===evidenceKey?locations.boxes:[];
   const chosen=matches.length===1?matches[0]:picked?.key===evidenceKey?matches[picked.index]:undefined;
   function changePage(number:number){setPage(number);onPageChange?.(number);}
@@ -67,10 +67,15 @@ export function PdfPreview({url,token,locale,requestedPage=1,highlightText,selec
         if(!disposed){
           setRendered(true);setRegion(undefined);
           if(selection&&selection.page===page){
+            if(selection.canonicalBox){
+              const [left,top,right,bottom]=selection.canonicalBox;
+              setLocations({key:evidenceKey,boxes:[{left:left*viewport.width,top:top*viewport.height,width:(right-left)*viewport.width,height:(bottom-top)*viewport.height}],provider:false});
+            }else{
             const observed=selection.region?[selection.region]:(selection.candidates||[]);
             const boxes=observed.map(r=>providerRegionBox(r,source.view,source.rotate,b=>[...viewport.convertToViewportPoint(b[0],b[1]),...viewport.convertToViewportPoint(b[2],b[3])])).filter((r):r is PixelRegion=>Boolean(r));
             if(observed.length){setLocations({key:evidenceKey,boxes:boxes.length===observed.length?boxes:[],provider:true});}
             else {const text=await source.getTextContent();if(!disposed)setLocations({key:evidenceKey,boxes:textOccurrenceRegions(text.items,selection.value,(x,y)=>viewport.convertToViewportPoint(x,y)).filter(b=>b.left>=0&&b.top>=0&&b.width>0&&b.height>0&&b.left+b.width<=viewport.width+1&&b.top+b.height<=viewport.height+1),provider:false});}
+            }
           }
           if(highlightText)try{
             const text=await source.getTextContent();
@@ -100,7 +105,7 @@ export function PdfPreview({url,token,locale,requestedPage=1,highlightText,selec
     {selection&&page===selection.page?<section className="evidence-comparison" aria-label={labels.title}>
       <h3>{labels.title}</h3><p>{labels.hint}</p>
       {matches.length>1?<label>{labels.choose}<select value={picked?.key===evidenceKey?picked.index:''} onChange={e=>setPicked({key:evidenceKey,index:Number(e.target.value)})}><option value="" disabled>{labels.choose}</option>{matches.map((_,i)=><option value={i} key={i}>{labels.occurrence} {i+1} / {matches.length}</option>)}</select></label>:null}
-      <p role="status">{!chosen?(matches.length>1?labels.ambiguous:labels.missing):locations?.provider?labels.location:labels.textLayer}</p>
+      <p role="status">{selection.inspectionMethod?`${selection.inspectionMethod} · ${labels.manual}`:!chosen?(matches.length>1?labels.ambiguous:labels.missing):locations?.provider?labels.location:labels.textLayer}</p>
       {matches.length>1&&chosen?<p>{labels.manual}</p>:null}
       <div className="evidence-comparison-grid"><section><h4>{labels.crop}</h4><canvas ref={cropCanvas} hidden={!chosen||!rendered||failed} aria-label={labels.crop}/>{!chosen?<p>{labels.missing}</p>:null}</section><section><h4>{labels.ocr}</h4><pre>{selection.ocrText}</pre><code>{selection.sourceId}</code>{selection.tableContext?<p>{labels.context}: {selection.tableContext}</p>:null}</section><section><h4>{labels.answer}</h4><pre>{answerText||selection.value}</pre>{!answerText?<small>{labels.noAnswer}</small>:null}</section></div>
     </section>:null}

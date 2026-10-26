@@ -1,0 +1,609 @@
+{
+  "format": "document-grounding-results-v1",
+  "labelProvenance": "generated-known-input-not-human-approved",
+  "documents": 32,
+  "platform": "Darwin arm64",
+  "python": "3.12.14",
+  "matching": "greedy-one-to-one-IoU>=0.5",
+  "groups": {
+    "native": {
+      "documents": 12,
+      "expected": 48,
+      "locatedAtIoU05": 48,
+      "exactDuplicateCounts": 12,
+      "errors": 0
+    },
+    "scan": {
+      "documents": 8,
+      "expected": 32,
+      "locatedAtIoU05": 32,
+      "exactDuplicateCounts": 8,
+      "errors": 0
+    },
+    "mixed": {
+      "documents": 8,
+      "expected": 32,
+      "locatedAtIoU05": 32,
+      "exactDuplicateCounts": 8,
+      "errors": 0
+    },
+    "visual-rotation": {
+      "documents": 4,
+      "expected": 16,
+      "locatedAtIoU05": 0,
+      "exactDuplicateCounts": 0,
+      "errors": 0
+    }
+  },
+  "results": [
+    {
+      "id": "fixture-001",
+      "group": "native",
+      "sha256": "2d65c23d3163e1aa86a374aeb3d6ccc214f9458b9eea98a5428a6d846f85a079",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8217291847113971,
+      "seconds": 0.311,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0"
+      }
+    },
+    {
+      "id": "fixture-002",
+      "group": "native",
+      "sha256": "6530438669cda4f2073748e9187216c8c39fa47bf71b8951ac52000a7af02cb1",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.815168613897657,
+      "seconds": 0.2,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0"
+      }
+    },
+    {
+      "id": "fixture-003",
+      "group": "native",
+      "sha256": "c69ada9c4aa44b583079ea46efb95fbd7788da50f5de545de2aab411d83b96c8",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8365467375775466,
+      "seconds": 0.197,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0"
+      }
+    },
+    {
+      "id": "fixture-004",
+      "group": "native",
+      "sha256": "eb60635b3932133de096bc9ecd67f91adb2779343466391537a9eac186b0e83f",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8217291847113971,
+      "seconds": 0.235,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0"
+      }
+    },
+    {
+      "id": "fixture-005",
+      "group": "native",
+      "sha256": "6514ca8ecc1c6c6b6a07452e66af70d1cbb7ede1631c85dc05c8b6aaecfdd2e1",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.815168613897657,
+      "seconds": 0.212,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0"
+      }
+    },
+    {
+      "id": "fixture-006",
+      "group": "native",
+      "sha256": "5a697f546048c752fcc69682ad428430570c26c351c067d5c4935f418beed018",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8365467375775466,
+      "seconds": 0.188,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0"
+      }
+    },
+    {
+      "id": "fixture-007",
+      "group": "native",
+      "sha256": "17290a334b9ee0620d71b38050d69c6d7d05e58809e61eb0886ac9420bbb4049",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8217291847113971,
+      "seconds": 0.226,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0"
+      }
+    },
+    {
+      "id": "fixture-008",
+      "group": "native",
+      "sha256": "f3a1ffaa2b3c4b7c66aaaf5c21d939d88ba84b2f9ea389831982538871915548",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.815168613897657,
+      "seconds": 0.226,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0"
+      }
+    },
+    {
+      "id": "fixture-009",
+      "group": "native",
+      "sha256": "44ce5a863d7f45553717a536f72634796bf687a01680e89c53f89dc9a776cefd",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8365467375775466,
+      "seconds": 0.212,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0"
+      }
+    },
+    {
+      "id": "fixture-010",
+      "group": "native",
+      "sha256": "48412f877933ea7d5f16a995d1ca631cc8643790141c723e7a858ee67eac998d",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8217291847113971,
+      "seconds": 0.232,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0"
+      }
+    },
+    {
+      "id": "fixture-011",
+      "group": "native",
+      "sha256": "08a804654fa4e6d234b8ac3923eba9cc6ef6dbff05ffb8bb134221bbf564ea5f",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.815168613897657,
+      "seconds": 0.204,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0"
+      }
+    },
+    {
+      "id": "fixture-012",
+      "group": "native",
+      "sha256": "3b2ce1468f161984f03c857290be78530ac232a0eb957c4eee28d1b386ec891e",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8365467375775466,
+      "seconds": 0.204,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0"
+      }
+    },
+    {
+      "id": "fixture-013",
+      "group": "scan",
+      "sha256": "3e21b0c70580d3475a86068a737d827cd52d252435406a93917161f4331120bf",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8272814089324197,
+      "seconds": 1.509,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-014",
+      "group": "scan",
+      "sha256": "51cb5954d92cc8c1a094188a9086fd8e242008a1fcdd063dd341aea201cf9a09",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8688446120366518,
+      "seconds": 1.036,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-015",
+      "group": "scan",
+      "sha256": "1e8bdd5f1791b2d20ee6399184da0efff67a1907b2e5cc38b17bc5fc5faf37c7",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8594383592140225,
+      "seconds": 1.213,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-016",
+      "group": "scan",
+      "sha256": "c668864c2a859bae95f9decebbf9221cd7cfcf823af1df9898bb98b7df0dfda8",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.887003831149801,
+      "seconds": 1.439,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-017",
+      "group": "scan",
+      "sha256": "27def6faadd07c310c51daeb02397547d7451b8f9be10b7fc3b50702c8dfd84c",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8495585397964655,
+      "seconds": 0.932,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-018",
+      "group": "scan",
+      "sha256": "4d21ac481e020671546dd6a54dbe42a08a4ee3bca535e29f732601b07b8a80d0",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8785319019362534,
+      "seconds": 1.188,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-019",
+      "group": "scan",
+      "sha256": "58960ab37c61f30ca668d2223018da654695f94500239c8991f0e1e801daaef5",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8603954914739748,
+      "seconds": 0.995,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-020",
+      "group": "scan",
+      "sha256": "e2c37353244790e371782f1735abbcf3f759af0d50818d2993a8ab750b171790",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8808909065578837,
+      "seconds": 0.999,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-021",
+      "group": "mixed",
+      "sha256": "d55978de7cfd5b6787097f7aed01d12a360fd243a3c3e651b01430f67d6e525c",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8189748631198024,
+      "seconds": 0.955,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-022",
+      "group": "mixed",
+      "sha256": "53440bde8852d86ee0ff4d9b198763c68be2cea2278d33a05d7773b69d75da53",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8747887900379007,
+      "seconds": 1.007,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-023",
+      "group": "mixed",
+      "sha256": "cc2a05bb962711edd4e9f403bfb9cf2bb76478acb2589bed3b2a56c3d00b1424",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8442817786797172,
+      "seconds": 0.973,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-024",
+      "group": "mixed",
+      "sha256": "f816a12f5eb9a703f2adb1aba2e63203af9230fb54ff3d34501df6e165ccd0cf",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8561949158157321,
+      "seconds": 1.007,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-025",
+      "group": "mixed",
+      "sha256": "c4fffc0085b877495e9d22229a0030581ee58518416ebe826cd116286ba19f2d",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8272814089324197,
+      "seconds": 0.956,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-026",
+      "group": "mixed",
+      "sha256": "0252d070e877080763d9c95f26349768e2c1160ce958af1e58e468d42631047e",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8714490531502812,
+      "seconds": 1.027,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-027",
+      "group": "mixed",
+      "sha256": "b2c57f01059ccdaf0e27b96e11f78beaa0c042c818f16822aefd8552a8968ce5",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8189748631198024,
+      "seconds": 0.984,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-028",
+      "group": "mixed",
+      "sha256": "444cc163b2c2084063f807b44b0277a3a58d277c01b2c60eacd4f23889b99cb5",
+      "expected": 4,
+      "predicted": 4,
+      "matchedAtIoU05": 4,
+      "precisionAtIoU05": 1.0,
+      "recallAtIoU05": 1.0,
+      "duplicateCountExact": true,
+      "meanMatchedIoU": 0.8747887900379007,
+      "seconds": 1.001,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-029",
+      "group": "visual-rotation",
+      "sha256": "471a4fe8bf75c87bedfafc9f88c83eeda4901e4b56bf2f02ce1773c845ff884c",
+      "expected": 4,
+      "predicted": 0,
+      "matchedAtIoU05": 0,
+      "precisionAtIoU05": 0.0,
+      "recallAtIoU05": 0.0,
+      "duplicateCountExact": false,
+      "meanMatchedIoU": null,
+      "seconds": 0.843,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-030",
+      "group": "visual-rotation",
+      "sha256": "4b806432223531620bb7bb66b04a46bde2e2152dbbae8f2244cc835d31d3c414",
+      "expected": 4,
+      "predicted": 0,
+      "matchedAtIoU05": 0,
+      "precisionAtIoU05": 0.0,
+      "recallAtIoU05": 0.0,
+      "duplicateCountExact": false,
+      "meanMatchedIoU": null,
+      "seconds": 0.814,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-031",
+      "group": "visual-rotation",
+      "sha256": "2545f5ce7cbce08d9fc8052517947fc0552a90deb9a6eadb58122c2dd85d53e3",
+      "expected": 4,
+      "predicted": 0,
+      "matchedAtIoU05": 0,
+      "precisionAtIoU05": 0.0,
+      "recallAtIoU05": 0.0,
+      "duplicateCountExact": false,
+      "meanMatchedIoU": null,
+      "seconds": 0.797,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    },
+    {
+      "id": "fixture-032",
+      "group": "visual-rotation",
+      "sha256": "471a4fe8bf75c87bedfafc9f88c83eeda4901e4b56bf2f02ce1773c845ff884c",
+      "expected": 4,
+      "predicted": 0,
+      "matchedAtIoU05": 0,
+      "precisionAtIoU05": 0.0,
+      "recallAtIoU05": 0.0,
+      "duplicateCountExact": false,
+      "meanMatchedIoU": null,
+      "seconds": 0.808,
+      "errorCode": null,
+      "engineVersions": {
+        "pypdfium2": "5.14.0",
+        "tesseract": "tesseract 5.5.1"
+      }
+    }
+  ],
+  "limitations": [
+    "Synthetic templates only; no representative business accuracy claim.",
+    "Visual 90-degree scans are deliberate challenge cases; failures remain in scores.",
+    "Table semantics and reading-order accuracy are not measured by this location suite."
+  ]
+}

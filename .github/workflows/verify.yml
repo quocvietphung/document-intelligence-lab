@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.12', cache: pip, cache-dependency-path: services/document-etl/requirements.txt}
-      - run: python -m pip install -r services/document-etl/requirements.txt
+      - run: python -m pip install -r services/document-etl/requirements.txt ./python
       - run: python -B -m unittest discover -s services/document-etl -p 'test_*.py'
         env:
           DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
