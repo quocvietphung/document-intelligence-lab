@@ -1,11 +1,13 @@
+import type {EvidenceRegion} from './evidence-inspection';
 export type CreditDocument = {
   id: string;
   name: string;
   type: string;
   status: "verified" | "review" | "missing";
   confidence?: number | null;
-  fields?: { label: string; value: string; confidence: number | null; page?: number; evidence?: string }[];
-  pages?: { number: number; text: string; method: string }[];
+  fields?: { label: string; value: string; confidence: number | null; page?: number; evidence?: string;originalValue?:string }[];
+  pages?: { number: number; text: string; method: string;regions?:EvidenceRegion[] }[];
+  ocrCorrections?:{id:string;page:number;sourceId:string;originalText:string;correctedText:string;reason:string;actor:string;time:string}[];
   originalAvailable?: boolean;
   analysisProvider?: string | null;
   modelId?: string | null;

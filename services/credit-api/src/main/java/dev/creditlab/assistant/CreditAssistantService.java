@@ -49,8 +49,11 @@ public class CreditAssistantService {
     var plan=platform==null?null:platform.plan(question);
     if(plan!=null&&plan.blocked())return new AssistantResponse(switch(request.locale()){case "de"->"Diese Anfrage wurde durch die Schutzregeln blockiert. Frage nach den Belegen oder dem Prüfprozess.";case "vi"->"Yêu cầu bị chặn do ghi đè hướng dẫn hoặc hỏi thông tin bí mật. Hãy hỏi về chứng cứ và quy trình kiểm tra.";default->"This request was blocked by the evidence guard. Ask about evidence or the review workflow.";},"guard-blocked",List.of(),UUID.randomUUID().toString());
     if(limits!=null)limits.reserve(tenant,actor,"chat",cases.quotaPolicy().requestsPerMinute());
-    var retrieval=platform==null||boundedLocalReview?null:platform.retrieve(item,question);
-    List<Source> sources=boundedLocalReview?reviewSources(item):sources(question,item);
+    var selected=SelectedFieldEvidence.sources(item,question,List.of());
+    boolean exactSelection=selected.stream().anyMatch(s->s.id().matches(".*:p\\d+:r\\d+$"));
+    // A selected occurrence must not be diluted by other identical amounts in broad retrieval.
+    var retrieval=platform==null||boundedLocalReview||exactSelection?null:platform.retrieve(item,question);
+    List<Source> sources=exactSelection?selected:boundedLocalReview?reviewSources(item):sources(question,item);
     if(retrieval!=null){var context=new ArrayList<>(retrieval.hits().stream().map(h->new Source(h.id(),h.title(),h.text())).toList());for(var s:SelectedFieldEvidence.sources(item,question,retrieval.hits()))if(context.stream().noneMatch(c->c.id().equals(s.id())))context.add(s);for(var s:sources)if((s.id().equals("case-summary")||s.id().equals("policy"))&&context.stream().noneMatch(c->c.id().equals(s.id())))context.add(s);sources=List.copyOf(context);}
     if(!boundedLocalReview&&question.toLowerCase(Locale.ROOT).matches("(?s).*(software|interface|app feature|app section|oberfläche|ansichten|funktion|giao diện|chức năng|mục này).*")){
       var context=new ArrayList<>(sources);context.add(new Source("app-guide","Application guide",new AppGuideTools(request.locale()).appFeatures()));sources=List.copyOf(context);
@@ -63,10 +66,10 @@ public class CreditAssistantService {
     CreditAssistantModel assistant=null;
     if(!localChat){
       var allowedTools=new ArrayList<Object>();allowedTools.add(new AppGuideTools(request.locale()));
-      if(platform!=null) {
+      if(platform!=null&&!exactSelection) {
         if(plan.specialist().equals("Banking")||plan.specialist().equals("Document"))allowedTools.add(new CaseTools(item,mapper));
         allowedTools.add(new RetrievedTools(retrieval.hits()));
-      }else allowedTools.add(new CaseTools(item,mapper));
+      }else if(!exactSelection)allowedTools.add(new CaseTools(item,mapper));
       assistant=AiServices.builder(CreditAssistantModel.class).chatModel(model.get()).maxSequentialToolsInvocations(4).tools(allowedTools.toArray()).build();
     }
     String prompt="Selected document domain: "+item.domain()+". Reply in "+("bilingual-summary".equals(request.taskId())?"paired German and Vietnamese paragraphs, preserving identical citations and amounts":language(request.locale()))+". Question: "+question+"\nAvailable source IDs: "+

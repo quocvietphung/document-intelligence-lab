@@ -33,6 +33,11 @@ public final class AnswerEvidence {
     row.put("originalAvailable",doc.map(CreditCase.Document::originalAvailable).orElse(false));
     row.put("humanReviewed",doc.filter(d->d.originalAvailable()&&d.status().equals("verified")).isPresent());
     row.put("kind",doc.map(d->"synthetic".equals(d.analysisProvider())||"datev-reference-values".equals(d.analysisProvider())?"REFERENCE":"DOCUMENT").orElse(id.startsWith("bank-")?"FIXTURE":id.equals("app-guide")?"APP_GUIDE":"POLICY_OR_CASE"));
-    row.put("excerpt",text.substring(0,Math.min(1000,text.length())));return row;
+    row.put("excerpt",text.substring(0,Math.min(1000,text.length())));
+    int sourcePage=page;
+    var location=doc.stream().flatMap(d->d.pages().stream().filter(p->p.number()==sourcePage).flatMap(p->p.regions().stream().filter(r->id.equals(d.id()+":p"+p.number()+":"+r.id())))).findFirst();
+    row.put("locationState",location.isPresent()?"PROVIDER_RECORDED":"PAGE_ONLY");
+    location.ifPresent(r->row.put("ocrText",r.text()));
+    return row;
   }
 }

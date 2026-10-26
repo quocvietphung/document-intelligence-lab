@@ -7,6 +7,8 @@ test('blocks private data, model weights and state without printing their conten
     assert.ok(publicationRisk(path),path);
 });
 test('allows code, reviewed templates, migrations and existing fictional test fixtures',()=>{
+  assert.equal(publicationRisk('services/credit-api/src/test/resources/evidence/evidence-inspection-regression.pdf'),null);
+  assert.ok(publicationRisk('services/credit-api/src/test/resources/evidence/customer.pdf'));
   for(const path of ['README.md','.env.example','.env.azure.example','infra/terraform.tfvars.example','services/credit-api/src/main/resources/db/migration/V1__schema.sql','services/credit-api/src/test/resources/legacy-research/invoice-fictional.pdf'])
     assert.equal(publicationRisk(path),null,path);
 });

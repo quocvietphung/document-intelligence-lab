@@ -34,6 +34,22 @@ An edited walkthrough of an existing synthetic-invoice dossier in the running En
 
 The Python package adds **validation around Docling's output** rather than replacing its parser. It does not bundle a chatbot, malware scanner, authentication service or workflow engine.
 
+### Inspect the original, not only the citation
+
+In **Documents & review → View result & PDF**, choose **Inspect evidence** beside a field, a located table cell, or **Choose source occurrence**. The comparison shows the original PDF crop, recorded OCR text and the value being checked together. Opening a claim's source in Nova also carries the saved claim text into this view.
+
+A question citing a valid stored occurrence ID uses that occurrence and its recorded table context, without adding broad retrieval hits or exposing document-wide tools. General page/chunk citations still describe a wider scope; they do not identify a unique repeated value.
+
+![Original table cell, recorded OCR and a saved local Nova claim shown together](docs/screenshots/evidence-inspection-en.jpg)
+
+- **Repeated text:** Docling and Azure line locations retain page-local occurrence IDs. Four identical values remain four locations. Page/chunk citations do not magically identify an exact occurrence; ambiguous matches require an explicit selection, labelled as a candidate rather than proof of the model's attention.
+- **Coordinates:** Docling top/bottom origins are normalized once. Crops are taken from the same locally rendered PDF canvas, including zoom and device scale. Mismatched page proportions, invalid bounds and provider locations on intrinsically rotated pages produce no location claim. Exact PDF text-layer matching supports rotated glyphs; image-only pages cannot use that fallback. Provider boxes are still estimates to check visually, not pixel-certified alignment.
+- **OCR mismatch:** a quote can match `3,500` even if the original image says `8,500`. Citation membership is not visual verification. No missing region is fabricated and no confidence percentage is treated as accuracy.
+- **Tables:** located Docling cells can open their source crop with recorded row/column, first-row/first-column labels and the raw row's units. Labels are context, not inferred semantic headers. Missing/merged-cell provenance remains unknown.
+- **Separate corrections:** a reviewer/admin can record an OCR transcription and a reason. The API requires a Bearer token, the current dossier version and the exact stored source text. Original OCR, original field values and old answers remain unchanged. The append-only correction is audited, returns the document to review and is not silently used by Nova or Gold. Reviewing fields or preparing a revised AI answer is a separate action.
+
+Try the fully [synthetic evidence regression PDF](services/credit-api/src/test/resources/evidence/evidence-inspection-regression.pdf): four `Total: $500` occurrences, an upright page, a 90°-rotated page, a table and an explicitly injected OCR discrepancy. The `3,500` observation is a test input, **not** a measured failure by Docling/Azure. Regenerate with `python scripts/build-evidence-regression.py /private/path/evidence-regression.pdf` after installing `reportlab` and `pypdf`. Existing dossiers without saved coordinates remain usable, with location unavailable rather than invented; a new analysis is needed to capture provider geometry.
+
 ## Python Quick Start
 
 Use **Python 3.10+**; check `python3 --version` first and use a supported interpreter if your system Python is older. Create an isolated environment, then install the published alpha with local Docling support:
@@ -371,11 +387,16 @@ Workspace checks:
 npm run verify
 mvn --batch-mode -f services/credit-api/pom.xml test
 node scripts/test-oauth.mjs
+TEST_EVIDENCE_INSPECTION=1 node scripts/test-oauth.mjs
 TEST_DOCUMENT_UPGRADE=1 node scripts/test-oauth.mjs
 TEST_NOVA_LOCAL=1 TEST_NOVA_TASKS=1 TEST_NOVA_CONCURRENCY=1 node scripts/test-oauth.mjs
 ```
 
 Acceptance tests need the running stack and prepared samples. They create labelled records and unapproved drafts, not fabricated approval. Model calls take CPU time; Azure-mode tests can be billable. Scoped examples are not general accuracy, security or production certifications.
+
+The evidence-inspection acceptance test requires the **local Docling stack** and uses the included synthetic PDF, without private reference downloads or model calls. It checks repeated occurrence IDs, table-cell geometry and labels, authenticated/versioned OCR corrections, immutable original OCR and PostgreSQL readback. It leaves a labelled test dossier available for visual inspection.
+
+With the prepared local Nova model, add `TEST_EVIDENCE_NOVA=1` to that command to verify a real answer through the authenticated web proxy, its exact table-occurrence citation and saved review history. This explicitly invokes the local model and can take several minutes on CPU; the test refuses a cloud provider.
 
 ### Python CI and publishing
 

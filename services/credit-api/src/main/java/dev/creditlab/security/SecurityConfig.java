@@ -52,6 +52,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/assistant/chat").hasAnyRole("ADVISOR", "REVIEWER", "ADMIN")
             .requestMatchers(HttpMethod.GET, "/api/cases/**").hasAnyRole("ADVISOR", "REVIEWER", "ADMIN")
             .requestMatchers(HttpMethod.POST, "/api/cases/*/documents/*/review").hasAnyRole("REVIEWER","ADMIN")
+            .requestMatchers(HttpMethod.POST, "/api/cases/*/documents/*/ocr-corrections").hasAnyRole("REVIEWER","ADMIN")
             .requestMatchers(HttpMethod.POST, "/api/cases/*/banking/**").denyAll()
             .requestMatchers("/api/cases/**").hasAnyRole("ADVISOR","ADMIN")
             .anyRequest().authenticated())

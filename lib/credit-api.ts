@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { CreditDocument } from "./credit-data";
 import {domainOf, type DocumentDomain} from './document-domains';
+import {evidenceRegionSchema,ocrCorrectionSchema} from './evidence-inspection';
 
 export type WorkspaceCase = {
   id: string;
@@ -25,6 +26,7 @@ const field = z.object({
   confidence: z.number().min(0).max(100).nullable(),
   page: z.number().int().positive().optional(),
   evidence: z.string().optional(),
+  originalValue:z.string().optional(),
 });
 export const creditCaseSchema = z.object({
   id: z.string(),
@@ -54,7 +56,8 @@ export const creditCaseSchema = z.object({
       status: z.enum(["verified", "review", "missing"]),
       confidence: z.number().min(0).max(100).nullable().optional(),
       fields: z.array(field),
-      pages: z.array(z.object({ number: z.number().int().positive(), text: z.string(), method: z.string() })).optional(),
+      pages: z.array(z.object({ number: z.number().int().positive(), text: z.string(), method: z.string(),regions:z.array(evidenceRegionSchema).optional() })).optional(),
+      ocrCorrections:z.array(ocrCorrectionSchema).optional(),
       originalAvailable: z.boolean().optional(),
       analysisProvider: z.string().nullable().optional(),
       modelId: z.string().nullable().optional(),

@@ -59,6 +59,9 @@ public class CreditCaseController {
   @PostMapping("/{id}/documents/{doc}/review") public CreditCase review(@PathVariable String id,@PathVariable String doc,@Valid @RequestBody CreditCaseService.Review review,Authentication auth) {
     return service.review(resolveTenant(auth,null),id,doc,actor(auth),review);
   }
+  @PostMapping("/{id}/documents/{doc}/ocr-corrections") public CreditCase correctOcr(@PathVariable String id,@PathVariable String doc,@Valid @RequestBody CreditCaseService.OcrEdit edit,Authentication auth) {
+    return service.correctOcr(resolveTenant(auth,null),id,doc,actor(auth),edit);
+  }
   @GetMapping("/{id}/documents/{doc}/original") public ResponseEntity<byte[]> original(@PathVariable String id,@PathVariable String doc,Authentication auth) {
     return service.file(resolveTenant(auth,null),id,doc).map(bytes->ResponseEntity.ok()
       .header("Content-Disposition","attachment; filename=\"source-document\"").header("X-Content-Type-Options","nosniff")

@@ -59,6 +59,14 @@ class DoclingDocumentAnalysisProviderTest {
       assertThatThrownBy(()->provider().parse("invoice.pdf","application/pdf",json.readTree(input)))
           .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
   }
+  @Test void retainsDuplicateOcrLocationsAndConvertsBottomLeftOnce()throws Exception{
+    var source=json.readTree(INVOICE);var texts=(com.fasterxml.jackson.databind.node.ArrayNode)source.path("document").path("json_content").path("texts");texts.removeAll();
+    for(int i=0;i<4;i++)texts.add(json.readTree("{\"text\":\"Total: $500\",\"prov\":[{\"page_no\":1,\"bbox\":{\"l\":60,\"t\":"+(720-i*80)+",\"r\":300,\"b\":"+(700-i*80)+",\"coord_origin\":\"BOTTOMLEFT\"}}]}"));
+    var doc=provider().parse("repeated.pdf","application/pdf",source);var regions=doc.pages().getFirst().regions();
+    assertThat(regions).hasSize(4);assertThat(regions).extracting(CreditCase.Region::id).doesNotHaveDuplicates();
+    assertThat(regions.getFirst().top()).isEqualTo(.1);assertThat(regions.getFirst().bottom()).isEqualTo(.125);
+    assertThat(regions).extracting(CreditCase.Region::text).containsOnly("Total: $500");
+  }
   @Test void blocksCloudEndpointsCredentialsAndRedirectTargets(){
     for(String url:new String[]{"https://external.example/","http://169.254.169.254/","http://localhost@external.example/",
         "http://localhost:5001/?secret=value","http://localhost:5001/v1/convert/source"})
