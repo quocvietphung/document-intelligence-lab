@@ -73,11 +73,28 @@ for candidate in result.candidates:
 
 - Native tags retain raw/mapped roles, hierarchy, page/MCID references and recorded table scope/header attributes. They remain separate from layout inferred by Docling. Tag presence is not PDF/UA or WCAG certification.
 - Native glyph boxes use PDFium's page-to-device transform, including native rotation and crop offsets. Coordinates are normalized against the **original displayed page**, top-left, as stated by `coordinate_space`.
-- Only image-only pages use the local Tesseract fallback. Reliable near-horizontal Hough lines may support correction within ±12°; OCR polygons are inverse-projected to the original image. Weak/inconsistent line evidence leaves the scan unchanged. Mixed text/image pages and arbitrary visual 90°/180° scans need separate evaluation; no general orientation guarantee is made.
+- Image-only pages, and mixed pages without an exact native-text match for the requested value, may use the local Tesseract fallback. Reliable near-horizontal Hough lines may support correction within ±12°; OCR polygons are inverse-projected to the original image. Weak/inconsistent line evidence leaves the scan unchanged. Arbitrary visual 90°/180° scans remain unsupported; no general orientation guarantee is made.
 - Matching changes whitespace only. It preserves currencies, separators and digits; a missing or ambiguous value stays unresolved. Candidate identity is scoped to the PDF hash, extraction method and offsets; engine versions are retained. Pin versions when comparing runs.
 - Every result says `text-match-only` and requires human review. Tesseract confidence is a recognition signal, not accuracy. A match can still reproduce incorrect hidden text/OCR. Inspect the original crop; no PDF or saved answer is edited.
 
 The included PDFs are self-authored regression examples: native repeated values/90° metadata rotation, a tagged two-column page with deliberately different paint order, and two image-only scans (upright/4°). They are not publisher documents or valid PDF/UA exemplars. See [inspection example](examples/inspect_pdf.py).
+
+### Compare independent OCR observations
+
+`inspect_evidence` adds a separate Tesseract crop observation to the source candidates. Supply the exact stored provider bounds and page dimensions; rotated or mismatched provider geometry abstains. The observations are never merged into a corrected value:
+
+```python
+from document_evidence import inspect_evidence
+
+receipt = inspect_evidence("document.pdf", "8,500", page=1,
+    recorded_text="8,500", recorded_bbox=(0.77, 0.306, 0.825, 0.323),
+    recorded_page_size=(600, 800))
+print(receipt["comparison"]["status"])  # DIFFERENT, NOT_COMPARABLE, AGREEMENT_NOT_VERIFIED
+```
+
+These coordinates are an example for the repository's `structure-regression.pdf`; use the actual source geometry for other files. The receipt contains private text and a source crop, plus engine and implementation hashes. Inspect both readings; disagreement does not identify which one is wrong. The Docker workspace uses this same library in its existing offline ETL worker. No PDF, saved answer or human approval is changed.
+
+For the bounded synthetic location benchmark, see the root README's **Local evidence quality workflow**. It reports missed cases and separates native text, scan, mixed-page and visual-rotation groups. Its generated labels are not human-approved business ground truth.
 
 ## Preserve layout and reading order with Docling
 

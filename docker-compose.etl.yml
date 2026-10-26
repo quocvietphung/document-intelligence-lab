@@ -6,7 +6,9 @@ services:
     command: ["sh", "-c", "chown 1000:1000 /data && chmod 700 /data"]
     volumes: ["lab_etl:/data"]
   etl:
-    build: ./services/document-etl
+    build:
+      context: .
+      dockerfile: services/document-etl/Dockerfile
     image: document-lab-etl:1
     user: "1000:1000"
     restart: unless-stopped
@@ -17,9 +19,11 @@ services:
       ETL_ROOT: /data
       DBT_SEND_ANONYMOUS_USAGE_STATS: "false"
       DO_NOT_TRACK: "1"
+      OMP_THREAD_LIMIT: "1"
+      OPENBLAS_NUM_THREADS: "1"
       HOME: /tmp
     volumes: ["lab_etl:/data"]
-    mem_limit: 512m
+    mem_limit: 768m
     cpus: 1
     depends_on:
       etl-init:

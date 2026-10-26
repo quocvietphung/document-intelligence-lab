@@ -98,9 +98,12 @@ public class CreditAssistantService {
     if(answer==null||answer.isBlank()) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Nova model returned no answer");
     if(localChat)answer=SourceCitations.validate(answer,sources);
     String mode=chatProvider.equals("ollama")?"local-ollama":credentialType.equals("default")?"azure-managed-identity":"azure-entra";
-    cases.recordAiUse(requestId,tenant,item.id(),actor,mode);
-    if(platform!=null)platform.record(tenant,item.id(),requestId,mode,plan,answer,evidenceHits(sources),(System.nanoTime()-start)/1_000_000);
-    return response(item,actor,question,answer,mode,sources,requestId,start,request.revisionOf());
+    final var usedSources=sources;final String completedAnswer=answer;
+    return AssistantRuns.commit(()->{
+      cases.recordAiUse(requestId,tenant,item.id(),actor,mode);
+      if(platform!=null)platform.record(tenant,item.id(),requestId,mode,plan,completedAnswer,evidenceHits(usedSources),(System.nanoTime()-start)/1_000_000);
+      return response(item,actor,question,completedAnswer,mode,usedSources,requestId,start,request.revisionOf());
+    });
   }
 
   private List<Source> reviewSources(CreditCase item){

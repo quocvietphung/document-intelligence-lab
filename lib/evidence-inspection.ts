@@ -5,7 +5,7 @@ export const ocrCorrectionSchema=z.object({id:z.string(),page:z.number().int().p
 export const documentStructureSchema=z.object({origin:z.literal('docling-layout'),nativeTags:z.enum(['NOT_INSPECTED','ABSENT','PRESENT_NOT_VALIDATED']),blocks:z.array(z.object({ref:z.string(),kind:z.string(),page:z.number().int().positive().nullable(),regionIds:z.array(z.string()),children:z.array(z.string()),level:z.number().int().nullable()})).max(6000),issues:z.array(z.string())});
 export type DocumentStructure=z.infer<typeof documentStructureSchema>;
 export type EvidenceContext={sourceId?:string;ocrText?:string;answerText?:string};
-export type EvidenceSelection={page:number;sourceId:string;ocrText:string;value:string;region?:EvidenceRegion;candidates?:EvidenceRegion[];fieldIndex?:number;tableContext?:string};
+export type EvidenceSelection={page:number;sourceId:string;ocrText:string;value:string;region?:EvidenceRegion;candidates?:EvidenceRegion[];fieldIndex?:number;tableContext?:string;canonicalBox?:[number,number,number,number];inspectionMethod?:string};
 export function regionTableContext(region:EvidenceRegion|undefined,tables:readonly {cells:readonly {row:number;column:number;text:string;rowSpan?:number;columnSpan?:number;columnHeader?:boolean|null;rowHeader?:boolean|null}[]}[]=[]){
   const table=region?.table==null?undefined:tables[region.table];
   const typed=table?.cells.some(c=>c.columnHeader||c.rowHeader);

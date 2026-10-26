@@ -11,13 +11,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/assistant")
 public class CreditAssistantController {
   private final CreditAssistantService assistant;
+  private final AssistantRuns runs;
   @Value("${app.security.enabled:true}") private boolean securityEnabled;
-  public CreditAssistantController(CreditAssistantService assistant) { this.assistant=assistant; }
+  public CreditAssistantController(CreditAssistantService assistant,AssistantRuns runs) { this.assistant=assistant;this.runs=runs; }
 
   @PostMapping("/chat")
   public CreditAssistantService.AssistantResponse chat(@Valid @RequestBody CreditAssistantService.AssistantRequest request,
-      Authentication authentication) {
-    return assistant.answer(tenant(authentication),actor(authentication),request);
+      Authentication authentication,@RequestHeader(value="X-Nova-Request-Id",required=false) String requestId) {
+    String tenant=tenant(authentication),actor=actor(authentication);
+    return runs.execute(tenant,actor,request.caseId(),requestId,()->assistant.answer(tenant,actor,request));
   }
   private String tenant(Authentication authentication) {
     if(authentication instanceof JwtAuthenticationToken token) {

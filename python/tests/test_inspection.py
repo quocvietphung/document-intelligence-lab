@@ -7,7 +7,7 @@ import sys
 import tempfile
 import unittest
 
-from document_evidence import ground_pdf,read_pdf_structure
+from document_evidence import ground_pdf,read_pdf_structure,inspect_evidence
 from document_evidence._inspection_worker import _matches
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -32,6 +32,17 @@ class InspectionContractTest(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get('TEST_PDF_INSPECTION')=='1','Set TEST_PDF_INSPECTION=1 with inspection dependencies and local Tesseract')
 class ActualPdfInspectionTest(unittest.TestCase):
+    def test_independent_crop_exposes_injected_ocr_error_without_editing_the_pdf(self):
+        import hashlib
+        path=PDFS/'structure-regression.pdf';before=hashlib.sha256(path.read_bytes()).hexdigest()
+        result=inspect_evidence(path,'3,500',recorded_text='3,500',recorded_bbox=(.77,.306,.825,.323),recorded_page_size=(600,800))
+        self.assertEqual(result['comparison']['status'],'DIFFERENT')
+        self.assertIn('8,500',result['comparison']['independentOcrText'])
+        self.assertTrue(result['comparison']['numericDisagreement'])
+        self.assertEqual(result['sha256'],before)
+        self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(),before)
+        self.assertFalse(result['comparison']['automaticCorrection'])
+
     def test_native_tag_hierarchy_role_map_and_table_scope_are_preserved(self):
         structure=read_pdf_structure(PDFS/'structure-regression.pdf')
         self.assertTrue(structure.present);self.assertFalse(structure.accessibility_certified)

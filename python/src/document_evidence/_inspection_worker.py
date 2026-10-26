@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+import base64
 import hashlib
 import io
 import json
@@ -61,10 +62,10 @@ def _deskew(image):
     return Image.fromarray(adjusted), cv2.invertAffineTransform(matrix), round(angle, 4)
 
 
-def _ocr_lines(image, languages):
+def _ocr_lines(image, languages, psm="3"):
     buf = io.BytesIO(); image.save(buf, format="PNG")
     try:
-        reply = subprocess.run(["tesseract", "stdin", "stdout", "-l", languages, "--psm", "3", "tsv"],
+        reply = subprocess.run(["tesseract", "stdin", "stdout", "-l", languages, "--psm", psm, "tsv"],
                                input=buf.getvalue(), capture_output=True, timeout=35)
     except FileNotFoundError:
         raise InspectionFailure("OCR_UNAVAILABLE") from None
@@ -122,7 +123,9 @@ def ground(content, options):
                     if raw.strip():
                         compact, mapped = _compact(raw, boxes)
                         streams.append((compact, mapped, "pdf-text", None))
-                    elif options.get("ocr"):
+                    # Mixed pages may have a native footer but scanned body content.
+                    # OCR is selective: only when native text has no exact requested value.
+                    if options.get("ocr") and (not raw.strip() or not _matches(compact, options["value"])):
                         if "tesseract" not in engines:
                             try:
                                 engines["tesseract"]=subprocess.run(["tesseract","--version"],capture_output=True,timeout=5,check=True).stdout.decode('utf-8').splitlines()[0][:100]
@@ -158,6 +161,42 @@ def ground(content, options):
     return {"sha256":digest,"candidates":candidates,"engine_versions":engines}
 
 
+def inspect(content, options):
+    from .quality import compare_observations
+    import pypdfium2 as pdfium
+    result=ground(content, options)
+    result.update(format="document-inspection-v1",coordinate_space="displayed-page-normalized-top-left",
+                  verification="text-match-only",humanReviewRequired=True,cloudCalls=0,
+                  options={k:options[k] for k in ("page","ocr","deskew","languages")})
+    comparison=compare_observations(options.get("recordedText", ""), "")
+    comparison["locationStatus"]="NO_RECORDED_GEOMETRY"
+    box,size=options.get("recordedBox"),options.get("recordedPageSize")
+    if box is not None and size is not None:
+        with closing(pdfium.PdfDocument(content)) as pdf, closing(pdf[options["page"]-1]) as page:
+            width,height=page.get_size()
+            comparison["locationStatus"]="SOURCE_GEOMETRY_UNAVAILABLE"
+            if page.get_rotation()==0 and abs(size[0]/size[1]-width/height)/(width/height)<=.02:
+                scale=min(2.5,math.sqrt(6_000_000/(width*height)))
+                with closing(page.render(scale=scale,may_draw_forms=False)) as bitmap:
+                    image=bitmap.to_pil().convert("RGB")
+                    # Small explicit padding is retained in the crop bounds, never hidden.
+                    bounds=(max(0,box[0]-.004),max(0,box[1]-.003),min(1,box[2]+.004),min(1,box[3]+.003))
+                    crop=image.crop((math.floor(bounds[0]*image.width),math.floor(bounds[1]*image.height),math.ceil(bounds[2]*image.width),math.ceil(bounds[3]*image.height)))
+                    observed="\n".join(" ".join(word[0] for word in line) for line in _ocr_lines(crop,options["languages"],"6"))
+                    result["engine_versions"]["tesseract"]=subprocess.run(["tesseract","--version"],capture_output=True,timeout=5,check=True).stdout.decode().splitlines()[0][:100]
+                    comparison=compare_observations(options.get("recordedText", ""),observed)
+                    png=io.BytesIO();crop.save(png,format="PNG")
+                    if png.tell()>600_000:raise InspectionFailure("INSPECTION_LIMIT")
+                    comparison.update(locationStatus="PROVIDER_CROP_UNVERIFIED",bbox=bounds,cropPng=base64.b64encode(png.getvalue()).decode("ascii"))
+    result["comparison"]=comparison
+    result["engine_versions"].update(python=sys.version.split()[0],package=version("document-evidence-lab"))
+    for name in ("pypdf","Pillow","opencv-python-headless","numpy"):
+        result["engine_versions"][name]=version(name)
+    from pathlib import Path
+    result["engine_versions"]["implementation_sha256"]=hashlib.sha256(Path(__file__).read_bytes()+Path(__file__).with_name('quality.py').read_bytes()).hexdigest()
+    return result
+
+
 def main():
     from ._docling_worker import _deny_network
     sys.addaudithook(_deny_network)
@@ -174,6 +213,8 @@ def main():
             result={"sha256":hashlib.sha256(content).hexdigest(),"structure":asdict(inspect_pdf_tags(pdf))}
         elif sys.argv[1]=="ground":
             result=ground(content,json.loads(sys.argv[2]))
+        elif sys.argv[1]=="inspect":
+            result=inspect(content,json.loads(sys.argv[2]))
         else:
             raise InspectionFailure("PDF_REJECTED")
         print(json.dumps(result,ensure_ascii=False,allow_nan=False))
