@@ -248,6 +248,7 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .modal-wide {max-width:1160px;}
 .document-review-grid {display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,1fr);gap:28px;margin-top:24px;}
 .document-review-source-only {grid-template-columns:minmax(0,1fr);}
+.document-structure-tree,.document-structure-tree ol {list-style:decimal;padding-left:22px;}.document-structure-tree li{padding:4px 0;}
 .document-review-hint {font-size:12px;line-height:1.8;color:var(--muted);margin-top:18px;}
 .document-text-evidence {font-size:12px;margin-top:20px;}
 .document-text-evidence summary {cursor:pointer;color:var(--brand);font-weight:600;}

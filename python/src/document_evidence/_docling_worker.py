@@ -6,6 +6,7 @@ import contextlib
 import io
 import json
 import sys
+from dataclasses import asdict
 from importlib.metadata import version
 from pathlib import Path
 
@@ -66,7 +67,9 @@ def main() -> int:
                                        max_num_pages=args.max_pages, max_file_size=len(content))
             if result.status.value != "success":
                 raise ValueError()
-            payload = {"document": result.document.export_to_dict(), "version": version("docling")}
+            from .structure import inspect_pdf_tags
+            payload = {"document": result.document.export_to_dict(), "version": version("docling"),
+                       "native_structure": asdict(inspect_pdf_tags(pdf))}
         encoded = json.dumps(payload, ensure_ascii=False, allow_nan=False)
         if len(encoded.encode("utf-8")) > 6_000_000:
             raise ValueError()

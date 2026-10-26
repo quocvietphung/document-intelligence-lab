@@ -1,4 +1,4 @@
-import type {EvidenceRegion} from './evidence-inspection';
+import type {EvidenceRegion,DocumentStructure} from './evidence-inspection';
 export type CreditDocument = {
   id: string;
   name: string;
@@ -8,11 +8,12 @@ export type CreditDocument = {
   fields?: { label: string; value: string; confidence: number | null; page?: number; evidence?: string;originalValue?:string }[];
   pages?: { number: number; text: string; method: string;regions?:EvidenceRegion[] }[];
   ocrCorrections?:{id:string;page:number;sourceId:string;originalText:string;correctedText:string;reason:string;actor:string;time:string}[];
+  structure?:DocumentStructure|null;
   originalAvailable?: boolean;
   analysisProvider?: string | null;
   modelId?: string | null;
   contentType?: string | null;
-  tables?: {page:number;rows:number;columns:number;cells:{row:number;column:number;text:string}[]}[];
+  tables?: {page:number;rows:number;columns:number;cells:{row:number;column:number;text:string;rowSpan?:number;columnSpan?:number;columnHeader?:boolean|null;rowHeader?:boolean|null}[]}[];
 };
 
 export const demoCase = {

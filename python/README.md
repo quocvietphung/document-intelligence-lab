@@ -4,6 +4,8 @@ Local PDF parsing, deterministic validation and traceable evidence for document 
 
 **Published alpha:** [document-evidence-lab 0.1.0a1 on PyPI](https://pypi.org/project/document-evidence-lab/0.1.0a1/) · [release source](https://github.com/quocvietphung/document-intelligence-lab/tree/python-v0.1.0a1).
 
+**Source/wheel preview: 0.2.0a1.** The structural inspection and local grounding APIs below are in the repository and preview wheel; they are not in the published `0.1.0a1`. No new PyPI release is published by a normal branch push.
+
 The **Python library runs without Java, Docker, an Azure account or an LLM**. It adds evidence checks around Docling rather than replacing Docling's parser. The optional SDK connects to the existing Java platform for authenticated workflows and audit history.
 
 ## Install
@@ -35,6 +37,62 @@ python -m pip install './python[docling]'
 ```
 
 Use Python 3.10 or newer. On Windows, activate with `.venv\Scripts\Activate.ps1`. `pip install ./python` installs only the lightweight core and SDK; it does not install Docling or download models.
+
+## Inspect native tags and exact PDF locations
+
+Install the source preview's optional inspection dependencies and a local Tesseract binary. This path loads no Docling or LLM model:
+
+```bash
+python -m pip install './python[inspection]'
+# macOS; on Ubuntu use: sudo apt-get install tesseract-ocr
+brew install tesseract
+tesseract --list-langs
+
+document-evidence services/credit-api/src/test/resources/evidence/structure-regression.pdf --tags-only
+document-evidence services/credit-api/src/test/resources/evidence/evidence-inspection-regression.pdf \
+  --ground 'Total: $500' --page 2 --no-ocr --output private-locations.json
+document-evidence services/credit-api/src/test/resources/evidence/scanned-skew-regression.pdf \
+  --ground 'Total: $500' --page 2 --output private-scan-locations.json
+```
+
+Use the installed language codes with `--ocr-language eng+deu` after installing the corresponding Tesseract packs. Values, context and output JSON can be private; existing files are never overwritten. `--no-deskew` disables Hough-line correction. `--no-ocr` never falls back to an OCR or cloud service.
+
+```python
+from document_evidence import ground_pdf, read_pdf_structure
+
+tags = read_pdf_structure("document.pdf")
+result = ground_pdf("document.pdf", "Total: $500", page=1)
+print(result.status)  # matched, ambiguous, not-found, or an explicit candidate selection
+for candidate in result.candidates:
+    print(candidate.id, candidate.bbox, candidate.method)
+
+# A UI/user may select one recorded candidate; a duplicate is never chosen silently.
+# selected = ground_pdf("document.pdf", "Total: $500", page=1,
+#                       occurrence_id=result.candidates[2].id)
+```
+
+- Native tags retain raw/mapped roles, hierarchy, page/MCID references and recorded table scope/header attributes. They remain separate from layout inferred by Docling. Tag presence is not PDF/UA or WCAG certification.
+- Native glyph boxes use PDFium's page-to-device transform, including native rotation and crop offsets. Coordinates are normalized against the **original displayed page**, top-left, as stated by `coordinate_space`.
+- Only image-only pages use the local Tesseract fallback. Reliable near-horizontal Hough lines may support correction within ±12°; OCR polygons are inverse-projected to the original image. Weak/inconsistent line evidence leaves the scan unchanged. Mixed text/image pages and arbitrary visual 90°/180° scans need separate evaluation; no general orientation guarantee is made.
+- Matching changes whitespace only. It preserves currencies, separators and digits; a missing or ambiguous value stays unresolved. Candidate identity is scoped to the PDF hash, extraction method and offsets; engine versions are retained. Pin versions when comparing runs.
+- Every result says `text-match-only` and requires human review. Tesseract confidence is a recognition signal, not accuracy. A match can still reproduce incorrect hidden text/OCR. Inspect the original crop; no PDF or saved answer is edited.
+
+The included PDFs are self-authored regression examples: native repeated values/90° metadata rotation, a tagged two-column page with deliberately different paint order, and two image-only scans (upright/4°). They are not publisher documents or valid PDF/UA exemplars. See [inspection example](examples/inspect_pdf.py).
+
+## Preserve layout and reading order with Docling
+
+Install both extras to use parsing and inspection: `python -m pip install './python[docling,inspection]'`.
+
+```python
+from document_evidence import DoclingReader, validate_structure
+
+document = DoclingReader().read("document.pdf")  # uses already prepared local weights
+print(document.pages[0].reading_order_method)
+print(document.pages[0].text)  # body-tree order, followed by explicitly unplaced content
+print(validate_structure(document).to_dict())
+```
+
+`document.structure` preserves the recorded body hierarchy and semantic labels; `native_structure` inspects the source PDF's own tags. Headings/lists/tables and table-cell spans/header flags survive normalization. Exact cell sources have their own IDs and optional boxes. Missing, cyclic, duplicated or external body references never become a trusted reading order. Partial order and absent/uninspected native tags are findings, not guessed success. `validate_document` retains its original checks; `validate_structure` is a separate opt-in report. Both always require human review.
 
 ## Read a local PDF
 
@@ -99,6 +157,10 @@ python -m twine check python/dist/*
 ```
 
 Core tests do not download models. `TEST_PYTHON_PDF=/private/path/invoice.pdf TEST_ALLOW_MODEL_DOWNLOAD=1 TEST_DOCLING_TIMEOUT=900 python -m unittest discover -s python/tests -p test_docling_smoke.py -v` explicitly runs actual Docling. Omit the download flag after preparing weights. Shared repository fixtures check citations against Java and strict money rules against the Docker ETL worker; only an explicitly documented subset is compared with Java's permissive amount-comparison helper.
+
+With inspection dependencies/Tesseract installed, run `TEST_PDF_INSPECTION=1 python -m unittest discover -s python/tests -p test_inspection.py -v` for actual tag, crop-box, native rotation, OCR and inverse-projected skew tests. `python python/tools/check_structure_pdf.py services/credit-api/src/test/resources/evidence/structure-regression.pdf` converts an actual PDF with the installed Docling reader and checks the retained structure. The shared structure contract is consumed by Java and Python. These are scoped regressions, not a general OCR/reading-order benchmark.
+
+Build a preview wheel with `python -m build python --outdir python/dist/0.2.0a1`. Install the generated wheel into a clean environment with `python -m pip install python/dist/0.2.0a1/document_evidence_lab-0.2.0a1-py3-none-any.whl`; add its `[inspection]`/`[docling]` extra for the corresponding local engines. This does not publish to PyPI.
 
 ## License
 

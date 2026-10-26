@@ -8,7 +8,8 @@ import {documentText} from '@/lib/document-language';
 import {workspaceText} from '@/lib/workspace-language';
 import {demoPdfUrl} from '@/lib/public-demo';
 import {aiText} from '@/lib/ai-capabilities';
-import {documentTableRows,documentUi} from '@/lib/document-results';
+import {documentTableLayout,documentUi} from '@/lib/document-results';
+import {structureText} from '@/lib/document-structure';
 import {fieldRegions,inspectionText,regionTableContext,type EvidenceContext,type EvidenceSelection} from '@/lib/evidence-inspection';
 import {PdfPreview} from './PdfPreview';
 import {ImagePreview} from './ImagePreview';
@@ -54,6 +55,7 @@ export function DocumentEvidence({doc,caseId,locale,editable,values,onChange,onE
       {doc.ocrCorrections?.length?<details className="document-text-evidence"><summary>{copy.history} · {doc.ocrCorrections.length}</summary><p>{copy.pending}</p>{doc.ocrCorrections.map(c=><section key={c.id}><strong>{t('page')} {c.page} · {c.sourceId}</strong><blockquote>{c.originalText}</blockquote><p>→ {c.correctedText}</p><small>{c.reason} · {c.actor} · {c.time}</small></section>)}</details>:null}
       <details className="document-text-evidence"><summary>{d('text')}</summary>{(doc.pages||[]).map(source=><section className="source-page" key={source.number}><header>{t('page')} {source.number} · {t('method')}: {source.method}</header><pre>{source.text}</pre></section>)}</details>
       <TableEvidence doc={doc} locale={locale} select={selectRegion}/>
+      <StructureEvidence doc={doc} locale={locale} select={selectRegion}/>
     </div>{doc.fields?.length?<aside><h3 className="section-heading">{d('fields')}</h3>
       {(doc.fields||[]).map((field,index)=><div className="review-field" key={index}>
         <label><strong>{t(field.label)}</strong><input aria-label={t(field.label)} value={values[index]||''} onChange={e=>onChange(index,e.target.value)} disabled={!editable} maxLength={300}/></label>
@@ -75,9 +77,24 @@ function TableEvidence({doc,locale,select}:{doc:CreditDocument;locale:string;sel
   const pageLabel=workspaceText(locale)('page');if(!doc.tables?.length)return null;
   return <details className="document-text-evidence"><summary>{label} · {doc.tables.length}</summary>{doc.tables.map((table,index)=><section className="source-page" key={index}>
     <button className="button-link" onClick={()=>select(table.page)}>{pageLabel} {table.page} →</button>
-    <div className="lab-table-wrap"><table className="audit-table"><tbody>{documentTableRows(table).map((cells,row)=><tr key={row}>{cells.map((text,column)=>{
+    <p>{structureText(locale).tableHint}</p>
+    <div className="lab-table-wrap"><table className="audit-table"><tbody>{documentTableLayout(table).map((cells,row)=><tr key={row}>{cells.map(cell=>{
+      const {text,column}=cell,Tag=cell.columnHeader||cell.rowHeader?'th':'td';
       const source=doc.pages?.find(p=>p.number===table.page)?.regions?.filter(r=>r.table===index&&r.row===row&&r.column===column);
-      return <td key={column}>{source?.length===1?<button type="button" className="button-link" aria-label={`${copy.select} · ${copy.row} ${row+1} · ${copy.column} ${column+1}`} onClick={()=>select(table.page,source[0].id)}>{text}</button>:text}</td>;
+      return <Tag key={column} rowSpan={cell.rowSpan} colSpan={cell.columnSpan} scope={cell.columnHeader?'col':cell.rowHeader?'row':undefined}>{source?.length===1?<button type="button" className="button-link" aria-label={`${copy.select} · ${copy.row} ${row+1} · ${copy.column} ${column+1}`} onClick={()=>select(table.page,source[0].id)}>{text}</button>:text}</Tag>;
     })}</tr>)}</tbody></table></div>
   </section>)}</details>;
+}
+
+function StructureEvidence({doc,locale,select}:{doc:CreditDocument;locale:string;select:(page:number,id?:string)=>void}){
+  const t=structureText(locale),structure=doc.structure;
+  const nodes=structure?.blocks.slice(0,80)||[],index=new Map(nodes.map(n=>[n.ref,n]));
+  const children=new Set(nodes.flatMap(n=>n.children));
+  function render(ref:string,depth=0):React.ReactNode{
+    const node=index.get(ref);if(!node||depth>64)return null;
+    const kind=node.kind==='title'?t.titleLabel:t[node.kind as keyof typeof t]||t.unknown;
+    const excerpt=node.regionIds.length===1?doc.pages?.find(p=>p.number===node.page)?.regions?.find(r=>r.id===node.regionIds[0])?.text.slice(0,120):undefined;
+    return <li key={ref}>{node.page?<button type="button" className="button-link" onClick={()=>select(node.page!,node.regionIds.length===1?node.regionIds[0]:undefined)}>{kind} · {t.page} {node.page}{excerpt?` — ${excerpt}`:''}</button>:<span>{kind}</span>}{node.children.length?<ol>{node.children.map(child=>render(child,depth+1))}</ol>:null}</li>;
+  }
+  return <details className="document-text-evidence"><summary>{t.title}</summary><p>{t.hint}</p><p><strong>{t.tags}:</strong> {t[structure?.nativeTags||'NOT_INSPECTED']}</p>{structure?.issues.map(code=><p key={code}>{t[code as keyof typeof t]||t.empty}</p>)}{nodes.length?<ol className="document-structure-tree">{nodes.filter(n=>!children.has(n.ref)).map(n=>render(n.ref))}</ol>:<p>{t.empty}</p>}{(structure?.blocks.length||0)>80?<p>{t.limit}</p>:null}</details>;
 }

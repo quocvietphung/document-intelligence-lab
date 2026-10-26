@@ -24,8 +24,13 @@ final class SelectedFieldEvidence {
       String id=d.id()+":p"+page.number()+":"+region.id();
       if(question.contains("["+id+"]")&&!EvidenceGuard.suspicious(region.text())&&result.size()<6){
         String context="";
-        if(region.table()!=null&&region.table()>=0&&region.table()<d.tables().size())
-          context=d.tables().get(region.table()).cells().stream().filter(c->c.row()==0||c.column()==0||Objects.equals(c.row(),region.row())).map(c->"[row="+(c.row()+1)+",column="+(c.column()+1)+"] "+c.text()).reduce("",(a,b)->a+"\n"+b);
+        if(region.table()!=null&&region.table()>=0&&region.table()<d.tables().size()){
+          var cells=d.tables().get(region.table()).cells();boolean typed=cells.stream().anyMatch(c->Boolean.TRUE.equals(c.columnHeader())||Boolean.TRUE.equals(c.rowHeader()));
+          context=cells.stream().filter(c->Objects.equals(c.row(),region.row())
+              ||Boolean.TRUE.equals(c.columnHeader())&&region.column()!=null&&region.column()>=c.column()&&region.column()<c.column()+c.columnSpan()
+              ||Boolean.TRUE.equals(c.rowHeader())&&region.row()!=null&&region.row()>=c.row()&&region.row()<c.row()+c.rowSpan()
+              ||!typed&&(c.row()==0||c.column()==0)).map(c->"[row="+(c.row()+1)+",column="+(c.column()+1)+"] "+c.text()).reduce("",(a,b)->a+"\n"+b);
+        }
         if(context.length()>1500)context=context.substring(0,1500);
         result.add(new CreditAssistantService.Source(id,d.name()+" · p. "+page.number()+" · "+region.id(),
             "Provider-recorded OCR occurrence, not visually verified: "+region.text()+"\nRaw table context (labels and units are not inferred): "+context));
