@@ -6,6 +6,8 @@ Run commands from the repository root. The base + platform profile needs no Azur
 
 Use Docker Desktop (Linux containers) or Docker Engine + Compose v2. Suggested allocation: 4 CPUs, 8 GB memory, 15 GB disk. Initial builds and ClamAV signatures need internet. ClamAV uses its official `linux/amd64` image, emulated on Apple Silicon.
 
+The optional offline ETL/inspection worker uses a digest-pinned Wolfi base, Python 3.12 and signed APK packages for Tesseract's English/German data. Its Python requirements pin the patched dbt/sqlparse combination. Building needs the public `cgr.dev` registry and APK repository; processing has no network access and runs as UID 1000. Installer/bootstrap tools are removed from the runtime: change requirements and rebuild to update dependencies. Container scans remain enabled, including this worker. Local AI images, weights and build cache need additional disk space beyond the base profile.
+
 Keep ports 3000/8080/8081 free. Do not run host Next.js/Java on the same ports. Use **localhost** in the browser because the development issuer and redirects intentionally use that hostname.
 
 ```bash
