@@ -1,5 +1,5 @@
 "use client";
-import {useState} from 'react';
+import {useRef,useState} from 'react';
 import {Sparkles} from 'lucide-react';
 import {useAuth} from '@/components/auth/KeycloakProvider';
 import type {CreditDocument} from '@/lib/credit-data';
@@ -21,6 +21,7 @@ import {OcrCorrectionForm} from './OcrCorrectionForm';
 
 export function DocumentEvidence({doc,caseId,locale,editable,values,onChange,onExplain,initialPage=1,context,caseVersion=0,onOcrSaved}:{doc:CreditDocument;caseId:string;locale:string;editable:boolean;values:string[];onChange:(index:number,value:string)=>void;onExplain?:(question:string)=>void;initialPage?:number;context?:EvidenceContext;caseVersion?:number;onOcrSaved?:(item:WorkspaceCase)=>void}) {
   const auth=useAuth(),t=workspaceText(locale),d=documentText(locale),copy=inspectionText(locale);
+  const sourceHeading=useRef<HTMLHeadingElement>(null);
   const [page,setPage]=useState(initialPage);
   const [selection,setSelection]=useState<EvidenceSelection|undefined>(()=>{
     if(!context)return;
@@ -36,9 +37,11 @@ export function DocumentEvidence({doc,caseId,locale,editable,values,onChange,onE
     const candidates=fieldRegions(doc.pages?.find(p=>p.number===number)?.regions||[],f.originalValue??f.value,f.evidence||'');
     const region=candidates.length===1?candidates[0]:undefined;
     setPage(number);setSelection({page:number,sourceId:region?.id||`field-${index}`,ocrText:region?.text||f.originalValue||f.value,value:f.originalValue??f.value,region,candidates,fieldIndex:index});
+    sourceHeading.current?.scrollIntoView({block:'start'});
   }
   function selectRegion(number:number,id?:string){
     setPage(number);const region=doc.pages?.find(p=>p.number===number)?.regions?.find(r=>r.id===id);
+    sourceHeading.current?.scrollIntoView({block:'start'});
     if(!region){setSelection(undefined);return;}
     setSelection({page:number,sourceId:region.id,ocrText:region.text,value:region.text,region,tableContext:regionTableContext(region,doc.tables)});
   }
@@ -48,7 +51,7 @@ export function DocumentEvidence({doc,caseId,locale,editable,values,onChange,onE
     <PayrollReferenceNotice doc={doc} locale={locale}/><InsuranceReferenceNotice name={doc.name} locale={locale}/>
     {!doc.fields?.length?<p className="notice-lab mt-4">{t('emptyFields')}</p>:null}
     <div className={`document-review-grid${doc.fields?.length?'':' document-review-source-only'}`}><div>
-      <h3 className="section-heading mb-4">{sourceLabel}</h3>
+      <h3 ref={sourceHeading} className="section-heading mb-4">{sourceLabel}</h3>
       {sampleUrl?<PdfPreview key={doc.id} url={sampleUrl} {...previewProps}/>:doc.originalAvailable&&isPdf?<PdfPreview key={doc.id} url={`/api/cases/${caseId}/documents/${doc.id}/original`} token={auth.token||undefined} {...previewProps}/>:doc.originalAvailable&&isImage&&auth.token?<ImagePreview key={doc.id} url={`/api/cases/${caseId}/documents/${doc.id}/original`} token={auth.token} locale={locale}/>:<p className="notice-lab">{doc.originalAvailable?d('text'):d('fixture')}</p>}
       {doc.pages?.some(p=>p.regions?.length)?<label className="evidence-occurrence-picker">{copy.choose}<select value={selection?.page===page&&selection.region?selection.sourceId:''} onChange={e=>selectRegion(page,e.target.value)}><option value="" disabled>{copy.choose}</option>{doc.pages?.find(p=>p.number===page)?.regions?.map(r=><option key={r.id} value={r.id}>{r.id} · {r.text.slice(0,90)}{r.row!=null?` · ${copy.row} ${r.row+1}, ${copy.column} ${(r.column??0)+1}`:''}</option>)}</select><small>{copy.manual}</small></label>:null}
       {selection&&editable&&onOcrSaved?<OcrCorrectionForm key={`${selection.page}:${selection.sourceId}`} doc={doc} selection={selection} caseId={caseId} caseVersion={caseVersion} locale={locale} onSaved={onOcrSaved}/>:null}
