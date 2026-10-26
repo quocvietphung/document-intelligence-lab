@@ -35,4 +35,34 @@ class SelectedFieldEvidenceTest {
     var value=item(document("R","robert.pdf",true,"payroll",1),document("M","melanie.pdf",true,"payroll",1));
     assertThat(SelectedFieldEvidence.sources(value,"Summarize evidence",List.of(gross("R")))).extracting(CreditAssistantService.Source::id).containsExactly("R:p1:fields");
   }
+  @Test void explicitOccurrenceKeepsTheSelectedDuplicateNotTheFirstAndNeverUsesCorrections(){
+    var regions=java.util.stream.IntStream.range(0,4).mapToObj(i->new CreditCase.Region("r"+i,"Total: $500",.1,.1+i*.1,.5,.15+i*.1,600,800,null,null,null)).toList();
+    var doc=new CreditCase.Document("R","repeated.pdf","invoice","review",null,List.of(),List.of(new CreditCase.Page(1,"Total: $500","test",regions)),true,"docling","test","application/pdf",List.of(),List.of(new CreditCase.OcrCorrection("x",1,"r2","Total: $500","Total: $999","test","reviewer","now")));
+    var selected=SelectedFieldEvidence.sources(item(doc),"Explain [R:p1:r2]",List.of());
+    assertThat(selected).hasSize(1);assertThat(selected.getFirst().id()).isEqualTo("R:p1:r2");assertThat(selected.getFirst().text()).contains("Total: $500").doesNotContain("$999");
+    var source=dev.creditlab.trust.AnswerEvidence.source(item(doc),"R:p1:r2","test",selected.getFirst().text());
+    assertThat(source).containsEntry("locationState","PROVIDER_RECORDED").containsEntry("ocrText","Total: $500");
+    assertThat(dev.creditlab.trust.AnswerEvidence.source(item(doc),"R:p1:c1","test","Total: $500")).containsEntry("locationState","PAGE_ONLY");
+    assertThat(SelectedFieldEvidence.sources(item(doc),"Explain [R:p1:r99]",List.of())).isEmpty();
+  }
+  @Test void selectedOccurrenceDoesNotRetrieveOtherDuplicateValuesOrExposeBroaderTools(){
+    var regions=java.util.stream.IntStream.range(0,4).mapToObj(i->new CreditCase.Region("r"+i,"Total: $500",.1,.1+i*.1,.5,.15+i*.1,600,800,null,null,null)).toList();
+    var value=item(new CreditCase.Document("R","repeated.pdf","invoice","review",null,List.of(),List.of(new CreditCase.Page(1,"Other repeated values across the full page","docling",regions)),true,"docling","layout","application/pdf"));
+    var cases=org.mockito.Mockito.mock(dev.creditlab.casework.CreditCaseService.class);
+    org.mockito.Mockito.when(cases.require("tenant","C")).thenReturn(value);
+    var platform=org.mockito.Mockito.mock(dev.creditlab.platform.PlatformService.class);
+    dev.langchain4j.model.chat.ChatModel model=new dev.langchain4j.model.chat.ChatModel(){
+      @Override public dev.langchain4j.model.chat.response.ChatResponse doChat(dev.langchain4j.model.chat.request.ChatRequest request){
+        assertThat(request.toolSpecifications()).isNullOrEmpty();
+        String prompt=((dev.langchain4j.data.message.UserMessage)request.messages().getLast()).singleText();
+        assertThat(prompt).contains("[R:p1:r2]","Total: $500").doesNotContain("[R:p1:r0]","Other repeated values");
+        return dev.langchain4j.model.chat.response.ChatResponse.builder().finishReason(dev.langchain4j.model.output.FinishReason.STOP).aiMessage(dev.langchain4j.data.message.AiMessage.from("The recorded amount is $500 [R:p1:r2].")).build();
+      }
+    };
+    var service=new CreditAssistantService(cases,new com.fasterxml.jackson.databind.ObjectMapper(),java.util.Optional.of(model),null,platform,null);
+    org.springframework.test.util.ReflectionTestUtils.setField(service,"chatProvider","ollama");
+    var response=service.answer("tenant","reviewer",new CreditAssistantService.AssistantRequest("C","en","Explain [R:p1:r2]"));
+    assertThat(response.sources()).extracting(CreditAssistantService.Source::id).containsExactly("R:p1:r2");
+    org.mockito.Mockito.verify(platform,org.mockito.Mockito.never()).retrieve(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.anyString());
+  }
 }

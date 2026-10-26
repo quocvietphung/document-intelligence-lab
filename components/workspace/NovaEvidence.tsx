@@ -6,6 +6,7 @@ import {useAuth} from '@/components/auth/KeycloakProvider';
 import {answerIsStale,requestTrust,type TrustAnswer,type DraftOptions} from '@/lib/nova-trust';
 import {trustText} from '@/lib/nova-trust-language';
 import {ModalSurface} from './ModalSurface';
+import type {EvidenceContext} from '@/lib/evidence-inspection';
 
 function useRequestLifetime(caseId:string,token?:string){
   const lifetime=useRef<AbortController|null>(null);
@@ -13,7 +14,7 @@ function useRequestLifetime(caseId:string,token?:string){
   return lifetime;
 }
 
-export function NovaEvidence({answer,locale,caseVersion,openSource}:{answer:TrustAnswer;locale:string;caseVersion:number;openSource:(id:string)=>void}) {
+export function NovaEvidence({answer,locale,caseVersion,openSource}:{answer:TrustAnswer;locale:string;caseVersion:number;openSource:(id:string,context?:EvidenceContext)=>void}) {
   const t=trustText(locale);
   return <div className="nova-evidence">
     {answerIsStale(answer,caseVersion)?<p className="trust-warning">{t.staleAnswer}</p>:null}
@@ -28,14 +29,14 @@ export function NovaEvidence({answer,locale,caseVersion,openSource}:{answer:Trus
         {claim.citations.map(id=>{const source=answer.sources.find(s=>s.id===id);return source?<details key={id} className="nova-claim-source"><summary>{source.title}</summary>
           <p className="trust-muted">{source.kind==='REFERENCE'||source.kind==='FIXTURE'?t.reference:source.humanReviewed?t.verifiedSource:t.unreviewedSource}</p>
           <blockquote>{source.excerpt}</blockquote>
-          {source.documentId&&source.originalAvailable?<button type="button" className="button-link" onClick={()=>openSource(source.id)}><FileSearch size={14}/>{t.viewSource} · {t.page} {source.page||1}</button>:null}
+          {source.documentId&&source.originalAvailable?<button type="button" className="button-link" onClick={()=>openSource(source.id,{sourceId:source.id,ocrText:source.excerpt,answerText:claim.text})}><FileSearch size={14}/>{t.viewSource} · {t.page} {source.page||1}</button>:null}
         </details>:null;})}
       </section>)}
     </details>
   </div>;
 }
 
-export function NovaAnswerActions({answer,caseId,caseVersion,locale,onDraft,openSource}:{answer:TrustAnswer;caseId:string;caseVersion:number;locale:string;onDraft:(question:string,options:DraftOptions)=>void;openSource:(id:string)=>void}) {
+export function NovaAnswerActions({answer,caseId,caseVersion,locale,onDraft,openSource}:{answer:TrustAnswer;caseId:string;caseVersion:number;locale:string;onDraft:(question:string,options:DraftOptions)=>void;openSource:(id:string,context?:EvidenceContext)=>void}) {
   const auth=useAuth(),t=trustText(locale);
   const lifetime=useRequestLifetime(caseId,auth.token);
   const [report,setReport]=useState(false),[task,setTask]=useState(false),[reason,setReason]=useState('UNSUPPORTED_SOURCE'),[note,setNote]=useState('');

@@ -20,13 +20,14 @@ export async function proxyCase(request: Request, segments: string[] = []) {
   const path = segments.join("/");
   if (
     path && path !== "document-analysis/status" &&
-    !/^[-\w]+(?:\/documents(?:\/[-\w]+\/(?:original|review))?|\/banking|\/trust(?:\/(?:feedback|correction|prompt|features|tasks(?:\/[-\w]+)?))?|\/platform(?:\/(?:search|evaluate|experiments|batches|etl(?:\/etl-[a-f0-9-]{36}\/(?:bronze|silver|gold))?|integrations(?:\/(?:sources|import|evaluation-export|vision))?|research(?:\/(?:datasets|runs|export))?|jobs(?:\/[-\w]+\/(?:retry|cancel))?|reviews))?)?$/.test(path)
+    !/^[-\w]+(?:\/documents(?:\/[-\w]+\/(?:original|review|ocr-corrections))?|\/banking|\/trust(?:\/(?:feedback|correction|prompt|features|tasks(?:\/[-\w]+)?))?|\/platform(?:\/(?:search|evaluate|experiments|batches|etl(?:\/etl-[a-f0-9-]{36}\/(?:bronze|silver|gold))?|integrations(?:\/(?:sources|import|evaluation-export|vision))?|research(?:\/(?:datasets|runs|export))?|jobs(?:\/[-\w]+\/(?:retry|cancel))?|reviews))?)?$/.test(path)
   ) {
     return Response.json({ error: "Not found" }, { status: 404 });
   }
   if (["document-analysis/status","ai-capabilities"].includes(path) && request.method !== "GET") {
     return Response.json({ error: "Method not allowed" }, { status: 405 });
   }
+  if (path.endsWith('/ocr-corrections') && request.method!=='POST') return Response.json({error:'Method not allowed'},{status:405});
   if (/\/banking(?:\/|$)/.test(path)) {
     if (request.method !== "GET") return Response.json({ error: "Method not allowed" }, { status: 405 });
   }

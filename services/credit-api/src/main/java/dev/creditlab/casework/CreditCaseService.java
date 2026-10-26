@@ -93,14 +93,36 @@ public class CreditCaseService {
     var doc=old.documents().stream().filter(d->d.id().equals(docId)).findFirst().orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
     if(!doc.originalAvailable() || doc.fields().isEmpty() || review.values()==null || review.values().size()!=doc.fields().size()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Evidence-backed fields required");
     var fields=new ArrayList<CreditCase.Field>();
-    for(int i=0;i<doc.fields().size();i++) { var f=doc.fields().get(i); fields.add(new CreditCase.Field(f.label(),review.values().get(i).strip(),f.confidence(),f.page(),f.evidence())); }
+    for(int i=0;i<doc.fields().size();i++) { var f=doc.fields().get(i); fields.add(new CreditCase.Field(f.label(),review.values().get(i).strip(),f.confidence(),f.page(),f.evidence(),f.originalValue())); }
     var revised=new CreditCase.Document(doc.id(),doc.name(),doc.type(),"verified",doc.confidence(),fields,doc.pages(),true,
-        doc.analysisProvider(),doc.modelId(),doc.contentType(),doc.tables());
+        doc.analysisProvider(),doc.modelId(),doc.contentType(),doc.tables(),doc.ocrCorrections());
     var docs=old.documents().stream().map(d->d.id().equals(docId)?revised:d).toList();
     var updated=rebuild(old,docs,"DOCUMENT_REVIEWED",actor); save(updated,old.version());
     if(reviewStore!=null){long changed=java.util.stream.IntStream.range(0,fields.size()).filter(i->!fields.get(i).value().equals(doc.fields().get(i).value())).count();
       reviewStore.insert(tenant,id,"field-review",docId+"-v"+updated.version(),Map.of("documentId",docId,"caseVersion",updated.version(),"fieldsReviewed",fields.size(),"fieldsChanged",changed,"time",Instant.now().toString()));}
     return visible(updated);
+  }
+  public record OcrEdit(@Min(0) long version,@Min(1) @Max(4) int page,
+      @NotBlank @Size(max=80) String sourceId,@NotBlank @Size(max=1000) String originalText,
+      @NotBlank @Size(max=1000) String correctedText,@NotBlank @Size(max=500) String reason) {}
+
+  /** Append a human transcription; never rewrite OCR, fields, old answers, or approval. */
+  @org.springframework.transaction.annotation.Transactional
+  public CreditCase correctOcr(String tenant,String id,String docId,String actor,OcrEdit edit) {
+    allowWrite();var old=stored(tenant,id);checkVersion(old,edit.version());
+    var doc=old.documents().stream().filter(d->d.id().equals(docId)&&d.originalAvailable()).findFirst()
+        .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
+    var page=doc.pages().stream().filter(p->p.number()==edit.page()).findFirst().orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unknown source page"));
+    boolean source=page.regions().stream().anyMatch(r->r.id().equals(edit.sourceId())&&r.text().equals(edit.originalText()))
+        ||(edit.sourceId().equals("page")&&page.text().equals(edit.originalText()))
+        ||java.util.stream.IntStream.range(0,doc.fields().size()).anyMatch(i->edit.sourceId().equals("field-"+i)&&doc.fields().get(i).page()==edit.page()&&doc.fields().get(i).originalValue().equals(edit.originalText()));
+    if(!source||edit.originalText().equals(edit.correctedText().strip())||doc.ocrCorrections().size()>=100)
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Exact stored OCR source and a changed transcription required");
+    var corrections=new ArrayList<>(doc.ocrCorrections());
+    corrections.add(new CreditCase.OcrCorrection(UUID.randomUUID().toString(),edit.page(),edit.sourceId(),edit.originalText(),edit.correctedText().strip(),edit.reason().strip(),actor,Instant.now().toString()));
+    var revised=new CreditCase.Document(doc.id(),doc.name(),doc.type(),"review",doc.confidence(),doc.fields(),doc.pages(),true,doc.analysisProvider(),doc.modelId(),doc.contentType(),doc.tables(),corrections);
+    var updated=rebuild(old,old.documents().stream().map(d->d.id().equals(docId)?revised:d).toList(),"OCR_TRANSCRIPTION_RECORDED",actor);
+    save(updated,old.version());return visible(updated);
   }
   private CreditCase rebuild(CreditCase old,List<CreditCase.Document> docs,String action,String actor) {
     var issues=new ArrayList<CreditCase.ValidationIssue>(); var values=new HashSet<String>();

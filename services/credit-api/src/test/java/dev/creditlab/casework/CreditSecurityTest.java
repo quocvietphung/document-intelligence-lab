@@ -17,6 +17,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics
 class CreditSecurityTest {
   @Autowired MockMvc mvc;
+  @Test void ocrCorrectionsRequireReviewerAndBearer()throws Exception{
+    String path="/api/cases/CR-2026-1048/documents/doc-1/ocr-corrections";
+    mvc.perform(post(path).contentType("application/json").content("{}")).andExpect(status().isUnauthorized());
+    mvc.perform(post(path).with(jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"))).contentType("application/json").content("{}")).andExpect(status().isForbidden());
+    mvc.perform(post(path).with(jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_REVIEWER"))).contentType("application/json").content("{}")).andExpect(status().isBadRequest());
+  }
   @Test void localEtlRequiresTenantAndSeparatesReadAndWriteRoles()throws Exception{
     String path="/api/cases/CR-2026-1048/platform/etl",artifact=path+"/etl-12345678-1234-1234-1234-123456789abc/bronze";
     var advisor=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"));

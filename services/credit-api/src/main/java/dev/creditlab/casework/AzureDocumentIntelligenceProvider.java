@@ -81,7 +81,14 @@ public class AzureDocumentIntelligenceProvider implements DocumentAnalysisProvid
             if (line.getContent() != null && !line.getContent().isBlank()) text.append(line.getContent()).append('\n');
           });
           if (page.getWords() != null) page.getWords().forEach(word -> confidences.add(word.getConfidence()));
-          pages.add(new CreditCase.Page(page.getPageNumber(), bounded(text.toString().strip()), "azure-document-intelligence"));
+          var regions=new ArrayList<CreditCase.Region>();
+          if(page.getLines()!=null&&page.getWidth()!=null&&page.getHeight()!=null)for(var line:page.getLines()){
+            var points=line.getPolygon();double w=page.getWidth(),h=page.getHeight();
+            if(w<=0||h<=0||line.getContent()==null||points==null||points.size()!=8||points.stream().anyMatch(v->v==null||!Double.isFinite(v)))continue;
+            double left=1,top=1,right=0,bottom=0;for(int i=0;i<8;i+=2){left=Math.min(left,points.get(i)/w);top=Math.min(top,points.get(i+1)/h);right=Math.max(right,points.get(i)/w);bottom=Math.max(bottom,points.get(i+1)/h);}
+            if(left>=0&&top>=0&&right<=1&&bottom<=1&&left<right&&top<bottom)regions.add(new CreditCase.Region("r"+regions.size(),line.getContent(),left,top,right,bottom,w,h,null,null,null));
+          }
+          pages.add(new CreditCase.Page(page.getPageNumber(), bounded(text.toString().strip()), "azure-document-intelligence",regions));
         });
       }
       if (pages.isEmpty() && !content.isBlank()) pages.add(new CreditCase.Page(1, bounded(content), "azure-document-intelligence"));

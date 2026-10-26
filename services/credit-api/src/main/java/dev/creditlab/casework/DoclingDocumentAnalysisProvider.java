@@ -77,6 +77,7 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
       if(page<1||page>4||text.putIfAbsent(page,new StringBuilder())!=null) throw invalid("Invalid Docling page number");
     });
     var layout=new HashMap<Integer,List<PayrollLayoutFields.Line>>();
+    var regions=new HashMap<Integer,List<CreditCase.Region>>();
     if(!source.path("texts").isArray()||source.path("texts").size()>4000) throw invalid("Docling text metadata is invalid");
     for(var item:source.path("texts")) {
       String value=item.path("text").asText("");
@@ -92,6 +93,7 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
       for(var prov:provenance) {
         var line=layoutLine(value,prov.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"));
         if(line!=null) layout.computeIfAbsent(page,ignored->new ArrayList<>()).add(line);
+        addRegion(regions,page,value,prov.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"),null,null,null);
       }
     }
     var tables=new ArrayList<CreditCase.Table>();
@@ -113,12 +115,13 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
         String value=cell.path("text").asText("");
         if(row<0||row>=rows||column<0||column>=columns||value.length()>500) throw invalid("Invalid Docling table cell");
         cells.add(new CreditCase.TableCell(row,column,value));
+        addRegion(regions,page,value,cell.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"),tables.size(),row,column);
         append(text,page,value);
       }
       tables.add(new CreditCase.Table(page,rows,columns,List.copyOf(cells)));
     }
     if(text.values().stream().allMatch(value->value.toString().isBlank())) throw invalid("Docling found no readable text");
-    var pages=text.entrySet().stream().map(e->new CreditCase.Page(e.getKey(),e.getValue().toString().strip(),provider())).toList();
+    var pages=text.entrySet().stream().map(e->new CreditCase.Page(e.getKey(),e.getValue().toString().strip(),provider(),regions.getOrDefault(e.getKey(),List.of()))).toList();
     var parsed=extractor.parse(name,pages,null,provider(),modelId(),contentType);
     var document=new CreditCase.Document(parsed.id(),name,parsed.type(),"review",null,parsed.fields(),pages,true,provider(),modelId(),contentType,tables);
     var fields=new LinkedHashMap<String,CreditCase.Field>();
@@ -133,6 +136,13 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
     if(text==null) throw invalid("Docling text page is missing");
     if(text.length()+value.length()+1>12_000) throw invalid("Page text exceeds the processing limit");
     text.append(value).append('\n');
+  }
+
+  private static void addRegion(Map<Integer,List<CreditCase.Region>> regions,int page,String text,JsonNode box,JsonNode size,Integer table,Integer row,Integer column) {
+    var line=layoutLine(text,box,size);if(line==null||text.isBlank())return;
+    var entries=regions.computeIfAbsent(page,ignored->new ArrayList<>());
+    entries.add(new CreditCase.Region("r"+entries.size(),text,line.left(),line.top(),line.right(),line.bottom(),
+        size.path("width").asDouble(),size.path("height").asDouble(),table,row,column));
   }
 
   private static PayrollLayoutFields.Line layoutLine(String text,JsonNode box,JsonNode size) {

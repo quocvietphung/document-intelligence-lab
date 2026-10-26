@@ -17,7 +17,7 @@ async function request(url, options = {}) {
   const response = await fetch(url, {
     ...options,
     redirect: "manual",
-    signal: AbortSignal.timeout(process.env.TEST_NOVA_LOCAL==='1'?395_000:55_000),
+    signal: AbortSignal.timeout(process.env.TEST_NOVA_LOCAL==='1'||process.env.TEST_EVIDENCE_NOVA==='1'?395_000:55_000),
     headers: {
       ...options.headers,
       Cookie: [...jar].map(([key, value]) => `${key}=${value}`).join("; "),
@@ -157,6 +157,11 @@ const localRequest=async(url,options={})=>{
   }
   return request(url,options);
 };
+if(process.env.TEST_EVIDENCE_INSPECTION==='1') {
+  const {auditEvidenceInspection}=await import('./test-evidence-inspection.mjs');await auditEvidenceInspection({request:localRequest,check,bearer,web,api});
+  const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
+  check(ended.status===204,'Evidence inspection verification session logged out');console.log(`${checks} evidence inspection checks passed.`);process.exit(0);
+}
 if(process.env.TEST_PYTHON_SDK==='1') {
   execFileSync(process.env.TEST_PYTHON_EXECUTABLE||'python3',['python/tools/check_live_platform.py'],{
     env:{...process.env,LAB_API_URL:api,LAB_CASE_ID:process.env.TEST_PYTHON_CASE||'CR-485a8c32-047',LAB_ACCESS_TOKEN:tokens.access_token},

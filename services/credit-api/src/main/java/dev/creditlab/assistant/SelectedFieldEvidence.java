@@ -19,6 +19,19 @@ final class SelectedFieldEvidence {
         .anyMatch(terms::contains)).map(CreditCase.Document::id).collect(java.util.stream.Collectors.toSet());
     var retrieved=hits.stream().map(RagEngine.Hit::documentId).collect(java.util.stream.Collectors.toSet());
     var result=new ArrayList<CreditAssistantService.Source>();
+    // Explicit location IDs select stored OCR occurrences, not the first matching quote.
+    for(var d:eligible)for(var page:d.pages())for(var region:page.regions()){
+      String id=d.id()+":p"+page.number()+":"+region.id();
+      if(question.contains("["+id+"]")&&!EvidenceGuard.suspicious(region.text())&&result.size()<6){
+        String context="";
+        if(region.table()!=null&&region.table()>=0&&region.table()<d.tables().size())
+          context=d.tables().get(region.table()).cells().stream().filter(c->c.row()==0||c.column()==0||Objects.equals(c.row(),region.row())).map(c->"[row="+(c.row()+1)+",column="+(c.column()+1)+"] "+c.text()).reduce("",(a,b)->a+"\n"+b);
+        if(context.length()>1500)context=context.substring(0,1500);
+        result.add(new CreditAssistantService.Source(id,d.name()+" · p. "+page.number()+" · "+region.id(),
+            "Provider-recorded OCR occurrence, not visually verified: "+region.text()+"\nRaw table context (labels and units are not inferred): "+context));
+      }
+    }
+    if(!result.isEmpty())return List.copyOf(result);
     for(var d:eligible.stream().filter(d->named.isEmpty()?retrieved.contains(d.id()):named.contains(d.id())).limit(3).toList()) {
       var pages=d.fields().stream().filter(f->f.page()>0&&!f.evidence().isBlank()
           &&!EvidenceGuard.suspicious(f.label()+" "+f.value()+" "+f.evidence())&&d.pages().stream().anyMatch(p->p.number()==f.page()))

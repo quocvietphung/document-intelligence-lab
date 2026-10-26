@@ -1,5 +1,19 @@
 type TextItem={str:string;transform:number[];width:number;height:number};
 const normalized=(value:string)=>value.replace(/(?:EUR|€)/gi,'').replace(/\s+/g,'').trim();
+export type PixelRegion={left:number;top:number;width:number;height:number};
+/** Enumerate exact text-layer occurrences, including rotated glyphs. Never pick the first duplicate. */
+export function textOccurrenceRegions(items:readonly unknown[],needle:string,convert:(x:number,y:number)=>number[]):PixelRegion[]{
+  const exact=(s:string)=>s.replace(/\s+/g,' ').trim();const target=exact(needle);if(!target)return [];
+  return items.flatMap(item=>{
+    if(!item||typeof item!=='object'||!('str' in item)||typeof item.str!=='string'||exact(item.str)!==target)return [];
+    const v=item as TextItem;if(!Array.isArray(v.transform)||v.transform.length!==6||![...v.transform,v.width,v.height].every(Number.isFinite)||v.width<=0||v.height<=0)return [];
+    const [a,b,,,x,y]=v.transform,n=Math.hypot(a,b);if(n<=0)return [];
+    const dx=a/n*v.width,dy=b/n*v.width,ux=-b/n*v.height,uy=a/n*v.height;
+    const points=[[x,y],[x+dx,y+dy],[x+ux,y+uy],[x+dx+ux,y+dy+uy]].map(([x,y])=>convert(x,y));
+    if(points.some(p=>p.length!==2||!p.every(Number.isFinite)))return [];
+    const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);return [{left:Math.min(...xs),top:Math.min(...ys),width:Math.max(...xs)-Math.min(...xs),height:Math.max(...ys)-Math.min(...ys)}];
+  });
+}
 /** Only one exact original-text match gets a region. No fuzzy or fabricated coordinates. */
 export function uniqueTextRegion(items:readonly unknown[],needle:string,convert:(box:number[])=>number[]) {
   const value=normalized(needle);if(!value)return;
