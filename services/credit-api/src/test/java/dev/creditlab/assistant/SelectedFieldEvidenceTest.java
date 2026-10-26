@@ -65,4 +65,18 @@ class SelectedFieldEvidenceTest {
     assertThat(response.sources()).extracting(CreditAssistantService.Source::id).containsExactly("R:p1:r2");
     org.mockito.Mockito.verify(platform,org.mockito.Mockito.never()).retrieve(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.anyString());
   }
+  @Test void selectedCellIncludesItsSpanningHeaderAndRowButNotAnotherColumnsHeader(){
+    var cells=List.of(new CreditCase.TableCell(0,0,"Unrelated heading",1,1,true,false),
+        new CreditCase.TableCell(1,1,"Amount (USD)",1,2,true,false),
+        new CreditCase.TableCell(2,0,"Quarterly total",1,1,false,true),
+        new CreditCase.TableCell(2,2,"500",1,1,false,false));
+    var region=new CreditCase.Region("amount","500",.5,.5,.7,.6,600,800,0,2,2);
+    var doc=new CreditCase.Document("R","table.pdf","invoice","review",null,List.of(),
+        List.of(new CreditCase.Page(1,"Quarterly total 500","docling",List.of(region))),
+        true,"docling","layout","application/pdf",List.of(new CreditCase.Table(1,3,3,cells)));
+    var selected=SelectedFieldEvidence.sources(item(doc),"Explain [R:p1:amount]",List.of());
+    assertThat(selected).hasSize(1);
+    assertThat(selected.getFirst().text()).contains("Amount (USD)","Quarterly total","500")
+        .doesNotContain("Unrelated heading");
+  }
 }

@@ -8,10 +8,11 @@ import os
 import stat
 import subprocess
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from .models import Cell, Document, Page, Source, Table
+from .structure import docling_structure, pdf_structure_from_dict
 
 
 class DocumentReadError(ValueError):
@@ -45,8 +46,9 @@ def normalize_docling(payload: dict, *, name: str, sha256: str, provider_version
         numbers[page] = []
         sizes[page] = metadata.get("size", {})
     doc_id = "sha256-" + sha256
+    source_refs: dict[str, str] = {}
 
-    def add(item: dict, text: str, suffix: str) -> Source:
+    def add(item: dict, text: str, suffix: str, kind: str = "text") -> Source:
         if not isinstance(item, dict):
             raise DocumentReadError("INVALID_DOCLING_STRUCTURE")
         prov = item.get("prov", [])
@@ -75,9 +77,9 @@ def normalize_docling(payload: dict, *, name: str, sha256: str, provider_version
                 bbox = values
             except (KeyError, ValueError, ZeroDivisionError, TypeError, OverflowError):
                 raise DocumentReadError("INVALID_SOURCE_BBOX") from None
-        source = Source(f"{doc_id}:p{page}:{suffix}", page, text, bbox)
+        source = Source(f"{doc_id}:p{page}:{suffix}", page, text, bbox, kind=kind)
         numbers[page].append(source)
-        if sum(len(source.text) for source in numbers[page]) > 12000:
+        if sum(len(source.text) for source in numbers[page] if source.kind != "table_cell") > 12000:
             raise DocumentReadError("PAGE_TEXT_LIMIT")
         return source
 
@@ -89,7 +91,8 @@ def normalize_docling(payload: dict, *, name: str, sha256: str, provider_version
             raise DocumentReadError("INVALID_DOCLING_STRUCTURE")
         text = item.get("text", "")
         if text:
-            add(item, text, f"b{index + 1}")
+            block = add(item, text, f"b{index + 1}", str(item.get("label", "text"))[:80])
+            source_refs[f"#/texts/{index}"] = block.id
     tables = []
     for index, item in enumerate(source_tables):
         if not isinstance(item, dict) or not isinstance(item.get("data"), dict):
@@ -99,7 +102,7 @@ def normalize_docling(payload: dict, *, name: str, sha256: str, provider_version
         raw_cells = data.get("table_cells", [])
         if not isinstance(raw_cells, list) or len(raw_cells) > 1500:
             raise DocumentReadError("TABLE_CELL_LIMIT")
-        cells = []
+        cells, cell_locations = [], []
         for raw in raw_cells:
             if not isinstance(raw, dict):
                 raise DocumentReadError("INVALID_TABLE_CELL")
@@ -110,14 +113,27 @@ def normalize_docling(payload: dict, *, name: str, sha256: str, provider_version
             text = raw.get("text", "")
             if not isinstance(text, str) or len(text) > 500:
                 raise DocumentReadError("INVALID_TABLE_CELL")
-            cells.append(Cell(row, column, text, end_row - row, end_column - column))
+            flags = [raw.get("column_header"), raw.get("row_header")]
+            if any(flag is not None and type(flag) is not bool for flag in flags):
+                raise DocumentReadError("INVALID_TABLE_CELL")
+            cells.append(Cell(row, column, text, end_row - row, end_column - column,
+                              column_header=flags[0], row_header=flags[1]))
+            cell_locations.append((row, column, text, raw.get("bbox")))
         cells.sort(key=lambda cell: (cell.row, cell.column))
-        source = add(item, "\n".join(cell.text for cell in cells), f"t{index + 1}")
+        source = add(item, "\n".join(cell.text for cell in cells), f"t{index + 1}", "table")
+        source_refs[f"#/tables/{index}"] = source.id
+        cells = [replace(cell, source_id=f"{source.id}:r{cell.row+1}:c{cell.column+1}") for cell in cells]
+        for row, column, text, box in cell_locations:
+            add({"prov": [{"page_no": source.page, **({"bbox": box} if box is not None else {})}]}, text,
+                f"t{index+1}:r{row+1}:c{column+1}", "table_cell")
         tables.append(Table(source.id, source.page, rows, columns, tuple(cells)))
     if not any(source.text.strip() for sources in numbers.values() for source in sources):
         raise DocumentReadError("NO_READABLE_TEXT")
-    return Document(doc_id, name, sha256, tuple(Page(n, tuple(numbers[n])) for n in sorted(numbers)),
-                    tuple(tables), provider_version=provider_version)
+    nodes, order, issues = docling_structure(payload, source_refs)
+    result_pages = tuple(Page(n, tuple(numbers[n]), tuple(key for key in order if any(s.id == key for s in numbers[n])),
+                              "docling-body" if order else "unavailable") for n in sorted(numbers))
+    return Document(doc_id, name, sha256, result_pages, tuple(tables), provider_version=provider_version,
+                    structure=nodes, structure_issues=issues)
 
 
 def local_pdf_bytes(path: str | Path, max_bytes: int = 3_000_000) -> tuple[Path, bytes]:
@@ -180,5 +196,8 @@ class DoclingReader:
             raise DocumentReadError(code if code in {"DOCLING_NOT_INSTALLED", "PDF_REJECTED", "DOCLING_CONVERSION_FAILED"} else "DOCLING_WORKER_FAILED")
         if "document" not in result or not isinstance(result.get("version"), str):
             raise DocumentReadError("DOCLING_WORKER_FAILED")
-        return normalize_docling(result["document"], name=source.name, sha256=hashlib.sha256(content).hexdigest(),
-                                 provider_version=result["version"], max_pages=self.max_pages)
+        document = normalize_docling(result["document"], name=source.name, sha256=hashlib.sha256(content).hexdigest(),
+                                     provider_version=result["version"], max_pages=self.max_pages)
+        if isinstance(result.get("native_structure"), dict):
+            document = replace(document, native_structure=pdf_structure_from_dict(result["native_structure"]))
+        return document

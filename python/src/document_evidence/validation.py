@@ -134,6 +134,18 @@ def validate_document(document: Document, *, required_labels: Iterable[str] = ()
         positions = [(cell.row, cell.column) for cell in table.cells]
         if len(set(positions)) != len(positions):
             findings.append(Finding("DUPLICATE_TABLE_CELL", "error", (table.source_id,)))
+        covered: set[tuple[int, int]] = set()
+        overlap = False
+        for cell in table.cells:
+            if not (0 <= cell.row < table.rows and 0 <= cell.column < table.columns
+                    and 1 <= cell.row_span <= table.rows-cell.row and 1 <= cell.column_span <= table.columns-cell.column):
+                continue
+            for row in range(cell.row,cell.row+cell.row_span):
+                for column in range(cell.column,cell.column+cell.column_span):
+                    overlap = overlap or (row,column) in covered
+                    covered.add((row,column))
+        if overlap:
+            findings.append(Finding("OVERLAPPING_TABLE_CELLS", "error", (table.source_id,)))
     return ValidationReport(document.id, tuple(findings))
 
 

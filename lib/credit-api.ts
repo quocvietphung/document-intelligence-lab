@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { CreditDocument } from "./credit-data";
 import {domainOf, type DocumentDomain} from './document-domains';
-import {evidenceRegionSchema,ocrCorrectionSchema} from './evidence-inspection';
+import {evidenceRegionSchema,ocrCorrectionSchema,documentStructureSchema} from './evidence-inspection';
 
 export type WorkspaceCase = {
   id: string;
@@ -58,11 +58,12 @@ export const creditCaseSchema = z.object({
       fields: z.array(field),
       pages: z.array(z.object({ number: z.number().int().positive(), text: z.string(), method: z.string(),regions:z.array(evidenceRegionSchema).optional() })).optional(),
       ocrCorrections:z.array(ocrCorrectionSchema).optional(),
+      structure:documentStructureSchema.nullable().optional(),
       originalAvailable: z.boolean().optional(),
       analysisProvider: z.string().nullable().optional(),
       modelId: z.string().nullable().optional(),
       contentType: z.string().nullable().optional(),
-      tables:z.array(z.object({page:z.number(),rows:z.number(),columns:z.number(),cells:z.array(z.object({row:z.number(),column:z.number(),text:z.string()}))})).optional(),
+      tables:z.array(z.object({page:z.number(),rows:z.number(),columns:z.number(),cells:z.array(z.object({row:z.number(),column:z.number(),text:z.string(),rowSpan:z.number().int().positive().optional(),columnSpan:z.number().int().positive().optional(),columnHeader:z.boolean().nullable().optional(),rowHeader:z.boolean().nullable().optional()}))})).optional(),
     }),
   ),
   audit: z.array(z.array(z.string()).length(3)),

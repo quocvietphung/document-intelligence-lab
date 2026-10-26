@@ -4,7 +4,7 @@ import {readFileSync} from "node:fs";
 import {describe,expect,it,vi} from "vitest";
 import type {CreditDocument} from "./credit-data";
 import hashes from "@/services/credit-api/src/main/resources/datev-reference-hashes.json";
-import {activeDocumentJob,completedJobDocument,documentJobLabel,documentReceiptSchema,documentTableRows,documentUi,documentUiTables,latestDocumentJobs,orderedResultDocuments,sampleDocumentJob,type DocumentJob} from "./document-results";
+import {activeDocumentJob,completedJobDocument,documentJobLabel,documentReceiptSchema,documentTableRows,documentTableLayout,documentUi,documentUiTables,latestDocumentJobs,orderedResultDocuments,sampleDocumentJob,type DocumentJob} from "./document-results";
 import {DocumentRecognitionDetails,DocumentProcessingCard,DocumentResultCard,DocumentResults} from "@/components/workspace/DocumentResults";
 import {PayrollSamples} from "@/components/workspace/PayrollSamples";
 
@@ -15,6 +15,12 @@ const job:DocumentJob={id:"job-new",name,status:"COMPLETE",stage:"HUMAN_REVIEW",
 const old:DocumentJob={...job,id:"job-old",status:"FAILED",stage:"STOPPED",document_id:null,error_code:"ANALYSIS_HTTP_503",createdAt:"2026-10-12T22:18:00Z",attempt:3};
 const open=()=>{};
 describe("document analysis results journey",()=>{
+  it('preserves merged-cell coverage and reported header roles without guessing from row zero',()=>{
+    const rows=documentTableLayout({page:1,rows:3,columns:3,cells:[{row:0,column:0,text:'Amounts',columnSpan:3,columnHeader:true},{row:1,column:0,text:'Item',rowSpan:2,rowHeader:true},{row:1,column:1,text:'8,500'},{row:1,column:2,text:'USD'},{row:2,column:1,text:'500'},{row:2,column:2,text:'USD'}]});
+    expect(rows.map(row=>row.map(cell=>cell.text))).toEqual([['Amounts'],['Item','8,500','USD'],['500','USD']]);
+    expect(rows[0][0].columnSpan).toBe(3);expect(rows[1][0].rowSpan).toBe(2);
+    expect(rows[1][1].columnHeader).toBeUndefined();
+  });
   it("keeps sparse OCR table values and first-cell precedence without normalizing amounts",()=>{
     const table={page:1,rows:2,columns:3,cells:[
       {row:1,column:2,text:"1.250,50 EUR"},{row:0,column:0,text:"Total"},

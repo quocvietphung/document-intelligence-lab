@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "document-evidence-lab"
-version = "0.1.0a1"
+version = "0.2.0a1"
 description = "Local PDF evidence and validation, with an optional authenticated Java platform SDK"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -26,6 +26,7 @@ dependencies = []
 
 [project.optional-dependencies]
 docling = ["docling==2.142.1", "pypdf>=6,<7"]
+inspection = ["pypdf>=6,<7", "pypdfium2>=4.30,<6", "pillow>=12,<14", "opencv-python-headless>=4.12,<6", "numpy>=2,<3"]
 dev = ["build>=1.2,<2", "twine>=6,<7"]
 
 [project.scripts]

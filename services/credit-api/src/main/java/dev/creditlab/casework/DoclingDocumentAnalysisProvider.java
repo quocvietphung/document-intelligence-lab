@@ -58,7 +58,15 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
         if(response.statusCode()!=200) throw unavailable();
         byte[] result=stream.readNBytes(MAX_RESPONSE+1);
         if(result.length>MAX_RESPONSE) throw invalid("Docling output exceeds the processing limit");
-        return parse(name,contentType,json.readTree(result));
+        var parsed=parse(name,contentType,json.readTree(result));
+        if(extension.equals(".pdf")&&parsed.structure()!=null){
+          String tags="NOT_INSPECTED";
+          try(var pdf=org.apache.pdfbox.Loader.loadPDF(bytes)){tags=pdf.getDocumentCatalog().getStructureTreeRoot()==null?"ABSENT":"PRESENT_NOT_VALIDATED";}
+          catch(java.io.IOException ignored){/* Extraction success is not a native-tag certification. */}
+          var structure=parsed.structure();
+          return new CreditCase.Document(parsed.id(),parsed.name(),parsed.type(),parsed.status(),parsed.confidence(),parsed.fields(),parsed.pages(),true,parsed.analysisProvider(),parsed.modelId(),parsed.contentType(),parsed.tables(),parsed.ocrCorrections(),new CreditCase.StructureInfo(structure.origin(),tags,structure.blocks(),structure.issues()));
+        }
+        return parsed;
       }
     } catch(ResponseStatusException error) { throw error; }
       catch(InterruptedException error) { Thread.currentThread().interrupt();throw unavailable(); }
@@ -78,8 +86,10 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
     });
     var layout=new HashMap<Integer,List<PayrollLayoutFields.Line>>();
     var regions=new HashMap<Integer,List<CreditCase.Region>>();
+    var blocks=new LinkedHashMap<String,DoclingStructure.Block>();
     if(!source.path("texts").isArray()||source.path("texts").size()>4000) throw invalid("Docling text metadata is invalid");
-    for(var item:source.path("texts")) {
+    for(int blockIndex=0;blockIndex<source.path("texts").size();blockIndex++) {
+      var item=source.path("texts").get(blockIndex);
       String value=item.path("text").asText("");
       if(value.isBlank()) continue;
       var provenance=item.path("prov");
@@ -90,11 +100,13 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
       if(pageNumbers.size()!=1) throw invalid("Docling text spans pages without unambiguous page evidence");
       int page=pageNumbers.iterator().next();
       append(text,page,value);
+      var ids=new ArrayList<String>();
       for(var prov:provenance) {
         var line=layoutLine(value,prov.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"));
         if(line!=null) layout.computeIfAbsent(page,ignored->new ArrayList<>()).add(line);
-        addRegion(regions,page,value,prov.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"),null,null,null);
+        var id=addRegion(regions,page,value,prov.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"),null,null,null);if(id!=null)ids.add(id);
       }
+      blocks.put("#/texts/"+blockIndex,new DoclingStructure.Block(page,value,List.copyOf(ids)));
     }
     var tables=new ArrayList<CreditCase.Table>();
     if(!source.path("tables").isMissingNode()&&!source.path("tables").isArray()) throw invalid("Invalid Docling tables");
@@ -109,16 +121,28 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
       var sourceCells=data.path("table_cells");
       if(rows<1||columns<1||rows>500||columns>100||!sourceCells.isArray()||sourceCells.size()>1500)
         throw invalid("Docling table exceeds the processing limit");
-      var cells=new ArrayList<CreditCase.TableCell>();
+      var cells=new ArrayList<CreditCase.TableCell>();var ids=new ArrayList<String>();var covered=new HashSet<String>();
       for(var cell:sourceCells) {
         int row=cell.path("start_row_offset_idx").asInt(-1),column=cell.path("start_col_offset_idx").asInt(-1);
         String value=cell.path("text").asText("");
         if(row<0||row>=rows||column<0||column>=columns||value.length()>500) throw invalid("Invalid Docling table cell");
-        cells.add(new CreditCase.TableCell(row,column,value));
-        addRegion(regions,page,value,cell.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"),tables.size(),row,column);
+        int endRow=cell.path("end_row_offset_idx").asInt(row+1),endColumn=cell.path("end_col_offset_idx").asInt(column+1);
+        if(endRow<=row||endRow>rows||endColumn<=column||endColumn>columns)throw invalid("Invalid Docling table span");
+        for(int r=row;r<endRow;r++)for(int c=column;c<endColumn;c++)if(!covered.add(r+":"+c))throw invalid("Overlapping Docling table cells");
+        cells.add(new CreditCase.TableCell(row,column,value,endRow-row,endColumn-column,
+            cell.path("column_header").isBoolean()?cell.path("column_header").asBoolean():null,
+            cell.path("row_header").isBoolean()?cell.path("row_header").asBoolean():null));
+        var id=addRegion(regions,page,value,cell.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"),tables.size(),row,column);if(id!=null)ids.add(id);
         append(text,page,value);
       }
+      var tableText=cells.stream().sorted(Comparator.comparingInt(CreditCase.TableCell::row).thenComparingInt(CreditCase.TableCell::column)).map(CreditCase.TableCell::text).collect(java.util.stream.Collectors.joining("\n"));
+      blocks.put("#/tables/"+tables.size(),new DoclingStructure.Block(page,tableText,List.copyOf(ids)));
       tables.add(new CreditCase.Table(page,rows,columns,List.copyOf(cells)));
+    }
+    var structure=DoclingStructure.read(source,blocks);
+    if(!structure.order().isEmpty()){
+      text.values().forEach(value->value.setLength(0));var ordered=new LinkedHashSet<>(structure.order());ordered.addAll(blocks.keySet());
+      for(String ref:ordered){var block=blocks.get(ref);if(block!=null)append(text,block.page(),block.text());}
     }
     if(text.values().stream().allMatch(value->value.toString().isBlank())) throw invalid("Docling found no readable text");
     var pages=text.entrySet().stream().map(e->new CreditCase.Page(e.getKey(),e.getValue().toString().strip(),provider(),regions.getOrDefault(e.getKey(),List.of()))).toList();
@@ -128,7 +152,7 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
     document.fields().forEach(field->fields.put(field.label()+":"+field.page(),field));
     layout.forEach((page,lines)->PayrollLayoutFields.extract(page,lines).forEach(field->fields.putIfAbsent(field.label()+":"+field.page(),field)));
     InvoiceTableFields.extract(document).forEach(field->fields.putIfAbsent(field.label()+":"+field.page(),field));
-    return new CreditCase.Document(document.id(),name,document.type(),"review",null,List.copyOf(fields.values()),pages,true,provider(),modelId(),contentType,tables);
+    return new CreditCase.Document(document.id(),name,document.type(),"review",null,List.copyOf(fields.values()),pages,true,provider(),modelId(),contentType,tables,List.of(),structure.info());
   }
 
   private static void append(Map<Integer,StringBuilder> pages,int page,String value) {
@@ -138,11 +162,12 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
     text.append(value).append('\n');
   }
 
-  private static void addRegion(Map<Integer,List<CreditCase.Region>> regions,int page,String text,JsonNode box,JsonNode size,Integer table,Integer row,Integer column) {
-    var line=layoutLine(text,box,size);if(line==null||text.isBlank())return;
+  private static String addRegion(Map<Integer,List<CreditCase.Region>> regions,int page,String text,JsonNode box,JsonNode size,Integer table,Integer row,Integer column) {
+    var line=layoutLine(text,box,size);if(line==null||text.isBlank())return null;
     var entries=regions.computeIfAbsent(page,ignored->new ArrayList<>());
     entries.add(new CreditCase.Region("r"+entries.size(),text,line.left(),line.top(),line.right(),line.bottom(),
         size.path("width").asDouble(),size.path("height").asDouble(),table,row,column));
+    return entries.getLast().id();
   }
 
   private static PayrollLayoutFields.Line layoutLine(String text,JsonNode box,JsonNode size) {

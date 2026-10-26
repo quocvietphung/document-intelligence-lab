@@ -15,6 +15,14 @@ assert client.workflow(case_id)["caseId"] == case_id
 assert isinstance(client.audit(case_id), list)
 assert isinstance(client.trust(case_id), dict)
 assert isinstance(client.batches(case_id)["batches"], list)
+if os.environ.get('TEST_SDK_STRUCTURE') == '1':
+    structures=[doc for doc in case['documents'] if doc.get('structure')]
+    assert any(doc['structure']['nativeTags']=='PRESENT_NOT_VALIDATED' and doc['structure']['blocks'] for doc in structures)
+    assert any(cell.get('columnHeader') for doc in structures for table in doc['tables'] for cell in table['cells'])
+    tagged=next(doc for doc in structures if doc['name']=='structure-regression.pdf')
+    text=tagged['pages'][0]['text']
+    assert 0<=text.index('Read this left column first.')<text.index('2. Recorded amounts')
+    print('PASS installed Python SDK reads the actual persisted structural hierarchy and table header roles')
 try:
     PlatformClient(origin, "invalid-sdk-fixture-token").get_case(case_id)
 except PlatformError as error:

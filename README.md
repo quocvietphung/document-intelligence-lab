@@ -45,10 +45,22 @@ A question citing a valid stored occurrence ID uses that occurrence and its reco
 - **Repeated text:** Docling and Azure line locations retain page-local occurrence IDs. Four identical values remain four locations. Page/chunk citations do not magically identify an exact occurrence; ambiguous matches require an explicit selection, labelled as a candidate rather than proof of the model's attention.
 - **Coordinates:** Docling top/bottom origins are normalized once. Crops are taken from the same locally rendered PDF canvas, including zoom and device scale. Mismatched page proportions, invalid bounds and provider locations on intrinsically rotated pages produce no location claim. Exact PDF text-layer matching supports rotated glyphs; image-only pages cannot use that fallback. Provider boxes are still estimates to check visually, not pixel-certified alignment.
 - **OCR mismatch:** a quote can match `3,500` even if the original image says `8,500`. Citation membership is not visual verification. No missing region is fabricated and no confidence percentage is treated as accuracy.
-- **Tables:** located Docling cells can open their source crop with recorded row/column, first-row/first-column labels and the raw row's units. Labels are context, not inferred semantic headers. Missing/merged-cell provenance remains unknown.
+- **Tables:** located Docling cells open their source crop with row/column, provider-reported header roles/spans and raw units. Legacy cells without header roles use explicitly untyped positional context. Header roles are extraction evidence to review; missing cell locations remain unknown.
 - **Separate corrections:** a reviewer/admin can record an OCR transcription and a reason. The API requires a Bearer token, the current dossier version and the exact stored source text. Original OCR, original field values and old answers remain unchanged. The append-only correction is audited, returns the document to review and is not silently used by Nova or Gold. Reviewing fields or preparing a revised AI answer is a separate action.
 
 Try the fully [synthetic evidence regression PDF](services/credit-api/src/test/resources/evidence/evidence-inspection-regression.pdf): four `Total: $500` occurrences, an upright page, a 90°-rotated page, a table and an explicitly injected OCR discrepancy. The `3,500` observation is a test input, **not** a measured failure by Docling/Azure. Regenerate with `python scripts/build-evidence-regression.py /private/path/evidence-regression.pdf` after installing `reportlab` and `pypdf`. Existing dossiers without saved coordinates remain usable, with location unavailable rather than invented; a new analysis is needed to capture provider geometry.
+
+### Structure, reading order and local PDF inspection
+
+In **Documents & review → View result & PDF → Document structure & reading order**, inspect Docling's recorded heading/list/table hierarchy and open its source page. New Docling analyses follow the body-tree reading order for the text used downstream; missing, cyclic or partial structure is reported. Tables retain provider-reported header roles and merged-cell spans. Native PDF tag presence is shown separately from inferred layout; neither certifies accessibility or OCR correctness. Historic extractions without structure need a new analysis.
+
+![English document inspection: extracted table, native tag status and Docling heading/list reading order](docs/screenshots/document-structure-en.jpg)
+
+The **Python source/wheel preview `0.2.0a1`** adds standalone `read_pdf_structure`, `ground_pdf` and `validate_structure`. The published PyPI alpha remains `0.1.0a1`; the new APIs require the source preview or a locally built wheel. [Installation, examples and wheel checks](python/README.md#inspect-native-tags-and-exact-pdf-locations).
+
+Python inspection uses native PDFium glyph boxes or page-selective Tesseract on image-only pages. Native rotation/crop offsets and inverse-projected coordinates after conservative Hough-line deskew are covered by real regression tests. Repeated values stay ambiguous until explicitly selected; no currency/digit repair, LLM call, automatic cloud fallback or PDF rewrite occurs. Boxes are relative to the original displayed page. Inspecting a match does not establish factual correctness; mixed-content pages and arbitrary visual scan orientations remain evaluation cases.
+
+Use the [two-column/tagged fixture](services/credit-api/src/test/resources/evidence/structure-regression.pdf) and [upright/skewed scans](services/credit-api/src/test/resources/evidence/scanned-skew-regression.pdf). Their generator is `scripts/build-structure-regression.py`; all examples are self-authored, with no customer/publisher data. The tagged fixture deliberately draws the right column before the left and is **not** a valid PDF/UA reference. Accessibility auditing remains a separate task; PDF4WCAG/veraPDF are not bundled or silently called.
 
 ## Python Quick Start
 
@@ -334,8 +346,11 @@ The offline DuckDB/dbt worker has no network, public port or database password. 
 ```mermaid
 flowchart TD
     PDF[Permitted local PDF] --> PY[Python library · DoclingReader]
-    PY --> EV[Normalized pages, tables, hashes and source IDs]
+    PY --> EV[Pages, hierarchy, reading order, tables and source IDs]
     EV --> V[Deterministic validation and exact evidence checks]
+    PDF --> INSPECT[Optional Python inspection · PDFium / Tesseract]
+    INSPECT --> GEOM[Native tag tree · original-page boxes]
+    GEOM --> V
     SDK[Optional Python SDK · Bearer token] --> JAVA
     B[Browser · Next.js workspace] -->|OIDC code + PKCE| K[Keycloak]
     B -->|API-audience Bearer token| N[Next.js API proxy]
@@ -388,6 +403,7 @@ npm run verify
 mvn --batch-mode -f services/credit-api/pom.xml test
 node scripts/test-oauth.mjs
 TEST_EVIDENCE_INSPECTION=1 node scripts/test-oauth.mjs
+TEST_DOCUMENT_STRUCTURE=1 node scripts/test-oauth.mjs
 TEST_DOCUMENT_UPGRADE=1 node scripts/test-oauth.mjs
 TEST_NOVA_LOCAL=1 TEST_NOVA_TASKS=1 TEST_NOVA_CONCURRENCY=1 node scripts/test-oauth.mjs
 ```
@@ -395,6 +411,8 @@ TEST_NOVA_LOCAL=1 TEST_NOVA_TASKS=1 TEST_NOVA_CONCURRENCY=1 node scripts/test-oa
 Acceptance tests need the running stack and prepared samples. They create labelled records and unapproved drafts, not fabricated approval. Model calls take CPU time; Azure-mode tests can be billable. Scoped examples are not general accuracy, security or production certifications.
 
 The evidence-inspection acceptance test requires the **local Docling stack** and uses the included synthetic PDF, without private reference downloads or model calls. It checks repeated occurrence IDs, table-cell geometry and labels, authenticated/versioned OCR corrections, immutable original OCR and PostgreSQL readback. It leaves a labelled test dossier available for visual inspection.
+
+The document-structure acceptance uploads the included tagged/two-column and image-only/skewed PDFs through ClamAV and actual Docling, checks native tag presence separately from inferred headings/table roles, and verifies that a separate OCR correction does not erase structure or table metadata. With its printed case ID, `TEST_PYTHON_SDK=1 TEST_SDK_STRUCTURE=1 TEST_PYTHON_CASE=<case-id> TEST_PYTHON_EXECUTABLE=<wheel-environment>/bin/python node scripts/test-oauth.mjs` checks the installed wheel's authenticated SDK against the same persisted evidence.
 
 With the prepared local Nova model, add `TEST_EVIDENCE_NOVA=1` to that command to verify a real answer through the authenticated web proxy, its exact table-occurrence citation and saved review history. This explicitly invokes the local model and can take several minutes on CPU; the test refuses a cloud provider.
 

@@ -35,6 +35,17 @@ export function documentTableRows(table:NonNullable<CreditDocument["tables"]>[nu
   return Array.from({length:Math.min(100,table.rows)},(_,row)=>
     Array.from({length:Math.min(30,table.columns)},(_,column)=>cells.get(`${row}:${column}`)||"—"));
 }
+/** Keep merged-cell coverage and provider header flags; never infer headers from row zero. */
+export function documentTableLayout(table:NonNullable<CreditDocument['tables']>[number]){
+  const rows=Math.min(100,table.rows),columns=Math.min(30,table.columns),covered=new Set<string>();
+  const cells=new Map(table.cells.map(cell=>[`${cell.row}:${cell.column}`,cell]));
+  return Array.from({length:rows},(_,row)=>Array.from({length:columns},(_,column)=>{
+    const key=`${row}:${column}`;if(covered.has(key))return null;
+    const cell=cells.get(key),rowSpan=Math.max(1,Math.min(cell?.rowSpan||1,rows-row)),columnSpan=Math.max(1,Math.min(cell?.columnSpan||1,columns-column));
+    for(let r=row;r<row+rowSpan;r++)for(let c=column;c<column+columnSpan;c++)if(r!==row||c!==column)covered.add(`${r}:${c}`);
+    return {row,column,text:cell?.text||'—',rowSpan,columnSpan,columnHeader:cell?.columnHeader,rowHeader:cell?.rowHeader};
+  }).filter(cell=>cell!==null));
+}
 export function latestDocumentJobs(jobs:readonly DocumentJob[]){
   const groups=new Map<string,DocumentJob>();
   const ordered=[...jobs].sort((a,b)=>(Date.parse(b.createdAt)||0)-(Date.parse(a.createdAt)||0));

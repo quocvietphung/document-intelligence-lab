@@ -2,11 +2,14 @@ import {z} from 'zod';
 export const evidenceRegionSchema=z.object({id:z.string().regex(/^r\d+$/),text:z.string().max(12000),left:z.number().min(0).max(1),top:z.number().min(0).max(1),right:z.number().min(0).max(1),bottom:z.number().min(0).max(1),pageWidth:z.number().positive(),pageHeight:z.number().positive(),table:z.number().int().nonnegative().nullable().optional(),row:z.number().int().nonnegative().nullable().optional(),column:z.number().int().nonnegative().nullable().optional()});
 export type EvidenceRegion=z.infer<typeof evidenceRegionSchema>;
 export const ocrCorrectionSchema=z.object({id:z.string(),page:z.number().int().positive(),sourceId:z.string(),originalText:z.string(),correctedText:z.string(),reason:z.string(),actor:z.string(),time:z.string()});
+export const documentStructureSchema=z.object({origin:z.literal('docling-layout'),nativeTags:z.enum(['NOT_INSPECTED','ABSENT','PRESENT_NOT_VALIDATED']),blocks:z.array(z.object({ref:z.string(),kind:z.string(),page:z.number().int().positive().nullable(),regionIds:z.array(z.string()),children:z.array(z.string()),level:z.number().int().nullable()})).max(6000),issues:z.array(z.string())});
+export type DocumentStructure=z.infer<typeof documentStructureSchema>;
 export type EvidenceContext={sourceId?:string;ocrText?:string;answerText?:string};
 export type EvidenceSelection={page:number;sourceId:string;ocrText:string;value:string;region?:EvidenceRegion;candidates?:EvidenceRegion[];fieldIndex?:number;tableContext?:string};
-export function regionTableContext(region:EvidenceRegion|undefined,tables:readonly {cells:readonly {row:number;column:number;text:string}[]}[]=[]){
+export function regionTableContext(region:EvidenceRegion|undefined,tables:readonly {cells:readonly {row:number;column:number;text:string;rowSpan?:number;columnSpan?:number;columnHeader?:boolean|null;rowHeader?:boolean|null}[]}[]=[]){
   const table=region?.table==null?undefined:tables[region.table];
-  return table?.cells.filter(c=>c.row===0||c.column===0||c.row===region?.row).map(c=>`[${c.row+1},${c.column+1}] ${c.text}`).join(' | ');
+  const typed=table?.cells.some(c=>c.columnHeader||c.rowHeader);
+  return table?.cells.filter(c=>c.row===region?.row||c.columnHeader&&region?.column!=null&&region.column>=c.column&&region.column<c.column+(c.columnSpan||1)||c.rowHeader&&region?.row!=null&&region.row>=c.row&&region.row<c.row+(c.rowSpan||1)||!typed&&(c.row===0||c.column===0)).map(c=>`[${c.row+1},${c.column+1}] ${c.text}`).join(' | ');
 }
 const exact=(s:string)=>s.replace(/\s+/g,' ').trim();
 export function fieldRegions(regions:readonly EvidenceRegion[],value:string,evidence:string){

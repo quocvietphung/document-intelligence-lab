@@ -95,7 +95,7 @@ public class CreditCaseService {
     var fields=new ArrayList<CreditCase.Field>();
     for(int i=0;i<doc.fields().size();i++) { var f=doc.fields().get(i); fields.add(new CreditCase.Field(f.label(),review.values().get(i).strip(),f.confidence(),f.page(),f.evidence(),f.originalValue())); }
     var revised=new CreditCase.Document(doc.id(),doc.name(),doc.type(),"verified",doc.confidence(),fields,doc.pages(),true,
-        doc.analysisProvider(),doc.modelId(),doc.contentType(),doc.tables(),doc.ocrCorrections());
+        doc.analysisProvider(),doc.modelId(),doc.contentType(),doc.tables(),doc.ocrCorrections(),doc.structure());
     var docs=old.documents().stream().map(d->d.id().equals(docId)?revised:d).toList();
     var updated=rebuild(old,docs,"DOCUMENT_REVIEWED",actor); save(updated,old.version());
     if(reviewStore!=null){long changed=java.util.stream.IntStream.range(0,fields.size()).filter(i->!fields.get(i).value().equals(doc.fields().get(i).value())).count();
@@ -120,7 +120,7 @@ public class CreditCaseService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Exact stored OCR source and a changed transcription required");
     var corrections=new ArrayList<>(doc.ocrCorrections());
     corrections.add(new CreditCase.OcrCorrection(UUID.randomUUID().toString(),edit.page(),edit.sourceId(),edit.originalText(),edit.correctedText().strip(),edit.reason().strip(),actor,Instant.now().toString()));
-    var revised=new CreditCase.Document(doc.id(),doc.name(),doc.type(),"review",doc.confidence(),doc.fields(),doc.pages(),true,doc.analysisProvider(),doc.modelId(),doc.contentType(),doc.tables(),corrections);
+    var revised=new CreditCase.Document(doc.id(),doc.name(),doc.type(),"review",doc.confidence(),doc.fields(),doc.pages(),true,doc.analysisProvider(),doc.modelId(),doc.contentType(),doc.tables(),corrections,doc.structure());
     var updated=rebuild(old,old.documents().stream().map(d->d.id().equals(docId)?revised:d).toList(),"OCR_TRANSCRIPTION_RECORDED",actor);
     save(updated,old.version());return visible(updated);
   }

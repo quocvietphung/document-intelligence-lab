@@ -1,0 +1,22 @@
+{
+  "input": {
+    "pages": {"1": {"page_no": 1, "size": {"width": 600, "height": 800}}},
+    "texts": [
+      {"text": "Right column", "label": "section_header", "prov": [{"page_no": 1}]},
+      {"text": "Left column", "label": "section_header", "prov": [{"page_no": 1}]},
+      {"text": "Left first item", "label": "list_item", "prov": [{"page_no": 1}]}
+    ],
+    "tables": [{"label": "table", "prov": [{"page_no": 1}], "data": {
+      "num_rows": 2, "num_cols": 2,
+      "table_cells": [
+        {"start_row_offset_idx": 0, "start_col_offset_idx": 0, "text": "Item", "column_header": true},
+        {"start_row_offset_idx": 0, "start_col_offset_idx": 1, "text": "Total (USD)", "column_header": true},
+        {"start_row_offset_idx": 1, "start_col_offset_idx": 0, "text": "Inspection", "row_header": true},
+        {"start_row_offset_idx": 1, "start_col_offset_idx": 1, "text": "8,500", "bbox": {"l": 300, "t": 400, "r": 400, "b": 420, "coord_origin": "TOPLEFT"}}
+      ]
+    }}],
+    "groups": [{"label": "list", "children": [{"$ref": "#/texts/2"}]}],
+    "body": {"children": [{"$ref": "#/texts/1"}, {"$ref": "#/groups/0"}, {"$ref": "#/tables/0"}, {"$ref": "#/texts/0"}]}
+  },
+  "expectedOrder": ["#/texts/1", "#/texts/2", "#/tables/0", "#/texts/0"]
+}

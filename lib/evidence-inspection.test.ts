@@ -2,6 +2,7 @@ import {describe,it,expect,vi,afterEach} from 'vitest';
 import {fieldRegions,providerRegionBox,regionTableContext,inspectionLanguages,type EvidenceRegion} from './evidence-inspection';
 import {textOccurrenceRegions} from './pdf-evidence';
 import {proxyCase} from './case-proxy';
+import {structureLanguages} from './document-structure';
 const region:EvidenceRegion={id:'r1',text:'Total: $500',left:.1,top:.2,right:.5,bottom:.3,pageWidth:600,pageHeight:800};
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
 describe('source occurrence and OCR inspection',()=>{
@@ -30,10 +31,19 @@ describe('source occurrence and OCR inspection',()=>{
   it('keeps all three language contracts aligned',()=>{
     for(const copy of Object.values(inspectionLanguages)){expect(Object.keys(copy)).toEqual(Object.keys(inspectionLanguages.en));expect(Object.values(copy).every(s=>s.trim())).toBe(true);}
   });
+  it('keeps structural UI copy complete without presenting inference as accessibility certification',()=>{
+    for(const copy of Object.values(structureLanguages)){expect(Object.keys(copy)).toEqual(Object.keys(structureLanguages.en));expect(Object.values(copy).every(s=>s.trim())).toBe(true);}
+    expect(structureLanguages.en.hint).toContain('neither is an accessibility certificate');
+  });
   it('keeps raw row, column and unit labels beside a cited table cell',()=>{
     const tables=[{cells:[{row:0,column:0,text:'Item'},{row:0,column:1,text:'Gross total (USD)'},{row:1,column:0,text:'Inspection'},{row:1,column:1,text:'8,500'},{row:2,column:1,text:'unrelated amount'}]}];
     expect(regionTableContext({...region,table:0,row:1,column:1},tables)).toBe('[1,1] Item | [1,2] Gross total (USD) | [2,1] Inspection | [2,2] 8,500');
     expect(regionTableContext(region,tables)).toBeUndefined();
+  });
+  it('uses recorded header roles and spans rather than treating every first row as a header',()=>{
+    const tables=[{cells:[{row:0,column:0,text:'Unrelated title'},{row:1,column:0,text:'Gross total (USD)',columnHeader:true,columnSpan:2},{row:1,column:2,text:'Other column',columnHeader:true},{row:2,column:0,text:'Inspection',rowHeader:true},{row:2,column:1,text:'8,500'}]}];
+    const context=regionTableContext({...region,table:0,row:2,column:1},tables);
+    expect(context).toContain('Gross total (USD)');expect(context).toContain('Inspection');expect(context).not.toContain('Unrelated title');expect(context).not.toContain('Other column');
   });
   it('proxies only authenticated POST OCR corrections and rejects GET',async()=>{
     vi.stubEnv('CREDIT_API_URL','http://java:8080');const fetcher=vi.fn().mockResolvedValue(Response.json({ok:true}));vi.stubGlobal('fetch',fetcher);
