@@ -66,7 +66,7 @@ The library validates Docling output without requiring the platform; the SDK is 
 
 ## AI workflows
 
-Overview distinguishes **16 AI-assisted workflows** from **15 rule-based, navigation and human-review controls**, not 31 models. Every AI entry has a PDF exercise; opening one does not invoke inference.
+Overview distinguishes **17 AI-assisted workflows** from **15 rule-based, navigation and human-review controls**, not 32 models. Every AI entry has a PDF exercise; opening one does not invoke inference. Local anomaly evaluation is a separate, optional scikit-learn experiment.
 
 | Workflow | PDF exercise |
 | --- | --- |
@@ -86,14 +86,15 @@ Overview distinguishes **16 AI-assisted workflows** from **15 rule-based, naviga
 | Document chronology | Literal invoice date, no invented deadline |
 | Clause/obligation review | Insurance wording; no legal or coverage decision |
 | Sensitive-data review draft | Identifier categories; no automatic redaction |
+| Local anomaly experiment | Invoice amounts; insufficient-data handling, then source-disjoint holdout evaluation when a suitable cohort exists |
 
 Workflows share the selected extraction/Nova providers. MiniLM is English-focused; relevance scores are not accuracy percentages. Optional PaddleOCR, BGE-M3, reranking and vision need separately prepared weights and live evaluation. [Integration boundaries](docs/AI_INTEGRATIONS.md).
 
 ## Walkthrough
 
-![English walkthrough: Keycloak, PDF evidence, Nova guidance and saved answers, data layers, nine PDF sources and RAG metrics](docs/screenshots/document-ai-workflow-en.gif)
+![English walkthrough: Keycloak, PDF evidence, Nova, data layers, RAG, document analytics and local MLflow](docs/screenshots/document-ai-workflow-en.gif)
 
-Fresh captures from the current English Docker UI, assembled into a 13-scene edited walkthrough of about one minute. It moves from a prepared invoice dossier through PDF evidence, Nova's local guide, a saved Ollama answer and local ETL, then to the nine-PDF / 77-question RAG dossier. Processing, answer and experiment records were saved previously; waiting periods are omitted and existing review states remain unchanged. Source links support inspection, not automatic approval.
+English Docker UI captures, assembled into a 15-scene edited walkthrough of about 72 seconds. The refreshed Overview and analytics scenes extend the core PDF flow: Keycloak, evidence inspection, Nova's local guide, a saved Ollama answer, ETL and the nine-PDF / 77-question RAG dossier. Processing, answer and experiment records were saved previously; waiting periods are omitted and existing review states remain unchanged. Source links support inspection, not automatic approval.
 
 ## Python Quick Start
 
@@ -143,6 +144,8 @@ case_id = os.environ["LAB_CASE_ID"]
 case = client.get_case(case_id)
 workflow = client.workflow(case_id)
 ```
+
+The source preview also exposes `data_layers`, `build_data_layers`, `analytics` and `evaluate_cohort`; these methods are not in PyPI 0.1.0a1.
 
 The callback can provide a refreshed token; the SDK does not log in or renew credentials itself. Java enforces audience, tenant, dossier and roles. Uploads require explicit consent and a persisted request UUID; a receipt is not completed OCR. [Read example](python/examples/platform_read.py) · [SDK and upload behavior](python/README.md#optional-java-sdk). Keep tokens out of source, screenshots and shell history.
 
@@ -299,6 +302,63 @@ After extraction, open **Data layers & exports**, review the private-copy notice
 
 The offline DuckDB/dbt worker has no network, public port or database password. SCD Type 2 tracks observed changes, not inferred business-effective dates. Unchanged sources may reuse a completed receipt for the current method; past exports stay unchanged. Parquet downloads require dossier authorization and contain private data. Original-PDF expiry does **not** delete analytical copies, chat history or research labels.
 
+### Document analytics and local ML
+
+Build current data layers, then inspect **Document analytics** on the same page. Overview links to this panel. The versioned export includes `document_facts`, `field_observations`, `invoice_lines` and `quality_findings`, alongside Bronze/Silver/Gold. Fields preserve raw/original values and page references. Invoice lines require uniquely observed table headers and cells; unsupported layouts remain unparsed. Findings cover missing invoice fields, duplicate original hashes, ambiguous values and differences between observed line sums and the recorded total. A line-sum finding requests inspection of completeness, taxes and rounding; it does not establish an invalid invoice.
+
+![English document analytics: observed fields, invoice lines and a date ambiguity linked to the original PDF](docs/screenshots/document-analytics-en.jpg)
+
+Java projects run/finding records into PostgreSQL with tenant, dossier and source version. Only REVIEWER/ADMIN can record a finding review; it never approves the PDF or changes OCR. Source changes invalidate current results. Older ETL methods remain in history; rebuild once to produce the current analytical tables.
+
+To enable the optional CPU ML worker:
+
+```bash
+node scripts/docker-local.mjs --with-analytics
+```
+
+After ETL completes, expand **Local cohort experiment**, read the private-data notice and choose **Evaluate cohort**. This runs Isolation Forest against a median/MAD baseline, separately for each document type, field and currency. It requires **30 reviewed, unambiguous documents with distinct original PDF hashes** per cohort. Repeated originals are excluded; train/holdout hashes are disjoint and only held-out documents receive scores. The feature is a signed-log amount, with fixed seed/library/method versions. Related templates/vendors can still span the split; byte-hash separation does not prove statistical independence. A zero-MAD baseline abstains. This experiment does not promote a model into operational use.
+
+**One invoice, two DATEV pages or nine mixed-domain PDFs are not a trained anomaly benchmark.** Such inputs correctly return **Insufficient baseline data**. Without independent anomaly labels, precision, recall and PR-AUC remain unmeasured; decision scores are not fraud probabilities. Synthetic contract tests exercise the implementation, not business accuracy.
+
+The worker reads immutable Parquet through a read-only ETL mount, verifies manifest/artifact hashes and writes a separate private analytics volume. It has no network or database password. Sufficient cohorts produce private versioned model artifacts with checksums, training-source hashes and `operationalApproval: false`; incomplete or modified versions are not silently reused. Model artifacts can encode properties of training data and have their own retention; only load trusted artifacts. MLflow records local experiment parameters, source/model fingerprints and measured counts in SQLite; it does not log PDF text, raw amounts, model weights, prompts or tokens. MLflow telemetry is disabled. The optional operator UI is separate from application access control and remains on loopback:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.platform.yml \
+  -f docker-compose.etl.yml -f docker-compose.ml.yml \
+  --profile tracking up -d --build mlflow
+```
+
+Open [local MLflow](http://localhost:5005), choose **Model training → Experiments → document-cohort-evaluation**. In **Settings → General**, turn off browser UI telemetry as well; that preference is separate from the configured server/SDK telemetry flag. Its UI image is built only on explicit request. Stop that UI when finished with the same Compose files followed by `stop mlflow`. Application reads, experiment submission and finding reviews still require a valid API Bearer token. Derived analytics and tracking have separate retention from the original PDF.
+
+![Local MLflow run: insufficient baseline data, no held-out predictions and no labelled anomaly ground truth](docs/screenshots/document-mlflow-en.jpg)
+
+The [measured Docker acceptance report](docs/benchmarks/document-analytics.json) covers a real prepared invoice and the nine-PDF dossier. Both correctly abstain from anomaly training. It also records the one-invoice Spark/DuckDB parity check; these bounded checks do not establish business anomaly accuracy.
+
+### Optional PySpark batch
+
+PySpark reads the same completed exports and performs exact-decimal aggregate/row-count parity checks against DuckDB. It runs as one bounded **`local[2]`** process, without a cluster or Azure service. It preserves the reviewed/VALID Gold gate and separates fields/currencies; results go to a new directory rather than the ETL database.
+
+Copy the **scope/run pair** from **Document analytics → Parquet · PySpark**, then run:
+
+```bash
+node scripts/run-document-spark.mjs --snapshot '<scope>/<etl-run-id>'
+# Optional synthetic row-volume experiment using that same source snapshot:
+node scripts/run-document-spark.mjs --snapshot '<scope>/<etl-run-id>' --repeat 1000
+```
+
+The helper explicitly builds the optional image and runs it once; the result path is printed. `benchmark.json` records hashes, real source-document count, generated row count, engine version, parity and timings. The Spark timing includes JVM/session startup and query work; the DuckDB timing is an in-process query, so they are not equivalent cold-start measurements. Repetition is labelled **synthetic-repetition**, not additional PDFs or distributed throughput. There is no automatic Spark cluster or model download. The first image build downloads PySpark/JVM dependencies.
+
+PDF exercises:
+
+| Input | What to inspect |
+| --- | --- |
+| Invoice 51109301 | INR 1,844,673.60, observed line cells, `03/07/2023` ambiguity, exact source pages and unreviewed Gold exclusion |
+| Invoice 51109302 | A separate invoice; preserve its identity and check currency-separated aggregates |
+| DATEV Robert/Melanie | Decimal-comma amounts and separate net earnings/payout fields; no invented deductions |
+| Insurance wording | Missing structured fields remain findings; no invented premium or coverage decision |
+
+Runtime limits: optional ML worker 768 MiB / 1 CPU; tracking UI 1 GiB / 1 CPU; Spark batch 2 GiB / 2 CPUs. These are caps, not measured consumption. The tracking server's background job execution is disabled; experiments run through the offline worker. Run large batches separately from local Nova and the tracking UI on an 8 GiB Docker allocation. Keep the standalone Python package lightweight; analytics dependencies belong to their own Docker modules.
+
 ## Architecture
 
 ```mermaid
@@ -326,6 +386,13 @@ flowchart TD
     ETL -->|Bounded original PDF inspection| INSPECT
     ETL --> DUCK[DuckDB / dbt · versioned transformations]
     DUCK --> LAYERS[Bronze / Silver / reviewed Gold · Parquet]
+    DUCK --> FACTS[Document facts · field observations · invoice lines · quality findings]
+    FACTS --> PROJECTION[Java · source-versioned analytics and reviewer notes]
+    PROJECTION --> DB
+    FACTS --> ML[Optional offline Isolation Forest / MAD · held-out cohorts]
+    ML --> TRACK[Local MLflow · SQLite metadata]
+    ML --> PROJECTION
+    LAYERS --> SPARK[Optional PySpark local batch · DuckDB parity]
     JAVA --> OBS[Redis quotas · optional OpenTelemetry]
 ```
 

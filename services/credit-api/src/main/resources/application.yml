@@ -80,6 +80,8 @@ app.platform.retention-days: ${DOCUMENT_RETENTION_DAYS:30}
 app.platform.worker-enabled: ${DOCUMENT_WORKER_ENABLED:true}
 app.platform.etl-enabled: ${LOCAL_ETL_ENABLED:false}
 app.platform.etl-root: ${LOCAL_ETL_ROOT:/app/etl}
+app.platform.analytics-enabled: ${LOCAL_ANALYTICS_ENABLED:false}
+app.platform.analytics-root: ${LOCAL_ANALYTICS_ROOT:/app/analytics}
 spring.task.scheduling.pool.size: 3
 management.metrics.tags.application: credit-api
 management.health.redis.enabled: ${REDIS_LIMITS_ENABLED:false}

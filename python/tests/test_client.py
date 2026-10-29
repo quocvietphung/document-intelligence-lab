@@ -77,6 +77,24 @@ class ClientTest(unittest.TestCase):
         self.assertNotIn("private", str(error.exception))
         self.assertEqual(len(self.calls), 1)
 
+    def test_analytics_sdk_requires_explicit_consent_version_and_stable_receipts(self):
+        client = PlatformClient(self.url, "fixture-token")
+        client.analytics("CR-fixture")
+        self.assertEqual(self.calls[-1][0], "/api/cases/CR-fixture/platform/analytics")
+        client.data_layers("CR-fixture")
+        self.assertEqual(self.calls[-1][0], "/api/cases/CR-fixture/platform/etl")
+        request_id = "12345678-1234-1234-1234-123456789abc"
+        etl_run = "etl-" + request_id
+        client.build_data_layers("CR-fixture", case_version=4, request_id=request_id, consent=True)
+        self.assertEqual(json.loads(self.calls[-1][2]), {"requestId": request_id, "caseVersion": 4, "consent": True})
+        client.evaluate_cohort("CR-fixture", case_version=4, etl_run_id=etl_run, request_id=request_id, consent=True)
+        self.assertEqual(json.loads(self.calls[-1][2])["etlRunId"], etl_run)
+        count = len(self.calls)
+        for version, consent in [(-1, True), (True, True), (4, False)]:
+            with self.assertRaises(ValueError):
+                client.build_data_layers("CR-fixture", case_version=version, request_id=request_id, consent=consent)
+        self.assertEqual(len(self.calls), count)
+
     def test_redirect_does_not_forward_credentials(self):
         with self.assertRaises(PlatformError) as error:
             PlatformClient(self.url, "fixture-token").get_case("CR-redirect")

@@ -20,7 +20,7 @@ export async function proxyCase(request: Request, segments: string[] = []) {
   const path = segments.join("/");
   if (
     path && path !== "document-analysis/status" &&
-    !/^[-\w]+(?:\/documents(?:\/[-\w]+\/(?:original|review|ocr-corrections))?|\/banking|\/trust(?:\/(?:feedback|correction|prompt|features|tasks(?:\/[-\w]+)?))?|\/platform(?:\/(?:search|evaluate|experiments|batches|nova-runs\/[a-f0-9-]{36}(?:\/cancel)?|inspection(?:\/insp-[a-f0-9-]{36}\/report)?|etl(?:\/etl-[a-f0-9-]{36}\/(?:bronze|silver|gold))?|integrations(?:\/(?:sources|import|evaluation-export|vision))?|research(?:\/(?:datasets|runs|export))?|jobs(?:\/[-\w]+\/(?:retry|cancel))?|reviews))?)?$/.test(path)
+    !/^[-\w]+(?:\/documents(?:\/[-\w]+\/(?:original|review|ocr-corrections))?|\/banking|\/trust(?:\/(?:feedback|correction|prompt|features|tasks(?:\/[-\w]+)?))?|\/platform(?:\/(?:search|evaluate|experiments|batches|analytics(?:\/reviews)?|nova-runs\/[a-f0-9-]{36}(?:\/cancel)?|inspection(?:\/insp-[a-f0-9-]{36}\/report)?|etl(?:\/etl-[a-f0-9-]{36}\/(?:bronze|silver|gold|document-facts|field-observations|invoice-lines|quality-findings))?|integrations(?:\/(?:sources|import|evaluation-export|vision))?|research(?:\/(?:datasets|runs|export))?|jobs(?:\/[-\w]+\/(?:retry|cancel))?|reviews))?)?$/.test(path)
   ) {
     return Response.json({ error: "Not found" }, { status: 404 });
   }
@@ -32,7 +32,7 @@ export async function proxyCase(request: Request, segments: string[] = []) {
     if (request.method !== "GET") return Response.json({ error: "Method not allowed" }, { status: 405 });
   }
   if (/\/platform(?:\/|$)/.test(path)) {
-    const allowed=path.endsWith('/platform/experiments')||path.endsWith('/platform/batches')||path.endsWith('/platform/etl')||path.endsWith('/platform/inspection')?['GET','POST']:[/\/nova-runs\/[a-f0-9-]{36}$/.test(path)||path.endsWith('/platform')||path.endsWith('/platform/research')||path.endsWith('/platform/integrations')||/\/inspection\/insp-[a-f0-9-]{36}\/report$/.test(path)||/\/etl\/etl-[a-f0-9-]{36}\/(bronze|silver|gold)$/.test(path)?'GET':'POST'];
+    const allowed=path.endsWith('/platform/analytics')||path.endsWith('/platform/experiments')||path.endsWith('/platform/batches')||path.endsWith('/platform/etl')||path.endsWith('/platform/inspection')?['GET','POST']:[/\/nova-runs\/[a-f0-9-]{36}$/.test(path)||path.endsWith('/platform')||path.endsWith('/platform/research')||path.endsWith('/platform/integrations')||/\/inspection\/insp-[a-f0-9-]{36}\/report$/.test(path)||/\/etl\/etl-[a-f0-9-]{36}\/(bronze|silver|gold|document-facts|field-observations|invoice-lines|quality-findings)$/.test(path)?'GET':'POST'];
     if(!allowed.includes(request.method))return Response.json({error:'Method not allowed'},{status:405});
   }
   if (/\/trust(?:\/|$)/.test(path)) {

@@ -14,11 +14,11 @@ const document=(id:string,change:Partial<CreditDocument>={}):CreditDocument=>({i
 describe('AI dashboard directory',()=>{
   it('places every capability in exactly one of six expandable groups',()=>{
     const grouped=dashboardGroups.flatMap(group=>[...group.features]);
-    expect(dashboardGroups).toHaveLength(6);expect(new Set(grouped).size).toBe(31);
+    expect(dashboardGroups).toHaveLength(6);expect(new Set(grouped).size).toBe(32);
     expect([...grouped].sort()).toEqual(dashboardFeatures.map(feature=>feature.id).sort());
     const html=renderToStaticMarkup(createElement(WorkspaceAICatalog,{locale:'en',demo:false,capabilities,navigate:()=>{},openNova:()=>{}}));
-    expect(html.match(/data-ai-group=/g)).toHaveLength(6);expect(html.match(/data-ai-feature=/g)).toHaveLength(31);
-    expect(html.match(/<summary>PDF example<\/summary>/g)).toHaveLength(18);
+    expect(html.match(/data-ai-group=/g)).toHaveLength(6);expect(html.match(/data-ai-feature=/g)).toHaveLength(32);
+    expect(html.match(/<summary>PDF example<\/summary>/g)).toHaveLength(19);
     expect(html).not.toMatch(/<details[^>]*\sopen[=> ]/);
   });
   it('retains the dossier and batch panel when opening feature links in another tab',()=>{
@@ -29,13 +29,13 @@ describe('AI dashboard directory',()=>{
     expect(stats).toContain('<dt>AI-assisted workflows</dt>');
   });
   it('provides distinct current destinations without payment actions',()=>{
-    expect(dashboardFeatures).toHaveLength(31);expect(new Set(dashboardFeatures.map(f=>f.id)).size).toBe(31);
+    expect(dashboardFeatures).toHaveLength(32);expect(new Set(dashboardFeatures.map(f=>f.id)).size).toBe(32);
     for(const feature of dashboardFeatures){const target=feature.target;if('page' in target)expect(workspaceTabs).toContain(target.page);if('trust' in target)expect(trustSections).toContain(target.trust);}
     expect(JSON.stringify(dashboardFeatures)).not.toMatch(/payment|approve-credit/);
   });
   it('counts only real original-backed Azure results in this case',()=>{
     const docs=[document('azure',{originalAvailable:true,analysisProvider:'azure-document-intelligence'}),document('reference',{analysisProvider:'azure-document-intelligence'}),document('local',{originalAvailable:true,analysisProvider:'local-pdfbox-tesseract',status:'verified'}),document('missing',{originalAvailable:true,analysisProvider:'azure-document-intelligence',status:'missing'})];
-    expect(dashboardStats(docs,capabilities)).toEqual({aiWorkflows:16,configuredEngines:3,azureDocuments:1,pendingReview:1});
+    expect(dashboardStats(docs,capabilities)).toEqual({aiWorkflows:17,configuredEngines:3,azureDocuments:1,pendingReview:1});
     expect(dashboardStats([],undefined).configuredEngines).toBeNull();
     expect(dashboardStats([],capabilities,true).configuredEngines).toBe(0);
   });
@@ -53,7 +53,7 @@ describe('AI dashboard directory',()=>{
   });
   it('filters by workflow class and accent-insensitive text or engine',()=>{
     const copy=dashboardText('vi').features;
-    expect(filteredDashboardFeatures('ai','',copy)).toHaveLength(16);
+    expect(filteredDashboardFeatures('ai','',copy)).toHaveLength(17);
     expect(filteredDashboardFeatures('control','',copy)).toHaveLength(15);
     expect(filteredDashboardFeatures('all','tom tat',copy).map(f=>f.id)).toEqual(['summary','bilingual-summary']);
     expect(filteredDashboardFeatures('all','Qdrant',copy,capabilities).map(f=>f.id)).toEqual(['search','embeddings']);

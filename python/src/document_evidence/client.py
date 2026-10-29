@@ -99,6 +99,39 @@ class PlatformClient:
     def batches(self, case_id: str) -> dict:
         return self._request("/api/cases/" + self._id(case_id) + "/platform/batches")
 
+    def data_layers(self, case_id: str) -> dict:
+        return self._request("/api/cases/" + self._id(case_id) + "/platform/etl")
+
+    def analytics(self, case_id: str) -> dict:
+        return self._request("/api/cases/" + self._id(case_id) + "/platform/analytics")
+
+    def _snapshot_request(self, case_id, case_version, request_id, consent, etl_run_id=None):
+        case_id = self._id(case_id)
+        if consent is not True or type(case_version) is not int or case_version < 0:
+            raise ValueError("Explicit consent and a nonnegative source version are required")
+        try:
+            if str(UUID(request_id)) != request_id.lower():
+                raise ValueError()
+        except (ValueError, TypeError, AttributeError):
+            raise ValueError("Use a stable UUID request_id") from None
+        body = {"caseVersion": case_version, "requestId": request_id, "consent": True}
+        if etl_run_id is not None:
+            if not isinstance(etl_run_id, str) or not re.fullmatch(r"etl-[a-f0-9-]{36}", etl_run_id):
+                raise ValueError("Use the completed ETL receipt ID")
+            body["etlRunId"] = etl_run_id
+        path = "/api/cases/" + case_id + "/platform/" + ("analytics" if etl_run_id is not None else "etl")
+        return self._request(path, data=json.dumps(body).encode(), content_type="application/json")
+
+    def build_data_layers(self, case_id: str, *, case_version: int, request_id: str, consent: bool) -> dict:
+        """Queue a private snapshot. A receipt does not mean that ETL has completed."""
+        return self._snapshot_request(case_id, case_version, request_id, consent)
+
+    def evaluate_cohort(self, case_id: str, *, case_version: int, etl_run_id: str, request_id: str, consent: bool) -> dict:
+        """Explicit optional ML experiment; insufficient data is a valid observed result."""
+        if etl_run_id is None:
+            raise ValueError("Use the completed ETL receipt ID")
+        return self._snapshot_request(case_id, case_version, request_id, consent, etl_run_id)
+
     def submit_pdf(self, case_id: str, path: str | Path, *, consent: bool,
                    request_id: str, profile: str = "general", name: str = "Python SDK intake",
                    source: str = "Operator-selected local PDF") -> dict:

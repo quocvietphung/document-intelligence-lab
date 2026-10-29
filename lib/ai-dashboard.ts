@@ -28,6 +28,7 @@ export const dashboardFeatures=[
   {id:'classification',category:'control',engine:'rules',target:{page:'documents'}},
   {id:'field-profiles',category:'control',engine:'rules',target:{page:'pipeline',panel:'batches'}},
   {id:'batches',category:'control',engine:'rules',target:{page:'pipeline',panel:'batches'}},
+  {id:'anomaly',category:'ai',engine:'ml',target:{page:'pipeline',panel:'assets'}},
   {id:'lineage',category:'control',engine:'rules',target:{page:'pipeline',panel:'assets'}},
   {id:'experiments',category:'control',engine:'rules',target:{page:'experiments'}},
   {id:'citations',category:'control',engine:'rules',target:{trust:'history'}},
@@ -42,13 +43,14 @@ export const dashboardGroups=[
   {id:'documentTools',features:['document','tables','classification','field-explanation']},
   {id:'retrievalTools',features:['search','embeddings','injection-guard']},
   {id:'novaTools',features:['nova','summary','reconcile','explain','request-documents','review-checklist','terminology','bilingual-summary','timeline','obligations','privacy-review','app-guide']},
-  {id:'pipelineTools',features:['field-profiles','batches','lineage']},
+  {id:'pipelineTools',features:['field-profiles','batches','lineage','anomaly']},
   {id:'researchTools',features:['quality','experiments']},
   {id:'reviewTools',features:['validation','review','transparency','citations','feedback','governance','performance']},
 ] as const satisfies readonly {id:string;features:readonly DashboardFeature['id'][]}[];
 export type DashboardFilter='all'|'ai'|'control';
 export function dashboardEngine(feature:DashboardFeature,capabilities:AICapabilities|undefined,demo:boolean):{kind:AIKind;provider:string;model:string;configured:boolean}{
   if(demo)return {kind:'demo',provider:'demo',model:'',configured:false};
+  if(feature.engine==='ml')return {kind:'unknown',provider:'scikit-learn · optional local CPU',model:'Isolation Forest · held-out cohort evaluation',configured:false};
   if(feature.engine==='rules')return {kind:'rules',provider:'Java · rules',model:feature.id==='quality'?'uploaded PDF evidence':'',configured:false};
   if(feature.engine==='human')return {kind:'context',provider:'human',model:'',configured:false};
   if(feature.engine==='guide')return {kind:'context',provider:'Browser · app guidance',model:'',configured:false};

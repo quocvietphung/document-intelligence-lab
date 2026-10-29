@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "document-analytics-acceptance-v1",
+  "execution": "Local ARM64 Docker CPU; saved Docling PDF evidence",
+  "invoice": {
+    "documents": 1,
+    "observedFields": 2,
+    "invoiceLines": 3,
+    "qualityFindings": 1,
+    "qualityCodes": [
+      "AMBIGUOUS_DATE_PRESERVED"
+    ],
+    "mlStatus": "INSUFFICIENT_BASELINE",
+    "precision": null,
+    "recall": null,
+    "prAuc": null,
+    "localTrackingRecorded": true
+  },
+  "multiDomainPdfSet": {
+    "documents": 9,
+    "observedFields": 8,
+    "invoiceLines": 9,
+    "qualityFindings": 7,
+    "qualityCodes": [
+      "AMBIGUOUS_DATE_PRESERVED",
+      "NO_STRUCTURED_FIELDS"
+    ],
+    "mlStatus": "INSUFFICIENT_BASELINE",
+    "precision": null,
+    "recall": null,
+    "prAuc": null,
+    "localTrackingRecorded": true
+  },
+  "spark": {
+    "master": "local[2]",
+    "distributedCluster": false,
+    "sourceDocuments": 1,
+    "rows": 2,
+    "repeat": 1,
+    "datasetKind": "source-snapshot",
+    "parity": true,
+    "duckdbQueryMs": 48,
+    "sparkStartupAndQueryMs": 33609,
+    "elapsedMs": 35317,
+    "sparkVersion": "4.2.1",
+    "outputCompression": "gzip"
+  },
+  "limits": [
+    "These are bounded acceptance checks, not business anomaly accuracy.",
+    "Existing PDF review states were preserved; no new approval was generated.",
+    "Small mixed-domain sets correctly abstain from model training.",
+    "The Spark session startup is included; DuckDB timing measures its in-process query.",
+    "Original PDFs, raw values, credentials, dossier IDs and model weights are not included."
+  ]
+}

@@ -2,6 +2,15 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {localCompose,localModel,validateModel,freeDiskKb,warmupRequest} from './docker-local.mjs';
+import {sparkBatchArgs} from './run-document-spark.mjs';
+test('analytics is explicit and Spark remains a separate bounded one-shot batch',()=>{
+  assert.ok(!localCompose().args.includes('docker-compose.ml.yml'));
+  assert.ok(localCompose(localModel,{analytics:true}).args.includes('docker-compose.ml.yml'));
+  const snapshot='a'.repeat(64)+'/etl-12345678-1234-1234-1234-123456789abc';
+  const args=sparkBatchArgs(snapshot,10);assert.ok(args.run.includes('--no-deps'));assert.ok(args.run.includes('/etl/assets/'+snapshot));assert.ok(args.run.includes('10'));
+  for(const bad of ['../secret',snapshot+'/../../secret','http://example.com/data'])assert.throws(()=>sparkBatchArgs(bad));
+  for(const repeat of [0,10001,1.5,NaN])assert.throws(()=>sparkBatchArgs(snapshot,repeat));
+});
 test('warmup loads one explicit model without document content or generation',()=>{assert.deepEqual(JSON.parse(warmupRequest()),{model:localModel,prompt:'',stream:false,keep_alive:'5m',options:{num_ctx:4096}});});
 test('local profile keeps Docling, uses one explicit local model and no cloud startup',()=>{
   const configuration=localCompose();assert.equal(configuration.env.OLLAMA_CHAT_MODEL,localModel);

@@ -23,6 +23,18 @@ class CreditSecurityTest {
     mvc.perform(post(path).with(jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"))).contentType("application/json").content("{}")).andExpect(status().isForbidden());
     mvc.perform(post(path).with(jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_REVIEWER"))).contentType("application/json").content("{}")).andExpect(status().isBadRequest());
   }
+  @Test void documentAnalyticsRequiresTenantAndSeparatesExperimentAndReviewRoles()throws Exception{
+    String path="/api/cases/CR-2026-1048/platform/analytics";
+    var advisor=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"));
+    var reviewer=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_REVIEWER"));
+    mvc.perform(get(path)).andExpect(status().isUnauthorized());
+    mvc.perform(get(path).with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADVISOR")))).andExpect(status().isForbidden());
+    mvc.perform(get(path).with(jwt().jwt(j->j.claim("tenant_id","foreign")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR")))).andExpect(status().isNotFound());
+    mvc.perform(get(path).with(advisor)).andExpect(status().isOk()).andExpect(jsonPath("$.workerReady").value(false));
+    mvc.perform(post(path).with(reviewer).contentType("application/json").content("{\"requestId\":\"00000000-0000-0000-0000-000000000001\",\"caseVersion\":0,\"etlRunId\":\"etl-12345678-1234-1234-1234-123456789abc\",\"consent\":true}")).andExpect(status().isForbidden());
+    mvc.perform(post(path+"/reviews").with(advisor).contentType("application/json").content("{\"requestId\":\"00000000-0000-0000-0000-000000000001\",\"caseVersion\":0,\"runId\":\"etl-12345678-1234-1234-1234-123456789abc\",\"findingId\":\"bbbbbbbbbbbbbbbbbbbbbbbb\",\"state\":\"CONFIRMED\",\"note\":\"Checked observation\"}")).andExpect(status().isForbidden());
+    mvc.perform(post(path+"/reviews").with(reviewer).contentType("application/json").content("{}")).andExpect(status().isBadRequest());
+  }
   @Test void localEtlRequiresTenantAndSeparatesReadAndWriteRoles()throws Exception{
     String path="/api/cases/CR-2026-1048/platform/etl",artifact=path+"/etl-12345678-1234-1234-1234-123456789abc/bronze";
     var advisor=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"));

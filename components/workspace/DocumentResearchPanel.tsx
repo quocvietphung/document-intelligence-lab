@@ -7,11 +7,14 @@ import {datasetIsCurrent,runsForReference,documentResearchSchema,referenceExport
 import {downloadBlob,downloadJson} from '@/lib/browser-download';
 import {ResearchConnections} from './ResearchConnections';
 import {LocalDataPipelinePanel} from './LocalDataPipelinePanel';
+import {DocumentAnalyticsPanel} from './DocumentAnalyticsPanel';
 import {RagPdfSources} from './RagPdfSources';
 
 type Props={caseId:string;caseVersion:number;locale:string;view:'experiments'|'assets';inspect:(id:string,page?:number)=>void};
 export function DocumentResearchPanel({caseId,caseVersion,locale,view,inspect}:Props) {
   const auth=useAuth(),t=researchText(locale),root=`/api/cases/${caseId}/platform/research`;
+  const [analyticsVersion,setAnalyticsVersion]=useState(0);
+  const etlComplete=useCallback(()=>setAnalyticsVersion(version=>version+1),[]);
   const [data,setData]=useState<DocumentResearchData>(),[error,setError]=useState(''),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
   const [panel,setPanel]=useState<'datasets'|'results'>('datasets'),[name,setName]=useState(''),[fields,setFields]=useState<ReferenceField[]>([]),[questions,setQuestions]=useState<ReferenceQuestion[]>([]);
   const [selectedDoc,setSelectedDoc]=useState(''),[selectedPage,setSelectedPage]=useState(1),[field,setField]=useState(''),[expected,setExpected]=useState(''),[question,setQuestion]=useState('');
@@ -119,7 +122,8 @@ export function DocumentResearchPanel({caseId,caseVersion,locale,view,inspect}:P
         <p className="research-method-note">{t('scope')} {data.retrieval.embeddingModel} · {data.retrieval.languageCoverage}</p>
         <ResearchConnections key={`${caseId}:${caseVersion}`} caseId={caseId} caseVersion={caseVersion} locale={locale} section="evaluation" documents={data.documents}/>
       </>: <>
-        <LocalDataPipelinePanel key={`${caseId}:${caseVersion}`} caseId={caseId} caseVersion={caseVersion} locale={locale} inspect={inspect}/>
+        <LocalDataPipelinePanel key={`${caseId}:${caseVersion}`} caseId={caseId} caseVersion={caseVersion} locale={locale} inspect={inspect} onComplete={etlComplete}/>
+        <DocumentAnalyticsPanel key={`analytics:${caseId}:${caseVersion}:${analyticsVersion}`} caseId={caseId} caseVersion={caseVersion} locale={locale} inspect={inspect}/>
         <section className="surface lab-section"><h2>{t('document')}</h2><div className="research-asset-list">{data.documents.map(d=><article key={d.id}><div><strong>{d.name}</strong><small>{d.provider} · {d.model} · {d.pages.length} {t('page')} · {d.tables} {t('tables')}</small></div><button className="button-secondary" onClick={()=>inspect(d.id)}>{t('open')}</button></article>)}</div><details className="research-reference-details"><summary>{t('sourceHash')}</summary><code>{data.sourceHash}</code></details></section>
         <section data-page-tour="pipeline-export" className="surface lab-section"><h2>{t('export')}</h2><p className="lab-caption">{t('exportNote')}</p><label className="research-consent"><input type="checkbox" checked={exportConsent} onChange={e=>setExportConsent(e.target.checked)} disabled={busy}/>{t('exportConsent')}</label><div className="research-actions"><button className="button-primary" disabled={busy||!writable||!data.documents.length||!exportConsent} onClick={()=>download()}><Download size={16}/>{t('export')}</button><button className="button-secondary" disabled={busy||!writable||!exportConsent||!data.datasets.some(d=>datasetIsCurrent(d,data.sourceHash)&&d.questions.length)} onClick={()=>download(true)}><Download size={16}/>{t('jsonl')}</button></div><h3 className="mt-6">{t('history')}</h3>{data.exports.length?<ul className="research-export-history">{data.exports.slice(0,8).map(e=><li key={e.id}>{date(e.time)} · {e.documents} PDF · {e.destination}</li>)}</ul>:<p className="lab-caption">{t('noExports')}</p>}</section>
         <ResearchConnections key={`${caseId}:${caseVersion}`} caseId={caseId} caseVersion={caseVersion} locale={locale} section="sources"/>
