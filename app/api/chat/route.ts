@@ -4,6 +4,7 @@ import { boundedBody } from "@/lib/request-body";
 import { hasAllowedOrigin } from "@/lib/request-origin";
 import {novaLimit,novaModelFailure} from "@/lib/nova-limits";
 import {trustAnswerSchema} from "@/lib/nova-trust";
+import {localChatDispatcher,localChatTimeoutMs} from "@/lib/nova-transport";
 export const runtime="nodejs";
 export const maxDuration=420;
 export async function POST(request:Request) {
@@ -20,10 +21,13 @@ export async function POST(request:Request) {
     const messages: UIMessage[]=body.messages.map(m=>({...m,parts:m.parts.filter(p=>p.type==="text")}));
     const latest=[...messages].reverse().find(m=>m.role==="user");
     if(!latest || !messageText(latest)) return Response.json({error:"Question required"},{status:400});
+    const local=process.env.NOVA_PROVIDER==='ollama';
+    const transport=local?{dispatcher:localChatDispatcher}:{};
     const response=await fetch(`${root.replace(/\/$/,"")}/api/assistant/chat`,{
+      ...transport,
       method:"POST",headers:{Authorization:authorization,"Content-Type":"application/json","X-Nova-Request-Id":body.requestId||requestId},
       body:JSON.stringify({caseId:body.caseId,locale:body.locale,question:messageText(latest),revisionOf:body.revisionOf,feedbackId:body.feedbackId,taskId:body.taskId,caseVersion:body.caseVersion}),
-      cache:"no-store",signal:AbortSignal.any([request.signal,AbortSignal.timeout(process.env.NOVA_PROVIDER==='ollama'?380_000:45_000)]),
+      cache:"no-store",signal:AbortSignal.any([request.signal,AbortSignal.timeout(local?localChatTimeoutMs:45_000)]),
     });
     if(!response.ok) {
       if(response.status===422)return Response.json({error:"AI_SAFETY_FILTER"},{status:422,headers:{"Cache-Control":"no-store"}});
