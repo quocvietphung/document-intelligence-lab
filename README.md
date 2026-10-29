@@ -1,5 +1,53 @@
 # Document Intelligence Lab
 
+## Search the source with XERJ
+
+[![XERJ Corpus Hub contributor](https://hub.xerj.org/contributors/quocvietphung/badge.svg)](https://hub.xerj.org/contributors/quocvietphung)
+
+For code review, an AI agent can use XERJ to index this public repository and retrieve implementation passages with file paths. This is a separate developer tool; running the application or Nova does not require it. See the [Corpus Hub entry](https://hub.xerj.org/corpus/quocvietphung--document-intelligence-lab) for its current publication status.
+
+The Hub reference names commit [`cd45b95171f9497bb298c4e8ad2c3d64c822f706`](https://github.com/quocvietphung/document-intelligence-lab/tree/cd45b95171f9497bb298c4e8ad2c3d64c822f706). The steps below reproduce that historical snapshot locally, independently of downloadable pack availability. Newer features on `master` may be absent; always identify the commit used in an answer. Selection for the Hub is not an audit or an accuracy certification.
+
+<details>
+<summary>Search the pinned reference locally (macOS/Linux)</summary>
+
+Install XERJ using its [official installation guide](https://xerj.org/docs/install), then check each command's result before continuing. Use a new reference directory outside your working checkout so private PDFs, credentials and runtime files are not indexed. Port 9200 must be free; do not replace an existing node. [CLI and query reference](https://xerj.org/llms.txt).
+
+**Terminal 1:** verify usage, clone the reference and start the local node. The node's data directory is a sibling of the indexed source, never inside it. Keep this terminal running; `Ctrl+C` stops this node.
+
+```bash
+xerj --help
+mkdir document-lab-reference
+cd document-lab-reference
+git clone https://github.com/quocvietphung/document-intelligence-lab.git
+git -C document-intelligence-lab checkout --detach cd45b95171f9497bb298c4e8ad2c3d64c822f706
+git -C document-intelligence-lab rev-parse HEAD
+export XERJ_DISABLE_FEEDBACK=true
+xerj --insecure --bind 127.0.0.1 --port 9200 --data-dir ./xerj-data
+```
+
+Verify the checkout prints the pinned SHA and the node starts on loopback. `--insecure` disables authentication/TLS for this local reference node only; keep its listeners on loopback. Feedback submission is disabled for this walkthrough. See [XERJ's authentication and network documentation](https://xerj.org/docs/security).
+
+**Terminal 2:** open the same `document-lab-reference` directory, index only the reference clone, inspect the map and search for an actual symbol in that snapshot:
+
+```bash
+export XERJ_DISABLE_FEEDBACK=true
+xerj autoindex ./document-intelligence-lab --url http://127.0.0.1:9200 --prefix document-intelligence-la --progress plain
+xerj autoindex map --url http://127.0.0.1:9200
+curl --fail --silent --show-error \
+  -X POST 'http://127.0.0.1:9200/document-intelligence-la-*/_search' \
+  -H 'Content-Type: application/json' \
+  -d '{"size":3,"_source":["ax_path","defs","body"],"query":{"multi_match":{"query":"SelectedFieldEvidence","fields":["defs^3","body","title"]}}}'
+```
+
+Read the indexing summary before querying: exit 0 means complete; exit 3 means completed with skipped/junk files that need inspection; other nonzero results require following the CLI's diagnostic. The map describes indexed fields; it does not answer a code question by itself. Check the search response has relevant hits, then inspect their passages. If it has none, report that rather than inventing an implementation.
+
+An example question for an agent is: **“How does `SelectedFieldEvidence` restrict the evidence passed to Nova?”** Ask it to use the returned passages, cite each hit's `_source.ax_path` (and line numbers when supplied), identify the pinned commit and distinguish source findings from inference. Retain the [MIT copyright notice](LICENSE) and credit Viet Phung and the repository contributors when adapting their code. An indexed hit alone does not verify application behavior.
+
+</details>
+
+## About the project
+
 **Document Validation & Evidence — a Python library and a local AI research workspace.**
 
 An MIT-licensed project for turning PDFs into structured data, traceable answers and reviewable findings. It studies **general business documents**, **insurance wording** and **DATEV payroll/banking documents**, without making credit, underwriting, settlement or payment decisions.
@@ -14,7 +62,7 @@ An MIT-licensed project for turning PDFs into structured data, traceable answers
 
 The library does not require the platform. The SDK is an explicit integration, not a hidden Java dependency or another microservice.
 
-[Python Quick Start](#python-quick-start) · [Docker workspace](#local-docker-workspace) · [Azure setup](#local-setup-with-azure-ai) · [PDF examples](#pdf-examples) · [AI workflows](#ai-workflows) · [Architecture](#architecture) · [Tests](#development-and-tests) · [Search the source](#search-the-source-with-xerj)
+[Search the source](#search-the-source-with-xerj) · [Python Quick Start](#python-quick-start) · [Docker workspace](#local-docker-workspace) · [Azure setup](#local-setup-with-azure-ai) · [PDF examples](#pdf-examples) · [AI workflows](#ai-workflows) · [Architecture](#architecture) · [Tests](#development-and-tests)
 
 ## Walkthrough
 
@@ -517,52 +565,6 @@ OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose \
 ```
 
 `storage-init`/`etl-init` exit code 0 is expected. Ports bind to loopback. Historical `credit-*` realm/service/volume names preserve compatibility; changing the Compose project name does not migrate data. Local Docker is the primary workspace runtime; this README provisions no Azure VM or Vercel deployment.
-
-## Search the source with XERJ
-
-[![XERJ Corpus Hub contributor](https://hub.xerj.org/contributors/quocvietphung/badge.svg)](https://hub.xerj.org/contributors/quocvietphung)
-
-For code review, an AI agent can use XERJ to index this public repository and retrieve implementation passages with file paths. This is a separate developer tool; running the application or Nova does not require it. See the [Corpus Hub entry](https://hub.xerj.org/corpus/quocvietphung--document-intelligence-lab) for its current publication status.
-
-The Hub reference names commit [`cd45b95171f9497bb298c4e8ad2c3d64c822f706`](https://github.com/quocvietphung/document-intelligence-lab/tree/cd45b95171f9497bb298c4e8ad2c3d64c822f706). The steps below reproduce that historical snapshot locally, independently of downloadable pack availability. Newer features on `master` may be absent; always identify the commit used in an answer. Selection for the Hub is not an audit or an accuracy certification.
-
-<details>
-<summary>Search the pinned reference locally (macOS/Linux)</summary>
-
-Install XERJ using its [official installation guide](https://xerj.org/docs/install), then check each command's result before continuing. Use a new reference directory outside your working checkout so private PDFs, credentials and runtime files are not indexed. Port 9200 must be free; do not replace an existing node. [CLI and query reference](https://xerj.org/llms.txt).
-
-**Terminal 1:** verify usage, clone the reference and start the local node. The node's data directory is a sibling of the indexed source, never inside it. Keep this terminal running; `Ctrl+C` stops this node.
-
-```bash
-xerj --help
-mkdir document-lab-reference
-cd document-lab-reference
-git clone https://github.com/quocvietphung/document-intelligence-lab.git
-git -C document-intelligence-lab checkout --detach cd45b95171f9497bb298c4e8ad2c3d64c822f706
-git -C document-intelligence-lab rev-parse HEAD
-export XERJ_DISABLE_FEEDBACK=true
-xerj --insecure --bind 127.0.0.1 --port 9200 --data-dir ./xerj-data
-```
-
-Verify the checkout prints the pinned SHA and the node starts on loopback. `--insecure` disables authentication/TLS for this local reference node only; keep its listeners on loopback. Feedback submission is disabled for this walkthrough. See [XERJ's authentication and network documentation](https://xerj.org/docs/security).
-
-**Terminal 2:** open the same `document-lab-reference` directory, index only the reference clone, inspect the map and search for an actual symbol in that snapshot:
-
-```bash
-export XERJ_DISABLE_FEEDBACK=true
-xerj autoindex ./document-intelligence-lab --url http://127.0.0.1:9200 --prefix document-intelligence-la --progress plain
-xerj autoindex map --url http://127.0.0.1:9200
-curl --fail --silent --show-error \
-  -X POST 'http://127.0.0.1:9200/document-intelligence-la-*/_search' \
-  -H 'Content-Type: application/json' \
-  -d '{"size":3,"_source":["ax_path","defs","body"],"query":{"multi_match":{"query":"SelectedFieldEvidence","fields":["defs^3","body","title"]}}}'
-```
-
-Read the indexing summary before querying: exit 0 means complete; exit 3 means completed with skipped/junk files that need inspection; other nonzero results require following the CLI's diagnostic. The map describes indexed fields; it does not answer a code question by itself. Check the search response has relevant hits, then inspect their passages. If it has none, report that rather than inventing an implementation.
-
-An example question for an agent is: **“How does `SelectedFieldEvidence` restrict the evidence passed to Nova?”** Ask it to use the returned passages, cite each hit's `_source.ax_path` (and line numbers when supplied), identify the pinned commit and distinguish source findings from inference. Retain the [MIT copyright notice](LICENSE) and credit Viet Phung and the repository contributors when adapting their code. An indexed hit alone does not verify application behavior.
-
-</details>
 
 ## Project guide
 
