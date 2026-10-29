@@ -4,6 +4,7 @@ import {aiText,chatEngine,documentAI,pageAIKind,type AICapabilities,type AIKind}
 import type {CreditDocument} from "@/lib/credit-data";
 import type {WorkspaceTab} from "@/lib/nova-guide";
 import {researchText} from '@/lib/document-research';
+import {classificationText} from '@/lib/document-classification-language';
 
 export function AITag({kind,locale,label}:{kind:AIKind;locale:string;label?:string}) {
   const t=aiText(locale),Icon=kind==="ai"?Sparkles:kind==="rules"?ShieldCheck:Info;
@@ -32,7 +33,7 @@ export function AIPageBanner({page,locale,capabilities,demo=false,ask}:{page:Wor
     kind=demo?"demo":!rag?"unknown":rag.semantic?"ai":"rules";engine=demo?t.demo:rag?.embeddingModel||t.unknown;
     model=demo?"browser fixtures":rag?`${rag.vectorStore} · ${rag.ranking}`:t.notReported;hint=demo?t.demoHint:t.searchHint;title=t.search;
   }else if(page==='experiments'){
-    const research=researchText(locale);kind='rules';engine='Java · source-bound evaluation';model='source-evaluation-v1';title=research('experiments');hint=research('notJudge');
+    const research=researchText(locale);kind='context';engine='Java + scikit-learn · CPU';model='source-evaluation-v1 / insurance-tfidf-logreg-v1';title=research('experiments');hint=classificationText(locale).intro+' '+research('notJudge');
   }else{
     engine=page==="controls"?"Java · deterministic rules":page==="evaluation"||page==="banking"?"PDF · source evidence":"Java · configuration / audit";
     model=t.human;hint=page==="evaluation"?t.qualityHint:page==="controls"?t.rulesHint:t.reviewHint;

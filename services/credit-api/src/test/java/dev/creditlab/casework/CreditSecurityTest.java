@@ -17,6 +17,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics
 class CreditSecurityTest {
   @Autowired MockMvc mvc;
+  @Test void classificationRequiresBearerTenantAndWriteRoleAndProtectsPdfSamples()throws Exception{
+    String path="/api/cases/CR-2026-1048/platform/classification";
+    var advisor=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR"));
+    var reviewer=jwt().jwt(j->j.claim("tenant_id","praxisbank-demo")).authorities(new SimpleGrantedAuthority("ROLE_REVIEWER"));
+    mvc.perform(get(path)).andExpect(status().isUnauthorized());
+    mvc.perform(get(path+"/documents/bench-0001")).andExpect(status().isUnauthorized());
+    mvc.perform(get(path).with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADVISOR")))).andExpect(status().isForbidden());
+    mvc.perform(get(path).with(jwt().jwt(j->j.claim("tenant_id","foreign")).authorities(new SimpleGrantedAuthority("ROLE_ADVISOR")))).andExpect(status().isNotFound());
+    mvc.perform(get(path).with(advisor)).andExpect(status().isOk()).andExpect(jsonPath("$.dataset.samples.length()").value(66));
+    mvc.perform(get(path+"/documents/bench-0001").with(reviewer)).andExpect(status().isOk()).andExpect(content().contentType("application/pdf")).andExpect(header().string("Cache-Control","no-store"));
+    mvc.perform(post(path).with(reviewer).contentType("application/json").content("{\"requestId\":\"12345678-1234-1234-1234-123456789abc\",\"caseVersion\":0,\"datasetFingerprint\":\""+"a".repeat(64)+"\",\"consent\":true}")).andExpect(status().isForbidden());
+    mvc.perform(post(path).with(advisor).contentType("application/json").content("{\"requestId\":\"12345678-1234-1234-1234-123456789abc\",\"caseVersion\":0,\"datasetFingerprint\":\""+"a".repeat(64)+"\",\"consent\":false}")).andExpect(status().isBadRequest());
+  }
   @Test void ocrCorrectionsRequireReviewerAndBearer()throws Exception{
     String path="/api/cases/CR-2026-1048/documents/doc-1/ocr-corrections";
     mvc.perform(post(path).contentType("application/json").content("{}")).andExpect(status().isUnauthorized());

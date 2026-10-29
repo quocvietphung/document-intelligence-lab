@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 SCENES = [
     ("01-login.jpg", "Sign in with Keycloak", "Local workspace authentication; no credentials are shown.", 3000),
-    ("02-overview.jpg", "Find the right AI workflow", "17 AI-assisted workflows; catalogue entries are not live model calls.", 4000),
+    ("02-overview.jpg", "Find the right AI workflow", "18 AI-assisted workflows; catalogue entries are not live model calls.", 4000),
     ("03-documents.jpg", "Open a prepared PDF result", "Saved Docling extraction; its recorded review state is unchanged for this walkthrough.", 4000),
     ("04-evidence.jpg", "Compare extraction with the original PDF", "Inspect the source page, recorded fields and tables before using a value.", 4500),
     ("05-source.jpg", "Inspect one source occurrence", "The PDF crop, recorded OCR and checked value are separate observations.", 5000),
@@ -25,6 +25,7 @@ SCENES = [
     ("11-holdout.jpg", "Check held-out results and missing evidence", "Inspect source-grouped metrics and incomplete multi-page results; retrieval is not answer accuracy.", 6000),
     ("12-analytics.jpg", "Inspect source-bound document analytics", "Observed fields, invoice lines and quality findings link back to the PDF; no automatic approval.", 5500),
     ("13-mlflow.jpg", "Track a real local cohort experiment", "The small PDF set has insufficient baseline data. No anomaly accuracy or fraud probability is claimed.", 5500),
+    ("14-classification.jpg", "Compare insurance document classifiers", "12 synthetic held-out PDFs, four template families, 0% gate coverage. These are research metrics, not business accuracy.", 6000),
 ]
 
 

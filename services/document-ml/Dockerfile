@@ -10,7 +10,8 @@ COPY services/document-ml/requirements.txt ./
 RUN /usr/bin/python3.12 -m pip --python /opt/venv/bin/python install --disable-pip-version-check -r requirements.txt \
     && apk del py3.12-pip \
     && rm -rf /usr/share/python-wheels /usr/lib/python3.12/ensurepip
-COPY services/document-ml/engine.py services/document-ml/snapshot.py ./
+RUN addgroup -g 1000 lab && adduser -D -H -u 1000 -G lab lab
+COPY services/document-ml/engine.py services/document-ml/snapshot.py services/document-ml/classification.py ./
 ENV GIT_PYTHON_REFRESH=quiet
 USER 1000:1000
 CMD ["python", "engine.py", "worker"]

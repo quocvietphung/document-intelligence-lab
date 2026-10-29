@@ -8,7 +8,10 @@ export function publicationRisk(path){
   if(/(?:^|\/)\.env(?:\.|$)/.test(path)&&!['.env.example','.env.azure.example'].includes(path))return 'private environment configuration';
   if(/\.(?:tfstate(?:\..*)?|tfplan|pem|key|p12|pfx|safetensors|gguf|onnx|bin)$/i.test(path)||/\.tfvars(?:\.json)?$/.test(path))return 'state, credential or model artifact';
   if(/\.(?:sql|dump|bak)$/i.test(path)&&!path.startsWith('services/credit-api/src/main/resources/db/migration/')&&!/^services\/document-etl\/dbt\/models\/[\w-]+\.sql$/.test(path))return 'database export';
-  if(/\.pdf$/i.test(path)&&!/^services\/credit-api\/src\/test\/resources\/evidence\/(?:evidence-inspection-regression|structure-regression|scanned-skew-regression)\.pdf$/.test(path)&&!/^services\/credit-api\/src\/test\/resources\/legacy-(payroll|research)\/[\w-]+\.pdf$/.test(path))return 'PDF without an approved test-fixture location';
+  // Only the 66 authored synthetic benchmark fixtures are publishable here.
+  // Their source hashes and native PDF contents are verified by the Java corpus test.
+  const classificationFixture=/^services\/credit-api\/src\/main\/resources\/classification\/bench-(?:000[1-9]|00[1-5][0-9]|006[0-6])\.pdf$/.test(path);
+  if(/\.pdf$/i.test(path)&&!classificationFixture&&!/^services\/credit-api\/src\/test\/resources\/evidence\/(?:evidence-inspection-regression|structure-regression|scanned-skew-regression)\.pdf$/.test(path)&&!/^services\/credit-api\/src\/test\/resources\/legacy-(payroll|research)\/[\w-]+\.pdf$/.test(path))return 'PDF without an approved test-fixture location';
   return null;
 }
 

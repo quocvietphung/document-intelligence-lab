@@ -18,7 +18,7 @@ describe('AI dashboard directory',()=>{
     expect([...grouped].sort()).toEqual(dashboardFeatures.map(feature=>feature.id).sort());
     const html=renderToStaticMarkup(createElement(WorkspaceAICatalog,{locale:'en',demo:false,capabilities,navigate:()=>{},openNova:()=>{}}));
     expect(html.match(/data-ai-group=/g)).toHaveLength(6);expect(html.match(/data-ai-feature=/g)).toHaveLength(32);
-    expect(html.match(/<summary>PDF example<\/summary>/g)).toHaveLength(19);
+    expect(html.match(/<summary>PDF example<\/summary>/g)).toHaveLength(20);
     expect(html).not.toMatch(/<details[^>]*\sopen[=> ]/);
   });
   it('retains the dossier and batch panel when opening feature links in another tab',()=>{
@@ -35,7 +35,7 @@ describe('AI dashboard directory',()=>{
   });
   it('counts only real original-backed Azure results in this case',()=>{
     const docs=[document('azure',{originalAvailable:true,analysisProvider:'azure-document-intelligence'}),document('reference',{analysisProvider:'azure-document-intelligence'}),document('local',{originalAvailable:true,analysisProvider:'local-pdfbox-tesseract',status:'verified'}),document('missing',{originalAvailable:true,analysisProvider:'azure-document-intelligence',status:'missing'})];
-    expect(dashboardStats(docs,capabilities)).toEqual({aiWorkflows:17,configuredEngines:3,azureDocuments:1,pendingReview:1});
+    expect(dashboardStats(docs,capabilities)).toEqual({aiWorkflows:18,configuredEngines:3,azureDocuments:1,pendingReview:1});
     expect(dashboardStats([],undefined).configuredEngines).toBeNull();
     expect(dashboardStats([],capabilities,true).configuredEngines).toBe(0);
   });
@@ -53,8 +53,8 @@ describe('AI dashboard directory',()=>{
   });
   it('filters by workflow class and accent-insensitive text or engine',()=>{
     const copy=dashboardText('vi').features;
-    expect(filteredDashboardFeatures('ai','',copy)).toHaveLength(17);
-    expect(filteredDashboardFeatures('control','',copy)).toHaveLength(15);
+    expect(filteredDashboardFeatures('ai','',copy)).toHaveLength(18);
+    expect(filteredDashboardFeatures('control','',copy)).toHaveLength(14);
     expect(filteredDashboardFeatures('all','tom tat',copy).map(f=>f.id)).toEqual(['summary','bilingual-summary']);
     expect(filteredDashboardFeatures('all','Qdrant',copy,capabilities).map(f=>f.id)).toEqual(['search','embeddings']);
     expect(filteredDashboardFeatures('all','not-existing',copy)).toEqual([]);
