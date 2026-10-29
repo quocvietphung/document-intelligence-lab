@@ -72,6 +72,54 @@ class DoclingDocumentAnalysisProviderTest {
         "http://localhost:5001/?secret=value","http://localhost:5001/v1/convert/source"})
       assertThatThrownBy(()->new DoclingDocumentAnalysisProvider(new DocumentExtractor(),url)).isInstanceOf(IllegalArgumentException.class);
   }
+  @Test void splitsCrossPageTextByUnicodeSpansWithoutDuplicatingEvidence()throws Exception{
+    var source=crossPageText();
+    var doc=provider().parse("two-pages.pdf","application/pdf",source);
+    assertThat(doc.pages()).extracting(CreditCase.Page::text).containsExactly("A😀","B");
+    assertThat(doc.pages().get(0).regions()).extracting(CreditCase.Region::text).containsExactly("A😀");
+    assertThat(doc.pages().get(1).regions()).extracting(CreditCase.Region::text).containsExactly("B");
+    assertThat(doc.structure().blocks()).anySatisfy(block->{
+      assertThat(block.ref()).isEqualTo("#/texts/0:span0");assertThat(block.page()).isEqualTo(1);
+    }).anySatisfy(block->{
+      assertThat(block.ref()).isEqualTo("#/texts/0:span1");assertThat(block.page()).isEqualTo(2);
+    });
+  }
+  @Test void rejectsAmbiguousOrIncompleteCrossPageSpans()throws Exception{
+    for(String spans:new String[]{"[1,4]","[3,5]","[4,4]","[3,3]","[]"}){
+      var source=crossPageText();
+      ((com.fasterxml.jackson.databind.node.ObjectNode)source.at("/document/json_content/texts/0/prov/1"))
+          .set("charspan",json.readTree(spans));
+      assertThatThrownBy(()->provider().parse("two-pages.pdf","application/pdf",source))
+          .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
+    }
+    var omitted=crossPageText();
+    ((com.fasterxml.jackson.databind.node.ObjectNode)omitted.at("/document/json_content/texts/0")).put("text","A😀XB");
+    assertThatThrownBy(()->provider().parse("two-pages.pdf","application/pdf",omitted))
+        .hasMessageContaining("omit source text");
+  }
+  private com.fasterxml.jackson.databind.JsonNode crossPageText()throws Exception{return json.readTree("""
+      {"status":"success","document":{"json_content":{
+        "pages":{"1":{"page_no":1,"size":{"width":600,"height":800}},"2":{"page_no":2,"size":{"width":600,"height":800}}},
+        "body":{"children":[{"$ref":"#/texts/0"}]},"tables":[],
+        "texts":[{"text":"A😀 B","label":"text","prov":[
+          {"page_no":1,"charspan":[0,2],"bbox":{"l":20,"t":20,"r":200,"b":40,"coord_origin":"TOPLEFT"}},
+          {"page_no":2,"charspan":[3,4],"bbox":{"l":20,"t":20,"r":200,"b":40,"coord_origin":"TOPLEFT"}}
+        ]}]}}}
+      """);}
+  @Test void keepsSourceTextButWithholdsOverlappingTablePredictions()throws Exception{
+    var source=json.readTree(INVOICE);
+    var cells=(com.fasterxml.jackson.databind.node.ArrayNode)source.at("/document/json_content/tables/0/data/table_cells");
+    cells.add(json.readTree("""
+        {"start_row_offset_idx":1,"start_col_offset_idx":1,"text":"Conflicting cell","bbox":{"l":10,"t":10,"r":100,"b":30,"coord_origin":"TOPLEFT"}}
+        """));
+    var doc=provider().parse("ambiguous-table.pdf","application/pdf",source);
+    assertThat(doc.tables()).isEmpty();
+    assertThat(doc.structure().issues()).contains("TABLE_STRUCTURE_OVERLAP");
+    assertThat(doc.pages().getFirst().text()).contains("INR 1,844,673.60","Conflicting cell");
+    assertThat(doc.pages().getFirst().regions()).allSatisfy(region->{
+      assertThat(region.table()).isNull();assertThat(region.row()).isNull();assertThat(region.column()).isNull();
+    });
+  }
   @Test void sendsValidatedBytesWithoutForwardingCredentialsOrCustomerFilename() throws Exception {
     var received=new AtomicReference<String>();
     var server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);

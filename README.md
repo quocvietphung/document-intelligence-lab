@@ -60,9 +60,34 @@ An MIT-licensed project for turning PDFs into structured data, traceable answers
 | **Research workspace** | Manage dossiers, scan uploads, ask Nova, compare RAG/prompt methods, review evidence and build data layers | Java + Next.js + Docker; Keycloak authentication |
 | **Python SDK** | Access the Java platform's protected workflow, batch receipts and audit history | Lightweight Python client + an existing Java API and Bearer token |
 
-The library does not require the platform. The SDK is an explicit integration, not a hidden Java dependency or another microservice.
+The library validates Docling output without requiring the platform; the SDK is a separate integration. The source/wheel preview is 0.2.0a1 and is not yet published to PyPI.
 
-[Search the source](#search-the-source-with-xerj) · [Python Quick Start](#python-quick-start) · [Docker workspace](#local-docker-workspace) · [Azure setup](#local-setup-with-azure-ai) · [PDF examples](#pdf-examples) · [AI workflows](#ai-workflows) · [Architecture](#architecture) · [Tests](#development-and-tests)
+[Search the source](#search-the-source-with-xerj) · [Python Quick Start](#python-quick-start) · [Docker workspace](#local-docker-workspace) · [Azure setup](#local-setup-with-azure-ai) · [PDF examples](#pdf-examples) · [AI workflows](#ai-workflows) · [Architecture](#architecture) · [Evidence](#evidence-inspection) · [RAG evaluation](#pdf-backed-rag-evaluation) · [Tests](#development-and-tests)
+
+## AI workflows
+
+Overview distinguishes **16 AI-assisted workflows** from **15 rule-based, navigation and human-review controls**, not 31 models. Every AI entry has a PDF exercise; opening one does not invoke inference.
+
+| Workflow | PDF exercise |
+| --- | --- |
+| Text, layout and OCR | Invoice 51109301 versus its original |
+| Table extraction | Invoice lines, VAT and gross total |
+| Semantic/hybrid search | Shelter wording and its returned source page |
+| Local embeddings | Vector versus BM25/hybrid for the same checked question |
+| Nova document Q&A | Invoice number, INR currency and total |
+| Selected-field explanation | DATEV net earnings versus payout |
+| Evidence summary | Invoice facts and missing context |
+| Cross-document/amount comparison | Invoices 51109301 and 51109302 separately; no inferred settlement |
+| Discrepancy explanation | DATEV extraction versus its original |
+| Document-request draft | Missing insurance context; no email delivery |
+| Manual-review checklist draft | Invoice identity, totals and page sources |
+| German terminology | DATEV labels without invented deductions |
+| German–Vietnamese summary | Preserved labels, amounts and citations |
+| Document chronology | Literal invoice date, no invented deadline |
+| Clause/obligation review | Insurance wording; no legal or coverage decision |
+| Sensitive-data review draft | Identifier categories; no automatic redaction |
+
+Workflows share the selected extraction/Nova providers. MiniLM is English-focused; relevance scores are not accuracy percentages. Optional PaddleOCR, BGE-M3, reranking and vision need separately prepared weights and live evaluation. [Integration boundaries](docs/AI_INTEGRATIONS.md).
 
 ## Walkthrough
 
@@ -70,91 +95,9 @@ The library does not require the platform. The SDK is an explicit integration, n
 
 An edited walkthrough of an existing synthetic-invoice dossier in the running English workspace. The extraction and ETL receipts were already saved; Nova's invoice-number/currency answer was generated locally for this walkthrough. Waiting periods are omitted. Source links support inspection, not automatic fact-checking or human approval.
 
-## Research scope
-
-- **Document AI:** text, layout, OCR and tables through local Docling or Azure Document Intelligence; unknown confidence stays unknown.
-- **Validation and evidence:** preserved raw values, currency-aware parsing, page-bound sources and exact citation/quote checks.
-- **Hybrid RAG:** MiniLM ONNX, Qdrant and BM25, evaluated against independently checked source pages.
-- **Grounded generation:** Nova through explicitly selected Ollama or Azure OpenAI, with missing-evidence handling, citations and unapproved answer history.
-- **Controlled experiments:** fixed, recursive, embedding-semantic and hierarchical-child chunking; zero-shot/few-shot structured output with reference answers hidden from the model.
-- **Local ETL:** DuckDB/dbt, Bronze/Silver/Gold Parquet, quality findings and SCD Type 2 history. Only reviewer-confirmed amounts enter Gold.
-- **Platform controls:** consent, ClamAV scanning, durable jobs, version checks, feedback, reviewer tasks, tenant isolation and audit history.
-
-The Python package adds **validation around Docling's output** rather than replacing its parser. It does not bundle a chatbot, malware scanner, authentication service or workflow engine.
-
-### Inspect the original, not only the citation
-
-In **Documents & review → View result & PDF**, choose **Inspect evidence** beside a field, a located table cell, or **Choose source occurrence**. The comparison shows the original PDF crop, recorded OCR text and the value being checked together. Opening a claim's source in Nova also carries the saved claim text into this view.
-
-A question citing a valid stored occurrence ID uses that occurrence and its recorded table context, without adding broad retrieval hits or exposing document-wide tools. General page/chunk citations still describe a wider scope; they do not identify a unique repeated value.
-
-![Original table cell, recorded OCR and a saved local Nova claim shown together](docs/screenshots/evidence-inspection-en.jpg)
-
-- **Repeated text:** Docling and Azure line locations retain page-local occurrence IDs. Four identical values remain four locations. Page/chunk citations do not magically identify an exact occurrence; ambiguous matches require an explicit selection, labelled as a candidate rather than proof of the model's attention.
-- **Coordinates:** Docling top/bottom origins are normalized once. Crops are taken from the same locally rendered PDF canvas, including zoom and device scale. Mismatched page proportions, invalid bounds and provider locations on intrinsically rotated pages produce no location claim. Exact PDF text-layer matching supports rotated glyphs; image-only pages cannot use that fallback. Provider boxes are still estimates to check visually, not pixel-certified alignment.
-- **OCR mismatch:** a quote can match `3,500` even if the original image says `8,500`. Citation membership is not visual verification. No missing region is fabricated and no confidence percentage is treated as accuracy.
-- **Tables:** located Docling cells open their source crop with row/column, provider-reported header roles/spans and raw units. Legacy cells without header roles use explicitly untyped positional context. Header roles are extraction evidence to review; missing cell locations remain unknown.
-- **Separate corrections:** a reviewer/admin can record an OCR transcription and a reason. The API requires a Bearer token, the current dossier version and the exact stored source text. Original OCR, original field values and old answers remain unchanged. The append-only correction is audited, returns the document to review and is not silently used by Nova or Gold. Reviewing fields or preparing a revised AI answer is a separate action.
-
-Try the fully [synthetic evidence regression PDF](services/credit-api/src/test/resources/evidence/evidence-inspection-regression.pdf): four `Total: $500` occurrences, an upright page, a 90°-rotated page, a table and an explicitly injected OCR discrepancy. The `3,500` observation is a test input, **not** a measured failure by Docling/Azure. Regenerate with `python scripts/build-evidence-regression.py /private/path/evidence-regression.pdf` after installing `reportlab` and `pypdf`. Existing dossiers without saved coordinates remain usable, with location unavailable rather than invented; a new analysis is needed to capture provider geometry.
-
-### Structure, reading order and local PDF inspection
-
-In **Documents & review → View result & PDF → Document structure & reading order**, inspect Docling's recorded heading/list/table hierarchy and open its source page. New Docling analyses follow the body-tree reading order for the text used downstream; missing, cyclic or partial structure is reported. Tables retain provider-reported header roles and merged-cell spans. Native PDF tag presence is shown separately from inferred layout; neither certifies accessibility or OCR correctness. Historic extractions without structure need a new analysis.
-
-![English document inspection: extracted table, native tag status and Docling heading/list reading order](docs/screenshots/document-structure-en.jpg)
-
-The **Python source/wheel preview `0.2.0a1`** adds standalone `read_pdf_structure`, `ground_pdf` and `validate_structure`. The published PyPI alpha remains `0.1.0a1`; the new APIs require the source preview or a locally built wheel. [Installation, examples and wheel checks](python/README.md#inspect-native-tags-and-exact-pdf-locations).
-
-Python inspection uses native PDFium glyph boxes or selective Tesseract when native text cannot match the requested value. Native rotation/crop offsets and inverse-projected coordinates after conservative Hough-line deskew are covered by real regression tests. Repeated values stay ambiguous until explicitly selected; no currency/digit repair, LLM call, automatic cloud fallback or PDF rewrite occurs. Boxes are relative to the original displayed page. Inspecting a match does not establish factual correctness; mixed-content pages and arbitrary visual scan orientations remain evaluation cases.
-
-Use the [two-column/tagged fixture](services/credit-api/src/test/resources/evidence/structure-regression.pdf) and [upright/skewed scans](services/credit-api/src/test/resources/evidence/scanned-skew-regression.pdf). Their generator is `scripts/build-structure-regression.py`; all examples are self-authored, with no customer/publisher data. The tagged fixture deliberately draws the right column before the left and is **not** a valid PDF/UA reference. Accessibility auditing remains a separate task; PDF4WCAG/veraPDF are not bundled or silently called.
-
-### Local evidence quality workflow
-
-In **Documents & review → View result & PDF**, select a recorded occurrence, expand **Check source location & OCR**, review the exact text and consent, then choose **Inspect locally**. The existing offline ETL worker runs the Python library with PDFium/Tesseract; no new HTTP service, Docling model download or Azure call is required. The full local Docker profile enables this worker. A queued receipt is not a completed inspection; source changes mark old receipts historical.
-
-![English local inspection: original crop, recorded OCR and independent Tesseract observation, with a private report](docs/screenshots/local-inspection-en.jpg)
-
-Completed inspection of the self-authored `8,500` regression cell. Both observations agree; the UI deliberately retains **not verified** and keeps previous inspections separate.
-
-- **Source candidates:** repeated text returns separate locations. Choose one explicitly to highlight it in the original, including supported native rotations and mild scan skew. Mixed pages can invoke OCR when their native layer has no exact requested text. Image-only OCR can try clockwise 0°/90°/180°/270° corrections or an explicitly chosen orientation. Auto mode stops at the first orientation with an exact requested-text match; this is a location candidate, not verified page orientation. The original PDF is never rotated or rewritten.
-- **Independent observation:** for an upright provider region with matching page proportions, inspect its source crop, stored OCR and a separate Tesseract reading. A disagreement, including `3,500` versus `8,500`, is reported without selecting a winner or changing stored evidence. Agreement is labelled **not verified**. Unsupported geometry remains unavailable.
-- **Private report:** download a receipt with original hash, engine/code versions, options, coordinates, OCR observations, reviewer corrections and up to ten saved answers referencing that document. Sharing a document ID does not prove an answer is supported. Reports contain private text/crops; keep them private. They omit the whole PDF. Temporary inspection source copies are removed after processing; saved reports/history have no automatic purge.
-- **Nova lifecycle:** each question has a request ID. **Stop waiting & request cancellation** requests backend interruption and tracks the result; repeated request IDs never dispatch twice in the same API process. A cancelled result is discarded before answer persistence. Provider-side termination is not confirmed. With PostgreSQL enabled, request IDs, phase and terminal status survive API restarts. A 90-second renewable lease protects the final answer transaction against cross-instance cancellation. An expired request becomes **Interrupted**, is never redispatched automatically and cannot later save a response. Provider termination remains unconfirmed; consult saved answer history before retrying. Nonpersistent test mode remains process-local.
-- **Sign-in navigation:** restrictive-browser silent SSO falls back to explicit sign-in. The app restores a recent, same-origin dossier/page location after successful authentication; tokens remain in memory.
-
-Try the included `structure-regression.pdf` for its `8,500` table cell and `scanned-skew-regression.pdf` page 2 for four repeated `Total: $500` values. `TEST_EVIDENCE_QUALITY=1 TEST_QUALITY_CASE=<structure-test-case> node scripts/test-oauth.mjs` exercises the actual queue and private export. Add `TEST_QUALITY_NOVA_CANCEL=1` to also test cancellation during **local** model generation; use `TEST_QUALITY_NOVA_CANCEL=only` for a separate Nova-only pass against that existing dossier on a constrained machine. The cancellation test refuses Azure.
-
-The [32-PDF synthetic location report](docs/benchmarks/synthetic-grounding.json) records **128/128 locations at IoU ≥ 0.5**: native 48/48, mild-skew scans 32/32, mixed pages 32/32, visual 90°/180°/270° challenge scans 16/16. This report uses the expanded rotation fixtures; do not treat it as a controlled comparison with an older report that used only 90° scans. Labels come from known generated content/geometry, **not human-approved or representative business ground truth**. Reading-order correctness, table semantics and general OCR accuracy are not measured by this location suite. Timings depend on hardware and warm caches. The unmatched challenge cases remain in the denominator.
-
-```bash
-python -m pip install './python[inspection]' reportlab
-python scripts/build-quality-corpus.py /private/path/quality-corpus
-python -m document_evidence.benchmark /private/path/quality-corpus/manifest.json --output /private/path/quality-results.json
-```
-
-Existing corpus/report files are never overwritten. The PDFs are generated locally rather than bundled into the package or repository. [OmniDocBench](https://github.com/opendatalab/OmniDocBench) informed the separation of evaluation dimensions; this lightweight location suite is not an OmniDocBench/TEDS implementation or score.
-
-### Measure text, tables and reading order separately
-
-The source/wheel preview adds `evaluate_document(document, reference)`. Labels must name the original PDF SHA-256 and their provenance; a changed source is rejected. It reports character edit errors, labelled table-cell text and structure matches, and pairwise order of unique reading anchors. Missing or duplicate anchors remain failures. There is no combined accuracy percentage, automatic approval or TEDS claim.
-
-Use the included [structure PDF](services/credit-api/src/test/resources/evidence/structure-regression.pdf) with its [independently prepared generated-input labels](python/examples/references/structure-quality.json):
-
-```bash
-python python/examples/evaluate_pdf.py \
-  services/credit-api/src/test/resources/evidence/structure-regression.pdf \
-  python/examples/references/structure-quality.json --output private-quality.json
-```
-
-This example uses Docling with already prepared local weights; `--allow-model-download` is an explicit first-preparation option. The [measured local Docling result](docs/benchmarks/structure-quality.json) records six of six labelled cell texts/structures, 15 of 15 anchor pairs, and six character edits across 369 reference characters. One synthetic page is not representative business accuracy. For DATEV, permitted insurance wording and invoices, prepare independent labels from each actual PDF instead of copying predictions.
-
-The same original has [three measured English/German/Vietnamese retrieval questions](docs/benchmarks/multilingual-retrieval.json). BM25, vector and hybrid each retrieved the labelled page within five results; hybrid ranked the English question first and German/Vietnamese questions third. This small regression does not establish multilingual accuracy or that hybrid always improves ranking. Reproduce it against the structure-test dossier with `TEST_EVIDENCE_QUALITY=1 TEST_QUALITY_CASE=YOUR_CASE TEST_QUALITY_RETRIEVAL=1 TEST_QUALITY_RESTART_RUNS=1 node scripts/test-oauth.mjs`; the restart flag intentionally restarts the local API. This run uses no LLM or cloud call.
-
 ## Python Quick Start
 
-Use **Python 3.10+**; check `python3 --version` first and use a supported interpreter if your system Python is older. Create an isolated environment, then install the published alpha with local Docling support:
+Use **Python 3.10+**. The standalone library needs no Java, Docker, Keycloak, Azure or LLM. Install the published alpha in an isolated environment:
 
 ```bash
 python3 -m venv .venv
@@ -162,73 +105,34 @@ source .venv/bin/activate
 python -m pip install 'document-evidence-lab[docling]==0.1.0a1'
 ```
 
-On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1` instead. For the dependency-free validation core and SDK only, use this install command in the environment:
+On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1`. For validation/SDK only, install `document-evidence-lab==0.1.0a1` without the extra. To use the source preview, clone this repository and install `./python[docling]` instead. The package name is `document-evidence-lab`, the import is `document_evidence`, and the CLI is `document-evidence`.
 
-```bash
-python -m pip install 'document-evidence-lab==0.1.0a1'
-```
-
-The `[docling]` extra installs parser dependencies; model downloads still require explicit first-use permission. No models or publisher PDFs are bundled. Installing either variant does **not** start the web UI or Nova; use the [Docker workspace](#local-docker-workspace) for those. This is an **alpha**, not a production-certified document validation service.
-
-To run or contribute from source instead:
-
-```bash
-git clone https://github.com/quocvietphung/document-intelligence-lab.git
-cd document-intelligence-lab
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install './python[docling]'
-```
-
-Install `./python` without extras for the dependency-free validation core and SDK. The distribution is named `document-evidence-lab`, Python imports use `document_evidence`, and the CLI is `document-evidence`.
-
-### Read a local PDF
+### Read and validate a PDF
 
 ```python
-from document_evidence import DoclingReader, validate_document
+from document_evidence import DoclingReader, normalize_money, validate_document
 
-# Explicit first-use permission to download Docling's model weights.
+# First preparation explicitly permits model downloads; later reads use cached weights.
 document = DoclingReader(allow_model_download=True, timeout_seconds=900).read("invoice.pdf")
 report = validate_document(document, required_labels=("Invoice no",))
 
 print(document.pages[0].text)
 print(document.tables)
 print(report.to_dict())
+assert str(normalize_money("2967,11 EUR").amount) == "2967.11"
 ```
 
-Use your own permitted PDF or a prepared [example](#pdf-examples). No Java, Docker, Node.js, Keycloak or Azure account is needed. After preparation, `DoclingReader().read("invoice.pdf")` uses cached weights in offline mode; missing weights fail without cloud fallback. Pass `artifacts_path="/path/to/models"` for a separately prepared directory; see [Docling offline setup](https://docling-project.github.io/docling/usage/advanced_options/#model-prefetching-and-offline-usage).
-
-CLI equivalent:
+After preparation, use `DoclingReader().read("invoice.pdf")` for offline inference; missing weights fail without cloud fallback. The CLI equivalent for first preparation is:
 
 ```bash
 document-evidence invoice.pdf --allow-model-download --timeout 900 --output private-result.json
 ```
 
-JSON output contains document text: keep it private. Existing output files are never overwritten. Defaults are **unencrypted PDF, four pages, 3 MB and a 180-second timeout**. A short-lived Python child process bounds conversion time and scopes offline settings; it is not a server or security sandbox. Remote OCR services and external plugins are disabled. Use trusted/permitted files: standalone parsing does **not** include the platform's ClamAV scan.
-
-First preparation caches layout, table and RapidOCR Torch weights, including OCR weights that a text-only invoice might not exercise. Downloads require internet and disk space and may exceed the usual conversion deadline; the examples allow 900 seconds for this first preparation. Later offline conversions keep the 180-second default. The offline child also rejects DNS/socket connection attempts, including model-download paths outside Hugging Face; this is an application safeguard, not an OS sandbox. Local parsing uses your CPU/RAM, not a paid inference API. Test OCR quality against your document language; successful conversion is not an accuracy guarantee.
-
-### Validate amounts and evidence
-
-```python
-from document_evidence import check_evidence, normalize_money, validate_citations
-
-money = normalize_money("2967,11 EUR")
-assert str(money.amount) == "2967.11"
-assert money.currency == "EUR"
-
-source = document.sources[0]
-assert check_evidence(document, source.id, source.text)
-answer = validate_citations(f"Observed excerpt [{source.id}].", [source.id])
-```
-
-The strict parser supports EUR, INR, USD and GBP; ambiguous separators and mixed/unknown currencies remain findings. Original source strings are unchanged. `validate_document` checks source structure, empty pages, ambiguous numeric dates and required literal labels, not trained classification or document authenticity.
-
-Normalized results contain a **SHA-256 identity**, page-bound IDs, optional top-left bounding boxes, table cells/spans and `None` for unknown confidence. `check_evidence` tests exact quote/value containment, not meaning. `validate_citations` checks allowed IDs, not factual correctness. No finding-free report grants human approval. [Python API and examples](python/README.md).
+Defaults: **unencrypted PDF, four pages, 3 MB, 180-second conversion timeout**. First-use downloads may need the longer timeout above. Models are not bundled. Existing CLI output files are not overwritten; exported text is private. Standalone parsing has no ClamAV scan. Validation preserves original values and reports ambiguous amounts, currencies and literal-label findings; it does not authenticate a document or grant approval. [Python API, offline model paths and examples](python/README.md).
 
 ## Python SDK for the Java platform
 
-Install the lightweight `document-evidence-lab==0.1.0a1` package from PyPI (or `./python` from source), start the [Docker workspace](#local-docker-workspace) separately and supply an existing Keycloak **access token**:
+Start the [Docker workspace](#local-docker-workspace) separately, install the lightweight package and supply a valid Keycloak **API access token**:
 
 ```python
 import os
@@ -238,41 +142,26 @@ client = PlatformClient("http://localhost:8081", token=lambda: os.environ["LAB_A
 case_id = os.environ["LAB_CASE_ID"]
 case = client.get_case(case_id)
 workflow = client.workflow(case_id)
-audit = client.audit(case_id)
 ```
 
-The callback can supply a refreshed token; the SDK does not log in, store passwords or renew credentials automatically. Obtain short-lived credentials through your approved Keycloak/OIDC flow. Do not paste tokens into code, screenshots, shell history or issues. Azure tokens and Keycloak ID tokens are not the app API access token.
-
-Read methods: `list_cases`, `get_case`, `workflow`, `trust`, `audit`, `batches`. Java enforces API audience, tenant, dossier and roles. HTTPS is required outside loopback; redirects and environment-discovered proxies are disabled to avoid forwarding credentials elsewhere.
-
-Upload is explicit and persists data in the selected dossier:
-
-```python
-from uuid import uuid4
-
-request_id = str(uuid4())  # Persist this UUID before sending.
-receipt = client.submit_pdf(
-    case_id, "invoice.pdf", consent=True,
-    request_id=request_id, profile="invoice",
-)
-```
-
-A receipt is **not finished OCR**. Inspect `batches(case_id)` and `workflow(case_id)` for progress. Reuse the same UUID, content and metadata when investigating an uncertain submission; nothing is retried automatically. The Java queue owns scanning and extraction. Python source IDs are not Java dossier IDs; the SDK uploads the original PDF, not self-asserted trusted evidence or approval. [SDK example](python/examples/platform_read.py).
+The callback can provide a refreshed token; the SDK does not log in or renew credentials itself. Java enforces audience, tenant, dossier and roles. Uploads require explicit consent and a persisted request UUID; a receipt is not completed OCR. [Read example](python/examples/platform_read.py) · [SDK and upload behavior](python/README.md#optional-java-sdk). Keep tokens out of source, screenshots and shell history.
 
 <a id="local-docker-with-nova"></a>
 
 ## Local Docker workspace
 
-Requirements: Git, **Node.js 22+**, Docker Desktop/Engine with Compose v2, and free ports **3000, 8080, 8081**. Allow at least four CPUs and 8 GB Docker RAM, with additional host memory for the browser and operating system. Keep at least 8 GiB free **inside Docker** for model preparation; images, documents and build cache need additional storage. Parsing and generation compete for memory: on a constrained laptop, run OCR/ETL acceptance and Nova inference separately. Swapping can exhaust their deadlines even when containers remain healthy; do not increase timeouts or treat health checks as completed inference.
+Requirements: Git, **Node.js 22+**, Docker Desktop/Engine with Compose v2, free ports **3000, 8080, 8081**, at least four CPUs and **8 GB Docker RAM**. Leave memory for the host/browser. Keep at least 8 GiB free inside Docker for model preparation, plus space for images, documents and build cache.
 
-From the repository root:
+Clone the repository, then start from its root:
 
 ```bash
+git clone https://github.com/quocvietphung/document-intelligence-lab.git
+cd document-intelligence-lab
 mkdir -p .local/reference-pdfs
 node scripts/docker-local.mjs --prepare-model
 ```
 
-First setup builds the app and CPU-only Ollama runtime, then explicitly downloads **`qwen3:4b-instruct-2507-q4_K_M`** into a persistent volume. The approximately 2.5-GB model is separate from its image. No model or publisher PDF is committed. The helper checks space and never prunes data automatically.
+First setup builds the app and CPU-only Ollama runtime, then explicitly downloads **`qwen3:4b-instruct-2507-q4_K_M`** (about 2.5 GB) into a persistent volume. The helper checks space and never prunes data automatically.
 
 Subsequent starts reuse models and databases:
 
@@ -280,7 +169,7 @@ Subsequent starts reuse models and databases:
 node scripts/docker-local.mjs
 ```
 
-Use `--no-build` only when source and images match. Wait for the helper's final readiness message. Model weights stay on disk; Nova loads them on its first question and releases idle model memory after five minutes by default. Add `--warmup` to preload explicitly; warmup is not a quality test. This profile includes Docling, local Nova and ETL; it clears Azure chat/extraction configuration and has no silent cloud fallback.
+Wait for the helper's readiness message. Use `--no-build` only when source and images match. This profile includes Docling, local Nova and ETL; it clears Azure chat/extraction configuration and has no silent cloud fallback.
 
 ### Sign in through Keycloak
 
@@ -304,7 +193,7 @@ These are development credentials for a **fresh identity database**. Existing vo
 
 **App guidance** and compass page tours are local navigation helpers, not document inference. Nova's portrait is an AI-generated fictional character. Expand its reading area for longer answers.
 
-CPU generation can take several minutes or time out. The local Java process admits one inference at a time; competing requests receive `LOCAL_MODEL_BUSY`. The model has a 360-second limit inside the web proxy's 380-second deadline. No automatic retry/cloud fallback occurs. Replies arrive after generation; stopping the browser request does not guarantee cancellation of every backend inference. Check answer history before retrying an uncertain request.
+CPU generation can take several minutes. Java admits one local inference at a time (`LOCAL_MODEL_BUSY` for competing requests), with a 360-second model deadline inside the proxy's 380-second deadline. **Stop waiting & request cancellation** tracks backend status; it does not confirm provider termination. [Durable request lifecycle](docs/RELIABILITY_LAB.md#durable-nova-lifecycle).
 
 ## Local setup with Azure AI
 
@@ -390,30 +279,9 @@ python scripts/prepare-datev-reference.py .local/datev-lodas-musterauswertung-20
 
 In **Banking & payroll → Documents & review → Reference library**, keep `Netto-Verdienst` separate from `Auszahlungsbetrag`. Publisher PDFs retain DATEV's rights. The Python reader can inspect these permitted pages, but its generic label checks do not implement every Java payroll-layout rule.
 
-## AI workflows
+### Official forms for RAG evaluation
 
-Overview distinguishes **16 AI-assisted workflows** from **15 rule-based, navigation and human-review controls**, not 31 models. Every AI entry has a PDF exercise; opening one does not invoke inference.
-
-| Workflow | PDF exercise |
-| --- | --- |
-| Text, layout and OCR | Invoice 51109301 versus its original |
-| Table extraction | Invoice lines, VAT and gross total |
-| Semantic/hybrid search | Shelter wording and its returned source page |
-| Local embeddings | Vector versus BM25/hybrid for the same checked question |
-| Nova document Q&A | Invoice number, INR currency and total |
-| Selected-field explanation | DATEV net earnings versus payout |
-| Evidence summary | Invoice facts and missing context |
-| Cross-document/amount comparison | Invoices 51109301 and 51109302 separately; no inferred settlement |
-| Discrepancy explanation | DATEV extraction versus its original |
-| Document-request draft | Missing insurance context; no email delivery |
-| Manual-review checklist draft | Invoice identity, totals and page sources |
-| German terminology | DATEV labels without invented deductions |
-| German–Vietnamese summary | Preserved labels, amounts and citations |
-| Document chronology | Literal invoice date, no invented deadline |
-| Clause/obligation review | Insurance wording; no legal or coverage decision |
-| Sensitive-data review draft | Identifier categories; no automatic redaction |
-
-Workflows share the selected extraction/Nova providers. MiniLM is English-focused; relevance scores are not accuracy percentages. Optional PaddleOCR, BGE-M3, reranking and vision need separately prepared weights and live evaluation. [Integration boundaries](docs/AI_INTEGRATIONS.md).
+After preparing DATEV and Kaggle, add the reviewed CMS coverage example and IRS blank W-2/instructions with `python scripts/prepare-rag-benchmark.py --download`. This explicitly downloads the two official originals, verifies pinned hashes and prepares private excerpts; it does not call Azure. The [source registry](lib/rag-pdf-sources.json) records publisher links and original-page mappings. See [PDF-backed RAG evaluation](#pdf-backed-rag-evaluation) for results and limits.
 
 ## Document pipeline operations
 
@@ -465,98 +333,102 @@ Python and Java do not require the same runtime. Shared fixtures compare citatio
 
 In the workspace, one document provider and one Nova provider are selected; the branches are alternatives, not an ensemble or cloud fallback. Standalone Python never calls Nova. Cloud adapters require separate credentials and explicit execution. Keycloak authenticates users; Entra authorizes Azure service calls.
 
+## Research scope
+
+The lab studies document extraction, evidence preservation, multilingual retrieval and source-bound generation across general business, insurance and payroll documents. [AI workflows](#ai-workflows) lists the user-facing tasks; [architecture](#architecture) shows their providers and trust boundaries.
+
+### Evidence inspection
+
+Open **Documents & review → View result & PDF** and inspect a field, table cell or recorded source occurrence:
+
+- Compare the **original crop, recorded OCR and answer value**. Matching a citation does not prove the OCR read the original correctly.
+- Repeated values retain separate occurrence IDs. Selecting a candidate is explicit; page references cannot identify the correct occurrence by themselves.
+- Inspect Docling's heading/list/table hierarchy, reading order, header roles and cell spans. Native PDF tags are reported separately from inferred structure; neither certifies accessibility.
+- Choose **Check source location & OCR → Inspect locally** for an independent PDFium/Tesseract inspection through the offline ETL worker. Geometry and unsupported orientations remain visible limitations.
+- Reviewer OCR corrections, field confirmation and revised AI answers are separate, audited actions. Original OCR and previous answers remain unchanged.
+
+![Original table cell, recorded OCR and a saved Nova claim shown together](docs/screenshots/evidence-inspection-en.jpg)
+
+<details>
+<summary>Structure and independent local inspection</summary>
+
+![Docling structure, native tags and reading order](docs/screenshots/document-structure-en.jpg)
+
+![Local source crop, recorded OCR and independent Tesseract observation](docs/screenshots/local-inspection-en.jpg)
+
+Agreement is labelled **not verified**. Reports contain private source text/crops and must stay private. For exact-location inspection and `evaluate_document`, use the **source/wheel preview 0.2.0a1**; these APIs are not in the published PyPI 0.1.0a1. See the [Python inspection guide](python/README.md#inspect-native-tags-and-exact-pdf-locations), [quality dimensions](python/README.md#source-bound-quality-dimensions) and [measured reports](#development-and-tests).
+
+</details>
+
+### PDF-backed RAG evaluation
+
+The lab now includes a [registry of nine prepared PDF references](lib/rag-pdf-sources.json) and [77 authored questions](lib/rag-pdf-questions.json) covering DATEV payroll, invoices, insurance and blank tax forms. CMS and IRS add official examples; publisher-owned references stay private. CFPB links that could not be downloaded are recorded separately and are not counted in measured results.
+
+In **Research lab → Experiments**, compare **BM25 / Vector / Hybrid / RRF / Previous Hybrid** with multiple relevant pages, tuning/held-out groups, Hit@5, Recall@5, unique-source Precision@5, nDCG@5, MRR@5 and ranking p50/p95. Unanswerable questions remain explicit; retrieval does not certify a model's refusal or answer correctness. Lexical matching now uses term frequency, compound identifiers and a small explicit EN/DE/VI glossary; it never rewrites stored source amounts.
+
+All nine prepared PDFs passed the local ClamAV/Docling intake. The [measured report](docs/benchmarks/rag-pdf-retrieval.json) compares the same 69 answerable questions; eight unanswerable questions are kept separately:
+
+| Docling extraction · page labels | Hit@5 | Multi-source Recall@5 | MRR@5 |
+| --- | ---: | ---: | ---: |
+| Previous Hybrid | 95.65% | 94.93% | 87.44% |
+| Current Hybrid | 100.00% | 99.28% | 93.53% |
+
+These are development measurements, not overall RAG accuracy. Excerpts of the same original stay in one group; two invoice originals still share a template. BM25 alone performs competitively and RRF does not consistently improve results. The report includes every method, separate tuning/held-out metrics and a separate native-text comparison. Cross-page text retains its own page spans; overlapping table predictions are withheld with an explicit warning while source text remains inspectable.
+
+![English Research lab: Hybrid metrics, held-out group and an incomplete multi-source result](docs/screenshots/rag-pdf-evaluation-en.jpg)
+
+[Preparation, actual Docker pipeline, native-text comparison and metric definitions](docs/RESEARCH_WORKSPACES.md#reproducible-multi-domain-pdf-rag-benchmark). No new model download or paid Azure service is required for this benchmark.
+
 ## Development and tests
 
-Core Python tests need no model, cloud credentials, Java or Docker:
+Core Python checks need no model, cloud credentials, Java or Docker. Run from a prepared source environment:
 
 ```bash
 python -m pip install './python[dev]'
 python -m unittest discover -s python/tests -v
 python -m build python
-python -m twine check python/dist/*
+python -m twine check python/dist/*.whl python/dist/*.tar.gz
 python python/tools/check_distribution.py python/dist
 ```
 
-Actual local Docling conversion is explicit:
-
-```bash
-TEST_PYTHON_PDF=.local/reference-pdfs/kaggle-invoice-51109301.pdf \
-TEST_PYTHON_EXPECT_TEXT=51109301 TEST_PYTHON_MIN_TABLES=1 \
-TEST_ALLOW_MODEL_DOWNLOAD=1 TEST_DOCLING_TIMEOUT=900 \
-python -m unittest discover -s python/tests -p test_docling_smoke.py -v
-```
-
-Omit the download flag for cached/offline inference. Synthetic-export unit tests exercise the adapter contract, not OCR quality. Shared fixtures under `python/src/document_evidence/contracts/` are also consumed by Java and ETL tests. Strict money rules match ETL; Java's permissive comparison helper is checked only on the declared compatible subset, not ambiguous inputs.
-
-Workspace checks:
+Workspace checks require Node.js and JDK 21/Maven; authenticated acceptance also needs the running Docker stack:
 
 ```bash
 npm run verify
-mvn --batch-mode -f services/credit-api/pom.xml test
+mvn --batch-mode -f services/credit-api/pom.xml verify
 node scripts/test-oauth.mjs
 TEST_EVIDENCE_INSPECTION=1 node scripts/test-oauth.mjs
 TEST_DOCUMENT_STRUCTURE=1 node scripts/test-oauth.mjs
-TEST_DOCUMENT_UPGRADE=1 node scripts/test-oauth.mjs
-TEST_NOVA_LOCAL=1 TEST_NOVA_TASKS=1 TEST_NOVA_CONCURRENCY=1 node scripts/test-oauth.mjs
+TEST_RAG_PDFS=prepare node scripts/test-oauth.mjs
+TEST_RAG_PDFS=measure node scripts/test-oauth.mjs
 ```
 
-Acceptance tests need the running stack and prepared samples. They create labelled records and unapproved drafts, not fabricated approval. Model calls take CPU time; Azure-mode tests can be billable. Scoped examples are not general accuracy, security or production certifications.
+Prepare the [PDF sources](#pdf-examples) first for RAG acceptance. These checks create research records, not human approvals. [Research recipes and metric definitions](docs/RESEARCH_WORKSPACES.md) · [Python wheel/Docling checks](python/README.md#development) · [Nova, recovery and cancellation](docs/RELIABILITY_LAB.md).
 
-The evidence-inspection acceptance test requires the **local Docling stack** and uses the included synthetic PDF, without private reference downloads or model calls. It checks repeated occurrence IDs, table-cell geometry and labels, authenticated/versioned OCR corrections, immutable original OCR and PostgreSQL readback. It leaves a labelled test dossier available for visual inspection.
+| Measured artifact | Scope and limits |
+| --- | --- |
+| [PDF RAG comparison](docs/benchmarks/rag-pdf-retrieval.json) | Nine prepared PDFs, 77 questions; page-level retrieval, not answer factuality |
+| [Synthetic source locations](docs/benchmarks/synthetic-grounding.json) | 128/128 labelled locations at IoU ≥ 0.5 across 32 generated PDFs; not representative business accuracy |
+| [Text, table and reading order](docs/benchmarks/structure-quality.json) | One generated page: six cell matches, 15 anchor-pair matches, six character edits in 369 reference characters; not TEDS or general OCR accuracy |
 
-The document-structure acceptance uploads the included tagged/two-column and image-only/skewed PDFs through ClamAV and actual Docling, checks native tag presence separately from inferred headings/table roles, and verifies that a separate OCR correction does not erase structure or table metadata. With its printed case ID, `TEST_PYTHON_SDK=1 TEST_SDK_STRUCTURE=1 TEST_PYTHON_CASE=<case-id> TEST_PYTHON_EXECUTABLE=<wheel-environment>/bin/python node scripts/test-oauth.mjs` checks the installed wheel's authenticated SDK against the same persisted evidence.
+Labels and PDF hashes are recorded in each report. Synthetic labels come from generated content; the business-reference pack was prepared by the development agent, not independently human-approved. Parser tests, retrieval tests and model-generation tests measure different things.
 
-With the prepared local Nova model, add `TEST_EVIDENCE_NOVA=1` to that command to verify a real answer through the authenticated web proxy, its exact table-occurrence citation and saved review history. This explicitly invokes the local model and can take several minutes on CPU; the test refuses a cloud provider.
+### CI and package releases
 
-### Python CI and publishing
+Platform CI checks web, Java, ETL, Keycloak and Docker/OIDC. Python CI checks **3.10–3.14**, wheel/sdist metadata, licence and package contents; its opt-in Docling smoke job downloads models explicitly. Pushing `master`/`develop` **does not publish PyPI or deploy Azure/Vercel**.
 
-`python-package.yml` checks Python **3.10–3.14**, builds wheel/sdist and checks metadata, license and distribution contents. A manually enabled Docling smoke job converts a synthetic regression PDF and explicitly downloads its dependencies/models.
-
-The published alpha is [0.1.0a1](https://pypi.org/project/document-evidence-lab/0.1.0a1/), built from tag [`python-v0.1.0a1`](https://github.com/quocvietphung/document-intelligence-lab/tree/python-v0.1.0a1). The `pypi` environment uses a required owner review and a `python-v*` tag policy. Its Trusted Publisher is scoped to `quocvietphung/document-intelligence-lab`, `python-publish.yml` and environment `pypi`.
-
-Pushing `master` or `develop` does **not** publish a Python release or deploy Azure/Vercel. For a future package release:
-
-1. Bump the package version, review the distribution contents and pass the Python checks. Existing PyPI release files cannot be replaced; do not reuse `0.1.0a1`.
-2. Create a reviewed `python-v<version>` tag matching `python/pyproject.toml`.
-3. Run [Publish Python package (manual)](https://github.com/quocvietphung/document-intelligence-lab/actions/workflows/python-publish.yml) on that tag, select the configured registry **`pypi`**, and approve the protected environment after inspecting the build.
-4. Verify installation from PyPI in a clean virtual environment before announcing the release.
-
-The workflow defaults to `testpypi`, but **TestPyPI is not configured for this project**. To stage there, first configure its separate Trusted Publisher and protected `testpypi` environment; a PyPI publisher does not grant TestPyPI access. The workflow checks tag/version and uses job-scoped OIDC, not a stored API token. Local setup creates no publisher, account, tag or release. GitHub README edits do not update an already published PyPI version's description. [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/using-a-publisher/).
-
-### Memory-conscious local startup
-
-`node scripts/docker-local.mjs` applies `docker-compose.local-resources.yml`: bounded service RAM/CPU, one Docling conversion worker and lazy Nova loading. Weights stay on disk; Nova loads on the first question and the engine releases them after five idle minutes by default. The first answer can therefore take longer. Use `--warmup` only when needed. The parser keeps its tested 3 GiB limit; memory caps are ceilings, not reservations or guaranteed total usage.
-
-The default helper builds application services sequentially. On a 16 GB host, an 8 GiB Docker allocation is the tested starting point; leave memory for macOS and avoid running model inference while rebuilding or benchmarking OCR. Do not delete model/PDF/database volumes to save RAM. `docker stats --no-stream` measures current container use; build cache and images affect disk space separately.
-
-### Backup, restore and scoped history retention
-
-Create a private backup and validate it in isolated destinations:
-
-```bash
-node scripts/backup-workspace.mjs --create
-node scripts/backup-workspace.mjs --verify .local/backups/workspace-YOUR-BACKUP
-```
-
-The helper briefly pauses running writers, streams PostgreSQL dumps and private original/ETL/vector/Redis/reference archives to disk, records SHA-256 hashes and resumes services in `finally`. Volume archives are crash-consistent, not Qdrant logical snapshots. Verification checks every archive first, then restores into **new** databases/volumes; it never replaces live data. Temporary restore copies are removed after verification; add `--keep-restores` to retain them for inspection. Model weights, antivirus signatures, Azure credentials/resources and downloaded browser reports are excluded. Keep backups private and preserve the matching image/model versions separately. [Recovery details](docs/RELIABILITY_LAB.md).
-
-Saved inspection/answer/feedback history has an explicit, tenant/case-scoped operator cleanup. It defaults to **dry run**, excludes running/queued inspections and never removes original PDFs, OCR corrections, reviewer tasks or reference datasets. Applying it requires repeating the exact case ID with `--confirm-case`; an audit summary remains. Nothing is purged automatically.
-
-```bash
-node scripts/retention-lab.mjs --tenant YOUR_TENANT --case YOUR_CASE --before YYYY-MM-DDT00:00:00Z
-```
+The published package is **0.1.0a1**; source/wheel preview is **0.2.0a1**. A future release requires a reviewed matching `python-v<version>` tag, the manual `python-publish.yml` workflow and owner approval of the protected `pypi` environment. Its Trusted Publisher is scoped to this repository/workflow/environment. TestPyPI is not configured. Verify a clean installation before announcing a release; existing PyPI files and descriptions are not updated by README edits. [Release workflow](.github/workflows/python-publish.yml).
 
 ## Storage and troubleshooting
 
-- **Private data:** keep PDFs, exports, models, tokens, `.env.azure.local`, dumps and Terraform state out of Git. See [SECURITY](SECURITY.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
-- **Retained volumes:** databases, originals, models and ETL use named Docker volumes. Do not troubleshoot with `down -v`, volume prune or system prune.
-- **Python parser unavailable:** install `document-evidence-lab[docling]==0.1.0a1` from PyPI or `./python[docling]` from source, then explicitly prepare models before offline use. Errors return safe codes, not document content or parser tracebacks.
-- **Nova slow/busy:** wait for warmup and avoid simultaneous large experiments. There is no automatic retry/cloud fallback.
-- **SDK unauthorized:** use an unexpired Keycloak access token with the API audience and allowed tenant/role; refresh through your approved client flow.
-- **Azure unavailable:** check renewal, endpoint, deployment, resource-scoped role, network and quota. App login is separate from Azure login.
-- **OCR confidence:** unknown is not zero or 100%; counts and schema validity are not accuracy scores.
+The local helper builds application services sequentially, caps service RAM/CPU and keeps one Docling conversion worker. Nova loads on first use and releases idle model memory after five minutes; `--warmup` is explicit. On the tested 16 GB host, Docker used an 8 GiB allocation. Avoid concurrent OCR, generation and builds on a constrained laptop. [Resource limits](docs/DOCKER_LOCAL.md#local-memory-profile).
 
-Stop the local profile without deleting data:
+- **Private data:** keep PDFs, reports, models, tokens, environment files, dumps and Terraform state out of Git. [Security](SECURITY.md) · [Third-party terms](THIRD_PARTY_NOTICES.md).
+- **Preserve volumes:** accounts, PDFs, databases, models and ETL persist separately. Do not use `down -v`, volume prune or system prune as troubleshooting shortcuts.
+- **Nova/Azure errors:** check the selected provider, service logs, token renewal and resource-scoped permissions. App login is separate from Azure login. Busy/uncertain model calls are not retried automatically; check saved answer history before resubmitting.
+- **Backups and retention:** use `node scripts/backup-workspace.mjs --create`, then verify the printed backup with `--verify`. Restores use isolated destinations. History cleanup defaults to dry run; PDF expiry does not erase analytical/chat/reference history. [Recovery and cleanup instructions](docs/RELIABILITY_LAB.md#backup-and-restore-checks).
+
+Stop all local services without deleting their data:
 
 ```bash
 OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose \
@@ -564,7 +436,7 @@ OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose \
   -f docker-compose.nova-local.yml -f docker-compose.etl.yml stop
 ```
 
-`storage-init`/`etl-init` exit code 0 is expected. Ports bind to loopback. Historical `credit-*` realm/service/volume names preserve compatibility; changing the Compose project name does not migrate data. Local Docker is the primary workspace runtime; this README provisions no Azure VM or Vercel deployment.
+`storage-init`/`etl-init` exiting 0 is expected. Ports bind to loopback. Historical `credit-*` realm/service/volume names preserve compatibility; changing the Compose project name does not migrate data. [Docker diagnostics](docs/DOCKER_LOCAL.md#logs-and-troubleshooting).
 
 ## Project guide
 

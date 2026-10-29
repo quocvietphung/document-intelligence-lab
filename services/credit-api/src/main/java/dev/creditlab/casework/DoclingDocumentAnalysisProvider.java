@@ -87,6 +87,7 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
     var layout=new HashMap<Integer,List<PayrollLayoutFields.Line>>();
     var regions=new HashMap<Integer,List<CreditCase.Region>>();
     var blocks=new LinkedHashMap<String,DoclingStructure.Block>();
+    var fragmentsByRef=new HashMap<String,List<String>>();
     if(!source.path("texts").isArray()||source.path("texts").size()>4000) throw invalid("Docling text metadata is invalid");
     for(int blockIndex=0;blockIndex<source.path("texts").size();blockIndex++) {
       var item=source.path("texts").get(blockIndex);
@@ -94,24 +95,23 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
       if(value.isBlank()) continue;
       var provenance=item.path("prov");
       if(!provenance.isArray()||provenance.isEmpty()) throw invalid("Docling text has no page evidence");
-      // A block spanning multiple pages cannot safely be assigned wholesale to its first page.
-      var pageNumbers=new HashSet<Integer>();
-      provenance.forEach(prov->pageNumbers.add(prov.path("page_no").asInt(-1)));
-      if(pageNumbers.size()!=1) throw invalid("Docling text spans pages without unambiguous page evidence");
-      int page=pageNumbers.iterator().next();
-      append(text,page,value);
-      var ids=new ArrayList<String>();
-      for(var prov:provenance) {
-        var line=layoutLine(value,prov.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"));
-        if(line!=null) layout.computeIfAbsent(page,ignored->new ArrayList<>()).add(line);
-        var id=addRegion(regions,page,value,prov.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"),null,null,null);if(id!=null)ids.add(id);
+      var fragments=pageFragments(value,provenance);var refs=new ArrayList<String>();
+      for(int fragmentIndex=0;fragmentIndex<fragments.size();fragmentIndex++){
+        var fragment=fragments.get(fragmentIndex);int page=fragment.page();String content=fragment.text();append(text,page,content);var ids=new ArrayList<String>();
+        for(var prov:fragment.provenance()){
+          var line=layoutLine(content,prov.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"));
+          if(line!=null)layout.computeIfAbsent(page,ignored->new ArrayList<>()).add(line);
+          var id=addRegion(regions,page,content,prov.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"),null,null,null);if(id!=null)ids.add(id);
+        }
+        String ref="#/texts/"+blockIndex+(fragments.size()>1?":span"+fragmentIndex:"");refs.add(ref);blocks.put(ref,new DoclingStructure.Block(page,content,List.copyOf(ids)));
       }
-      blocks.put("#/texts/"+blockIndex,new DoclingStructure.Block(page,value,List.copyOf(ids)));
+      if(fragments.size()>1)fragmentsByRef.put("#/texts/"+blockIndex,List.copyOf(refs));
     }
-    var tables=new ArrayList<CreditCase.Table>();
+    var tables=new ArrayList<CreditCase.Table>();var tableIssues=new LinkedHashSet<String>();
     if(!source.path("tables").isMissingNode()&&!source.path("tables").isArray()) throw invalid("Invalid Docling tables");
     if(source.path("tables").size()>30) throw invalid("Too many Docling tables");
-    for(var table:source.path("tables")) {
+    for(int sourceTable=0;sourceTable<source.path("tables").size();sourceTable++) {
+      var table=source.path("tables").get(sourceTable);
       var provenance=table.path("prov");
       if(!provenance.isArray()||provenance.size()!=1) throw invalid("Docling table has ambiguous page evidence");
       int page=provenance.get(0).path("page_no").asInt(-1);
@@ -121,25 +121,31 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
       var sourceCells=data.path("table_cells");
       if(rows<1||columns<1||rows>500||columns>100||!sourceCells.isArray()||sourceCells.size()>1500)
         throw invalid("Docling table exceeds the processing limit");
-      var cells=new ArrayList<CreditCase.TableCell>();var ids=new ArrayList<String>();var covered=new HashSet<String>();
+      var cells=new ArrayList<CreditCase.TableCell>();var ids=new ArrayList<String>();var covered=new HashSet<String>();boolean overlap=false;
       for(var cell:sourceCells) {
         int row=cell.path("start_row_offset_idx").asInt(-1),column=cell.path("start_col_offset_idx").asInt(-1);
         String value=cell.path("text").asText("");
         if(row<0||row>=rows||column<0||column>=columns||value.length()>500) throw invalid("Invalid Docling table cell");
         int endRow=cell.path("end_row_offset_idx").asInt(row+1),endColumn=cell.path("end_col_offset_idx").asInt(column+1);
         if(endRow<=row||endRow>rows||endColumn<=column||endColumn>columns)throw invalid("Invalid Docling table span");
-        for(int r=row;r<endRow;r++)for(int c=column;c<endColumn;c++)if(!covered.add(r+":"+c))throw invalid("Overlapping Docling table cells");
+        for(int r=row;r<endRow;r++)for(int c=column;c<endColumn;c++)if(!covered.add(r+":"+c))overlap=true;
         cells.add(new CreditCase.TableCell(row,column,value,endRow-row,endColumn-column,
             cell.path("column_header").isBoolean()?cell.path("column_header").asBoolean():null,
             cell.path("row_header").isBoolean()?cell.path("row_header").asBoolean():null));
-        var id=addRegion(regions,page,value,cell.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"),tables.size(),row,column);if(id!=null)ids.add(id);
         append(text,page,value);
       }
+      // Keep bounded source text/boxes, but never expose overlapping predictions as a valid table.
+      if(overlap)tableIssues.add("TABLE_STRUCTURE_OVERLAP");
+      for(int i=0;i<sourceCells.size();i++){
+        var cell=sourceCells.get(i);var parsed=cells.get(i);
+        var id=addRegion(regions,page,parsed.text(),cell.path("bbox"),sourcePages.path(Integer.toString(page)).path("size"),
+            overlap?null:tables.size(),overlap?null:parsed.row(),overlap?null:parsed.column());if(id!=null)ids.add(id);
+      }
       var tableText=cells.stream().sorted(Comparator.comparingInt(CreditCase.TableCell::row).thenComparingInt(CreditCase.TableCell::column)).map(CreditCase.TableCell::text).collect(java.util.stream.Collectors.joining("\n"));
-      blocks.put("#/tables/"+tables.size(),new DoclingStructure.Block(page,tableText,List.copyOf(ids)));
-      tables.add(new CreditCase.Table(page,rows,columns,List.copyOf(cells)));
+      blocks.put("#/tables/"+sourceTable,new DoclingStructure.Block(page,tableText,List.copyOf(ids)));
+      if(!overlap)tables.add(new CreditCase.Table(page,rows,columns,List.copyOf(cells)));
     }
-    var structure=DoclingStructure.read(source,blocks);
+    var structure=DoclingStructure.read(source,blocks,fragmentsByRef);
     if(!structure.order().isEmpty()){
       text.values().forEach(value->value.setLength(0));var ordered=new LinkedHashSet<>(structure.order());ordered.addAll(blocks.keySet());
       for(String ref:ordered){var block=blocks.get(ref);if(block!=null)append(text,block.page(),block.text());}
@@ -152,9 +158,27 @@ public class DoclingDocumentAnalysisProvider implements DocumentAnalysisProvider
     document.fields().forEach(field->fields.put(field.label()+":"+field.page(),field));
     layout.forEach((page,lines)->PayrollLayoutFields.extract(page,lines).forEach(field->fields.putIfAbsent(field.label()+":"+field.page(),field)));
     InvoiceTableFields.extract(document).forEach(field->fields.putIfAbsent(field.label()+":"+field.page(),field));
-    return new CreditCase.Document(document.id(),name,document.type(),"review",null,List.copyOf(fields.values()),pages,true,provider(),modelId(),contentType,tables,List.of(),structure.info());
+    var info=structure.info();var issues=new LinkedHashSet<>(info.issues());issues.addAll(tableIssues);
+    return new CreditCase.Document(document.id(),name,document.type(),"review",null,List.copyOf(fields.values()),pages,true,provider(),modelId(),contentType,tables,List.of(),new CreditCase.StructureInfo(info.origin(),info.nativeTags(),info.blocks(),List.copyOf(issues)));
   }
 
+  private record TextFragment(int page,String text,List<JsonNode> provenance) {}
+  private static List<TextFragment> pageFragments(String text,JsonNode provenance){
+    var observed=new ArrayList<JsonNode>();provenance.forEach(observed::add);var pages=new HashSet<Integer>();observed.forEach(p->pages.add(p.path("page_no").asInt(-1)));
+    if(pages.size()==1)return List.of(new TextFragment(pages.iterator().next(),text,List.copyOf(observed)));
+    // Docling offsets count Unicode code points, not Java UTF-16 code units.
+    int[] points=text.codePoints().toArray();var ordered=new ArrayList<>(observed);ordered.sort(Comparator.comparingInt(p->p.path("charspan").path(0).asInt(-1)));
+    var result=new ArrayList<TextFragment>();int end=0;
+    for(var prov:ordered){var span=prov.path("charspan");
+      if(!span.isArray()||span.size()!=2||!span.get(0).isIntegralNumber()||!span.get(1).isIntegralNumber())throw invalid("Cross-page text requires exact character spans");
+      int start=span.get(0).asInt(-1),next=span.get(1).asInt(-1);
+      if(start<end||next<=start||next>points.length)throw invalid("Invalid or overlapping cross-page text spans");
+      for(int i=end;i<start;i++)if(!Character.isWhitespace(points[i])&&!Character.isSpaceChar(points[i]))throw invalid("Cross-page spans omit source text");
+      result.add(new TextFragment(prov.path("page_no").asInt(-1),new String(points,start,next-start),List.of(prov)));end=next;
+    }
+    for(int i=end;i<points.length;i++)if(!Character.isWhitespace(points[i])&&!Character.isSpaceChar(points[i]))throw invalid("Cross-page spans omit source text");
+    return result;
+  }
   private static void append(Map<Integer,StringBuilder> pages,int page,String value) {
     var text=pages.get(page);
     if(text==null) throw invalid("Docling text page is missing");

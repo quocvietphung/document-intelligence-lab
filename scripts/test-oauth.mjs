@@ -157,6 +157,11 @@ const localRequest=async(url,options={})=>{
   }
   return request(url,options);
 };
+if(process.env.TEST_RAG_PDFS){
+  const {auditRagPdfs}=await import('./test-rag-pdfs.mjs');await auditRagPdfs({request:localRequest,check,bearer,web,api});
+  const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
+  check(ended.status===204,'PDF benchmark session logged out');console.log(`${checks} PDF RAG checks passed.`);process.exit(0);
+}
 if(process.env.TEST_EVIDENCE_QUALITY==='1') {
   const {auditEvidenceQuality}=await import('./test-evidence-quality.mjs');await auditEvidenceQuality({request:localRequest,check,bearer,web,api});
   const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});

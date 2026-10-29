@@ -35,7 +35,7 @@ export async function auditResearch({request,check,bearer,web,api}) {
   check(metrics.truePositive===1&&metrics.falsePositive===1&&metrics.falseNegative===2&&metrics.f1===40,'Metrics retain correct, mismatched and missing DATEV fields');
   check(extraction.azureCalls===0&&extraction.sourceHash===snapshot.sourceHash,'Run is source-bound and makes no new Azure request');
   const retrieval=await run('RETRIEVAL');check(retrieval.suite==='RETRIEVAL','Retrieval comparison executes on original page chunks');
-  check(retrieval.variants.map(v=>v.method).join(',')==='BM25,VECTOR,HYBRID','BM25, vector and hybrid variants measured');
+  check(retrieval.variants.map(v=>v.method).join(',')==='BM25,VECTOR,HYBRID,RRF,LEGACY_HYBRID','BM25, vector and hybrid variants measured');
   check(retrieval.variants.every(v=>v.metrics.hitRateAt5===100&&v.rows.every(row=>row.hits.every(hit=>item.documents.some(d=>d.id===hit.documentId&&d.originalAvailable)))),'Retrieval hits only original evidence, never generated policy or summaries');
   const other=dossiers.find(c=>c.id!==item.id);assert.ok(other);
   check((await send(`${web}/api/cases/${other.id}/platform/research/runs`,{...runBody,caseVersion:other.version})).status===404,'Reference ID cannot cross dossier scope');

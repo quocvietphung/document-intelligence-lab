@@ -1,0 +1,194 @@
+{
+  "format": "rag-pdf-source-catalog-v2",
+  "sources": [
+    {
+      "id": "irs-w2",
+      "domain": "general",
+      "title": "IRS blank W-2 and filing information",
+      "url": "https://www.irs.gov/pub/irs-pdf/fw2.pdf",
+      "sourceSha256": "61eca7c81f16d3965819fe1f31be4fe68c1b2887a81f51172f1d2ed2b2b9f087",
+      "sha256": "66500761da550b3ba58fc90b812028f2aaf21da0693160f4954a1eaf03174897",
+      "sourcePageCount": 11,
+      "sourcePages": [
+        1,
+        2
+      ],
+      "file": "irs-w2.pdf",
+      "rights": "US government authored example/form; retain source attribution; no endorsement; no customer data",
+      "sourceType": "official-public-sample",
+      "preparedFile": ".local/rag-benchmark/irs-w2.pdf",
+      "publisher": "Internal Revenue Service",
+      "split": "holdout"
+    },
+    {
+      "id": "invoice-51109301",
+      "domain": "general",
+      "title": "Electronics invoice \u00b7 3 item lines",
+      "preparedFile": ".local/reference-pdfs/kaggle-invoice-51109301.pdf",
+      "file": "kaggle-invoice-51109301.pdf",
+      "url": "https://www.kaggle.com/api/v1/datasets/download/devp1866/high-quality-ocr-ready-invoice-pdfs/Batch%201%2Finvoices%2Finvoice_51109301.pdf?datasetVersionNumber=1",
+      "sourceUrl": "https://www.kaggle.com/datasets/devp1866/high-quality-ocr-ready-invoice-pdfs",
+      "sha256": "1e823688f4dd4efaf4f6a75c124cccef0e7864bf7ad6f053b94b9714949b4f79",
+      "sourceSha256": "1e823688f4dd4efaf4f6a75c124cccef0e7864bf7ad6f053b94b9714949b4f79",
+      "sourcePages": [
+        1
+      ],
+      "sourcePageCount": 1,
+      "publisher": "Kaggle contributor devp1866",
+      "rights": "Publisher-owned; private permitted research only. Dataset licence is not proof of redistribution rights.",
+      "sourceType": "existing-private-kaggle-reference",
+      "split": "tune"
+    },
+    {
+      "id": "invoice-51109302",
+      "domain": "general",
+      "title": "Electronics invoice \u00b7 6 item lines",
+      "preparedFile": ".local/reference-pdfs/kaggle-invoice-51109302.pdf",
+      "file": "kaggle-invoice-51109302.pdf",
+      "url": "https://www.kaggle.com/api/v1/datasets/download/devp1866/high-quality-ocr-ready-invoice-pdfs/Batch%201%2Finvoices%2Finvoice_51109302.pdf?datasetVersionNumber=1",
+      "sourceUrl": "https://www.kaggle.com/datasets/devp1866/high-quality-ocr-ready-invoice-pdfs",
+      "sha256": "d63d852cf4eb4f917cc4d5953a61e60653aa0558d1c74ef10d4bc2ce86b05a27",
+      "sourceSha256": "d63d852cf4eb4f917cc4d5953a61e60653aa0558d1c74ef10d4bc2ce86b05a27",
+      "sourcePages": [
+        1
+      ],
+      "sourcePageCount": 1,
+      "publisher": "Kaggle contributor devp1866",
+      "rights": "Publisher-owned; private permitted research only. Dataset licence is not proof of redistribution rights.",
+      "sourceType": "existing-private-kaggle-reference",
+      "split": "holdout"
+    },
+    {
+      "id": "principal-life-definitions",
+      "domain": "insurance",
+      "title": "Principal Life \u00b7 policy definitions",
+      "preparedFile": ".local/reference-pdfs/kaggle-principal-life-definitions-p9-12.pdf",
+      "file": "kaggle-principal-life-definitions-p9-12.pdf",
+      "url": "https://www.kaggle.com/api/v1/datasets/download/jpardovega/documents/Principal-Sample-Life-Insurance-Policy.pdf?datasetVersionNumber=3",
+      "sourceUrl": "https://www.kaggle.com/datasets/jpardovega/documents",
+      "sha256": "94ded41ec6821e865834badf7577fafcbf13498aaf91796ac7d9a5780a7abacf",
+      "sourceSha256": "e68d757a293d57b6b7f1e954e572e9c4de22b9201ff2f93c2734c51b6836d9fb",
+      "sourcePages": [
+        9,
+        12
+      ],
+      "sourcePageCount": 64,
+      "publisher": "Principal Life Insurance Company",
+      "rights": "Publisher-owned; private permitted research only. Dataset licence is not proof of redistribution rights.",
+      "sourceType": "existing-private-kaggle-reference",
+      "split": "tune"
+    },
+    {
+      "id": "shelter-renters-conditions",
+      "domain": "insurance",
+      "title": "Shelter HO-4 \u00b7 conditions and exclusions",
+      "preparedFile": ".local/reference-pdfs/kaggle-shelter-renters-conditions-p11-12.pdf",
+      "file": "kaggle-shelter-renters-conditions-p11-12.pdf",
+      "url": "https://www.kaggle.com/api/v1/datasets/download/jpardovega/documents/Shelter_HO-4Renters.pdf?datasetVersionNumber=3",
+      "sourceUrl": "https://www.kaggle.com/datasets/jpardovega/documents",
+      "sha256": "d5f33e07b32568f09604279df6a8b983f15d82ab86fc331c05a3e1704c88c026",
+      "sourceSha256": "e41baaeacb9de423383389a6280bbfefc5afc6c0ccd9740130db8fb4da6fb182",
+      "sourcePages": [
+        11,
+        12
+      ],
+      "sourcePageCount": 29,
+      "publisher": "Shelter Insurance Companies",
+      "rights": "Publisher-owned; private permitted research only. Dataset licence is not proof of redistribution rights.",
+      "sourceType": "existing-private-kaggle-reference",
+      "split": "holdout"
+    },
+    {
+      "id": "datev-robert",
+      "domain": "banking",
+      "title": "DATEV LODAS 2025 Robert Muster",
+      "preparedFile": ".local/reference-pdfs/datev-lodas-2025-robert-muster.pdf",
+      "file": "datev-lodas-2025-robert-muster.pdf",
+      "sha256": "f0c6c2586e6920466c2380758989a7d669d77fb9463320e4a77a8f8bc9c3d404",
+      "sourceUrl": "https://www.datev.de/content/dam/markenassets/themen-und-produktgruppen/zielgruppen/zielgruppenuebergreifend/shop-assets/personalwirtschaft/lodas-musterauswertung-2025-deutsch.pdf",
+      "sourcePages": [
+        2
+      ],
+      "publisher": "DATEV",
+      "rights": "Public fictional sample; publisher rights retained; private preparation only.",
+      "sourceType": "existing-private-datev-reference",
+      "split": "tune",
+      "sourcePageCount": 30,
+      "sourceSha256": "f2228f7c96d7cffdc6b5ae005e6b54107ea7ed0b91de5e40d6ec4fa72cdd04e7"
+    },
+    {
+      "id": "datev-melanie",
+      "domain": "banking",
+      "title": "DATEV LODAS 2025 Melanie Muster",
+      "preparedFile": ".local/reference-pdfs/datev-lodas-2025-melanie-muster.pdf",
+      "file": "datev-lodas-2025-melanie-muster.pdf",
+      "sha256": "81c2230d4526e2d10f291d2985247eb204fc37eff2a7da7c202869c2752a01dc",
+      "sourceUrl": "https://www.datev.de/content/dam/markenassets/themen-und-produktgruppen/zielgruppen/zielgruppenuebergreifend/shop-assets/personalwirtschaft/lodas-musterauswertung-2025-deutsch.pdf",
+      "sourcePages": [
+        3
+      ],
+      "publisher": "DATEV",
+      "rights": "Public fictional sample; publisher rights retained; private preparation only.",
+      "sourceType": "existing-private-datev-reference",
+      "split": "tune",
+      "sourcePageCount": 30,
+      "sourceSha256": "f2228f7c96d7cffdc6b5ae005e6b54107ea7ed0b91de5e40d6ec4fa72cdd04e7"
+    },
+    {
+      "id": "cms-sbc",
+      "domain": "insurance",
+      "title": "CMS benefits example \u00b7 deductible and outpatient care",
+      "url": "https://www.cms.gov/files/document/samplecompletedsbctemplateaccessibleformatpdf.pdf",
+      "sourceSha256": "35a3313fec1212ebc15026b991c1e42b696f39b76d334d3e669fb01c7d1b4c68",
+      "sha256": "ea595b3bff4eebfb6e3a1c71631f38baea8c76dd61ead05bd1af309d0da28707",
+      "sourcePageCount": 5,
+      "sourcePages": [
+        1,
+        2
+      ],
+      "file": "cms-sbc-p1-2.pdf",
+      "rights": "US government authored example/form; retain source attribution; no endorsement; no customer data",
+      "sourceType": "official-public-sample",
+      "preparedFile": ".local/rag-benchmark/cms-sbc-p1-2.pdf",
+      "publisher": "CMS",
+      "split": "tune",
+      "sourceCache": "cms-sbc-original.pdf",
+      "group": "cms-sbc"
+    },
+    {
+      "id": "cms-sbc-continuation",
+      "domain": "insurance",
+      "title": "CMS benefits example \u00b7 services and exclusions",
+      "url": "https://www.cms.gov/files/document/samplecompletedsbctemplateaccessibleformatpdf.pdf",
+      "sourceSha256": "35a3313fec1212ebc15026b991c1e42b696f39b76d334d3e669fb01c7d1b4c68",
+      "sha256": "ca975cb99aa02a5422a66da65f867cdf56b088b5d6c2e020179fe35b1fef04e4",
+      "sourcePageCount": 5,
+      "sourcePages": [
+        3,
+        4
+      ],
+      "file": "cms-sbc-p3-4.pdf",
+      "rights": "US government authored example/form; retain source attribution; no endorsement; no customer data",
+      "sourceType": "official-public-sample",
+      "preparedFile": ".local/rag-benchmark/cms-sbc-p3-4.pdf",
+      "publisher": "CMS",
+      "split": "tune",
+      "sourceCache": "cms-sbc-original.pdf",
+      "group": "cms-sbc"
+    }
+  ],
+  "discovery": [
+    {
+      "publisher": "CFPB",
+      "url": "https://www.consumerfinance.gov/compliance/compliance-resources/mortgage-resources/tila-respa-integrated-disclosures/forms-samples/",
+      "use": "Completed loan-estimate and closing-disclosure samples",
+      "status": "Publisher PDFs returned HTTP 403 to this preparation client; not measured; do not bypass access controls."
+    },
+    {
+      "publisher": "IBM DocLayNet",
+      "url": "https://github.com/DS4SD/DocLayNet",
+      "use": "Layout evaluation; large optional corpus",
+      "status": "Not downloaded; review dataset licence and document provenance before use."
+    }
+  ]
+}
