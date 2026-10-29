@@ -33,7 +33,7 @@ for index in range(32):
         with closing(pdfium.PdfDocument(content)) as pdf,closing(pdf[0]) as page,closing(page.render(scale=2)) as bitmap:image=bitmap.to_pil().convert('RGB')
         if group=='scan':angle=(0,4,-4,8)[index%4]
         if group=='mixed':angle=(0,4)[index%2]
-        if group=='visual-rotation':angle=90
+        if group=='visual-rotation':angle=(90,180,270,90)[index%4]
         image=image.rotate(angle,resample=Image.Resampling.BICUBIC,expand=False,fillcolor='white')
         raw=io.BytesIO();c=canvas.Canvas(raw,pagesize=(600,800),invariant=1)
         c.drawImage(ImageReader(image),0,0,width=600,height=800)
@@ -54,6 +54,6 @@ for index in range(32):
     path=root/f'fixture-{index+1:03}.pdf';path.write_bytes(content)
     entries.append({'id':path.stem,'pdf':path.name,'group':group,'sha256':hashlib.sha256(content).hexdigest(),'value':value,'page':1,'expectedBoxes':boxes,'expectedCount':4})
 manifest={'format':'document-grounding-benchmark-v1','labelProvenance':'generated-known-input-not-human-approved','fixtures':entries,
-          'limitations':['Synthetic templates only; no representative business accuracy claim.','Visual 90-degree scans are deliberate challenge cases; failures remain in scores.','Table semantics and reading-order accuracy are not measured by this location suite.']}
+          'limitations':['Synthetic templates only; no representative business accuracy claim.','Visual 90/180/270-degree scans are challenge cases; failures remain in scores.','Table semantics and reading-order accuracy are measured separately, not by this location suite.']}
 (root/'manifest.json').write_text(json.dumps(manifest,indent=2))
 print('Created 32 local synthetic PDFs and a geometry manifest')

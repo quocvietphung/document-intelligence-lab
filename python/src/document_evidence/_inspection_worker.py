@@ -83,6 +83,37 @@ def _ocr_lines(image, languages, psm="3"):
     return list(lines.values())
 
 
+def _original_point(x, y, rotation, width, height):
+    """Inverse of a clockwise right-angle image rotation, using pixel edges."""
+    if rotation == 90: return y, height-x
+    if rotation == 180: return width-x, height-y
+    if rotation == 270: return width-y, x
+    return x, y
+
+
+def _scan_streams(image, options):
+    from PIL import Image
+    orientation = options.get("orientation", "auto")
+    rotations = (0, 90, 180, 270) if orientation == "auto" else (int(orientation),)
+    transforms = {90: Image.Transpose.ROTATE_270, 180: Image.Transpose.ROTATE_180, 270: Image.Transpose.ROTATE_90}
+    for rotation in rotations:
+        adjusted = image.transpose(transforms[rotation]) if rotation else image
+        inverse, angle = None, 0.0
+        if options.get("deskew"):
+            adjusted, inverse, angle = _deskew(adjusted)
+        streams = []
+        for words in _ocr_lines(adjusted, options["languages"]):
+            line, mapped, confidence = "", [], []
+            for text, (x,y,w,h), score in words:
+                if line: line += " "; mapped.append(None)
+                line += text; mapped.extend([(x,y,x+w,y+h)]*len(text)); confidence.append(score)
+            streams.append((line, mapped, "tesseract", min(confidence), inverse, angle, rotation))
+        # This is a query-specific location candidate, not a certified page orientation.
+        if any(_matches(stream[0], options["value"]) for stream in streams):
+            return streams
+    return []
+
+
 def ground(content, options):
     import pypdfium2 as pdfium
     digest = hashlib.sha256(content).hexdigest()
@@ -122,7 +153,7 @@ def ground(content, options):
                     inverse, angle = None, 0.0
                     if raw.strip():
                         compact, mapped = _compact(raw, boxes)
-                        streams.append((compact, mapped, "pdf-text", None))
+                        streams.append((compact, mapped, "pdf-text", None, None, 0.0, 0))
                     # Mixed pages may have a native footer but scanned body content.
                     # OCR is selective: only when native text has no exact requested value.
                     if options.get("ocr") and (not raw.strip() or not _matches(compact, options["value"])):
@@ -131,17 +162,8 @@ def ground(content, options):
                                 engines["tesseract"]=subprocess.run(["tesseract","--version"],capture_output=True,timeout=5,check=True).stdout.decode('utf-8').splitlines()[0][:100]
                             except (OSError,subprocess.SubprocessError):
                                 raise InspectionFailure("OCR_UNAVAILABLE") from None
-                        adjusted = image
-                        if options.get("deskew"):
-                            adjusted, inverse, angle = _deskew(image)
-                        for words in _ocr_lines(adjusted, options["languages"]):
-                            line, mapped, confidence = "", [], []
-                            for text, (x,y,w,h), score in words:
-                                if line:
-                                    line += " "; mapped.append(None)
-                                line += text; mapped.extend([(x,y,x+w,y+h)]*len(text)); confidence.append(score)
-                            streams.append((line, mapped, "tesseract", min(confidence)))
-                    for stream_index, (text, mapped, method, confidence) in enumerate(streams):
+                        streams.extend(_scan_streams(image, options))
+                    for stream_index, (text, mapped, method, confidence, inverse, angle, rotation) in enumerate(streams):
                         for match in _matches(text, options["value"]):
                             boxes = [b for b in mapped[match.start():match.end()] if b is not None]
                             if not boxes:
@@ -151,11 +173,12 @@ def ground(content, options):
                             polygon = [(left,top),(right,top),(right,bottom),(left,bottom)]
                             if inverse is not None:
                                 polygon = [(float(inverse[0,0]*x+inverse[0,1]*y+inverse[0,2]),float(inverse[1,0]*x+inverse[1,1]*y+inverse[1,2])) for x,y in polygon]
+                            polygon = [_original_point(x,y,rotation,image.width,image.height) for x,y in polygon]
                             polygon = [(max(0,min(1,x/image.width)), max(0,min(1,y/image.height))) for x,y in polygon]
                             bbox = (min(p[0] for p in polygon),min(p[1] for p in polygon),max(p[0] for p in polygon),max(p[1] for p in polygon))
                             if bbox[0] >= bbox[2] or bbox[1] >= bbox[3]:
                                 continue
-                            candidates.append({"id":f"sha256-{digest}:p{number+1}:{method}:s{stream_index}:c{match.start()}-{match.end()}","page":number+1,"text":match.group(),"bbox":bbox,"polygon":polygon,"method":method,"context":text[max(0,match.start()-80):match.end()+80],"deskew_degrees":angle,"ocr_confidence":confidence})
+                            candidates.append({"id":f"sha256-{digest}:p{number+1}:{method}:r{rotation}:s{stream_index}:c{match.start()}-{match.end()}","page":number+1,"text":match.group(),"bbox":bbox,"polygon":polygon,"method":method,"context":text[max(0,match.start()-80):match.end()+80],"deskew_degrees":angle,"rotation_degrees":rotation,"ocr_confidence":confidence})
                             if len(candidates) > 100:
                                 raise InspectionFailure("INSPECTION_LIMIT")
     return {"sha256":digest,"candidates":candidates,"engine_versions":engines}
@@ -167,7 +190,7 @@ def inspect(content, options):
     result=ground(content, options)
     result.update(format="document-inspection-v1",coordinate_space="displayed-page-normalized-top-left",
                   verification="text-match-only",humanReviewRequired=True,cloudCalls=0,
-                  options={k:options[k] for k in ("page","ocr","deskew","languages")})
+                  options={k:options[k] for k in ("page","ocr","deskew","languages","orientation")})
     comparison=compare_observations(options.get("recordedText", ""), "")
     comparison["locationStatus"]="NO_RECORDED_GEOMETRY"
     box,size=options.get("recordedBox"),options.get("recordedPageSize")

@@ -50,7 +50,22 @@ node scripts/restore-lab-test.mjs identity .local/backups/YOUR-BACKUP/keycloak.d
 
 Use the paths printed by the backup script. Dumps are private and Git-ignored. The restore checker creates separate test databases; it does not overwrite the live app or realm. Those test databases remain for inspection.
 
-The database backup helper does **not** back up every object/vector volume. Preserve private document objects, approved reference files and vector state separately when a complete environment recovery is required. Test compatibility and ownership before switching the application to restored data.
+The commands above are database-only checks. For private originals, ETL, vectors, Redis and prepared references too, use:
+
+```bash
+node scripts/backup-workspace.mjs --create
+node scripts/backup-workspace.mjs --verify .local/backups/workspace-YOUR-BACKUP
+```
+
+The full helper pauses only currently running writers, streams archives rather than buffering them in Node memory, then resumes each paused service even on failure. Model weights and antivirus caches are excluded to avoid duplicating gigabytes of replaceable artifacts. Preserve the required image/model versions separately. Database dumps are logical; private-volume archives are crash-consistent file copies, not Qdrant logical snapshots. Check all SHA-256 hashes before isolated restores. New `restore_workspace_*` databases and `document-lab-restore-*` volumes are removed after checking to avoid duplicating gigabytes of volume data; add `--keep-restores` to retain them. No live destination is overwritten. This verifies archive integrity and restoration, not a complete disaster-recovery SLA.
+
+### Explicit history cleanup
+
+`node scripts/retention-lab.mjs --tenant YOUR_TENANT --case YOUR_CASE --before YYYY-MM-DDT00:00:00Z` only previews old inspection/answer/feedback records. Applying requires both `--apply` and `--confirm-case YOUR_CASE`. It leaves a content-free `history-purge` audit summary. Running/queued inspections, originals, OCR corrections, reviewer tasks and reference datasets are excluded. The cutoff must be at least one day old. This is an operator action, not a new unauthenticated web endpoint or automatic scheduler. Back up first. Browser downloads and backups have separate operator-managed retention.
+
+### Durable Nova lifecycle
+
+The PostgreSQL journal contains actor/tenant/case-scoped request metadata, never prompts or answers. Heartbeats extend a 90-second ownership lease. Cancellation and final answer persistence lock the same row; stale/cancelled owners cannot commit an answer. Lost leases become `INTERRUPTED`; no model request is automatically retried, and provider stop confirmation remains false. Terminal request-ID tombstones survive API restarts. Nonpersistent test mode has an explicitly process-local fallback.
 
 ## Security boundaries
 

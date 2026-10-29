@@ -204,3 +204,9 @@ Optional local traces are not an automatic Application Insights integration. Man
 This guide does not run Terraform, publish images, start a paid VM, expose databases or deploy Vercel. Automatic Git-triggered Vercel deployment is disabled for this showcase release. Cloud release, TLS, secret management, backups and production identity remain separate work.
 
 The former Azure VM backend and Vercel project have been removed. Local Docker, its volumes and the separately retained Azure AI resources remain available. A future cloud release needs a newly reviewed deployment; no public frontend is active for this lab.
+
+## Local memory profile
+
+The local helper includes `docker-compose.local-resources.yml`: one Docling conversion worker; CPU/RAM ceilings for PostgreSQL, Keycloak, API, web, Redis, Qdrant and ClamAV; one Ollama request/model. The parser keeps 3 GiB and the model container keeps 5 GiB ceilings for processing peaks. Limits are not reserved RAM. Startup no longer loads Nova weights merely to open the UI. The first question loads the installed model; the default engine keep-alive is five idle minutes. `node scripts/docker-local.mjs --no-build --warmup` explicitly prepares RAM for a presentation. Model weights remain in their existing volume.
+
+Check actual usage with `docker stats --no-stream`. Disk images/cache are separate from RAM: only clean rebuildable cache or explicitly approved unused images. Never use volume/system prune to solve memory pressure. Backups stream to disk with `scripts/backup-workspace.mjs`; reference/model files, database volumes and other projects are not removed by startup.

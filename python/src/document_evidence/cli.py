@@ -30,13 +30,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--page", type=int, choices=range(1,5), help="Limit grounding to one page")
     parser.add_argument("--occurrence-id", help="Explicit candidate ID; never select the first duplicate implicitly")
     parser.add_argument("--ocr-language", default="eng", help="Installed Tesseract languages for --ground, e.g. eng+deu")
+    parser.add_argument("--orientation", choices=("auto","0","90","180","270"), default="auto", help="Clockwise OCR correction; auto returns a query-specific candidate, not verified orientation")
     parser.add_argument("--no-deskew", action="store_true", help="Disable conservative Hough-line correction for image-only pages")
     parser.add_argument("--output", type=Path, help="New private JSON file; existing files are never overwritten")
     args = parser.parse_args(argv)
     try:
         if args.ground is not None:
             value = ground_pdf(args.pdf, args.ground, page=args.page, occurrence_id=args.occurrence_id,
-                               ocr=not args.no_ocr, deskew=not args.no_deskew, languages=args.ocr_language,
+                               ocr=not args.no_ocr, deskew=not args.no_deskew, languages=args.ocr_language, orientation=args.orientation,
                                timeout_seconds=min(args.timeout,300)).to_dict()
         elif args.tags_only:
             value = {"native_structure": asdict(read_pdf_structure(args.pdf, timeout_seconds=min(args.timeout,300)))}

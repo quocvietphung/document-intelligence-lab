@@ -73,7 +73,7 @@ for candidate in result.candidates:
 
 - Native tags retain raw/mapped roles, hierarchy, page/MCID references and recorded table scope/header attributes. They remain separate from layout inferred by Docling. Tag presence is not PDF/UA or WCAG certification.
 - Native glyph boxes use PDFium's page-to-device transform, including native rotation and crop offsets. Coordinates are normalized against the **original displayed page**, top-left, as stated by `coordinate_space`.
-- Image-only pages, and mixed pages without an exact native-text match for the requested value, may use the local Tesseract fallback. Reliable near-horizontal Hough lines may support correction within ±12°; OCR polygons are inverse-projected to the original image. Weak/inconsistent line evidence leaves the scan unchanged. Arbitrary visual 90°/180° scans remain unsupported; no general orientation guarantee is made.
+- Image-only pages, and mixed pages without an exact native-text match for the requested value, may use the local Tesseract fallback. Reliable near-horizontal Hough lines may support correction within ±12°; OCR polygons are inverse-projected to the original image. Weak/inconsistent line evidence leaves the scan unchanged. OCR may try clockwise 0°/90°/180°/270° corrections; polygons are mapped back to the unchanged original. Auto mode stops at the first orientation matching the exact requested text, so it is a candidate, not a general orientation guarantee. Pass `orientation="90"` or CLI `--orientation 90` to choose explicitly; `"0"` disables right-angle trials.
 - Matching changes whitespace only. It preserves currencies, separators and digits; a missing or ambiguous value stays unresolved. Candidate identity is scoped to the PDF hash, extraction method and offsets; engine versions are retained. Pin versions when comparing runs.
 - Every result says `text-match-only` and requires human review. Tesseract confidence is a recognition signal, not accuracy. A match can still reproduce incorrect hidden text/OCR. Inspect the original crop; no PDF or saved answer is edited.
 
@@ -182,3 +182,19 @@ Build a preview wheel with `python -m build python --outdir python/dist/0.2.0a1`
 ## License
 
 MIT for this package. Docling, model weights and source documents retain their own licenses. No model, publisher PDF, token or customer document is bundled in the wheel.
+
+## Source-bound quality dimensions
+
+`evaluate_document` compares a normalized document with a reference bound to its original SHA-256. It separately reports character error rate, labelled table-cell text/structure matches and reading-order anchor pairs. It never combines these into an accuracy or approval score. Prepare labels from the PDF, never from predictions.
+
+```python
+import json
+from document_evidence import DoclingReader, evaluate_document
+
+document = DoclingReader().read("services/credit-api/src/test/resources/evidence/structure-regression.pdf")
+with open("python/examples/references/structure-quality.json") as source:
+    report = evaluate_document(document, json.load(source))
+print(report["pages"])
+```
+
+Run from the repository root with the Docling extra and previously prepared weights. The included reference is self-authored generated input, not independently reviewed business ground truth. Its six table cells and reading anchors come from the PDF generator's known content. Exact cell checks are not TEDS; order scores cover only unique labelled anchors. Exports can contain private findings. The source/wheel preview remains separate from the published PyPI alpha; these changes do not publish a new release.

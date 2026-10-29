@@ -70,15 +70,15 @@ In **Documents & review → View result & PDF**, select a recorded occurrence, e
 
 Completed inspection of the self-authored `8,500` regression cell. Both observations agree; the UI deliberately retains **not verified** and keeps previous inspections separate.
 
-- **Source candidates:** repeated text returns separate locations. Choose one explicitly to highlight it in the original, including supported native rotations and mild scan skew. Mixed pages can invoke OCR when their native layer has no exact requested text. Arbitrary visual 90°/180° scan orientation remains unsupported.
+- **Source candidates:** repeated text returns separate locations. Choose one explicitly to highlight it in the original, including supported native rotations and mild scan skew. Mixed pages can invoke OCR when their native layer has no exact requested text. Image-only OCR can try clockwise 0°/90°/180°/270° corrections or an explicitly chosen orientation. Auto mode stops at the first orientation with an exact requested-text match; this is a location candidate, not verified page orientation. The original PDF is never rotated or rewritten.
 - **Independent observation:** for an upright provider region with matching page proportions, inspect its source crop, stored OCR and a separate Tesseract reading. A disagreement, including `3,500` versus `8,500`, is reported without selecting a winner or changing stored evidence. Agreement is labelled **not verified**. Unsupported geometry remains unavailable.
 - **Private report:** download a receipt with original hash, engine/code versions, options, coordinates, OCR observations, reviewer corrections and up to ten saved answers referencing that document. Sharing a document ID does not prove an answer is supported. Reports contain private text/crops; keep them private. They omit the whole PDF. Temporary inspection source copies are removed after processing; saved reports/history have no automatic purge.
-- **Nova lifecycle:** each question has a request ID. **Stop waiting & request cancellation** requests backend interruption and tracks the result; repeated request IDs never dispatch twice in the same API process. A cancelled result is discarded before answer persistence. Provider-side termination is not confirmed. Status is process-local, expires after 30 minutes once terminal, and is unavailable after API restart; consult saved answer history when status is unknown.
+- **Nova lifecycle:** each question has a request ID. **Stop waiting & request cancellation** requests backend interruption and tracks the result; repeated request IDs never dispatch twice in the same API process. A cancelled result is discarded before answer persistence. Provider-side termination is not confirmed. With PostgreSQL enabled, request IDs, phase and terminal status survive API restarts. A 90-second renewable lease protects the final answer transaction against cross-instance cancellation. An expired request becomes **Interrupted**, is never redispatched automatically and cannot later save a response. Provider termination remains unconfirmed; consult saved answer history before retrying. Nonpersistent test mode remains process-local.
 - **Sign-in navigation:** restrictive-browser silent SSO falls back to explicit sign-in. The app restores a recent, same-origin dossier/page location after successful authentication; tokens remain in memory.
 
 Try the included `structure-regression.pdf` for its `8,500` table cell and `scanned-skew-regression.pdf` page 2 for four repeated `Total: $500` values. `TEST_EVIDENCE_QUALITY=1 TEST_QUALITY_CASE=<structure-test-case> node scripts/test-oauth.mjs` exercises the actual queue and private export. Add `TEST_QUALITY_NOVA_CANCEL=1` to also test cancellation during **local** model generation; use `TEST_QUALITY_NOVA_CANCEL=only` for a separate Nova-only pass against that existing dossier on a constrained machine. The cancellation test refuses Azure.
 
-The [32-PDF synthetic location report](docs/benchmarks/synthetic-grounding.json) records **112/128 locations at IoU ≥ 0.5**: native 48/48, mild-skew scans 32/32, mixed pages 32/32, visual-90° challenge scans 0/16. Labels come from known generated content/geometry, **not human-approved or representative business ground truth**. Reading-order correctness, table semantics and general OCR accuracy are not measured by this location suite. Timings depend on hardware and warm caches. The unmatched challenge cases remain in the denominator.
+The [32-PDF synthetic location report](docs/benchmarks/synthetic-grounding.json) records **128/128 locations at IoU ≥ 0.5**: native 48/48, mild-skew scans 32/32, mixed pages 32/32, visual 90°/180°/270° challenge scans 16/16. This report uses the expanded rotation fixtures; do not treat it as a controlled comparison with an older report that used only 90° scans. Labels come from known generated content/geometry, **not human-approved or representative business ground truth**. Reading-order correctness, table semantics and general OCR accuracy are not measured by this location suite. Timings depend on hardware and warm caches. The unmatched challenge cases remain in the denominator.
 
 ```bash
 python -m pip install './python[inspection]' reportlab
@@ -87,6 +87,22 @@ python -m document_evidence.benchmark /private/path/quality-corpus/manifest.json
 ```
 
 Existing corpus/report files are never overwritten. The PDFs are generated locally rather than bundled into the package or repository. [OmniDocBench](https://github.com/opendatalab/OmniDocBench) informed the separation of evaluation dimensions; this lightweight location suite is not an OmniDocBench/TEDS implementation or score.
+
+### Measure text, tables and reading order separately
+
+The source/wheel preview adds `evaluate_document(document, reference)`. Labels must name the original PDF SHA-256 and their provenance; a changed source is rejected. It reports character edit errors, labelled table-cell text and structure matches, and pairwise order of unique reading anchors. Missing or duplicate anchors remain failures. There is no combined accuracy percentage, automatic approval or TEDS claim.
+
+Use the included [structure PDF](services/credit-api/src/test/resources/evidence/structure-regression.pdf) with its [independently prepared generated-input labels](python/examples/references/structure-quality.json):
+
+```bash
+python python/examples/evaluate_pdf.py \
+  services/credit-api/src/test/resources/evidence/structure-regression.pdf \
+  python/examples/references/structure-quality.json --output private-quality.json
+```
+
+This example uses Docling with already prepared local weights; `--allow-model-download` is an explicit first-preparation option. The [measured local Docling result](docs/benchmarks/structure-quality.json) records six of six labelled cell texts/structures, 15 of 15 anchor pairs, and six character edits across 369 reference characters. One synthetic page is not representative business accuracy. For DATEV, permitted insurance wording and invoices, prepare independent labels from each actual PDF instead of copying predictions.
+
+The same original has [three measured English/German/Vietnamese retrieval questions](docs/benchmarks/multilingual-retrieval.json). BM25, vector and hybrid each retrieved the labelled page within five results; hybrid ranked the English question first and German/Vietnamese questions third. This small regression does not establish multilingual accuracy or that hybrid always improves ranking. Reproduce it against the structure-test dossier with `TEST_EVIDENCE_QUALITY=1 TEST_QUALITY_CASE=YOUR_CASE TEST_QUALITY_RETRIEVAL=1 TEST_QUALITY_RESTART_RUNS=1 node scripts/test-oauth.mjs`; the restart flag intentionally restarts the local API. This run uses no LLM or cloud call.
 
 ## Python Quick Start
 
@@ -216,7 +232,7 @@ Subsequent starts reuse models and databases:
 node scripts/docker-local.mjs
 ```
 
-Use `--no-build` only when source and images match. Wait for the helper's final readiness message after it preloads the model with an empty prompt. Warmup is not a quality test. This profile includes Docling, local Nova and ETL; it clears Azure chat/extraction configuration and has no silent cloud fallback.
+Use `--no-build` only when source and images match. Wait for the helper's final readiness message. Model weights stay on disk; Nova loads them on its first question and releases idle model memory after five minutes by default. Add `--warmup` to preload explicitly; warmup is not a quality test. This profile includes Docling, local Nova and ETL; it clears Azure chat/extraction configuration and has no silent cloud fallback.
 
 ### Sign in through Keycloak
 
@@ -458,6 +474,29 @@ Pushing `master` or `develop` does **not** publish a Python release or deploy Az
 4. Verify installation from PyPI in a clean virtual environment before announcing the release.
 
 The workflow defaults to `testpypi`, but **TestPyPI is not configured for this project**. To stage there, first configure its separate Trusted Publisher and protected `testpypi` environment; a PyPI publisher does not grant TestPyPI access. The workflow checks tag/version and uses job-scoped OIDC, not a stored API token. Local setup creates no publisher, account, tag or release. GitHub README edits do not update an already published PyPI version's description. [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/using-a-publisher/).
+
+### Memory-conscious local startup
+
+`node scripts/docker-local.mjs` applies `docker-compose.local-resources.yml`: bounded service RAM/CPU, one Docling conversion worker and lazy Nova loading. Weights stay on disk; Nova loads on the first question and the engine releases them after five idle minutes by default. The first answer can therefore take longer. Use `--warmup` only when needed. The parser keeps its tested 3 GiB limit; memory caps are ceilings, not reservations or guaranteed total usage.
+
+The default helper builds application services sequentially. On a 16 GB host, an 8 GiB Docker allocation is the tested starting point; leave memory for macOS and avoid running model inference while rebuilding or benchmarking OCR. Do not delete model/PDF/database volumes to save RAM. `docker stats --no-stream` measures current container use; build cache and images affect disk space separately.
+
+### Backup, restore and scoped history retention
+
+Create a private backup and validate it in isolated destinations:
+
+```bash
+node scripts/backup-workspace.mjs --create
+node scripts/backup-workspace.mjs --verify .local/backups/workspace-YOUR-BACKUP
+```
+
+The helper briefly pauses running writers, streams PostgreSQL dumps and private original/ETL/vector/Redis/reference archives to disk, records SHA-256 hashes and resumes services in `finally`. Volume archives are crash-consistent, not Qdrant logical snapshots. Verification checks every archive first, then restores into **new** databases/volumes; it never replaces live data. Temporary restore copies are removed after verification; add `--keep-restores` to retain them for inspection. Model weights, antivirus signatures, Azure credentials/resources and downloaded browser reports are excluded. Keep backups private and preserve the matching image/model versions separately. [Recovery details](docs/RELIABILITY_LAB.md).
+
+Saved inspection/answer/feedback history has an explicit, tenant/case-scoped operator cleanup. It defaults to **dry run**, excludes running/queued inspections and never removes original PDFs, OCR corrections, reviewer tasks or reference datasets. Applying it requires repeating the exact case ID with `--confirm-case`; an audit summary remains. Nothing is purged automatically.
+
+```bash
+node scripts/retention-lab.mjs --tenant YOUR_TENANT --case YOUR_CASE --before YYYY-MM-DDT00:00:00Z
+```
 
 ## Storage and troubleshooting
 

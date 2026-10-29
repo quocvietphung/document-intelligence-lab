@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {localCompose,localModel,validateModel,freeDiskKb,warmupRequest} from './docker-local.mjs';
-test('warmup loads one explicit model without document content or generation',()=>{assert.deepEqual(JSON.parse(warmupRequest()),{model:localModel,prompt:'',stream:false,keep_alive:'30m',options:{num_ctx:4096}});});
+test('warmup loads one explicit model without document content or generation',()=>{assert.deepEqual(JSON.parse(warmupRequest()),{model:localModel,prompt:'',stream:false,keep_alive:'5m',options:{num_ctx:4096}});});
 test('local profile keeps Docling, uses one explicit local model and no cloud startup',()=>{
   const configuration=localCompose();assert.equal(configuration.env.OLLAMA_CHAT_MODEL,localModel);
   assert.ok(configuration.args.includes('docker-compose.docling.yml'));assert.ok(configuration.args.includes('docker-compose.nova-local.yml'));

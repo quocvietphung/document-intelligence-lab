@@ -16,7 +16,10 @@ import org.springframework.http.HttpStatus;
 public class LocalEvidenceInspection {
   public record Request(@NotNull UUID requestId,@Min(0) long caseVersion,
       @NotBlank @Pattern(regexp="[-a-zA-Z0-9]{1,80}") String documentId,@Min(1) @Max(4) int page,
-      @NotBlank @Size(max=500) String value,@Size(max=80) String sourceId,@AssertTrue boolean consent) {}
+      @NotBlank @Size(max=500) String value,@Size(max=80) String sourceId,@AssertTrue boolean consent,
+      @Pattern(regexp="auto|0|90|180|270") String orientation) {
+    public Request(UUID requestId,long caseVersion,String documentId,int page,String value,String sourceId,boolean consent){this(requestId,caseVersion,documentId,page,value,sourceId,consent,"auto");}
+  }
   private final CreditCaseService cases;private final LabStore store;private final DistributedLimits limits;
   private final boolean enabled;private final Path root;
   public LocalEvidenceInspection(CreditCaseService cases,LabStore store,DistributedLimits limits,
@@ -39,7 +42,9 @@ public class LocalEvidenceInspection {
     if(item.version()!=request.caseVersion())throw fail(409,"Source changed");
     var doc=document(tenant,id,request.documentId());var page=doc.pages().stream().filter(p->p.number()==request.page()).findFirst().orElseThrow(()->fail(422,"Unknown source page"));
     String runId="insp-"+request.requestId(),hash=fingerprint(doc);
-    var identity=Map.of("documentFingerprint",hash,"documentId",doc.id(),"page",request.page(),"value",request.value(),"sourceId",Objects.toString(request.sourceId(),""));
+    String orientation=Objects.requireNonNullElse(request.orientation(),"auto");
+    if(!Set.of("auto","0","90","180","270").contains(orientation))throw fail(422,"Invalid OCR orientation");
+    var identity=Map.of("documentFingerprint",hash,"documentId",doc.id(),"page",request.page(),"value",request.value(),"sourceId",Objects.toString(request.sourceId(),""),"orientation",orientation);
     var previous=store.find(tenant,id,"inspection-run",runId);
     if(previous.isPresent()){
       if(!identity.entrySet().stream().allMatch(e->Objects.equals(previous.get().get(e.getKey()),e.getValue())))throw fail(409,"Request ID already used for different evidence");
@@ -52,7 +57,7 @@ public class LocalEvidenceInspection {
     String scope=RagEngine.hash(tenant+"|"+id),sha;
     try{sha=HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes));}catch(Exception e){throw new IllegalStateException(e);}
     var payload=new LinkedHashMap<String,Object>();payload.put("format","document-inspection-request-v1");payload.put("id",runId);payload.put("scope",scope);payload.put("sha256",sha);
-    payload.put("pdf",Base64.getEncoder().encodeToString(bytes));payload.put("page",request.page());payload.put("value",request.value());payload.put("languages","eng");
+    payload.put("pdf",Base64.getEncoder().encodeToString(bytes));payload.put("page",request.page());payload.put("value",request.value());payload.put("languages","eng");payload.put("orientation",orientation);
     if(request.sourceId()!=null&&!request.sourceId().isBlank()){
       var region=page.regions().stream().filter(r->r.id().equals(request.sourceId())).findFirst().orElseThrow(()->fail(422,"Unknown source occurrence"));
       if(!region.text().equals(request.value()))throw fail(422,"Use the exact recorded occurrence text");

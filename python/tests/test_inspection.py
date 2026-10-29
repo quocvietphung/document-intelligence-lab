@@ -25,13 +25,38 @@ class InspectionContractTest(unittest.TestCase):
         self.assertEqual(result.returncode,0,result.stderr.decode())
 
     def test_bad_options_fail_before_any_file_or_network_access(self):
-        for options in [{'page':5},{'languages':'eng;curl'},{'timeout_seconds':0},{'occurrence_id':'x'*201}]:
+        for options in [{'page':5},{'languages':'eng;curl'},{'timeout_seconds':0},{'occurrence_id':'x'*201},{'orientation':'45'}]:
             with self.subTest(options=options),self.assertRaises(ValueError):
                 ground_pdf('/does/not/exist.pdf','500',**options)
 
 
 @unittest.skipUnless(os.environ.get('TEST_PDF_INSPECTION')=='1','Set TEST_PDF_INSPECTION=1 with inspection dependencies and local Tesseract')
 class ActualPdfInspectionTest(unittest.TestCase):
+    def test_visual_right_angle_scans_keep_coordinates_on_the_unchanged_original(self):
+        import hashlib,io
+        from contextlib import closing
+        import pypdfium2 as pdfium
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.utils import ImageReader
+        with closing(pdfium.PdfDocument(str(PDFS/'scanned-skew-regression.pdf'))) as pdf,closing(pdf[0]) as page,closing(page.render(scale=2)) as bitmap:
+            image=bitmap.to_pil().convert('RGB')
+        upright=ground_pdf(PDFS/'scanned-skew-regression.pdf','Total: $500',page=1)
+        with tempfile.TemporaryDirectory() as folder:
+            for angle in (90,180,270):
+                raw=io.BytesIO();pdf=canvas.Canvas(raw,pagesize=(600,800));pdf.drawImage(ImageReader(image.rotate(angle,expand=False,fillcolor='white')),0,0,width=600,height=800);pdf.save()
+                path=Path(folder)/f'rotation-{angle}.pdf';path.write_bytes(raw.getvalue());before=hashlib.sha256(path.read_bytes()).hexdigest()
+                result=ground_pdf(path,'Total: $500',orientation=str(angle),timeout_seconds=150)
+                self.assertEqual(len(result.candidates),4);self.assertEqual(result.status,'ambiguous');self.assertIsNone(result.selected_id)
+                radians=math.radians(angle);expected=[]
+                for candidate in upright.candidates:
+                    x=(candidate.bbox[0]+candidate.bbox[2])*300-300;y=(candidate.bbox[1]+candidate.bbox[3])*400-400
+                    expected.append(((math.cos(radians)*x+math.sin(radians)*y+300)/600,(-math.sin(radians)*x+math.cos(radians)*y+400)/800))
+                for candidate,(x,y) in zip(result.candidates,expected):
+                    self.assertEqual(candidate.rotation_degrees,angle)
+                    self.assertAlmostEqual((candidate.bbox[0]+candidate.bbox[2])/2,x,delta=.012)
+                    self.assertAlmostEqual((candidate.bbox[1]+candidate.bbox[3])/2,y,delta=.012)
+                self.assertEqual(before,hashlib.sha256(path.read_bytes()).hexdigest())
+
     def test_independent_crop_exposes_injected_ocr_error_without_editing_the_pdf(self):
         import hashlib
         path=PDFS/'structure-regression.pdf';before=hashlib.sha256(path.read_bytes()).hexdigest()

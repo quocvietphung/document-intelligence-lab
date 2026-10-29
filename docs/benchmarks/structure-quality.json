@@ -1,0 +1,42 @@
+{
+  "format": "document-quality-results-v1",
+  "sha256": "c800f669a9c2d111c2d31263c679e7bf1ad803f2229f59b8dc43d40a5015e01e",
+  "provider": "docling",
+  "providerVersion": "docling-serve-1.18.0",
+  "labelProvenance": "generated-known-input-not-human-approved",
+  "pages": [
+    {
+      "page": 1,
+      "available": true,
+      "text": {
+        "editDistance": 6,
+        "referenceCharacters": 369,
+        "characterErrorRate": 0.016260162601626018
+      },
+      "readingOrder": {
+        "referencePairs": 15,
+        "correctPairs": 15,
+        "pairAccuracy": 1.0,
+        "missingOrAmbiguousAnchors": []
+      },
+      "tables": [
+        {
+          "index": 0,
+          "available": true,
+          "labelledCells": 6,
+          "matchingTextCells": 6,
+          "cellTextExactMatch": 1.0,
+          "matchingStructureCells": 6,
+          "cellStructureExactMatch": 1.0,
+          "unlabelledActualCells": 0
+        }
+      ]
+    }
+  ],
+  "humanReviewRequired": true,
+  "limitations": [
+    "Only supplied labels are measured; no global quality score.",
+    "Reading order uses unique text anchors; missing/duplicate anchors remain failures.",
+    "Cell checks are position-based exact matches, not TEDS or general table accuracy."
+  ]
+}

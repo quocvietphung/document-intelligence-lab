@@ -13,7 +13,7 @@ services:
       OLLAMA_NUM_PARALLEL: "1"
       OLLAMA_MAX_LOADED_MODELS: "1"
       OLLAMA_MAX_QUEUE: "2"
-      OLLAMA_KEEP_ALIVE: "30m"
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-5m}
       # Single-user CPU lab: reuse the active slot, not multi-prompt RAM snapshots.
       LLAMA_ARG_CACHE_RAM: "0"
       LLAMA_ARG_THREADS: "3"
