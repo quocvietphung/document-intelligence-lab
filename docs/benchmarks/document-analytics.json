@@ -42,13 +42,21 @@
     "sparkStartupAndQueryMs": 36338,
     "elapsedMs": 36509,
     "sparkVersion": "4.2.1",
-    "outputCompression": "gzip"
+    "outputCompression": "gzip",
+    "productionApproved": false,
+    "securityGate": "FAILED_BUNDLED_JAVA_DEPENDENCIES",
+    "recordedImageScan": {
+      "high": 59,
+      "critical": 3,
+      "run": "https://github.com/quocvietphung/document-intelligence-lab/actions/runs/40959443968"
+    }
   },
   "limits": [
     "These are bounded acceptance checks, not business anomaly accuracy.",
     "Existing PDF review states were preserved; no new approval was generated.",
     "Small mixed-domain sets correctly abstain from model training.",
     "The Spark session startup is included; DuckDB timing measures its in-process query.",
-    "Original PDFs, raw values, credentials, dossier IDs and model weights are not included."
+    "Original PDFs, raw values, credentials, dossier IDs and model weights are not included.",
+    "Passing Spark/DuckDB parity does not establish dependency security or production readiness."
   ]
 }
