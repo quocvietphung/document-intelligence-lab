@@ -9,6 +9,7 @@ import {ResearchConnections} from './ResearchConnections';
 import {LocalDataPipelinePanel} from './LocalDataPipelinePanel';
 import {DocumentAnalyticsPanel} from './DocumentAnalyticsPanel';
 import {RagPdfSources} from './RagPdfSources';
+import {DocumentClassificationPanel} from './DocumentClassificationPanel';
 
 type Props={caseId:string;caseVersion:number;locale:string;view:'experiments'|'assets';inspect:(id:string,page?:number)=>void};
 export function DocumentResearchPanel({caseId,caseVersion,locale,view,inspect}:Props) {
@@ -80,6 +81,7 @@ export function DocumentResearchPanel({caseId,caseVersion,locale,view,inspect}:P
       {view==='experiments'?data.jobs.filter(j=>j.status!=='COMPLETE').slice(0,5).map(job=><p className={job.status==='FAILED'?'notice-error':'notice-lab'} role="status" key={job.id}>{t(job.status)} · {t(job.suite)}{job.errorCode?` · ${t(job.errorCode)}`:''}</p>):null}
       {!data.documents.length?<div className="surface lab-empty"><FileCheck2 size={30}/><p>{t('noDocuments')}</p><a className="button-primary" href={`?case=${encodeURIComponent(caseId)}#documents`}>{t('documents')}<ArrowUpRight size={16}/></a></div>:null}
       {view==='experiments'? <>
+        <DocumentClassificationPanel key={`classification:${caseId}:${caseVersion}`} caseId={caseId} caseVersion={caseVersion} locale={locale}/>
         <RagPdfSources locale={locale} documents={data.documents} inspect={inspect}/>
         <div className="research-tabs" aria-label={t('experiments')}>{(['datasets','results'] as const).map(id=><button key={id} data-page-tour={id==='datasets'?'experiments-labels':'experiments-results'} className={panel===id?'selected':''} aria-pressed={panel===id} onClick={()=>setPanel(id)}>{t(id)}<span>{id==='datasets'?data.datasets.length:visibleRuns.length}</span></button>)}</div>
         {panel==='datasets'&&data.documents.length? <section className="surface lab-section research-reference">

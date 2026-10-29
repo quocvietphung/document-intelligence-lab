@@ -158,6 +158,8 @@ def work(root, etl_root):
     root.mkdir(parents=True, exist_ok=True)
     while True:
         (root / "heartbeat").touch()
+        from classification import process as classify_documents
+        classify_documents(root)
         for path in sorted((root / "queue").glob("*/*.input.json"))[:100]:
             result_path = path.with_name(path.name.replace(".input.json", ".result.json"))
             if result_path.exists() or path.is_symlink() or path.stat().st_size > 10_000:

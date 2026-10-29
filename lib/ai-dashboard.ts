@@ -25,7 +25,7 @@ export const dashboardFeatures=[
   {id:'transparency',category:'control',engine:'human',target:{trust:'privacy'}},
   {id:'embeddings',category:'ai',engine:'retrieval',target:{page:'studio'}},
   {id:'field-explanation',category:'ai',engine:'chat',target:{page:'documents'}},
-  {id:'classification',category:'control',engine:'rules',target:{page:'documents'}},
+  {id:'classification',category:'ai',engine:'classification',target:{page:'experiments'}},
   {id:'field-profiles',category:'control',engine:'rules',target:{page:'pipeline',panel:'batches'}},
   {id:'batches',category:'control',engine:'rules',target:{page:'pipeline',panel:'batches'}},
   {id:'anomaly',category:'ai',engine:'ml',target:{page:'pipeline',panel:'assets'}},
@@ -50,6 +50,7 @@ export const dashboardGroups=[
 export type DashboardFilter='all'|'ai'|'control';
 export function dashboardEngine(feature:DashboardFeature,capabilities:AICapabilities|undefined,demo:boolean):{kind:AIKind;provider:string;model:string;configured:boolean}{
   if(demo)return {kind:'demo',provider:'demo',model:'',configured:false};
+  if(feature.engine==='classification')return {kind:'unknown',provider:'scikit-learn · optional local CPU',model:'TF-IDF + Logistic Regression · PDF benchmark; operational types still use Java rules',configured:false};
   if(feature.engine==='ml')return {kind:'unknown',provider:'scikit-learn · optional local CPU',model:'Isolation Forest · held-out cohort evaluation',configured:false};
   if(feature.engine==='rules')return {kind:'rules',provider:'Java · rules',model:feature.id==='quality'?'uploaded PDF evidence':'',configured:false};
   if(feature.engine==='human')return {kind:'context',provider:'human',model:'',configured:false};

@@ -1,0 +1,925 @@
+{
+  "method": "insurance-tfidf-logreg-v1",
+  "datasetVersion": "insurance-classification-pdf-v2",
+  "datasetFingerprint": "03994d7512a92bf4b2bd396f88bb62ca8e3cd00f76924f3de0e059563a99c393",
+  "status": "COMPLETE",
+  "library": "scikit-learn 1.9.1",
+  "labels": [
+    "insurance-claim",
+    "insurance-policy",
+    "invoice",
+    "other"
+  ],
+  "splits": {
+    "train": 36,
+    "validation": 12,
+    "test": 12,
+    "challenge": 6
+  },
+  "groupSplits": {
+    "train": [
+      "insurance-claim-family-1",
+      "insurance-claim-family-2",
+      "insurance-claim-family-3",
+      "insurance-policy-family-1",
+      "insurance-policy-family-2",
+      "insurance-policy-family-3",
+      "invoice-family-1",
+      "invoice-family-2",
+      "invoice-family-3",
+      "other-family-1",
+      "other-family-2",
+      "other-family-3"
+    ],
+    "validation": [
+      "insurance-claim-family-4",
+      "insurance-policy-family-4",
+      "invoice-family-4",
+      "other-family-4"
+    ],
+    "test": [
+      "insurance-claim-family-5",
+      "insurance-policy-family-5",
+      "invoice-family-5",
+      "other-family-5"
+    ],
+    "challenge": [
+      "challenge-family-1",
+      "challenge-family-2",
+      "challenge-family-3",
+      "challenge-family-4",
+      "challenge-family-5",
+      "challenge-family-6"
+    ]
+  },
+  "parameters": {
+    "C": 1,
+    "classWeight": "balanced",
+    "seed": 17,
+    "wordNgrams": [
+      1,
+      2
+    ],
+    "charNgrams": [
+      3,
+      5
+    ],
+    "minimumScore": 0.6,
+    "minimumMargin": 0.15
+  },
+  "modelInputs": [
+    "pageText"
+  ],
+  "scoreCalibrated": false,
+  "thresholdSelection": "Fixed before the first held-out evaluation; not tuned on test/challenge.",
+  "metrics": {
+    "validation": {
+      "rule": {
+        "samples": 12,
+        "accuracy": 0.75,
+        "macroF1": 0.6666666666666666,
+        "confusionMatrix": [
+          [
+            0,
+            0,
+            0,
+            3
+          ],
+          [
+            0,
+            3,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            3,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            3
+          ]
+        ],
+        "perClass": [
+          {
+            "label": "insurance-claim",
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "support": 3
+          },
+          {
+            "label": "insurance-policy",
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "support": 3
+          },
+          {
+            "label": "invoice",
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "support": 3
+          },
+          {
+            "label": "other",
+            "precision": 0.5,
+            "recall": 1,
+            "f1": 0.6666666666666666,
+            "support": 3
+          }
+        ]
+      },
+      "model": {
+        "samples": 12,
+        "accuracy": 1,
+        "macroF1": 1,
+        "confusionMatrix": [
+          [
+            3,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            3,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            3,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            3
+          ]
+        ],
+        "perClass": [
+          {
+            "label": "insurance-claim",
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "support": 3
+          },
+          {
+            "label": "insurance-policy",
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "support": 3
+          },
+          {
+            "label": "invoice",
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "support": 3
+          },
+          {
+            "label": "other",
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "support": 3
+          }
+        ]
+      },
+      "routing": {
+        "reviewRequired": 12,
+        "accepted": 0,
+        "coverage": 0,
+        "acceptedAccuracy": null
+      }
+    },
+    "test": {
+      "rule": {
+        "samples": 12,
+        "accuracy": 0.5,
+        "macroF1": 0.375,
+        "confusionMatrix": [
+          [
+            0,
+            0,
+            0,
+            3
+          ],
+          [
+            0,
+            0,
+            0,
+            3
+          ],
+          [
+            0,
+            0,
+            3,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            3
+          ]
+        ],
+        "perClass": [
+          {
+            "label": "insurance-claim",
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "support": 3
+          },
+          {
+            "label": "insurance-policy",
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "support": 3
+          },
+          {
+            "label": "invoice",
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "support": 3
+          },
+          {
+            "label": "other",
+            "precision": 0.3333333333333333,
+            "recall": 1,
+            "f1": 0.5,
+            "support": 3
+          }
+        ]
+      },
+      "model": {
+        "samples": 12,
+        "accuracy": 1,
+        "macroF1": 1,
+        "confusionMatrix": [
+          [
+            3,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            3,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            3,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            3
+          ]
+        ],
+        "perClass": [
+          {
+            "label": "insurance-claim",
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "support": 3
+          },
+          {
+            "label": "insurance-policy",
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "support": 3
+          },
+          {
+            "label": "invoice",
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "support": 3
+          },
+          {
+            "label": "other",
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "support": 3
+          }
+        ]
+      },
+      "routing": {
+        "reviewRequired": 12,
+        "accepted": 0,
+        "coverage": 0,
+        "acceptedAccuracy": null
+      }
+    }
+  },
+  "rows": [
+    {
+      "id": "bench-0010",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-4",
+      "split": "validation",
+      "sha256": "cb11e1c9d83a085bfa17e291e2b6764fe644dc17d8436c0f653f161469b984fc",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "insurance-claim",
+      "score": 0.5584232700965212,
+      "margin": 0.39271228734125274,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "RULE_MODEL_DISAGREEMENT"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0011",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-4",
+      "split": "validation",
+      "sha256": "8298bab558190c93217860208d4e282cfe4544457898b27150e1acc02a6e474f",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "insurance-claim",
+      "score": 0.5584232700965212,
+      "margin": 0.39271228734125274,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "RULE_MODEL_DISAGREEMENT"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0012",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-4",
+      "split": "validation",
+      "sha256": "3246e9c695e35ee349f622df1601448087651f15e35f65d40ad835ce053fba9d",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "insurance-claim",
+      "score": 0.5584232700965212,
+      "margin": 0.39271228734125274,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "RULE_MODEL_DISAGREEMENT"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0013",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-5",
+      "split": "test",
+      "sha256": "ca8a45e07f3501aeefe16e6c62bd83209f4373bde10fb13db8f0fd1ce4156396",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "insurance-claim",
+      "score": 0.5967204115619839,
+      "margin": 0.44498790802846067,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "RULE_MODEL_DISAGREEMENT"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0014",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-5",
+      "split": "test",
+      "sha256": "2efe2316dedec41e764b38d4a62797e9147953dc5ec3a329ce5113d1f4d8153f",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "insurance-claim",
+      "score": 0.5967204115619839,
+      "margin": 0.44498790802846067,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "RULE_MODEL_DISAGREEMENT"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0015",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-5",
+      "split": "test",
+      "sha256": "56bbaee1e0e2cd26ef894f9cbeb21f19db790823e48c3a9786bfbc79a1de7a79",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "insurance-claim",
+      "score": 0.5967204115619839,
+      "margin": 0.44498790802846067,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "RULE_MODEL_DISAGREEMENT"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0025",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-4",
+      "split": "validation",
+      "sha256": "3efc452b8fdfa8f5ba45a39d912d7c80e38f4d87260b49e0e00f778744290473",
+      "page": 1,
+      "ruleLabel": "insurance-policy",
+      "ruleType": "insurance-policy",
+      "modelLabel": "insurance-policy",
+      "score": 0.5834821209468043,
+      "margin": 0.4313974861484538,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0026",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-4",
+      "split": "validation",
+      "sha256": "5e55e87c273a23272cc3e240d96b2bbade3def8c6d9579d3aced0b640a3e60f1",
+      "page": 1,
+      "ruleLabel": "insurance-policy",
+      "ruleType": "insurance-policy",
+      "modelLabel": "insurance-policy",
+      "score": 0.5834821209468043,
+      "margin": 0.4313974861484538,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0027",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-4",
+      "split": "validation",
+      "sha256": "bc377349416ca05e7b3705dcfcbd096c55c6d306f84f4d19d979c358cee2714a",
+      "page": 1,
+      "ruleLabel": "insurance-policy",
+      "ruleType": "insurance-policy",
+      "modelLabel": "insurance-policy",
+      "score": 0.5834821209468043,
+      "margin": 0.4313974861484538,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0028",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-5",
+      "split": "test",
+      "sha256": "a2c8ad2eb55a3cadda855dbf765fe18b195630b095db9051bf17ae84207463c9",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "insurance-policy",
+      "score": 0.5678830007266289,
+      "margin": 0.41265716529046326,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "RULE_MODEL_DISAGREEMENT"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0029",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-5",
+      "split": "test",
+      "sha256": "2a2fbcdaa322e228e734cf71b0288f89b188107976126297e4224dad24c031a5",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "insurance-policy",
+      "score": 0.5678830007266289,
+      "margin": 0.41265716529046326,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "RULE_MODEL_DISAGREEMENT"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0030",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-5",
+      "split": "test",
+      "sha256": "e1462cb89a20e468b3f1df876d6d6c039c175bf9791c3c05cd1c3ef77128783a",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "insurance-policy",
+      "score": 0.5678830007266289,
+      "margin": 0.41265716529046326,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "RULE_MODEL_DISAGREEMENT"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0040",
+      "label": "invoice",
+      "group": "invoice-family-4",
+      "split": "validation",
+      "sha256": "ad67578e74a02cd097933551ebfb2a8142aaf2def3b7a4d049eb48751815c34c",
+      "page": 1,
+      "ruleLabel": "invoice",
+      "ruleType": "invoice",
+      "modelLabel": "invoice",
+      "score": 0.4587022037631828,
+      "margin": 0.22160991460943333,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0041",
+      "label": "invoice",
+      "group": "invoice-family-4",
+      "split": "validation",
+      "sha256": "b83f1b6ffeb7cfbf468c16888b8acb2749046a88623941de5c217657a33905b7",
+      "page": 1,
+      "ruleLabel": "invoice",
+      "ruleType": "invoice",
+      "modelLabel": "invoice",
+      "score": 0.4587022037631828,
+      "margin": 0.22160991460943333,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0042",
+      "label": "invoice",
+      "group": "invoice-family-4",
+      "split": "validation",
+      "sha256": "28e489dea4d4596f9792912ebc02366eae4c980b8f93da3d8cb36344ecaad9bc",
+      "page": 1,
+      "ruleLabel": "invoice",
+      "ruleType": "invoice",
+      "modelLabel": "invoice",
+      "score": 0.4587022037631828,
+      "margin": 0.22160991460943333,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0043",
+      "label": "invoice",
+      "group": "invoice-family-5",
+      "split": "test",
+      "sha256": "193d309baab364e8c86005dc22522622c071212f22d3310bfb1eaf8be91c2a5f",
+      "page": 1,
+      "ruleLabel": "invoice",
+      "ruleType": "invoice",
+      "modelLabel": "invoice",
+      "score": 0.5493202020984251,
+      "margin": 0.3932881951396175,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0044",
+      "label": "invoice",
+      "group": "invoice-family-5",
+      "split": "test",
+      "sha256": "efdab8454b10c0968619ec8d2060e83a2cf917934cf46449da42e4035bd53cbb",
+      "page": 1,
+      "ruleLabel": "invoice",
+      "ruleType": "invoice",
+      "modelLabel": "invoice",
+      "score": 0.5493202020984251,
+      "margin": 0.3932881951396175,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0045",
+      "label": "invoice",
+      "group": "invoice-family-5",
+      "split": "test",
+      "sha256": "24b9f33fe8e0e4957ca62ceda0dcb953c81020895154e95bb42799bc4b834177",
+      "page": 1,
+      "ruleLabel": "invoice",
+      "ruleType": "invoice",
+      "modelLabel": "invoice",
+      "score": 0.5493202020984251,
+      "margin": 0.3932881951396175,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0055",
+      "label": "other",
+      "group": "other-family-4",
+      "split": "validation",
+      "sha256": "a9750a92b632b0ed720aba7d9f7e355fd716792f4e02b4d7d06eab3abb210b54",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "other",
+      "score": 0.4959917910041689,
+      "margin": 0.3128150519703239,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0056",
+      "label": "other",
+      "group": "other-family-4",
+      "split": "validation",
+      "sha256": "99700dbecc2dd04c43f59c1c112daeb32481ab8b3125f387d1c399781612fbf0",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "other",
+      "score": 0.4959917910041689,
+      "margin": 0.3128150519703239,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0057",
+      "label": "other",
+      "group": "other-family-4",
+      "split": "validation",
+      "sha256": "51da477bce5e9e722b8a40c7a264bbb7c4bf5468aab37cf0ad94cfbc196f0ec0",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "other",
+      "score": 0.4959917910041689,
+      "margin": 0.3128150519703239,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0058",
+      "label": "other",
+      "group": "other-family-5",
+      "split": "test",
+      "sha256": "ed6a6d29c2e2d7f9f50784b5182bb5c4c41a529becefc4dfcd8ecb15762a69d9",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "other",
+      "score": 0.44401397435279366,
+      "margin": 0.22560068177197248,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0059",
+      "label": "other",
+      "group": "other-family-5",
+      "split": "test",
+      "sha256": "6b416909458799e84a5be0c02d4998a39f82b44cba9f1ef760241c68be72ed66",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "other",
+      "score": 0.44401397435279366,
+      "margin": 0.22560068177197248,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0060",
+      "label": "other",
+      "group": "other-family-5",
+      "split": "test",
+      "sha256": "446162295313d8017f87e3117184221b36d21461e05fa8a8734851138e0ea631",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "other",
+      "score": 0.44401397435279366,
+      "margin": 0.22560068177197248,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE"
+      ],
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0061",
+      "label": "other",
+      "group": "challenge-family-1",
+      "split": "challenge",
+      "sha256": "f0f11815a85b61486b06a2e76248c2c49aa2ddb8c2d0f300356e46ee16ec14c2",
+      "page": 1,
+      "ruleLabel": "insurance-claim",
+      "ruleType": "insurance-claim",
+      "modelLabel": "insurance-policy",
+      "score": 0.31813051728196307,
+      "margin": 0.009880326472512357,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "SMALL_MARGIN",
+        "RULE_MODEL_DISAGREEMENT"
+      ],
+      "expectedReview": true
+    },
+    {
+      "id": "bench-0062",
+      "label": null,
+      "group": "challenge-family-2",
+      "split": "challenge",
+      "sha256": "6e5433eae1a055fb42b4c3cc97704c3816d705ad00a9b258e4905e52ec85c38f",
+      "page": 1,
+      "ruleLabel": "insurance-claim",
+      "ruleType": "insurance-claim",
+      "modelLabel": "insurance-claim",
+      "score": 0.3205873859657956,
+      "margin": 0.013124470285187428,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "SMALL_MARGIN"
+      ],
+      "expectedReview": true
+    },
+    {
+      "id": "bench-0063",
+      "label": null,
+      "group": "challenge-family-3",
+      "split": "challenge",
+      "sha256": "faa977fcba331dcdf8510adb5b222d00ac14d2af9559a58dc70ae35c9cf2027a",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "invoice",
+      "score": 0.28766314369675505,
+      "margin": 0.03914496607293588,
+      "needsReview": true,
+      "reviewReasons": [
+        "SHORT_TEXT",
+        "LOW_MODEL_SCORE",
+        "SMALL_MARGIN",
+        "RULE_MODEL_DISAGREEMENT"
+      ],
+      "expectedReview": true
+    },
+    {
+      "id": "bench-0064",
+      "label": null,
+      "group": "challenge-family-4",
+      "split": "challenge",
+      "sha256": "327acce7435895a037ef86a6ca6aecd3e0510c765983131d879082e1178a6fe5",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "insurance-policy",
+      "score": 0.26562674260855246,
+      "margin": 0.01833884028790453,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "SMALL_MARGIN",
+        "RULE_MODEL_DISAGREEMENT"
+      ],
+      "expectedReview": true
+    },
+    {
+      "id": "bench-0065",
+      "label": "other",
+      "group": "challenge-family-5",
+      "split": "challenge",
+      "sha256": "ef9ebdce19637ef13b074cbc5f0b06950314ca50b38d4e3ba63ef0a870687f1c",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "invoice",
+      "score": 0.40685175758316977,
+      "margin": 0.16367124556407867,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "RULE_MODEL_DISAGREEMENT"
+      ],
+      "expectedReview": true
+    },
+    {
+      "id": "bench-0066",
+      "label": null,
+      "group": "challenge-family-6",
+      "split": "challenge",
+      "sha256": "a30d31b54b59c175ae14aaa26edaf40d80d9c07466407cdbcf4e204fc6658dc9",
+      "page": 1,
+      "ruleLabel": "other",
+      "ruleType": "unknown",
+      "modelLabel": "other",
+      "score": 0.29748640840913565,
+      "margin": 0.048342702237697516,
+      "needsReview": true,
+      "reviewReasons": [
+        "LOW_MODEL_SCORE",
+        "SMALL_MARGIN"
+      ],
+      "expectedReview": true
+    }
+  ],
+  "tracking": "RECORDED",
+  "cloudCalls": 0,
+  "documentTypesChanged": 0,
+  "limitations": [
+    "All benchmark PDFs and labels are authored synthetic fixtures, not Zurich documents or representative customer data.",
+    "Template families and exact original/text hashes do not cross splits; all templates still share one author and renderer.",
+    "This development/reference corpus was inspected during implementation; it is not a blind independent holdout.",
+    "This is classical text ML, not a trained deep-learning or visual-layout model.",
+    "Native PDFBox text is evaluated; scanned OCR robustness is not measured.",
+    "Scores are uncalibrated model estimates, not validated confidence. Review routing is not production approval.",
+    "The four labels are a closed set. Mixed packets and unknown languages are not reliably detected automatically.",
+    "Rule output is mapped to four benchmark labels; unsupported rule types map to other for this comparison.",
+    "Macro F1 here is classification quality, not RAG retrieval or answer factuality."
+  ],
+  "challenge": {
+    "samples": 6,
+    "reviewExpected": 6,
+    "reviewRouted": 6,
+    "missedReview": []
+  },
+  "modelSha256": "92a0dbe230d0284475119a74f87d1c139268d166edb1032d5071d76e48cf0788",
+  "modelVersion": "92a0dbe230d0284475119a74",
+  "operationalApproval": false,
+  "elapsedMs": 353,
+  "execution": "Docker ARM64 CPU; actual Java PDFBox text/rules and offline scikit-learn",
+  "datasetManifest": "services/credit-api/src/main/resources/classification/manifest.json",
+  "independentBlindTest": false
+}

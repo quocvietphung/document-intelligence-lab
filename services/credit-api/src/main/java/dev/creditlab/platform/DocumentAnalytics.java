@@ -28,6 +28,7 @@ public class DocumentAnalytics {
     this.root=Path.of(root).toAbsolutePath().normalize();this.etlRoot=Path.of(etlRoot).toAbsolutePath().normalize();
   }
   private boolean ready(){try{return enabled&&Files.isRegularFile(root.resolve("heartbeat"),LinkOption.NOFOLLOW_LINKS)&&Files.getLastModifiedTime(root.resolve("heartbeat")).toInstant().isAfter(Instant.now().minusSeconds(90));}catch(Exception e){return false;}}
+  boolean workerReady(){return ready();}
   private Optional<Map<String,Object>> currentEtl(String tenant,String id,String hash){return store.list(tenant,id,"medallion-run").stream()
       .filter(r->"COMPLETE".equals(r.get("status"))&&hash.equals(r.get("sourceHash"))&&LocalDataPipeline.currentMethod(r)).findFirst();}
   @SuppressWarnings("unchecked") static Map<String,Object> object(Object value){return value instanceof Map<?,?>?(Map<String,Object>)value:Map.of();}

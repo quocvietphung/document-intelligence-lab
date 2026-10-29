@@ -3,12 +3,12 @@ import {dashboardFeatures} from './ai-dashboard';
 import {novaTaskIds} from './nova-trust';
 import {workflowPdfExample,servicePdfExample,aiServicePdfSamples,pdfExampleCopy} from './ai-pdf-examples';
 describe('PDF exercises',()=>{
-  it('covers all sixteen AI workflows and all controlled tasks in three languages',()=>{
+  it('covers every registered AI workflow and controlled task in three languages',()=>{
     for(const locale of ['en','de','vi'])for(const id of [...dashboardFeatures.filter(f=>f.category==='ai').map(f=>f.id),...novaTaskIds]){
       const example=workflowPdfExample(id,locale);expect(example?.file).toMatch(/\.pdf$/);expect(example?.question.length).toBeGreaterThan(30);
       expect(['general','insurance','banking']).toContain(example?.domain);
     }
-    expect(dashboardFeatures.filter(f=>f.category==='ai')).toHaveLength(17);
+    expect(dashboardFeatures.filter(f=>f.category==='ai')).toHaveLength(18);
   });
   it('covers both active and opt-in AI engines without pretending an example is a live result',()=>{
     for(const id of Object.keys(aiServicePdfSamples))expect(servicePdfExample(id,'en')?.file).toMatch(/\.pdf$/);

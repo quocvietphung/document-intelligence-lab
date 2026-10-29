@@ -50,7 +50,7 @@ An example question for an agent is: **“How does `SelectedFieldEvidence` restr
 
 **Document Validation & Evidence — a Python library and a local AI research workspace.**
 
-An MIT-licensed project for turning PDFs into structured data, traceable answers and reviewable findings. It studies **general business documents**, **insurance wording** and **DATEV payroll/banking documents**, without making credit, underwriting, settlement or payment decisions.
+An MIT-licensed project for turning PDFs into structured data, benchmarked classifications, traceable answers and reviewable findings. It studies **general business documents**, **insurance documents** and **DATEV payroll/banking documents**, without making credit, underwriting, settlement or payment decisions.
 
 **Published Python alpha:** [document-evidence-lab 0.1.0a1 on PyPI](https://pypi.org/project/document-evidence-lab/0.1.0a1/) · [release source](https://github.com/quocvietphung/document-intelligence-lab/tree/python-v0.1.0a1). Install the standalone library from PyPI, or clone this repository for the full Docker workspace.
 
@@ -66,12 +66,13 @@ The library validates Docling output without requiring the platform; the SDK is 
 
 ## AI workflows
 
-Overview distinguishes **17 AI-assisted workflows** from **15 rule-based, navigation and human-review controls**, not 32 models. Every AI entry has a PDF exercise; opening one does not invoke inference. Local anomaly evaluation is a separate, optional scikit-learn experiment.
+Overview distinguishes **18 AI-assisted workflows** from **14 rule-based, navigation and human-review controls**, not 32 models. Every AI entry has a PDF exercise; opening one does not invoke inference. Classification and anomaly comparisons use the optional local scikit-learn worker.
 
 | Workflow | PDF exercise |
 | --- | --- |
 | Text, layout and OCR | Invoice 51109301 versus its original |
 | Table extraction | Invoice lines, VAT and gross total |
+| Insurance classification | Four labelled fictional PDF types; compare Java rules, TF-IDF, per-class F1 and review flags |
 | Semantic/hybrid search | Shelter wording and its returned source page |
 | Local embeddings | Vector versus BM25/hybrid for the same checked question |
 | Nova document Q&A | Invoice number, INR currency and total |
@@ -94,7 +95,7 @@ Workflows share the selected extraction/Nova providers. MiniLM is English-focuse
 
 ![English walkthrough: Keycloak, PDF evidence, Nova, data layers, RAG, document analytics and local MLflow](docs/screenshots/document-ai-workflow-en.gif)
 
-English Docker UI captures, assembled into a 15-scene edited walkthrough of about 72 seconds. The refreshed Overview and analytics scenes extend the core PDF flow: Keycloak, evidence inspection, Nova's local guide, a saved Ollama answer, ETL and the nine-PDF / 77-question RAG dossier. Processing, answer and experiment records were saved previously; waiting periods are omitted and existing review states remain unchanged. Source links support inspection, not automatic approval.
+English Docker UI captures, assembled into a 16-scene edited walkthrough of about 78 seconds. The refreshed Overview, analytics and classification scenes extend the core PDF flow: Keycloak, evidence inspection, Nova's local guide, a saved Ollama answer, ETL and the nine-PDF / 77-question RAG dossier. The classification scene uses its separate fictional PDF corpus. Processing, answer and experiment records were saved previously; waiting periods are omitted and existing review states remain unchanged. Source links support inspection, not automatic approval.
 
 ## Python Quick Start
 
@@ -394,6 +395,10 @@ flowchart TD
     FACTS --> ML[Optional offline Isolation Forest / MAD · held-out cohorts]
     ML --> TRACK[Local MLflow · SQLite metadata]
     ML --> PROJECTION
+    CORPUS[Authored labelled insurance PDFs · fixed template families] --> JAVA
+    JAVA -->|Private file spool · explicit benchmark request| CLASSIFIER[Offline TF-IDF / Logistic Regression · actual Java rule baseline]
+    CLASSIFIER --> TRACK
+    CLASSIFIER -->|Versioned experiment report · no document type changes| DB
     LAYERS --> SPARK[Optional PySpark local batch · DuckDB parity]
     JAVA --> OBS[Redis quotas · optional OpenTelemetry]
 ```
@@ -404,7 +409,29 @@ In the workspace, one document provider and one Nova provider are selected; the 
 
 ## Research scope
 
-The lab studies document extraction, evidence preservation, multilingual retrieval and source-bound generation across general business, insurance and payroll documents. [AI workflows](#ai-workflows) lists the user-facing tasks; [architecture](#architecture) shows their providers and trust boundaries.
+The lab studies document extraction, insurance-document classification, evidence preservation, multilingual retrieval and source-bound generation across general business, insurance and payroll documents. [AI workflows](#ai-workflows) lists the user-facing tasks; [architecture](#architecture) shows their providers and trust boundaries.
+
+### Insurance classification benchmark
+
+Open **Research lab → Insurance document classification** after enabling the [optional local ML worker](#document-analytics-and-local-ml). Expand **Dataset & run controls**, preview a labelled PDF, opt into the local comparison, then inspect the held-out metrics, per-class precision/recall/F1, confusion matrices and PDF-by-PDF predictions. After a completed run, setup collapses so the results come first. **Overview → Insurance classification benchmark** links to the same page. No new service, deep-learning weights or Azure resource is required.
+
+The [corpus manifest](services/credit-api/src/main/resources/classification/manifest.json) identifies **66 authored fictional one-page PDFs**, with MIT-licensed generated content. Four labels are used: *Schadenmeldung, Versicherungsschein, Rechnung, Sonstiges*. Five template families per class produce three variants each: **36 train / 12 validation / 12 test**, plus **6 challenge packets**. The test set has only **four held-out template families, one per class**, with three variants each. An entire family stays in one split, as do exact source/text hashes. These fixtures are separate from the existing DATEV/Kaggle library. They are not customer records, Zurich documents or a representative insurance corpus.
+
+Java verifies each PDF hash, reads its native text with PDFBox and applies the **actual `DocumentExtractor` rules**. The offline Python worker fits word/character TF-IDF and class-weighted Logistic Regression on **training page text only**; labels, filenames and group IDs are excluded from features. Fixed score/margin thresholds and rule/model disagreement request review. Model scores are uncalibrated. The validation and test reports count every labelled PDF, including review cases; selective coverage is reported separately.
+
+The [measured Docker report](docs/benchmarks/insurance-classification.json) records a test macro F1 of **0.375 for Java rules** and **1.0 for this model on 12 synthetic test PDFs**. **All 12 still require review at the declared thresholds: gate coverage is 0%, not automated-processing success.** All six challenge cases were flagged for review. These are benchmark flags; no operational work item is automatically created. This development corpus was inspected while implementing the feature; it is not a blind independent holdout. Native-text classification does not measure scanned-OCR robustness, visual/layout understanding, language generalization or real insurance accuracy. No operational document type or approval is changed.
+
+Use **Export report JSON** or **Export predictions CSV** for the measured output. **Export benchmark input** downloads the exact native-PDF/rule observations used by Java. To reproduce it in a one-shot offline Docker container:
+
+```bash
+node scripts/run-document-classification.mjs --input /path/to/classification-input.json
+```
+
+The helper builds the shared ML image and prints the private report/model directory in the analytics volume. MLflow records the `insurance-document-classification` experiment in local SQLite; its HTTP UI is optional. No PDF text, prompt or token is logged to tracking. Model artifacts stay private and are not automatically promoted. The lightweight Python package gains no scikit-learn dependency and no PyPI release is performed.
+
+To regenerate fixtures, run `python scripts/prepare-classification-benchmark.py` in a development environment with ReportLab. Regeneration can change PDF hashes; update the corpus version, rerun the Java extraction and benchmark, and review the resulting labels. The included v2 fixes a fictional damaged-object field; it is not a fresh independent test set.
+
+![English insurance classification comparison: synthetic held-out metrics and explicit review coverage](docs/screenshots/insurance-classification-en.jpg)
 
 ### Evidence inspection
 
@@ -470,6 +497,7 @@ TEST_EVIDENCE_INSPECTION=1 node scripts/test-oauth.mjs
 TEST_DOCUMENT_STRUCTURE=1 node scripts/test-oauth.mjs
 TEST_RAG_PDFS=prepare node scripts/test-oauth.mjs
 TEST_RAG_PDFS=measure node scripts/test-oauth.mjs
+TEST_DOCUMENT_CLASSIFICATION=1 node scripts/test-oauth.mjs
 ```
 
 Prepare the [PDF sources](#pdf-examples) first for RAG acceptance. These checks create research records, not human approvals. [Research recipes and metric definitions](docs/RESEARCH_WORKSPACES.md) · [Python wheel/Docling checks](python/README.md#development) · [Nova, recovery and cancellation](docs/RELIABILITY_LAB.md).
@@ -477,6 +505,7 @@ Prepare the [PDF sources](#pdf-examples) first for RAG acceptance. These checks 
 | Measured artifact | Scope and limits |
 | --- | --- |
 | [PDF RAG comparison](docs/benchmarks/rag-pdf-retrieval.json) | Nine prepared PDFs, 77 questions; page-level retrieval, not answer factuality |
+| [Insurance classification](docs/benchmarks/insurance-classification.json) | 66 authored fictional PDFs; 12 template-held-out test cases, not representative insurance accuracy |
 | [Synthetic source locations](docs/benchmarks/synthetic-grounding.json) | 128/128 labelled locations at IoU ≥ 0.5 across 32 generated PDFs; not representative business accuracy |
 | [Text, table and reading order](docs/benchmarks/structure-quality.json) | One generated page: six cell matches, 15 anchor-pair matches, six character edits in 369 reference characters; not TEDS or general OCR accuracy |
 
@@ -484,7 +513,7 @@ Labels and PDF hashes are recorded in each report. Synthetic labels come from ge
 
 ### CI and package releases
 
-Platform CI checks web, Java, ETL, Keycloak and Docker/OIDC. Python CI checks **3.10–3.14**, wheel/sdist metadata, licence and package contents; its opt-in Docling smoke job downloads models explicitly. Pushing `master`/`develop` **does not publish PyPI or deploy Azure/Vercel**.
+Platform CI checks web, Java, ETL, local ML benchmarks, Keycloak and Docker/OIDC. Python CI checks **3.10–3.14**, wheel/sdist metadata, licence and package contents; its opt-in Docling smoke job downloads models explicitly. Pushing `master`/`develop` **does not publish PyPI or deploy Azure/Vercel**.
 
 The published package is **0.1.0a1**; source/wheel preview is **0.2.0a1**. A future release requires a reviewed matching `python-v<version>` tag, the manual `python-publish.yml` workflow and owner approval of the protected `pypi` environment. Its Trusted Publisher is scoped to this repository/workflow/environment. TestPyPI is not configured. Verify a clean installation before announcing a release; existing PyPI files and descriptions are not updated by README edits. [Release workflow](.github/workflows/python-publish.yml).
 

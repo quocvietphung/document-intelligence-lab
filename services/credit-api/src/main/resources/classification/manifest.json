@@ -1,0 +1,681 @@
+{
+  "version": "insurance-classification-pdf-v2",
+  "license": "MIT",
+  "provenance": "Authored fictional PDF fixtures; not customer data or a representative insurance dataset. v2 corrects the damaged-object example field; it is not a new independent test set.",
+  "labels": [
+    "insurance-claim",
+    "insurance-policy",
+    "invoice",
+    "other"
+  ],
+  "splits": {
+    "train": 36,
+    "validation": 12,
+    "test": 12,
+    "challenge": 6
+  },
+  "splitUnit": "template-family",
+  "language": "German-dominant, with a few English labels; no validated multilingual claim",
+  "samples": [
+    {
+      "id": "bench-0001",
+      "file": "bench-0001.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-1",
+      "split": "train",
+      "sha256": "d94db3d944a9bd947f63bf22a0c63d6ad3748ca352a42b21972fe142f7df50c9",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0002",
+      "file": "bench-0002.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-1",
+      "split": "train",
+      "sha256": "87a69d0ea1366ba4b75b11e46379c953118d887f77c0e4c324d86b7dbadfa06d",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0003",
+      "file": "bench-0003.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-1",
+      "split": "train",
+      "sha256": "ace55c0b267470e63d06cc747fee15b48f7120e37803e97fe4a1f35b2342f896",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0004",
+      "file": "bench-0004.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-2",
+      "split": "train",
+      "sha256": "f3e1816511432ef8c513c286ba8ac54a4e9d288eaa75fe83cc1bc5445350ea9f",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0005",
+      "file": "bench-0005.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-2",
+      "split": "train",
+      "sha256": "b8f2b73a150e9b8dd51eae0a4ea926b902a3d21e5ab1011f18b811033c06a0c3",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0006",
+      "file": "bench-0006.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-2",
+      "split": "train",
+      "sha256": "7d725d967358139def1222d783c41747df485ca79c5513d998c1b520fd22d689",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0007",
+      "file": "bench-0007.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-3",
+      "split": "train",
+      "sha256": "114d4fd5359b1acc9586f7e283b1c97fc4ee91e0923a636202d6bc53a993e4a9",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0008",
+      "file": "bench-0008.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-3",
+      "split": "train",
+      "sha256": "7d37ef95c8dea62991197a8a89f8550170249ff111c7167e2531355d72bfe878",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0009",
+      "file": "bench-0009.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-3",
+      "split": "train",
+      "sha256": "6abcdbaa635f1951478e26e54b74eb9a1590d0e8722b1f7c75a7c7edd2b02a8f",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0010",
+      "file": "bench-0010.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-4",
+      "split": "validation",
+      "sha256": "cb11e1c9d83a085bfa17e291e2b6764fe644dc17d8436c0f653f161469b984fc",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0011",
+      "file": "bench-0011.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-4",
+      "split": "validation",
+      "sha256": "8298bab558190c93217860208d4e282cfe4544457898b27150e1acc02a6e474f",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0012",
+      "file": "bench-0012.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-4",
+      "split": "validation",
+      "sha256": "3246e9c695e35ee349f622df1601448087651f15e35f65d40ad835ce053fba9d",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0013",
+      "file": "bench-0013.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-5",
+      "split": "test",
+      "sha256": "ca8a45e07f3501aeefe16e6c62bd83209f4373bde10fb13db8f0fd1ce4156396",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0014",
+      "file": "bench-0014.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-5",
+      "split": "test",
+      "sha256": "2efe2316dedec41e764b38d4a62797e9147953dc5ec3a329ce5113d1f4d8153f",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0015",
+      "file": "bench-0015.pdf",
+      "label": "insurance-claim",
+      "group": "insurance-claim-family-5",
+      "split": "test",
+      "sha256": "56bbaee1e0e2cd26ef894f9cbeb21f19db790823e48c3a9786bfbc79a1de7a79",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0016",
+      "file": "bench-0016.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-1",
+      "split": "train",
+      "sha256": "5a22253f98568f35f9b38efb3f79f3b6e5e584dd551a0363d31bb11e1458fd4f",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0017",
+      "file": "bench-0017.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-1",
+      "split": "train",
+      "sha256": "bfe18a70de12c360206e672b0cfbaa8350d7df4ab35429e4945366fef29499cc",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0018",
+      "file": "bench-0018.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-1",
+      "split": "train",
+      "sha256": "f853f049feb858fcec8a67193e53c608254fabbc3227e6dcc2526ece4b9d0dc2",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0019",
+      "file": "bench-0019.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-2",
+      "split": "train",
+      "sha256": "6e1d8111a1400061013b3e490c881f6576922a3194ad8a167142433bef561cc3",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0020",
+      "file": "bench-0020.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-2",
+      "split": "train",
+      "sha256": "b8a8f754d6075198bbc698ae43281e97847eba618a536acb0c97db816f74d569",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0021",
+      "file": "bench-0021.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-2",
+      "split": "train",
+      "sha256": "74dba6499a4d2ad7e8b1eaa792d743c444fcb219a912b3131abd9c8ea51ac356",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0022",
+      "file": "bench-0022.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-3",
+      "split": "train",
+      "sha256": "e08b4c7fa429c48564f12026f8adaf95ed1bea20e5013cfe533c315a95a2eaee",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0023",
+      "file": "bench-0023.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-3",
+      "split": "train",
+      "sha256": "9187b6e56a234a3d2a59053221a2a9086cb6e388cd736b47db765bc5d3df8936",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0024",
+      "file": "bench-0024.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-3",
+      "split": "train",
+      "sha256": "45dfeae44ee0badfd0347d93d37a67a8fee88b5a7905ba0d90a4b83e21483f26",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0025",
+      "file": "bench-0025.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-4",
+      "split": "validation",
+      "sha256": "3efc452b8fdfa8f5ba45a39d912d7c80e38f4d87260b49e0e00f778744290473",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0026",
+      "file": "bench-0026.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-4",
+      "split": "validation",
+      "sha256": "5e55e87c273a23272cc3e240d96b2bbade3def8c6d9579d3aced0b640a3e60f1",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0027",
+      "file": "bench-0027.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-4",
+      "split": "validation",
+      "sha256": "bc377349416ca05e7b3705dcfcbd096c55c6d306f84f4d19d979c358cee2714a",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0028",
+      "file": "bench-0028.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-5",
+      "split": "test",
+      "sha256": "a2c8ad2eb55a3cadda855dbf765fe18b195630b095db9051bf17ae84207463c9",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0029",
+      "file": "bench-0029.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-5",
+      "split": "test",
+      "sha256": "2a2fbcdaa322e228e734cf71b0288f89b188107976126297e4224dad24c031a5",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0030",
+      "file": "bench-0030.pdf",
+      "label": "insurance-policy",
+      "group": "insurance-policy-family-5",
+      "split": "test",
+      "sha256": "e1462cb89a20e468b3f1df876d6d6c039c175bf9791c3c05cd1c3ef77128783a",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0031",
+      "file": "bench-0031.pdf",
+      "label": "invoice",
+      "group": "invoice-family-1",
+      "split": "train",
+      "sha256": "37e2fdffbb723185459b9e21e108c68a1106bb48e56e01baa5875b1da5fc9280",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0032",
+      "file": "bench-0032.pdf",
+      "label": "invoice",
+      "group": "invoice-family-1",
+      "split": "train",
+      "sha256": "d921cbb7c9a5ea558c253b36a03eff5ebb79875a63f5b060d4298d4c3a98c0fa",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0033",
+      "file": "bench-0033.pdf",
+      "label": "invoice",
+      "group": "invoice-family-1",
+      "split": "train",
+      "sha256": "f4b76d7bae0bb1a7e51fba6651c794613d24f9e3866f4eb36d2ac2f7db8f864f",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0034",
+      "file": "bench-0034.pdf",
+      "label": "invoice",
+      "group": "invoice-family-2",
+      "split": "train",
+      "sha256": "884eed771f0acad65dde56dc8013f9e530508340e73ee383405c96c44aac34b3",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0035",
+      "file": "bench-0035.pdf",
+      "label": "invoice",
+      "group": "invoice-family-2",
+      "split": "train",
+      "sha256": "51b2762359828c2fc8403275288ad5ca63b6e7b3b46efe169215e1b07e8b57b5",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0036",
+      "file": "bench-0036.pdf",
+      "label": "invoice",
+      "group": "invoice-family-2",
+      "split": "train",
+      "sha256": "4f84fb28cd9d1ce4f3e4f57001e36e853eeaf23e8a79dc7ed943a2b9829b5881",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0037",
+      "file": "bench-0037.pdf",
+      "label": "invoice",
+      "group": "invoice-family-3",
+      "split": "train",
+      "sha256": "e30664a62f0b7f7b014013fd4575e349f909c731d20a3fef18dc0cb154aff8f8",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0038",
+      "file": "bench-0038.pdf",
+      "label": "invoice",
+      "group": "invoice-family-3",
+      "split": "train",
+      "sha256": "cce3221160fa6a8f97341bd488df9825b8b96c883ff136ab1d31a5343f160f7f",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0039",
+      "file": "bench-0039.pdf",
+      "label": "invoice",
+      "group": "invoice-family-3",
+      "split": "train",
+      "sha256": "a7aba61716166802677bca7cbbbcccd5fcb7ffea48ea42efb4bc8f932fc3c8f6",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0040",
+      "file": "bench-0040.pdf",
+      "label": "invoice",
+      "group": "invoice-family-4",
+      "split": "validation",
+      "sha256": "ad67578e74a02cd097933551ebfb2a8142aaf2def3b7a4d049eb48751815c34c",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0041",
+      "file": "bench-0041.pdf",
+      "label": "invoice",
+      "group": "invoice-family-4",
+      "split": "validation",
+      "sha256": "b83f1b6ffeb7cfbf468c16888b8acb2749046a88623941de5c217657a33905b7",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0042",
+      "file": "bench-0042.pdf",
+      "label": "invoice",
+      "group": "invoice-family-4",
+      "split": "validation",
+      "sha256": "28e489dea4d4596f9792912ebc02366eae4c980b8f93da3d8cb36344ecaad9bc",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0043",
+      "file": "bench-0043.pdf",
+      "label": "invoice",
+      "group": "invoice-family-5",
+      "split": "test",
+      "sha256": "193d309baab364e8c86005dc22522622c071212f22d3310bfb1eaf8be91c2a5f",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0044",
+      "file": "bench-0044.pdf",
+      "label": "invoice",
+      "group": "invoice-family-5",
+      "split": "test",
+      "sha256": "efdab8454b10c0968619ec8d2060e83a2cf917934cf46449da42e4035bd53cbb",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0045",
+      "file": "bench-0045.pdf",
+      "label": "invoice",
+      "group": "invoice-family-5",
+      "split": "test",
+      "sha256": "24b9f33fe8e0e4957ca62ceda0dcb953c81020895154e95bb42799bc4b834177",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0046",
+      "file": "bench-0046.pdf",
+      "label": "other",
+      "group": "other-family-1",
+      "split": "train",
+      "sha256": "a80179b34f73cf0a3bed5fd046388d41a45482bd4c0d952f6ef996493b444c43",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0047",
+      "file": "bench-0047.pdf",
+      "label": "other",
+      "group": "other-family-1",
+      "split": "train",
+      "sha256": "5aab052cd01390dc841b75285aa3f7fc168fdbc413bc22a5d8cca2f05c301c0c",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0048",
+      "file": "bench-0048.pdf",
+      "label": "other",
+      "group": "other-family-1",
+      "split": "train",
+      "sha256": "4c68f0ae086bf80bd3d8ea91485102a2f380a220ce4e92461e3ed59d3904f0c3",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0049",
+      "file": "bench-0049.pdf",
+      "label": "other",
+      "group": "other-family-2",
+      "split": "train",
+      "sha256": "acf9057b3a6cb38f9b68b3eed02c19e332ba3c65b2099f8ad3a05b2d7192169b",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0050",
+      "file": "bench-0050.pdf",
+      "label": "other",
+      "group": "other-family-2",
+      "split": "train",
+      "sha256": "8c09fcf8309917c0150f5b84cad3fa4df2d9c2838e81d516070926a785a07457",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0051",
+      "file": "bench-0051.pdf",
+      "label": "other",
+      "group": "other-family-2",
+      "split": "train",
+      "sha256": "24c19d69033e0f610411bf0d93fa5d81f8d1bc9320424aeb94f4da9db2b90148",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0052",
+      "file": "bench-0052.pdf",
+      "label": "other",
+      "group": "other-family-3",
+      "split": "train",
+      "sha256": "00b89021a341b05d1626b0308f47dff6ed0bf4213b5b01cc4810a5f8297dc3f9",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0053",
+      "file": "bench-0053.pdf",
+      "label": "other",
+      "group": "other-family-3",
+      "split": "train",
+      "sha256": "fe60a60469a322bc576500e48bb8337c0def524cc8f9c539a00aee0048c22057",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0054",
+      "file": "bench-0054.pdf",
+      "label": "other",
+      "group": "other-family-3",
+      "split": "train",
+      "sha256": "b6fce7e35ebb957e6aea24a0c5187b8adf9462f582d7094db532d9dcaf2c8445",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0055",
+      "file": "bench-0055.pdf",
+      "label": "other",
+      "group": "other-family-4",
+      "split": "validation",
+      "sha256": "a9750a92b632b0ed720aba7d9f7e355fd716792f4e02b4d7d06eab3abb210b54",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0056",
+      "file": "bench-0056.pdf",
+      "label": "other",
+      "group": "other-family-4",
+      "split": "validation",
+      "sha256": "99700dbecc2dd04c43f59c1c112daeb32481ab8b3125f387d1c399781612fbf0",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0057",
+      "file": "bench-0057.pdf",
+      "label": "other",
+      "group": "other-family-4",
+      "split": "validation",
+      "sha256": "51da477bce5e9e722b8a40c7a264bbb7c4bf5468aab37cf0ad94cfbc196f0ec0",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0058",
+      "file": "bench-0058.pdf",
+      "label": "other",
+      "group": "other-family-5",
+      "split": "test",
+      "sha256": "ed6a6d29c2e2d7f9f50784b5182bb5c4c41a529becefc4dfcd8ecb15762a69d9",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0059",
+      "file": "bench-0059.pdf",
+      "label": "other",
+      "group": "other-family-5",
+      "split": "test",
+      "sha256": "6b416909458799e84a5be0c02d4998a39f82b44cba9f1ef760241c68be72ed66",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0060",
+      "file": "bench-0060.pdf",
+      "label": "other",
+      "group": "other-family-5",
+      "split": "test",
+      "sha256": "446162295313d8017f87e3117184221b36d21461e05fa8a8734851138e0ea631",
+      "page": 1,
+      "expectedReview": false
+    },
+    {
+      "id": "bench-0061",
+      "file": "bench-0061.pdf",
+      "label": "other",
+      "group": "challenge-family-1",
+      "split": "challenge",
+      "sha256": "f0f11815a85b61486b06a2e76248c2c49aa2ddb8c2d0f300356e46ee16ec14c2",
+      "page": 1,
+      "expectedReview": true
+    },
+    {
+      "id": "bench-0062",
+      "file": "bench-0062.pdf",
+      "label": null,
+      "group": "challenge-family-2",
+      "split": "challenge",
+      "sha256": "6e5433eae1a055fb42b4c3cc97704c3816d705ad00a9b258e4905e52ec85c38f",
+      "page": 1,
+      "expectedReview": true
+    },
+    {
+      "id": "bench-0063",
+      "file": "bench-0063.pdf",
+      "label": null,
+      "group": "challenge-family-3",
+      "split": "challenge",
+      "sha256": "faa977fcba331dcdf8510adb5b222d00ac14d2af9559a58dc70ae35c9cf2027a",
+      "page": 1,
+      "expectedReview": true
+    },
+    {
+      "id": "bench-0064",
+      "file": "bench-0064.pdf",
+      "label": null,
+      "group": "challenge-family-4",
+      "split": "challenge",
+      "sha256": "327acce7435895a037ef86a6ca6aecd3e0510c765983131d879082e1178a6fe5",
+      "page": 1,
+      "expectedReview": true
+    },
+    {
+      "id": "bench-0065",
+      "file": "bench-0065.pdf",
+      "label": "other",
+      "group": "challenge-family-5",
+      "split": "challenge",
+      "sha256": "ef9ebdce19637ef13b074cbc5f0b06950314ca50b38d4e3ba63ef0a870687f1c",
+      "page": 1,
+      "expectedReview": true
+    },
+    {
+      "id": "bench-0066",
+      "file": "bench-0066.pdf",
+      "label": null,
+      "group": "challenge-family-6",
+      "split": "challenge",
+      "sha256": "a30d31b54b59c175ae14aaa26edaf40d80d9c07466407cdbcf4e204fc6658dc9",
+      "page": 1,
+      "expectedReview": true
+    }
+  ]
+}
