@@ -91,9 +91,9 @@ Workflows share the selected extraction/Nova providers. MiniLM is English-focuse
 
 ## Walkthrough
 
-![English walkthrough: sign-in, research overview, PDF results and evidence, Nova, and local data layers](docs/screenshots/document-evidence-walkthrough-en.gif)
+![English walkthrough: Keycloak, PDF evidence, Nova guidance and saved answers, data layers, nine PDF sources and RAG metrics](docs/screenshots/document-ai-workflow-en.gif)
 
-An edited walkthrough of an existing synthetic-invoice dossier in the running English workspace. The extraction and ETL receipts were already saved; Nova's invoice-number/currency answer was generated locally for this walkthrough. Waiting periods are omitted. Source links support inspection, not automatic fact-checking or human approval.
+Fresh captures from the current English Docker UI, assembled into a 13-scene edited walkthrough of about one minute. It moves from a prepared invoice dossier through PDF evidence, Nova's local guide, a saved Ollama answer and local ETL, then to the nine-PDF / 77-question RAG dossier. Processing, answer and experiment records were saved previously; waiting periods are omitted and existing review states remain unchanged. Source links support inspection, not automatic approval.
 
 ## Python Quick Start
 
