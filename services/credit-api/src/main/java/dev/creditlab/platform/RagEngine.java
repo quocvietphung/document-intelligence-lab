@@ -16,7 +16,7 @@ public class RagEngine {
   public record Chunk(String id,String documentId,String title,int page,String kind,String text) {}
   public record Hit(String id,String documentId,String title,int page,String kind,String text,double vector,double lexical,double score,boolean suspicious) {}
   public record Search(List<Hit> hits,int chunks,String backend,String embedding,String reranker,List<String> quarantined) {}
-  public enum Strategy { BM25, VECTOR, HYBRID }
+  public enum Strategy { BM25, VECTOR, HYBRID, RRF, LEGACY_HYBRID }
   /** Isolated benchmark corpus: never writes or replaces a live case's Qdrant index. */
   public Search benchmark(CreditCase item,List<Chunk> chunks,String question,int limit,Strategy strategy) {
     return search(item,chunks,question,limit,false,strategy);
@@ -106,15 +106,16 @@ public class RagEngine {
       } catch(java.io.IOException | RuntimeException e) {backend="local-vector-fallback";}
     }
     Set<String> terms=EvidenceGuard.terms(question);double average=safe.stream().mapToInt(c->EvidenceGuard.terms(c.text()).size()).average().orElse(1);
-    var hits=new ArrayList<Hit>();
+    var hits=new ArrayList<Hit>();var lexical=new LexicalSearch(safe);
     for(var c:safe) {
       double cos=strategy==Strategy.BM25?0:scores.getOrDefault(c.id(),cosine(query,vector(c.text())));
-      double bm25=bm25(terms,c.text(),safe,average);
-      // Query-term evidence wins over broad policy similarity; no learned reranker claimed.
-      double coverage=terms.isEmpty()?0:(double)terms.stream().filter(EvidenceGuard.terms(c.text())::contains).count()/terms.size();
-      double rank=switch(strategy){case BM25->bm25;case VECTOR->cos;case HYBRID->.48*Math.max(0,cos)+.32*(bm25/(bm25+2))+.20*coverage;};
+      double bm25=strategy==Strategy.LEGACY_HYBRID?bm25(terms,c.text(),safe,average):lexical.score(question,c.id());
+      // Combine lexical overlap with cosine similarity; learned reranking is a separate opt-in step.
+      double coverage=strategy==Strategy.LEGACY_HYBRID?(terms.isEmpty()?0:(double)terms.stream().filter(EvidenceGuard.terms(c.text())::contains).count()/terms.size()):lexical.coverage(question,c.id());
+      double rank=switch(strategy){case BM25->bm25;case VECTOR->cos;case HYBRID, RRF, LEGACY_HYBRID->.48*Math.max(0,cos)+.32*(bm25/(bm25+2))+.20*coverage;};
       hits.add(new Hit(c.id(),c.documentId(),c.title(),c.page(),c.kind(),c.text(),round(cos),round(bm25),round(rank),false));
     }
+    if(strategy==Strategy.RRF){var ranks=LexicalSearch.reciprocalRanks(hits);hits.replaceAll(h->new Hit(h.id(),h.documentId(),h.title(),h.page(),h.kind(),h.text(),h.vector(),h.lexical(),ranks.getOrDefault(h.id(),0.0),false));}
     hits.sort(Comparator.comparingDouble(Hit::score).reversed().thenComparing(Hit::id));
     if(learnedReranker&&strategy==Strategy.HYBRID&&!hits.isEmpty()) {
       var candidates=hits.stream().limit(24).toList();var reranked=new LocalModels(modelService).rerank(question,candidates.stream().map(Hit::text).toList());hits.clear();

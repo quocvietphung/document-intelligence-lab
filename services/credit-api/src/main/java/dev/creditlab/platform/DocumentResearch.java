@@ -17,11 +17,16 @@ import org.springframework.web.server.ResponseStatusException;
 public class DocumentResearch {
   public record FieldLabel(@NotBlank @Size(max=80) String documentId, @Min(1) int page,
       @NotBlank @Size(max=120) String field, @NotBlank @Size(max=1000) String expected) {}
+  public record RelevantSource(@NotBlank @Size(max=80) String documentId,@Min(1) int page) {}
   public record QuestionLabel(@NotBlank @Size(max=1000) String question,
-      @NotBlank @Size(max=80) String documentId, @Min(1) int page) {}
+      @Size(max=80) String documentId,@Min(0) int page,
+      @Size(max=8) List<@NotNull @Valid RelevantSource> relevant,Boolean answerable,
+      @Pattern(regexp="tune|holdout|unassigned") String split,@Pattern(regexp="en|de|vi") String locale) {
+    public QuestionLabel(String question,String documentId,int page){this(question,documentId,page,null,null,null,null);}
+  }
   public record DatasetRequest(@Min(0) long caseVersion, @NotBlank @Size(max=100) String name,
       @NotNull @Size(max=100) List<@NotNull @Valid FieldLabel> fields,
-      @NotNull @Size(max=30) List<@NotNull @Valid QuestionLabel> questions, @AssertTrue boolean sourceChecked) {}
+      @NotNull @Size(max=100) List<@NotNull @Valid QuestionLabel> questions, @AssertTrue boolean sourceChecked) {}
   public enum Suite { EXTRACTION, RETRIEVAL, CHUNKING, PROMPTING }
   public record RunRequest(@Min(0) long caseVersion, @NotBlank @Size(max=80) String datasetId, @NotNull Suite suite) {}
   public record ExportRequest(@Min(0) long caseVersion) {}
@@ -56,9 +61,10 @@ public class DocumentResearch {
       source(item,f.documentId(),f.page());
       if(!keys.add(f.documentId()+"|"+f.page()+"|"+f.field().strip().toLowerCase(Locale.ROOT)))bad("Duplicate field label");
     }
-    keys.clear();
+    keys.clear();var splits=new HashMap<String,String>();
     for(var q:request.questions()) {
-      source(item,q.documentId(),q.page());
+      var targets=questionSources(q);
+      for(var target:targets){source(item,target.documentId(),target.page());String split=Objects.toString(q.split(),"unassigned");String old=splits.putIfAbsent(target.documentId(),split);if(old!=null&&!old.equals(split))bad("One original cannot cross tuning and holdout groups");}
       if(EvidenceGuard.suspicious(q.question()))bad("Unsafe evaluation question");
       if(!keys.add(normalize(q.question())))bad("Duplicate evaluation question");
     }
@@ -66,7 +72,10 @@ public class DocumentResearch {
     value.put("id","reference-"+UUID.randomUUID());value.put("time",Instant.now().toString());value.put("name",request.name().strip());
     value.put("caseVersion",item.version());value.put("sourceHash",fingerprint(item));value.put("actor",actor);
     value.put("fields",request.fields().stream().map(f->Map.of("documentId",f.documentId(),"page",f.page(),"field",f.field().strip(),"expected",f.expected().strip())).toList());
-    value.put("questions",request.questions().stream().map(q->Map.of("question",q.question().strip(),"documentId",q.documentId(),"page",q.page())).toList());
+    value.put("questions",request.questions().stream().map(q->{
+      var targets=questionSources(q);var primary=targets.isEmpty()?new RelevantSource("",0):targets.getFirst();
+      return Map.of("question",q.question().strip(),"documentId",primary.documentId(),"page",primary.page(),"relevant",targets.stream().map(t->Map.of("documentId",t.documentId(),"page",t.page())).toList(),"answerable",!Boolean.FALSE.equals(q.answerable()),"split",Objects.toString(q.split(),"unassigned"),"locale",Objects.toString(q.locale(),"en"));
+    }).toList());
     value.put("sourceChecked",true);
     store.insert(tenant,id,"document-reference",value.get("id").toString(),value);return value;
   }
@@ -137,7 +146,7 @@ public class DocumentResearch {
     result.put("datasetName",dataset.get("name"));result.put("suite",request.suite().name());result.put("variants",variants);
     result.put("durationMs",(System.nanoTime()-start)/1_000_000);result.put("azureCalls",0);
     result.put("localModelCalls",request.suite()==Suite.PROMPTING?2:0);
-    result.put("methodVersion","source-evaluation-v1");result.put("configuration",rag.configuration());
+    result.put("methodVersion","source-evaluation-v2");result.put("configuration",rag.configuration());
     store.insert(tenant,id,"document-experiment",result.get("id").toString(),result);return result;
   }
   private Map<String,Object> extraction(CreditCase item,List<Map<String,Object>> labels) {
@@ -158,15 +167,8 @@ public class DocumentResearch {
   private Map<String,Object> retrieval(CreditCase item,List<Map<String,Object>> labels,RagEngine.Strategy strategy,List<RagEngine.Chunk> chunks,String method) {
     // Only actual original pages/fields/tables. No generated case summary or policy can be a gold hit.
     var corpus=chunks.stream().filter(c->originals(item).stream().anyMatch(d->d.id().equals(c.documentId()))).toList();
-    var results=new ArrayList<Map<String,Object>>();double reciprocal=0;int found=0;
-    for(var label:labels) {
-      var search=rag.benchmark(item,corpus,label.get("question").toString(),5,strategy);
-      int rank=0;for(int i=0;i<search.hits().size();i++){var h=search.hits().get(i);if(h.documentId().equals(label.get("documentId"))&&h.page()==number(label.get("page"))){rank=i+1;break;}}
-      if(rank>0){found++;reciprocal+=1.0/rank;}
-      var row=new LinkedHashMap<>(label);row.put("rank",rank);row.put("passed",rank>0);row.put("hits",search.hits().stream().map(h->Map.of("id",h.id(),"documentId",h.documentId(),"page",h.page(),"score",h.score())).toList());results.add(row);
-    }
-    return Map.of("method",method,"samples",labels.size(),"chunks",corpus.size(),"averageCharacters",Math.round(corpus.stream().mapToInt(c->c.text().length()).average().orElse(0)),
-        "metrics",Map.of("hitRateAt5",ratio(found,labels.size()),"mrrAt5",Math.round(reciprocal/labels.size()*10000)/100.0),"rows",results);
+    var result=new LinkedHashMap<>(RetrievalEvaluation.evaluate(labels,q->rag.benchmark(item,corpus,q,5,strategy)));
+    result.put("method",method);result.put("chunks",corpus.size());result.put("averageCharacters",Math.round(corpus.stream().mapToInt(c->c.text().length()).average().orElse(0)));return result;
   }
   /** Private, explicit download. Original PDFs never leave their private store through this export. */
   public Map<String,Object> export(String tenant,String id,String actor,long version) {
@@ -182,12 +184,21 @@ public class DocumentResearch {
     bundle.put("gold",datasets);bundle.put("experiments",store.list(tenant,id,"document-experiment").stream().filter(r->hash.equals(r.get("sourceHash"))).toList());
     // JSONL-ready retrieval inputs for a separately configured Foundry evaluation. No generated answers or judge scores.
     bundle.put("evaluationInputs",datasets.stream().flatMap(d->rows(d.get("questions")).stream()).map(q->{
-      var doc=source(item,q.get("documentId").toString(),number(q.get("page")));
-      String context=doc.pages().stream().filter(p->p.number()==number(q.get("page"))).map(CreditCase.Page::text).findFirst().orElse("");
-      return Map.of("query",q.get("question"),"context",context,"documentId",q.get("documentId"),"page",q.get("page"));
+      if(Boolean.FALSE.equals(q.get("answerable")))return Map.of("query",q.get("question"),"context","","answerable",false,"relevant",List.of());
+      var contexts=RetrievalEvaluation.sources(q).stream().map(target->{
+        var doc=source(item,target.get("documentId").toString(),number(target.get("page")));
+        String context=doc.pages().stream().filter(p->p.number()==number(target.get("page"))).map(CreditCase.Page::text).findFirst().orElse("");
+        return Map.of("documentId",target.get("documentId"),"page",target.get("page"),"text",context);
+      }).toList();
+      return Map.of("query",q.get("question"),"context",contexts.stream().map(c->c.get("text").toString()).reduce("",(a,b)->a+"\n"+b),"documentId",q.get("documentId"),"page",q.get("page"),"answerable",true,"contexts",contexts);
     }).toList());
     store.insert(tenant,id,"data-export",exportId,Map.of("id",exportId,"time",bundle.get("time"),"actor",actor,"sourceHash",hash,"caseVersion",item.version(),"documents",originals(item).size(),"destination","browser-download-only"));
     return bundle;
+  }
+  private List<RelevantSource> questionSources(QuestionLabel q){
+    var targets=q.relevant()==null?(q.documentId()==null||q.documentId().isBlank()?List.<RelevantSource>of():List.of(new RelevantSource(q.documentId(),q.page()))):q.relevant();
+    if(Boolean.FALSE.equals(q.answerable())&&!targets.isEmpty()||!Boolean.FALSE.equals(q.answerable())&&targets.isEmpty())bad("Answerable questions require sources; unanswered questions require no invented source");
+    var keys=new HashSet<String>();for(var target:targets)if(target.page()<1||!keys.add(target.documentId()+":"+target.page()))bad("Invalid or duplicate relevant page");return targets;
   }
   private CreditCase current(String tenant,String id,long version) {
     var item=cases.require(tenant,id);if(item.version()!=version)throw new ResponseStatusException(HttpStatus.CONFLICT,"Dossier changed; refresh first");return item;

@@ -35,7 +35,7 @@ class DocumentResearchTest {
     current(item(1,"2.967,11 EUR"));
     var ref=dataset(List.of(new DocumentResearch.FieldLabel("original",1,"netIncome","2.967,11 EUR"),new DocumentResearch.FieldLabel("original",1,"payoutAmount","9.999,00 EUR"),new DocumentResearch.FieldLabel("original",1,"employer","Fictional employer")),List.of());
     var result=service.run("tenant","dossier","advisor",new DocumentResearch.RunRequest(1,ref.get("id").toString(),DocumentResearch.Suite.EXTRACTION));
-    assertThat(result).containsEntry("azureCalls",0).containsEntry("methodVersion","source-evaluation-v1");
+    assertThat(result).containsEntry("azureCalls",0).containsEntry("methodVersion","source-evaluation-v2");
     @SuppressWarnings("unchecked")var metrics=(Map<String,Object>)variants(result).getFirst().get("metrics");
     assertThat(metrics).containsEntry("truePositive",1).containsEntry("falsePositive",1).containsEntry("falseNegative",2).containsEntry("f1",40.0);
     assertThat(store.list("tenant","dossier","document-experiment")).hasSize(1);
@@ -49,7 +49,7 @@ class DocumentResearchTest {
   @Test void retrievalUsesActualDocumentPageTargetsAndDoesNotReplaceLiveIndex() {
     current(item(1,"2.967,11 EUR"));var ref=dataset(List.of(),List.of(new DocumentResearch.QuestionLabel("Netto-Verdienst", "original",1)));
     var result=service.run("tenant","dossier","advisor",new DocumentResearch.RunRequest(1,ref.get("id").toString(),DocumentResearch.Suite.RETRIEVAL));
-    assertThat(variants(result)).extracting(v->v.get("method")).containsExactly("BM25","VECTOR","HYBRID");
+    assertThat(variants(result)).extracting(v->v.get("method")).containsExactly("BM25","VECTOR","HYBRID","RRF","LEGACY_HYBRID");
     for(var variant:variants(result))assertThat(((Map<?,?>)variant.get("metrics")).get("hitRateAt5")).isEqualTo(100.0);
     assertThat(store.list("tenant","other-dossier","document-experiment")).isEmpty();
   }
@@ -132,5 +132,19 @@ class DocumentResearchTest {
     assertThatThrownBy(()->queued(worker)).isInstanceOf(ResponseStatusException.class)
         .satisfies(error->assertThat(((ResponseStatusException)error).getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
     assertThat(durable.list("tenant","dossier","document-experiment-job")).isEmpty();
+  }
+  @Test void multiSourceLabelsValidateEveryPageAndKeepNegativeExportsExplicit() {
+    current(item(1,"2.967,11 EUR"));
+    var valid=new DocumentResearch.QuestionLabel("Compare amounts","original",1,List.of(new DocumentResearch.RelevantSource("original",1)),true,"holdout","en");
+    var absent=new DocumentResearch.QuestionLabel("Unknown pension forecast","",0,List.of(),false,"holdout","en");
+    var reference=dataset(List.of(),List.of(valid,absent));var result=service.run("tenant","dossier","advisor",new DocumentResearch.RunRequest(1,reference.get("id").toString(),DocumentResearch.Suite.RETRIEVAL));
+    @SuppressWarnings("unchecked")var metrics=(Map<String,Object>)variants(result).getFirst().get("metrics");assertThat(metrics).containsEntry("answerableSamples",1).containsEntry("unanswerableQuestions",1);
+    assertThat(service.export("tenant","dossier","advisor",1).get("evaluationInputs")).isInstanceOf(List.class);
+    var foreign=new DocumentResearch.QuestionLabel("Foreign page","original",1,List.of(new DocumentResearch.RelevantSource("foreign",1)),true,"holdout","en");
+    assertThatThrownBy(()->dataset(List.of(),List.of(foreign))).isInstanceOf(ResponseStatusException.class);
+    var tuning=new DocumentResearch.QuestionLabel("Same source in tune","original",1,null,true,"tune","en");
+    assertThatThrownBy(()->dataset(List.of(),List.of(valid,tuning))).isInstanceOf(ResponseStatusException.class).hasMessageContaining("cross tuning");
+    var invented=new DocumentResearch.QuestionLabel("No answer but source","original",1,null,false,"holdout","en");
+    assertThatThrownBy(()->dataset(List.of(),List.of(invented))).isInstanceOf(ResponseStatusException.class);
   }
 }

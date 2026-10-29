@@ -1,0 +1,1320 @@
+{
+  "format": "rag-pdf-questions-v2",
+  "labelProvenance": "Agent-prepared from original PDF text and rendered pages; not independent human ground truth. Labels are never provided to the retriever or model.",
+  "scope": "Nine prepared PDFs from seven original publisher PDFs (eight reference selections); CMS pages split 1–2 and 3–4 to respect existing parser deadlines. Translations, both CMS excerpts and both DATEV excerpts stay with their original PDF in one group. Same-template invoices still cross groups. Development corpus, not an external blind benchmark.",
+  "questions": [
+    {
+      "id": "cms-sbc-deductible-en",
+      "question": "What are the individual and family overall deductibles in the CMS Plan Option 1 example?",
+      "locale": "en",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc",
+          "page": 1,
+          "anchors": [
+            "$500",
+            "$1,000"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-deductible-de",
+      "question": "Welche Selbstbehalte gelten pro Person und Familie im CMS Plan Option 1?",
+      "locale": "de",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc",
+          "page": 1,
+          "anchors": [
+            "$500",
+            "$1,000"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-deductible-vi",
+      "question": "Mức khấu trừ cá nhân và gia đình trong Plan Option 1 của CMS là bao nhiêu?",
+      "locale": "vi",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc",
+          "page": 1,
+          "anchors": [
+            "$500",
+            "$1,000"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-specialist-en",
+      "question": "Does Plan Option 1 need a referral before seeing a specialist?",
+      "locale": "en",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc",
+          "page": 2,
+          "anchors": [
+            "referral",
+            "specialist"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-specialist-de",
+      "question": "Ist für einen Facharzt im Plan Option 1 eine Überweisung erforderlich?",
+      "locale": "de",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc",
+          "page": 2,
+          "anchors": [
+            "referral",
+            "specialist"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-specialist-vi",
+      "question": "Plan Option 1 có cần giấy giới thiệu trước khi khám chuyên khoa không?",
+      "locale": "vi",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc",
+          "page": 2,
+          "anchors": [
+            "referral",
+            "specialist"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-drugs-en",
+      "question": "What copayment applies to generic drugs Tier 1 in the CMS example?",
+      "locale": "en",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc",
+          "page": 2,
+          "anchors": [
+            "Generic drugs (Tier 1)",
+            "$10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-drugs-vi",
+      "question": "Phí đồng chi trả cho thuốc generic Tier 1 trong mẫu CMS là bao nhiêu?",
+      "locale": "vi",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc",
+          "page": 2,
+          "anchors": [
+            "Generic drugs (Tier 1)",
+            "$10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-urgent-en",
+      "question": "What does the CMS example list for urgent care cost sharing?",
+      "locale": "en",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc-continuation",
+          "page": 1,
+          "anchors": [
+            "Urgent care",
+            "$30"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-urgent-de",
+      "question": "Welche Kostenbeteiligung nennt das CMS-Beispiel für Urgent care?",
+      "locale": "de",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc-continuation",
+          "page": 1,
+          "anchors": [
+            "Urgent care",
+            "$30"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-exclusions-en",
+      "question": "Are adult dental care and cosmetic surgery generally excluded in the CMS example?",
+      "locale": "en",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc-continuation",
+          "page": 2,
+          "anchors": [
+            "Cosmetic surgery",
+            "Dental care (Adult)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-exclusions-vi",
+      "question": "Mẫu CMS liệt kê nha khoa người lớn và phẫu thuật thẩm mỹ ở nhóm loại trừ nào?",
+      "locale": "vi",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc-continuation",
+          "page": 2,
+          "anchors": [
+            "Cosmetic surgery",
+            "Dental care (Adult)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-combined-en",
+      "question": "Compare the overall deductible and urgent care cost sharing in the CMS example.",
+      "locale": "en",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc",
+          "page": 1,
+          "anchors": [
+            "$500"
+          ]
+        },
+        {
+          "sourceId": "cms-sbc-continuation",
+          "page": 1,
+          "anchors": [
+            "Urgent care"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-combined-vi",
+      "question": "Đối chiếu mức khấu trừ chung với chi phí urgent care trong mẫu CMS.",
+      "locale": "vi",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "cms-sbc",
+          "page": 1,
+          "anchors": [
+            "$500"
+          ]
+        },
+        {
+          "sourceId": "cms-sbc-continuation",
+          "page": 1,
+          "anchors": [
+            "Urgent care"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cms-sbc-missing",
+      "question": "What is the exact premium charged to a named customer in the CMS sample?",
+      "locale": "en",
+      "split": "tune",
+      "group": "cms-sbc",
+      "answerable": false,
+      "relevant": [],
+      "reason": "The requested value is absent from the prepared reference corpus; model refusal is not measured by retrieval."
+    },
+    {
+      "id": "irs-w2-copy-a-en",
+      "question": "Can the downloaded IRS W-2 Copy A be printed and filed with the SSA?",
+      "locale": "en",
+      "split": "holdout",
+      "group": "irs-w2",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "irs-w2",
+          "page": 1,
+          "anchors": [
+            "DO NOT FILE",
+            "Copy A"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irs-w2-copy-a-de",
+      "question": "Darf die heruntergeladene IRS W-2 Copy A bei der SSA eingereicht werden?",
+      "locale": "de",
+      "split": "holdout",
+      "group": "irs-w2",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "irs-w2",
+          "page": 1,
+          "anchors": [
+            "DO NOT FILE",
+            "Copy A"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irs-w2-copy-a-vi",
+      "question": "Có được in Copy A của IRS W-2 tải từ web để nộp SSA không?",
+      "locale": "vi",
+      "split": "holdout",
+      "group": "irs-w2",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "irs-w2",
+          "page": 1,
+          "anchors": [
+            "DO NOT FILE",
+            "Copy A"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irs-w2-electronic-en",
+      "question": "Where does the IRS W-2 instruction direct employers to file electronically?",
+      "locale": "en",
+      "split": "holdout",
+      "group": "irs-w2",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "irs-w2",
+          "page": 1,
+          "anchors": [
+            "www.ssa.gov/bso"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irs-w2-electronic-vi",
+      "question": "Hướng dẫn IRS W-2 dẫn nhà tuyển dụng tới đâu để nộp điện tử?",
+      "locale": "vi",
+      "split": "holdout",
+      "group": "irs-w2",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "irs-w2",
+          "page": 1,
+          "anchors": [
+            "www.ssa.gov/bso"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irs-w2-boxes-en",
+      "question": "Which labels identify W-2 wages and federal income tax withheld?",
+      "locale": "en",
+      "split": "holdout",
+      "group": "irs-w2",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "irs-w2",
+          "page": 2,
+          "anchors": [
+            "Wages, tips, other compensation",
+            "Federal income tax withheld"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irs-w2-boxes-de",
+      "question": "Welche W-2 Felder bezeichnen Löhne und einbehaltene Bundeseinkommensteuer?",
+      "locale": "de",
+      "split": "holdout",
+      "group": "irs-w2",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "irs-w2",
+          "page": 2,
+          "anchors": [
+            "Wages, tips, other compensation",
+            "Federal income tax withheld"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irs-w2-boxes-vi",
+      "question": "Các nhãn nào trên W-2 chỉ tiền lương và thuế thu nhập liên bang đã khấu trừ?",
+      "locale": "vi",
+      "split": "holdout",
+      "group": "irs-w2",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "irs-w2",
+          "page": 2,
+          "anchors": [
+            "Wages, tips, other compensation",
+            "Federal income tax withheld"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irs-w2-missing",
+      "question": "What actual wage amount did employee Alice Nguyen earn on the blank IRS W-2 form?",
+      "locale": "en",
+      "split": "holdout",
+      "group": "irs-w2",
+      "answerable": false,
+      "relevant": [],
+      "reason": "The requested value is absent from the prepared reference corpus; model refusal is not measured by retrieval."
+    },
+    {
+      "id": "datev-robert-net-en",
+      "question": "What Netto-Verdienst is recorded for Robert-Muster in the DATEV payslip?",
+      "locale": "en",
+      "split": "tune",
+      "group": "datev-robert",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-robert",
+          "page": 1,
+          "anchors": [
+            "2.967,11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-robert-net-de",
+      "question": "Wie hoch ist der Netto-Verdienst von Robert-Muster auf der DATEV-Abrechnung?",
+      "locale": "de",
+      "split": "tune",
+      "group": "datev-robert",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-robert",
+          "page": 1,
+          "anchors": [
+            "2.967,11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-robert-net-vi",
+      "question": "Lương ròng Netto-Verdienst của Robert-Muster trên bảng lương DATEV là bao nhiêu?",
+      "locale": "vi",
+      "split": "tune",
+      "group": "datev-robert",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-robert",
+          "page": 1,
+          "anchors": [
+            "2.967,11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-robert-payout-en",
+      "question": "What is the Auszahlungsbetrag for Robert-Muster, rather than net earnings?",
+      "locale": "en",
+      "split": "tune",
+      "group": "datev-robert",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-robert",
+          "page": 1,
+          "anchors": [
+            "2.882,11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-robert-payout-de",
+      "question": "Welcher Auszahlungsbetrag steht für Robert-Muster auf der DATEV-Abrechnung?",
+      "locale": "de",
+      "split": "tune",
+      "group": "datev-robert",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-robert",
+          "page": 1,
+          "anchors": [
+            "2.882,11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-robert-payout-vi",
+      "question": "Khoản thực chi Auszahlungsbetrag của Robert-Muster là bao nhiêu, khác với lương ròng?",
+      "locale": "vi",
+      "split": "tune",
+      "group": "datev-robert",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-robert",
+          "page": 1,
+          "anchors": [
+            "2.882,11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-robert-period-en",
+      "question": "Which payroll month is shown for Robert-Muster?",
+      "locale": "en",
+      "split": "tune",
+      "group": "datev-robert",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-robert",
+          "page": 1,
+          "anchors": [
+            "Dezember 2025"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-robert-period-vi",
+      "question": "Bảng lương Robert-Muster ghi kỳ lương tháng nào?",
+      "locale": "vi",
+      "split": "tune",
+      "group": "datev-robert",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-robert",
+          "page": 1,
+          "anchors": [
+            "Dezember 2025"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-robert-missing",
+      "question": "What pension forecast for the year 2050 is stated for Robert-Muster?",
+      "locale": "en",
+      "split": "tune",
+      "group": "datev-robert",
+      "answerable": false,
+      "relevant": [],
+      "reason": "The requested value is absent from the prepared reference corpus; model refusal is not measured by retrieval."
+    },
+    {
+      "id": "datev-melanie-net-en",
+      "question": "What Netto-Verdienst is recorded for Melanie-Muster in the DATEV payslip?",
+      "locale": "en",
+      "split": "tune",
+      "group": "datev-melanie",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-melanie",
+          "page": 1,
+          "anchors": [
+            "4.212,90"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-melanie-net-de",
+      "question": "Wie hoch ist der Netto-Verdienst von Melanie-Muster auf der DATEV-Abrechnung?",
+      "locale": "de",
+      "split": "tune",
+      "group": "datev-melanie",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-melanie",
+          "page": 1,
+          "anchors": [
+            "4.212,90"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-melanie-net-vi",
+      "question": "Lương ròng Netto-Verdienst của Melanie-Muster trên bảng lương DATEV là bao nhiêu?",
+      "locale": "vi",
+      "split": "tune",
+      "group": "datev-melanie",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-melanie",
+          "page": 1,
+          "anchors": [
+            "4.212,90"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-melanie-payout-en",
+      "question": "What is the Auszahlungsbetrag for Melanie-Muster, rather than net earnings?",
+      "locale": "en",
+      "split": "tune",
+      "group": "datev-melanie",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-melanie",
+          "page": 1,
+          "anchors": [
+            "3.069,93"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-melanie-payout-de",
+      "question": "Welcher Auszahlungsbetrag steht für Melanie-Muster auf der DATEV-Abrechnung?",
+      "locale": "de",
+      "split": "tune",
+      "group": "datev-melanie",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-melanie",
+          "page": 1,
+          "anchors": [
+            "3.069,93"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-melanie-payout-vi",
+      "question": "Khoản thực chi Auszahlungsbetrag của Melanie-Muster là bao nhiêu, khác với lương ròng?",
+      "locale": "vi",
+      "split": "tune",
+      "group": "datev-melanie",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-melanie",
+          "page": 1,
+          "anchors": [
+            "3.069,93"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-melanie-period-en",
+      "question": "Which payroll month is shown for Melanie-Muster?",
+      "locale": "en",
+      "split": "tune",
+      "group": "datev-melanie",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-melanie",
+          "page": 1,
+          "anchors": [
+            "Dezember 2025"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-melanie-period-vi",
+      "question": "Bảng lương Melanie-Muster ghi kỳ lương tháng nào?",
+      "locale": "vi",
+      "split": "tune",
+      "group": "datev-melanie",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "datev-melanie",
+          "page": 1,
+          "anchors": [
+            "Dezember 2025"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datev-melanie-missing",
+      "question": "What pension forecast for the year 2050 is stated for Melanie-Muster?",
+      "locale": "en",
+      "split": "tune",
+      "group": "datev-melanie",
+      "answerable": false,
+      "relevant": [],
+      "reason": "The requested value is absent from the prepared reference corpus; model refusal is not measured by retrieval."
+    },
+    {
+      "id": "invoice-51109301-date-en",
+      "question": "What issue date is printed on invoice 51109301? Preserve the literal date.",
+      "locale": "en",
+      "split": "tune",
+      "group": "invoice-51109301",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109301",
+          "page": 1,
+          "anchors": [
+            "Date of issue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109301-date-de",
+      "question": "Welches Ausstellungsdatum steht auf Rechnung 51109301?",
+      "locale": "de",
+      "split": "tune",
+      "group": "invoice-51109301",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109301",
+          "page": 1,
+          "anchors": [
+            "Date of issue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109301-date-vi",
+      "question": "Hóa đơn 51109301 ghi ngày phát hành nào? Giữ nguyên cách viết.",
+      "locale": "vi",
+      "split": "tune",
+      "group": "invoice-51109301",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109301",
+          "page": 1,
+          "anchors": [
+            "Date of issue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109301-currency-en",
+      "question": "Which currency and gross total are stated on invoice 51109301?",
+      "locale": "en",
+      "split": "tune",
+      "group": "invoice-51109301",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109301",
+          "page": 1,
+          "anchors": [
+            "INR",
+            "Gross Worth"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109301-currency-vi",
+      "question": "Tiền tệ và tổng Gross Worth trên hóa đơn 51109301 là gì?",
+      "locale": "vi",
+      "split": "tune",
+      "group": "invoice-51109301",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109301",
+          "page": 1,
+          "anchors": [
+            "INR",
+            "Gross Worth"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109301-product-en",
+      "question": "Which invoice contains Garmin Fenix 7 Solar and how is its quantity shown?",
+      "locale": "en",
+      "split": "tune",
+      "group": "invoice-51109301",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109301",
+          "page": 1,
+          "anchors": [
+            "Garmin Fenix 7 Solar"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109301-product-de",
+      "question": "Welche Rechnung enthält Garmin Fenix 7 Solar und welche Menge wird angegeben?",
+      "locale": "de",
+      "split": "tune",
+      "group": "invoice-51109301",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109301",
+          "page": 1,
+          "anchors": [
+            "Garmin Fenix 7 Solar"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109301-missing",
+      "question": "What signed delivery acceptance date is recorded on invoice 51109301?",
+      "locale": "en",
+      "split": "tune",
+      "group": "invoice-51109301",
+      "answerable": false,
+      "relevant": [],
+      "reason": "The requested value is absent from the prepared reference corpus; model refusal is not measured by retrieval."
+    },
+    {
+      "id": "invoice-51109302-date-en",
+      "question": "What issue date is printed on invoice 51109302? Preserve the literal date.",
+      "locale": "en",
+      "split": "holdout",
+      "group": "invoice-51109302",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109302",
+          "page": 1,
+          "anchors": [
+            "Date of issue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109302-date-de",
+      "question": "Welches Ausstellungsdatum steht auf Rechnung 51109302?",
+      "locale": "de",
+      "split": "holdout",
+      "group": "invoice-51109302",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109302",
+          "page": 1,
+          "anchors": [
+            "Date of issue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109302-date-vi",
+      "question": "Hóa đơn 51109302 ghi ngày phát hành nào? Giữ nguyên cách viết.",
+      "locale": "vi",
+      "split": "holdout",
+      "group": "invoice-51109302",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109302",
+          "page": 1,
+          "anchors": [
+            "Date of issue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109302-currency-en",
+      "question": "Which currency and gross total are stated on invoice 51109302?",
+      "locale": "en",
+      "split": "holdout",
+      "group": "invoice-51109302",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109302",
+          "page": 1,
+          "anchors": [
+            "INR",
+            "Gross Worth"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109302-currency-vi",
+      "question": "Tiền tệ và tổng Gross Worth trên hóa đơn 51109302 là gì?",
+      "locale": "vi",
+      "split": "holdout",
+      "group": "invoice-51109302",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109302",
+          "page": 1,
+          "anchors": [
+            "INR",
+            "Gross Worth"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109302-product-en",
+      "question": "Which invoice contains Apple MacBook Air M2 and how is its quantity shown?",
+      "locale": "en",
+      "split": "holdout",
+      "group": "invoice-51109302",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109302",
+          "page": 1,
+          "anchors": [
+            "Apple MacBook Air M2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109302-product-de",
+      "question": "Welche Rechnung enthält Apple MacBook Air M2 und welche Menge wird angegeben?",
+      "locale": "de",
+      "split": "holdout",
+      "group": "invoice-51109302",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "invoice-51109302",
+          "page": 1,
+          "anchors": [
+            "Apple MacBook Air M2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoice-51109302-missing",
+      "question": "What signed delivery acceptance date is recorded on invoice 51109302?",
+      "locale": "en",
+      "split": "holdout",
+      "group": "invoice-51109302",
+      "answerable": false,
+      "relevant": [],
+      "reason": "The requested value is absent from the prepared reference corpus; model refusal is not measured by retrieval."
+    },
+    {
+      "id": "principal-life-definitions-adl-en",
+      "question": "Which activities count as Activities of Daily Living in the Principal Life definitions?",
+      "locale": "en",
+      "split": "tune",
+      "group": "principal-life-definitions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "principal-life-definitions",
+          "page": 1,
+          "anchors": [
+            "Activities of Daily Living",
+            "Bathing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "principal-life-definitions-adl-de",
+      "question": "Welche Aktivitäten zählen bei Principal Life zu Activities of Daily Living?",
+      "locale": "de",
+      "split": "tune",
+      "group": "principal-life-definitions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "principal-life-definitions",
+          "page": 1,
+          "anchors": [
+            "Activities of Daily Living",
+            "Bathing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "principal-life-definitions-adl-vi",
+      "question": "Principal Life định nghĩa Activities of Daily Living gồm những hoạt động nào?",
+      "locale": "vi",
+      "split": "tune",
+      "group": "principal-life-definitions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "principal-life-definitions",
+          "page": 1,
+          "anchors": [
+            "Activities of Daily Living",
+            "Bathing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "principal-life-definitions-month-en",
+      "question": "How does Principal Life define Insurance Month?",
+      "locale": "en",
+      "split": "tune",
+      "group": "principal-life-definitions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "principal-life-definitions",
+          "page": 2,
+          "anchors": [
+            "Insurance Month",
+            "Calendar Month"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "principal-life-definitions-month-vi",
+      "question": "Principal Life định nghĩa Insurance Month như thế nào?",
+      "locale": "vi",
+      "split": "tune",
+      "group": "principal-life-definitions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "principal-life-definitions",
+          "page": 2,
+          "anchors": [
+            "Insurance Month",
+            "Calendar Month"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "principal-life-definitions-member-en",
+      "question": "What weekly work-hours condition is stated in the Principal Life definition of Member?",
+      "locale": "en",
+      "split": "tune",
+      "group": "principal-life-definitions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "principal-life-definitions",
+          "page": 2,
+          "anchors": [
+            "30 hours per week"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "principal-life-definitions-member-de",
+      "question": "Welche wöchentliche Arbeitszeit verlangt die Principal-Life-Definition Member?",
+      "locale": "de",
+      "split": "tune",
+      "group": "principal-life-definitions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "principal-life-definitions",
+          "page": 2,
+          "anchors": [
+            "30 hours per week"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "principal-life-definitions-combined-en",
+      "question": "Locate both the Activities of Daily Living and Insurance Month definitions in Principal Life.",
+      "locale": "en",
+      "split": "tune",
+      "group": "principal-life-definitions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "principal-life-definitions",
+          "page": 1,
+          "anchors": [
+            "Activities of Daily Living"
+          ]
+        },
+        {
+          "sourceId": "principal-life-definitions",
+          "page": 2,
+          "anchors": [
+            "Insurance Month"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "principal-life-definitions-missing",
+      "question": "What premium is owed by a named insured under the Principal Life definitions excerpt?",
+      "locale": "en",
+      "split": "tune",
+      "group": "principal-life-definitions",
+      "answerable": false,
+      "relevant": [],
+      "reason": "The requested value is absent from the prepared reference corpus; model refusal is not measured by retrieval."
+    },
+    {
+      "id": "shelter-renters-conditions-period-en",
+      "question": "Which losses fall within the Shelter POLICY COVERAGE PERIOD condition?",
+      "locale": "en",
+      "split": "holdout",
+      "group": "shelter-renters-conditions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "shelter-renters-conditions",
+          "page": 1,
+          "anchors": [
+            "POLICY COVERAGE PERIOD"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shelter-renters-conditions-period-de",
+      "question": "Welche Schäden umfasst die Bedingung POLICY COVERAGE PERIOD bei Shelter?",
+      "locale": "de",
+      "split": "holdout",
+      "group": "shelter-renters-conditions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "shelter-renters-conditions",
+          "page": 1,
+          "anchors": [
+            "POLICY COVERAGE PERIOD"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shelter-renters-conditions-period-vi",
+      "question": "Điều khoản POLICY COVERAGE PERIOD của Shelter giới hạn tổn thất theo thời gian như thế nào?",
+      "locale": "vi",
+      "split": "holdout",
+      "group": "shelter-renters-conditions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "shelter-renters-conditions",
+          "page": 1,
+          "anchors": [
+            "POLICY COVERAGE PERIOD"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shelter-renters-conditions-other-insurance-en",
+      "question": "How does the Shelter excerpt distinguish Section I and Section II when other insurance covers the same loss?",
+      "locale": "en",
+      "split": "holdout",
+      "group": "shelter-renters-conditions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "shelter-renters-conditions",
+          "page": 1,
+          "anchors": [
+            "OTHER INSURANCE",
+            "excess insurance"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shelter-renters-conditions-other-insurance-vi",
+      "question": "Shelter phân biệt Section I và Section II thế nào khi có bảo hiểm khác cùng tổn thất?",
+      "locale": "vi",
+      "split": "holdout",
+      "group": "shelter-renters-conditions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "shelter-renters-conditions",
+          "page": 1,
+          "anchors": [
+            "OTHER INSURANCE",
+            "excess insurance"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shelter-renters-conditions-wind-en",
+      "question": "What conditions apply to wind-driven rain damage under the Shelter renters wording?",
+      "locale": "en",
+      "split": "holdout",
+      "group": "shelter-renters-conditions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "shelter-renters-conditions",
+          "page": 2,
+          "anchors": [
+            "Wind or hail",
+            "creating an opening"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shelter-renters-conditions-wind-de",
+      "question": "Welche Bedingungen gelten bei Shelter für Schäden durch Wind und eindringenden Regen?",
+      "locale": "de",
+      "split": "holdout",
+      "group": "shelter-renters-conditions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "shelter-renters-conditions",
+          "page": 2,
+          "anchors": [
+            "Wind or hail",
+            "creating an opening"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shelter-renters-conditions-wind-vi",
+      "question": "Điều kiện nào áp dụng cho thiệt hại mưa tạt do gió trong mẫu Shelter?",
+      "locale": "vi",
+      "split": "holdout",
+      "group": "shelter-renters-conditions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "shelter-renters-conditions",
+          "page": 2,
+          "anchors": [
+            "Wind or hail",
+            "creating an opening"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shelter-renters-conditions-combined-en",
+      "question": "Locate both the policy coverage period and the wind-or-hail restrictions in the Shelter excerpt.",
+      "locale": "en",
+      "split": "holdout",
+      "group": "shelter-renters-conditions",
+      "answerable": true,
+      "relevant": [
+        {
+          "sourceId": "shelter-renters-conditions",
+          "page": 1,
+          "anchors": [
+            "POLICY COVERAGE PERIOD"
+          ]
+        },
+        {
+          "sourceId": "shelter-renters-conditions",
+          "page": 2,
+          "anchors": [
+            "Wind or hail"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shelter-renters-conditions-missing",
+      "question": "What individual policy number was issued to Alice Nguyen in the Shelter excerpt?",
+      "locale": "en",
+      "split": "holdout",
+      "group": "shelter-renters-conditions",
+      "answerable": false,
+      "relevant": [],
+      "reason": "The requested value is absent from the prepared reference corpus; model refusal is not measured by retrieval."
+    }
+  ]
+}

@@ -38,7 +38,7 @@ class ResearchLabTest {
   }
   @Test void retrievalComparesThreeMethodsAndContainsAllThreeLanguages(){
     @SuppressWarnings("unchecked")var variants=(List<Map<String,Object>>)lab.run(item,"test",ResearchLab.Suite.RETRIEVAL).get("variants");
-    assertThat(variants).extracting(v->v.get("method")).containsExactly("BM25","VECTOR","HYBRID");
+    assertThat(variants).extracting(v->v.get("method")).containsExactly("BM25","VECTOR","HYBRID","RRF","LEGACY_HYBRID");
     @SuppressWarnings("unchecked")var rows=(List<Map<String,Object>>)variants.getFirst().get("rows");
     assertThat(rows).hasSize(12);assertThat(rows).extracting(r->r.get("scenario").toString().substring(0,2)).contains("en","de","vi");
   }

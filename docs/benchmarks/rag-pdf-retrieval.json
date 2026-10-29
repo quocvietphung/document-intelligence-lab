@@ -1,0 +1,582 @@
+{
+  "format": "rag-pdf-retrieval-v1",
+  "methodVersion": "source-evaluation-v2",
+  "scope": "Nine prepared PDFs from seven original publisher PDFs (eight reference selections); CMS pages split 1–2 and 3–4 to respect existing parser deadlines. Translations, both CMS excerpts and both DATEV excerpts stay with their original PDF in one group. Same-template invoices still cross groups. Development corpus, not an external blind benchmark.",
+  "labelProvenance": "Agent-prepared from original PDF text and rendered pages; not independent human ground truth. Labels are never provided to the retriever or model.",
+  "sources": [
+    {
+      "id": "irs-w2",
+      "preparedSha256": "66500761da550b3ba58fc90b812028f2aaf21da0693160f4954a1eaf03174897",
+      "publisherSha256": "61eca7c81f16d3965819fe1f31be4fe68c1b2887a81f51172f1d2ed2b2b9f087",
+      "publisherPages": [
+        1,
+        2
+      ],
+      "split": "holdout"
+    },
+    {
+      "id": "invoice-51109301",
+      "preparedSha256": "1e823688f4dd4efaf4f6a75c124cccef0e7864bf7ad6f053b94b9714949b4f79",
+      "publisherSha256": "1e823688f4dd4efaf4f6a75c124cccef0e7864bf7ad6f053b94b9714949b4f79",
+      "publisherPages": [
+        1
+      ],
+      "split": "tune"
+    },
+    {
+      "id": "invoice-51109302",
+      "preparedSha256": "d63d852cf4eb4f917cc4d5953a61e60653aa0558d1c74ef10d4bc2ce86b05a27",
+      "publisherSha256": "d63d852cf4eb4f917cc4d5953a61e60653aa0558d1c74ef10d4bc2ce86b05a27",
+      "publisherPages": [
+        1
+      ],
+      "split": "holdout"
+    },
+    {
+      "id": "principal-life-definitions",
+      "preparedSha256": "94ded41ec6821e865834badf7577fafcbf13498aaf91796ac7d9a5780a7abacf",
+      "publisherSha256": "e68d757a293d57b6b7f1e954e572e9c4de22b9201ff2f93c2734c51b6836d9fb",
+      "publisherPages": [
+        9,
+        12
+      ],
+      "split": "tune"
+    },
+    {
+      "id": "shelter-renters-conditions",
+      "preparedSha256": "d5f33e07b32568f09604279df6a8b983f15d82ab86fc331c05a3e1704c88c026",
+      "publisherSha256": "e41baaeacb9de423383389a6280bbfefc5afc6c0ccd9740130db8fb4da6fb182",
+      "publisherPages": [
+        11,
+        12
+      ],
+      "split": "holdout"
+    },
+    {
+      "id": "datev-robert",
+      "preparedSha256": "f0c6c2586e6920466c2380758989a7d669d77fb9463320e4a77a8f8bc9c3d404",
+      "publisherSha256": "f2228f7c96d7cffdc6b5ae005e6b54107ea7ed0b91de5e40d6ec4fa72cdd04e7",
+      "publisherPages": [
+        2
+      ],
+      "split": "tune"
+    },
+    {
+      "id": "datev-melanie",
+      "preparedSha256": "81c2230d4526e2d10f291d2985247eb204fc37eff2a7da7c202869c2752a01dc",
+      "publisherSha256": "f2228f7c96d7cffdc6b5ae005e6b54107ea7ed0b91de5e40d6ec4fa72cdd04e7",
+      "publisherPages": [
+        3
+      ],
+      "split": "tune"
+    },
+    {
+      "id": "cms-sbc",
+      "preparedSha256": "ea595b3bff4eebfb6e3a1c71631f38baea8c76dd61ead05bd1af309d0da28707",
+      "publisherSha256": "35a3313fec1212ebc15026b991c1e42b696f39b76d334d3e669fb01c7d1b4c68",
+      "publisherPages": [
+        1,
+        2
+      ],
+      "split": "tune"
+    },
+    {
+      "id": "cms-sbc-continuation",
+      "preparedSha256": "ca975cb99aa02a5422a66da65f867cdf56b088b5d6c2e020179fe35b1fef04e4",
+      "publisherSha256": "35a3313fec1212ebc15026b991c1e42b696f39b76d334d3e669fb01c7d1b4c68",
+      "publisherPages": [
+        3,
+        4
+      ],
+      "split": "tune"
+    }
+  ],
+  "questions": 77,
+  "answerableQuestions": 69,
+  "unanswerableQuestions": 8,
+  "model": "all-MiniLM-L6-v2 quantized (ONNX, 384d)",
+  "measurements": {
+    "docling": {
+      "extraction": "Authenticated upload → enabled ClamAV → Docling → private original/PostgreSQL; overlapping CMS table predictions withheld with explicit structure warning",
+      "variants": [
+        {
+          "method": "BM25",
+          "samples": 77,
+          "chunks": 80,
+          "averageCharacters": 635,
+          "metrics": {
+            "answerableSamples": 69,
+            "unanswerableQuestions": 8,
+            "hitRateAt5": 98.55,
+            "mrrAt5": 93.6,
+            "recallAt5": 97.83,
+            "uniquePrecisionAt5": 20.58,
+            "ndcgAt5": 93.92,
+            "p50Ms": 26.85,
+            "p95Ms": 41.28
+          },
+          "groups": [
+            {
+              "metrics": {
+                "answerableSamples": 24,
+                "unanswerableQuestions": 3,
+                "hitRateAt5": 100,
+                "mrrAt5": 93.75,
+                "recallAt5": 100,
+                "uniquePrecisionAt5": 20.83,
+                "ndcgAt5": 95.26,
+                "p50Ms": 27.14,
+                "p95Ms": 29.26
+              },
+              "split": "holdout"
+            },
+            {
+              "metrics": {
+                "answerableSamples": 45,
+                "unanswerableQuestions": 5,
+                "hitRateAt5": 97.78,
+                "mrrAt5": 93.52,
+                "recallAt5": 96.67,
+                "uniquePrecisionAt5": 20.44,
+                "ndcgAt5": 93.21,
+                "p50Ms": 26.76,
+                "p95Ms": 44.45
+              },
+              "split": "tune"
+            }
+          ]
+        },
+        {
+          "method": "VECTOR",
+          "samples": 77,
+          "chunks": 80,
+          "averageCharacters": 635,
+          "metrics": {
+            "answerableSamples": 69,
+            "unanswerableQuestions": 8,
+            "hitRateAt5": 73.91,
+            "mrrAt5": 59.9,
+            "recallAt5": 73.91,
+            "uniquePrecisionAt5": 15.65,
+            "ndcgAt5": 63.48,
+            "p50Ms": 40.34,
+            "p95Ms": 83.64
+          },
+          "groups": [
+            {
+              "metrics": {
+                "answerableSamples": 24,
+                "unanswerableQuestions": 3,
+                "hitRateAt5": 66.67,
+                "mrrAt5": 61.46,
+                "recallAt5": 66.67,
+                "uniquePrecisionAt5": 14.17,
+                "ndcgAt5": 62.76,
+                "p50Ms": 40.34,
+                "p95Ms": 90.66
+              },
+              "split": "holdout"
+            },
+            {
+              "metrics": {
+                "answerableSamples": 45,
+                "unanswerableQuestions": 5,
+                "hitRateAt5": 77.78,
+                "mrrAt5": 59.07,
+                "recallAt5": 77.78,
+                "uniquePrecisionAt5": 16.44,
+                "ndcgAt5": 63.87,
+                "p50Ms": 39.58,
+                "p95Ms": 64.04
+              },
+              "split": "tune"
+            }
+          ]
+        },
+        {
+          "method": "HYBRID",
+          "samples": 77,
+          "chunks": 80,
+          "averageCharacters": 635,
+          "metrics": {
+            "answerableSamples": 69,
+            "unanswerableQuestions": 8,
+            "hitRateAt5": 100,
+            "mrrAt5": 93.53,
+            "recallAt5": 99.28,
+            "uniquePrecisionAt5": 20.87,
+            "ndcgAt5": 94.39,
+            "p50Ms": 26.91,
+            "p95Ms": 49.41
+          },
+          "groups": [
+            {
+              "metrics": {
+                "answerableSamples": 24,
+                "unanswerableQuestions": 3,
+                "hitRateAt5": 100,
+                "mrrAt5": 93.75,
+                "recallAt5": 100,
+                "uniquePrecisionAt5": 20.83,
+                "ndcgAt5": 95.26,
+                "p50Ms": 26.76,
+                "p95Ms": 49.41
+              },
+              "split": "holdout"
+            },
+            {
+              "metrics": {
+                "answerableSamples": 45,
+                "unanswerableQuestions": 5,
+                "hitRateAt5": 100,
+                "mrrAt5": 93.41,
+                "recallAt5": 98.89,
+                "uniquePrecisionAt5": 20.89,
+                "ndcgAt5": 93.93,
+                "p50Ms": 27.81,
+                "p95Ms": 49.13
+              },
+              "split": "tune"
+            }
+          ]
+        },
+        {
+          "method": "RRF",
+          "samples": 77,
+          "chunks": 80,
+          "averageCharacters": 635,
+          "metrics": {
+            "answerableSamples": 69,
+            "unanswerableQuestions": 8,
+            "hitRateAt5": 98.55,
+            "mrrAt5": 85.75,
+            "recallAt5": 97.83,
+            "uniquePrecisionAt5": 20.58,
+            "ndcgAt5": 88.29,
+            "p50Ms": 34.65,
+            "p95Ms": 106.49
+          },
+          "groups": [
+            {
+              "metrics": {
+                "answerableSamples": 24,
+                "unanswerableQuestions": 3,
+                "hitRateAt5": 100,
+                "mrrAt5": 92.01,
+                "recallAt5": 100,
+                "uniquePrecisionAt5": 20.83,
+                "ndcgAt5": 94.01,
+                "p50Ms": 27.68,
+                "p95Ms": 53.03
+              },
+              "split": "holdout"
+            },
+            {
+              "metrics": {
+                "answerableSamples": 45,
+                "unanswerableQuestions": 5,
+                "hitRateAt5": 97.78,
+                "mrrAt5": 82.41,
+                "recallAt5": 96.67,
+                "uniquePrecisionAt5": 20.44,
+                "ndcgAt5": 85.25,
+                "p50Ms": 41.17,
+                "p95Ms": 107.86
+              },
+              "split": "tune"
+            }
+          ]
+        },
+        {
+          "method": "LEGACY_HYBRID",
+          "samples": 77,
+          "chunks": 80,
+          "averageCharacters": 635,
+          "metrics": {
+            "answerableSamples": 69,
+            "unanswerableQuestions": 8,
+            "hitRateAt5": 95.65,
+            "mrrAt5": 87.44,
+            "recallAt5": 94.93,
+            "uniquePrecisionAt5": 20,
+            "ndcgAt5": 88.79,
+            "p50Ms": 65.77,
+            "p95Ms": 267.29
+          },
+          "groups": [
+            {
+              "metrics": {
+                "answerableSamples": 24,
+                "unanswerableQuestions": 3,
+                "hitRateAt5": 87.5,
+                "mrrAt5": 85.42,
+                "recallAt5": 87.5,
+                "uniquePrecisionAt5": 18.33,
+                "ndcgAt5": 85.96,
+                "p50Ms": 52.71,
+                "p95Ms": 103.02
+              },
+              "split": "holdout"
+            },
+            {
+              "metrics": {
+                "answerableSamples": 45,
+                "unanswerableQuestions": 5,
+                "hitRateAt5": 100,
+                "mrrAt5": 88.52,
+                "recallAt5": 98.89,
+                "uniquePrecisionAt5": 20.89,
+                "ndcgAt5": 90.29,
+                "p50Ms": 68.86,
+                "p95Ms": 267.9
+              },
+              "split": "tune"
+            }
+          ]
+        }
+      ]
+    },
+    "native": {
+      "extraction": "pypdf native text; not Docling/OCR or a Qdrant service benchmark",
+      "variants": [
+        {
+          "method": "BM25",
+          "samples": 77,
+          "metrics": {
+            "answerableSamples": 69,
+            "unanswerableQuestions": 8,
+            "hitRateAt5": 98.55,
+            "mrrAt5": 94.93,
+            "recallAt5": 98.55,
+            "uniquePrecisionAt5": 20.87,
+            "ndcgAt5": 95.44,
+            "p50Ms": 30.58,
+            "p95Ms": 51.77
+          },
+          "groups": [
+            {
+              "metrics": {
+                "answerableSamples": 24,
+                "unanswerableQuestions": 3,
+                "hitRateAt5": 100.0,
+                "mrrAt5": 93.75,
+                "recallAt5": 100.0,
+                "uniquePrecisionAt5": 20.83,
+                "ndcgAt5": 95.26,
+                "p50Ms": 34.85,
+                "p95Ms": 51.77
+              },
+              "split": "holdout"
+            },
+            {
+              "metrics": {
+                "answerableSamples": 45,
+                "unanswerableQuestions": 5,
+                "hitRateAt5": 97.78,
+                "mrrAt5": 95.56,
+                "recallAt5": 97.78,
+                "uniquePrecisionAt5": 20.89,
+                "ndcgAt5": 95.53,
+                "p50Ms": 30.07,
+                "p95Ms": 48.69
+              },
+              "split": "tune"
+            }
+          ]
+        },
+        {
+          "method": "VECTOR",
+          "samples": 77,
+          "metrics": {
+            "answerableSamples": 69,
+            "unanswerableQuestions": 8,
+            "hitRateAt5": 75.36,
+            "mrrAt5": 66.43,
+            "recallAt5": 75.36,
+            "uniquePrecisionAt5": 15.94,
+            "ndcgAt5": 68.74,
+            "p50Ms": 42.73,
+            "p95Ms": 127.46
+          },
+          "groups": [
+            {
+              "metrics": {
+                "answerableSamples": 24,
+                "unanswerableQuestions": 3,
+                "hitRateAt5": 62.5,
+                "mrrAt5": 58.33,
+                "recallAt5": 62.5,
+                "uniquePrecisionAt5": 13.33,
+                "ndcgAt5": 59.42,
+                "p50Ms": 39.98,
+                "p95Ms": 114.62
+              },
+              "split": "holdout"
+            },
+            {
+              "metrics": {
+                "answerableSamples": 45,
+                "unanswerableQuestions": 5,
+                "hitRateAt5": 82.22,
+                "mrrAt5": 70.74,
+                "recallAt5": 82.22,
+                "uniquePrecisionAt5": 17.33,
+                "ndcgAt5": 73.71,
+                "p50Ms": 47.09,
+                "p95Ms": 127.46
+              },
+              "split": "tune"
+            }
+          ]
+        },
+        {
+          "method": "HYBRID",
+          "samples": 77,
+          "metrics": {
+            "answerableSamples": 69,
+            "unanswerableQuestions": 8,
+            "hitRateAt5": 98.55,
+            "mrrAt5": 93.96,
+            "recallAt5": 98.55,
+            "uniquePrecisionAt5": 20.87,
+            "ndcgAt5": 94.81,
+            "p50Ms": 37.25,
+            "p95Ms": 176.87
+          },
+          "groups": [
+            {
+              "metrics": {
+                "answerableSamples": 24,
+                "unanswerableQuestions": 3,
+                "hitRateAt5": 100.0,
+                "mrrAt5": 92.01,
+                "recallAt5": 100.0,
+                "uniquePrecisionAt5": 20.83,
+                "ndcgAt5": 94.01,
+                "p50Ms": 40.16,
+                "p95Ms": 78.17
+              },
+              "split": "holdout"
+            },
+            {
+              "metrics": {
+                "answerableSamples": 45,
+                "unanswerableQuestions": 5,
+                "hitRateAt5": 97.78,
+                "mrrAt5": 95.0,
+                "recallAt5": 97.78,
+                "uniquePrecisionAt5": 20.89,
+                "ndcgAt5": 95.24,
+                "p50Ms": 36.16,
+                "p95Ms": 394.38
+              },
+              "split": "tune"
+            }
+          ]
+        },
+        {
+          "method": "RRF",
+          "samples": 77,
+          "metrics": {
+            "answerableSamples": 69,
+            "unanswerableQuestions": 8,
+            "hitRateAt5": 97.1,
+            "mrrAt5": 91.18,
+            "recallAt5": 96.38,
+            "uniquePrecisionAt5": 20.29,
+            "ndcgAt5": 92.13,
+            "p50Ms": 37.94,
+            "p95Ms": 120.02
+          },
+          "groups": [
+            {
+              "metrics": {
+                "answerableSamples": 24,
+                "unanswerableQuestions": 3,
+                "hitRateAt5": 100.0,
+                "mrrAt5": 87.85,
+                "recallAt5": 100.0,
+                "uniquePrecisionAt5": 20.83,
+                "ndcgAt5": 90.93,
+                "p50Ms": 35.82,
+                "p95Ms": 140.39
+              },
+              "split": "holdout"
+            },
+            {
+              "metrics": {
+                "answerableSamples": 45,
+                "unanswerableQuestions": 5,
+                "hitRateAt5": 95.56,
+                "mrrAt5": 92.96,
+                "recallAt5": 94.44,
+                "uniquePrecisionAt5": 20.0,
+                "ndcgAt5": 92.76,
+                "p50Ms": 38.27,
+                "p95Ms": 86.77
+              },
+              "split": "tune"
+            }
+          ]
+        },
+        {
+          "method": "LEGACY_HYBRID",
+          "samples": 77,
+          "metrics": {
+            "answerableSamples": 69,
+            "unanswerableQuestions": 8,
+            "hitRateAt5": 94.2,
+            "mrrAt5": 90.22,
+            "recallAt5": 93.48,
+            "uniquePrecisionAt5": 19.71,
+            "ndcgAt5": 90.68,
+            "p50Ms": 75.06,
+            "p95Ms": 801.45
+          },
+          "groups": [
+            {
+              "metrics": {
+                "answerableSamples": 24,
+                "unanswerableQuestions": 3,
+                "hitRateAt5": 87.5,
+                "mrrAt5": 85.42,
+                "recallAt5": 87.5,
+                "uniquePrecisionAt5": 18.33,
+                "ndcgAt5": 85.96,
+                "p50Ms": 64.48,
+                "p95Ms": 350.7
+              },
+              "split": "holdout"
+            },
+            {
+              "metrics": {
+                "answerableSamples": 45,
+                "unanswerableQuestions": 5,
+                "hitRateAt5": 97.78,
+                "mrrAt5": 92.78,
+                "recallAt5": 96.67,
+                "uniquePrecisionAt5": 20.44,
+                "ndcgAt5": 93.19,
+                "p50Ms": 87.37,
+                "p95Ms": 1035.38
+              },
+              "split": "tune"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Page-level relevance, not exact evidence occurrence or source-value/OCR correctness.",
+    "Every document/page earns relevance credit once. Unique-source precision divides that credit by returned top-five chunk slots.",
+    "Negative questions are retained but model answerability/refusal is not measured.",
+    "Group separation is by original publisher PDF hash. The two invoice originals still share a template.",
+    "Development agent labels; no independent human ground truth or external blind benchmark.",
+    "No hyperparameter search on held-out rows; this is a development comparison, not an unseen independent dataset.",
+    "Local ranking and embedding timing with resident model caches; not Qdrant service latency, load testing or Nova generation. No controlled timing speedup claim.",
+    "Only hashes/aggregate results are published; no private original PDF, case IDs, tokens or extracted source text."
+  ],
+  "llmCalls": 0,
+  "azureCalls": 0
+}
