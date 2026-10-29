@@ -38,9 +38,9 @@
     "repeat": 1,
     "datasetKind": "source-snapshot",
     "parity": true,
-    "duckdbQueryMs": 48,
-    "sparkStartupAndQueryMs": 33609,
-    "elapsedMs": 35317,
+    "duckdbQueryMs": 30,
+    "sparkStartupAndQueryMs": 36338,
+    "elapsedMs": 36509,
     "sparkVersion": "4.2.1",
     "outputCompression": "gzip"
   },

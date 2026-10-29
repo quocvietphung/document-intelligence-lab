@@ -1,10 +1,10 @@
 'use client';
-import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
+import {useCallback,useEffect,useRef,useState,type FormEvent,type MouseEvent} from 'react';
 import {useAuth} from '@/components/auth/KeycloakProvider';
 import {analyticsSchema,analyticsText,findingText,type DocumentAnalytics,type AnalyticsFinding} from '@/lib/document-analytics';
 import {ModalSurface} from './ModalSurface';
 
-export function DocumentAnalyticsPanel({caseId,caseVersion,locale,inspect,compact=false}:{caseId:string;caseVersion?:number;locale:string;inspect?:(id:string,page?:number)=>void;compact?:boolean}){
+export function DocumentAnalyticsPanel({caseId,caseVersion,locale,inspect,compact=false,navigate}:{caseId:string;caseVersion?:number;locale:string;inspect?:(id:string,page?:number)=>void;compact?:boolean;navigate?:(page:'pipeline'|'documents')=>void}){
   const auth=useAuth(),t=analyticsText(locale),root=`/api/cases/${encodeURIComponent(caseId)}/platform/analytics`;
   const [data,setData]=useState<DocumentAnalytics>(),[error,setError]=useState(false),[busy,setBusy]=useState(false),[consent,setConsent]=useState(false);
   const [review,setReview]=useState<{runId:string;finding:AnalyticsFinding}>(),[note,setNote]=useState(''),[state,setState]=useState<'CONFIRMED'|'DISMISSED'>('CONFIRMED');
@@ -22,6 +22,10 @@ export function DocumentAnalyticsPanel({caseId,caseVersion,locale,inspect,compac
     catch{setError(true);}finally{inFlight.current=false;setBusy(false);}}
   const result=data?.report?.result.analytics,canWrite=auth.roles.some(r=>r==='ADVISOR'||r==='ADMIN'),canReview=auth.roles.some(r=>r==='REVIEWER'||r==='ADMIN');
   const names=new Map(data?.report?.result.documents.map(d=>[d.id,d.name])??[]);
+  function openPage(event:MouseEvent<HTMLAnchorElement>,page:'pipeline'|'documents'){
+    if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    event.preventDefault();const url=new URL(window.location.href);if(page==='pipeline')url.searchParams.set('pipeline','assets');else url.searchParams.delete('pipeline');window.history.replaceState(null,'',url);if(navigate)navigate(page);else window.location.hash=page;
+  }
   function findings(runId:string,items:AnalyticsFinding[],current=true){return items.length?<div className="lab-alerts" role="list">{items.slice(0,40).map(f=>{const reviewed=data?.reviews.find(r=>r.run_id===runId&&r.finding_id===f.id);return <article role="listitem" key={f.id}><div><strong>{findingText(f.code,locale)}</strong><p>{names.get(f.documentId)??f.documentId} · {t.page} {f.page}</p><small>{f.field} · {f.category==='statistical'?t.experiment:t.details}</small>
       {inspect?<button className="button-link" onClick={()=>inspect(f.documentId,f.page)}>{t.open}</button>:null}
       {reviewed?<p>{reviewed.state==='CONFIRMED'?t.confirmed:t.dismissed} · {reviewed.note}</p>:null}
@@ -31,8 +35,8 @@ export function DocumentAnalyticsPanel({caseId,caseVersion,locale,inspect,compac
     <div className="lab-section-heading"><div><h2>{t.title}</h2><p className="lab-caption">{t.hint}</p></div>{!compact?<button className="button-secondary" disabled={busy} onClick={()=>void load()}>{t.refresh}</button>:null}</div>
     {error?<p role="alert" className="notice-error">{t.error}</p>:null}
     {!result?<p className="lab-caption">{t.empty}</p>:<div className="document-analytics-metrics">{([[t.documents,result.documents],[t.fields,result.fields],[t.lines,result.invoiceLines],[t.findings,result.findings.length]] as const).map(([label,value])=><article key={label}><h3>{label}</h3><strong>{value}</strong></article>)}</div>}
-    {compact?<a className="button-link" href={`?case=${encodeURIComponent(caseId)}&pipeline=assets#pipeline`}>{t.openAnalytics}</a>:<>
-      <details className="research-reference-details"><summary>{t.pdf}</summary><p>{t.pdfHint}</p><a className="button-link" href={`?case=${encodeURIComponent(caseId)}#documents`}>{t.open}</a></details>
+    {compact?<a className="button-link" href={`?case=${encodeURIComponent(caseId)}&pipeline=assets#pipeline`} onClick={event=>openPage(event,'pipeline')}>{t.openAnalytics}</a>:<>
+      <details className="research-reference-details"><summary>{t.pdf}</summary><p>{t.pdfHint}</p><a className="button-link" href={`?case=${encodeURIComponent(caseId)}#documents`} onClick={event=>openPage(event,'documents')}>{t.open}</a></details>
       {result&&data?.report?<details className="research-reference-details" open={result.findings.length>0}><summary>{t.details} · {result.findings.length}</summary>{findings(data.report.id,result.findings)}<p>{t.reviewed}: {result.reviewedDocuments}</p></details>:null}
       <details className="research-reference-details"><summary>{t.experiment}</summary><p>{t.experimentHint}</p><p>{data?.workerReady?'scikit-learn · Isolation Forest · CPU':t.off}</p>
         <label className="research-consent"><input type="checkbox" checked={consent} disabled={busy||pending} onChange={e=>setConsent(e.target.checked)}/>{t.consent}</label>
