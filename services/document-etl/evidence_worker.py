@@ -32,7 +32,7 @@ def process_evidence(root: Path):
                 source=Path(folder)/'source.pdf';source.write_bytes(content);source.chmod(0o600)
                 result=inspect_evidence(source,payload['value'],page=payload['page'],recorded_text=payload.get('recordedText',''),
                     recorded_bbox=payload.get('recordedBox'),recorded_page_size=payload.get('recordedPageSize'),
-                    languages=payload.get('languages','eng'),timeout_seconds=120)
+                    languages=payload.get('languages','eng'),orientation=payload.get('orientation','auto'),timeout_seconds=150)
             receipt={'status':'COMPLETE','result':result}
         except Exception as error:
             from document_evidence.reader import DocumentReadError

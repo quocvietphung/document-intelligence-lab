@@ -5,7 +5,7 @@ import {randomUUID} from 'node:crypto';
 export async function auditEvidenceQuality({request,check,bearer,web,api}){
   assert.equal(new URL(web).hostname,'localhost');assert.equal(new URL(api).hostname,'localhost');
   const id=process.env.TEST_QUALITY_CASE||'CR-cb06572e-ed8',root=web+'/api/cases/'+id;
-  const item=await (await request(root,{headers:bearer})).json();
+  const caseResponse=await request(root,{headers:bearer});assert.equal(caseResponse.status,200,'Dossier API must be ready before quality acceptance');const item=await caseResponse.json();
   const tagged=item.documents.find(d=>d.name==='structure-regression.pdf'),scan=item.documents.find(d=>d.name==='scanned-skew-regression.pdf');
   assert.ok(tagged?.originalAvailable&&scan?.originalAvailable,'Run TEST_DOCUMENT_STRUCTURE=1 first or set TEST_QUALITY_CASE to its printed dossier');
   if(process.env.TEST_QUALITY_NOVA_CANCEL==='only'){await auditNovaCancellation({request,check,bearer,web,api,id,tagged,region:tagged.pages[0].regions.find(r=>r.text==='8,500')});return;}
@@ -33,6 +33,28 @@ export async function auditEvidenceQuality({request,check,bearer,web,api}){
   const cancelled=await request(cancelUrl+'/cancel',{method:'POST',headers:bearer});check(cancelled.status===200,'Owner can cancel a request before dispatch');
   const rejected=await request(api+'/api/assistant/chat',{method:'POST',headers:{...bearer,'Content-Type':'application/json','X-Nova-Request-Id':cancelledId},body:JSON.stringify({caseId:id,locale:'en',question:'Explain the recorded amount'})});
   check(rejected.status===409,'A cancelled request ID never reaches model dispatch');
+  if(process.env.TEST_QUALITY_RETRIEVAL==='1'){
+    const questions=['What is the inspection amount in USD?','Wie hoch ist der Prüfungsbetrag in USD?','Số tiền kiểm tra bằng USD là bao nhiêu?'].map(question=>({question,documentId:tagged.id,page:1}));
+    const headers={...bearer,'Content-Type':'application/json'};
+    const response=await request(root+'/platform/research/datasets',{method:'POST',headers,body:JSON.stringify({caseVersion:item.version,name:'Synthetic PDF quality EN-DE-VI',fields:[],questions,sourceChecked:true})});
+    assert.equal(response.status,200);const dataset=await response.json();
+    const submitted=await request(root+'/platform/research/runs',{method:'POST',headers,body:JSON.stringify({caseVersion:item.version,datasetId:dataset.id,suite:'RETRIEVAL'})});assert.equal(submitted.status,202);const job=await submitted.json();
+    let measured;for(let n=0;n<90;n++){const state=await (await request(root+'/platform/research',{headers:bearer})).json();measured=state.runs.find(r=>r.id===job.id);if(measured)break;const failed=state.jobs.find(r=>r.id===job.id&&r.status==='FAILED');assert.ok(!failed,failed?.errorCode);await new Promise(resolve=>setTimeout(resolve,1000));}
+    assert.ok(measured);assert.equal(measured.azureCalls,0);assert.equal(measured.localModelCalls,0);assert.ok(measured.variants.every(v=>v.samples===3&&v.rows.length===3));
+    const report={format:'synthetic-multilingual-retrieval-v1',sourceExample:tagged.name,scope:'Three questions; one labelled original document/page per question; not representative multilingual accuracy',configuration:measured.configuration,variants:measured.variants.map(v=>({method:v.method,samples:v.samples,metrics:v.metrics,questions:v.rows.map((r,i)=>({locale:['en','de','vi'][i],rank:r.rank,passed:r.passed}))}))};
+    const {writeFileSync}=await import('node:fs');writeFileSync('.local/multilingual-retrieval.json',JSON.stringify(report,null,2),{mode:0o600});
+    check(true,'Actual original PDF has measured EN/DE/VI retrieval examples without an LLM/cloud call');
+  }
+  if(process.env.TEST_QUALITY_RESTART_RUNS==='1'){
+    const {execFileSync}=await import('node:child_process');const {localCompose}=await import('./docker-local.mjs');const {args,env}=localCompose();
+    execFileSync('docker',[...args,'restart','credit-api'],{env,stdio:'ignore'});
+    let ready=false;for(let i=0;i<90;i++){try{ready=(await request(api+'/actuator/health')).ok;}catch{}if(ready)break;await new Promise(resolve=>setTimeout(resolve,1000));}
+    assert.ok(ready,'API becomes healthy after restart');
+    const persisted=await (await request(root+'/platform/nova-runs/'+cancelledId,{headers:bearer})).json();
+    check(persisted.status==='CANCELLED_BEFORE_START'&&persisted.runtimeScope==='postgresql','Nova cancellation metadata survives a real API container restart');
+    const duplicate=await request(api+'/api/assistant/chat',{method:'POST',headers:{...bearer,'Content-Type':'application/json','X-Nova-Request-Id':cancelledId},body:JSON.stringify({caseId:id,locale:'en',question:'Explain the recorded amount'})});
+    check(duplicate.status===409,'Restart cannot redispatch an already cancelled request ID');
+  }
   if(process.env.TEST_QUALITY_NOVA_CANCEL==='1')await auditNovaCancellation({request,check,bearer,web,api,id,tagged,region});
   console.log('Quality preview: '+web+'/en?case='+id+'#documents');
 }

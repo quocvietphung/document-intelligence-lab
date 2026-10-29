@@ -1,0 +1,38 @@
+# Single-user 16 GB host: bounded services, one parser job, lazy local-model loading.
+# Existing named volumes and the selected model are unchanged.
+services:
+  case-db:
+    mem_limit: 256m
+    cpus: 0.5
+  identity-db:
+    mem_limit: 256m
+    cpus: 0.5
+  keycloak:
+    mem_limit: 768m
+    cpus: 1
+    environment:
+      JAVA_OPTS_KC_HEAP: -Xms64m -Xmx384m
+  credit-api:
+    mem_limit: 1280m
+    cpus: 2
+  web:
+    mem_limit: 384m
+    cpus: 1
+    environment:
+      NODE_OPTIONS: --max-old-space-size=192
+  redis:
+    mem_limit: 160m
+    cpus: 0.5
+  qdrant:
+    mem_limit: 768m
+    cpus: 1
+  clamav:
+    mem_limit: 2g
+    cpus: 1.5
+  docling:
+    environment:
+      DOCLING_SERVE_ENG_LOC_NUM_WORKERS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      TOKENIZERS_PARALLELISM: "false"

@@ -1,0 +1,70 @@
+{
+  "format": "document-quality-reference-v1",
+  "sha256": "c800f669a9c2d111c2d31263c679e7bf1ad803f2229f59b8dc43d40a5015e01e",
+  "labelProvenance": "generated-known-input-not-human-approved",
+  "pages": [
+    {
+      "page": 1,
+      "text": "Document structure regression Synthetic research fixture. No accessibility certification is claimed. 1. Review checklist 1. Read this left column first. 2. Check the amounts on the right. 2. Recorded amounts Inspect headers, rows and units. Item Amount (USD) Inspection 8,500 Storage 500 Self-authored regression data - not a customer document or valid PDF/UA exemplar.",
+      "readingOrder": [
+        "Document structure regression",
+        "1. Review checklist",
+        "Read this left column first.",
+        "Check the amounts on the right.",
+        "2. Recorded amounts",
+        "Inspect headers, rows and units."
+      ],
+      "tables": [
+        {
+          "index": 0,
+          "cells": [
+            {
+              "row": 0,
+              "column": 0,
+              "text": "Item",
+              "row_span": 1,
+              "column_span": 1,
+              "column_header": true
+            },
+            {
+              "row": 0,
+              "column": 1,
+              "text": "Amount (USD)",
+              "row_span": 1,
+              "column_span": 1,
+              "column_header": true
+            },
+            {
+              "row": 1,
+              "column": 0,
+              "text": "Inspection",
+              "row_span": 1,
+              "column_span": 1
+            },
+            {
+              "row": 1,
+              "column": 1,
+              "text": "8,500",
+              "row_span": 1,
+              "column_span": 1
+            },
+            {
+              "row": 2,
+              "column": 0,
+              "text": "Storage",
+              "row_span": 1,
+              "column_span": 1
+            },
+            {
+              "row": 2,
+              "column": 1,
+              "text": "500",
+              "row_span": 1,
+              "column_span": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

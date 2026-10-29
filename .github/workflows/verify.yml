@@ -15,7 +15,7 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: node --test scripts/docker-azure-config.test.mjs
-      - run: node --test scripts/docker-local.test.mjs scripts/run-adf.test.mjs scripts/test-nova-local.test.mjs
+      - run: node --test scripts/docker-local.test.mjs scripts/run-adf.test.mjs scripts/test-nova-local.test.mjs scripts/retention-lab.test.mjs
       - run: python3 -B scripts/test_foundry_config.py
       - run: python3 -B scripts/test_practice_document_data.py
       - run: python3 -B -m unittest discover -s services/model-runtime -p 'test_*.py'

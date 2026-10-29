@@ -7,6 +7,7 @@ const config = [
   {
     ignores: [
       ".next/**",
+      ".local/**",
       "node_modules/**",
       "out/**",
       "public/pdfjs/**",

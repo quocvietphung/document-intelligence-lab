@@ -1,0 +1,89 @@
+{
+  "format": "synthetic-multilingual-retrieval-v1",
+  "sourceExample": "structure-regression.pdf",
+  "scope": "Three questions; one labelled original document/page per question; not representative multilingual accuracy",
+  "configuration": {
+    "vectorStore": "Qdrant",
+    "embeddingModel": "all-MiniLM-L6-v2 quantized (ONNX, 384d)",
+    "semantic": true,
+    "ranking": "BM25 + cosine + query coverage",
+    "languageCoverage": "English-focused"
+  },
+  "variants": [
+    {
+      "method": "BM25",
+      "samples": 3,
+      "metrics": {
+        "hitRateAt5": 100,
+        "mrrAt5": 66.67
+      },
+      "questions": [
+        {
+          "locale": "en",
+          "rank": 1,
+          "passed": true
+        },
+        {
+          "locale": "de",
+          "rank": 2,
+          "passed": true
+        },
+        {
+          "locale": "vi",
+          "rank": 2,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "method": "VECTOR",
+      "samples": 3,
+      "metrics": {
+        "hitRateAt5": 100,
+        "mrrAt5": 33.33
+      },
+      "questions": [
+        {
+          "locale": "en",
+          "rank": 3,
+          "passed": true
+        },
+        {
+          "locale": "de",
+          "rank": 3,
+          "passed": true
+        },
+        {
+          "locale": "vi",
+          "rank": 3,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "method": "HYBRID",
+      "samples": 3,
+      "metrics": {
+        "hitRateAt5": 100,
+        "mrrAt5": 55.56
+      },
+      "questions": [
+        {
+          "locale": "en",
+          "rank": 1,
+          "passed": true
+        },
+        {
+          "locale": "de",
+          "rank": 3,
+          "passed": true
+        },
+        {
+          "locale": "vi",
+          "rank": 3,
+          "passed": true
+        }
+      ]
+    }
+  ]
+}

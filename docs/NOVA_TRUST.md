@@ -64,3 +64,7 @@ The app does not silently upload the entire document library. Nevertheless, Azur
 The review center reports observed answer duration, counts, feedback and source-link issues from a bounded set of stored records. It does not measure billed tokens/cost, global hallucination rate or customer time saved.
 
 Prompt guards, scoped tools and source checks reduce specific risks; they are not a security certification. Reviewers remain responsible for checking the original evidence.
+
+## Restart and history controls
+
+Persistent deployments now keep Nova lifecycle metadata in PostgreSQL. Request IDs and cancellation tombstones survive API restarts; an expired lease becomes Interrupted rather than being retried. Cancellation does not prove a remote or local provider stopped. The operator can preview scoped old inspection/answer/feedback history with `scripts/retention-lab.mjs`; deletion requires explicit case confirmation and leaves an audit summary. Original documents, OCR corrections, reviewer tasks and reference datasets are outside that policy. Nothing is purged automatically. See [local recovery and retention](RELIABILITY_LAB.md).

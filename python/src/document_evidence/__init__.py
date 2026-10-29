@@ -1,6 +1,7 @@
 """Document Validation & Evidence. Importing this package never loads a model."""
 from .models import Cell, Document, Page, PdfStructure, PdfTag, Source, StructureNode, Table
 from .structure import validate_structure
+from .evaluation import evaluate_document
 from .inspection import GroundingCandidate, GroundingResult, ground_pdf, read_pdf_structure, inspect_evidence
 from .reader import DoclingReader, DocumentReadError, normalize_docling
 from .validation import (
@@ -13,5 +14,5 @@ __all__ = [
     "Cell", "CitationError", "DoclingReader", "Document", "DocumentReadError", "Finding",
     "Money", "Page", "PdfStructure", "PdfTag", "Source", "StructureNode", "Table", "ValidationReport", "check_evidence", "validate_structure",
     "normalize_docling", "normalize_money", "validate_citations", "validate_document",
-    "GroundingCandidate", "GroundingResult", "ground_pdf", "read_pdf_structure", "inspect_evidence",
+    "GroundingCandidate", "GroundingResult", "ground_pdf", "read_pdf_structure", "inspect_evidence", "evaluate_document",
 ]

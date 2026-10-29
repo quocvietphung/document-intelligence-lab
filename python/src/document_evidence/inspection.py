@@ -24,6 +24,7 @@ class GroundingCandidate:
     context: str
     deskew_degrees: float = 0.0
     ocr_confidence: float | None = None
+    rotation_degrees: int = 0
 
 
 @dataclass(frozen=True)
@@ -73,7 +74,7 @@ def read_pdf_structure(path: str | Path, *, timeout_seconds: int = 60):
 def inspect_evidence(path: str | Path, value: str, *, page: int = 1, recorded_text: str = "",
                      recorded_bbox: tuple[float, float, float, float] | None = None,
                      recorded_page_size: tuple[float, float] | None = None,
-                     languages: str = "eng", timeout_seconds: int = 120) -> dict:
+                     languages: str = "eng", orientation: str = "auto", timeout_seconds: int = 120) -> dict:
     """Locate candidates and optionally compare a stored upright provider crop with Tesseract.
 
     A provider crop must include its original page dimensions. Rotation/ratio mismatch
@@ -81,6 +82,8 @@ def inspect_evidence(path: str | Path, value: str, *, page: int = 1, recorded_te
     """
     if not isinstance(value, str) or not value.strip() or len(value) > 500 or type(page) is not int or not 1 <= page <= 4:
         raise ValueError("A page between 1 and 4 and a value of at most 500 characters are required")
+    if orientation not in ("auto", "0", "90", "180", "270"):
+        raise ValueError("Choose auto or a clockwise right-angle OCR orientation")
     if not isinstance(recorded_text, str) or len(recorded_text) > 1000 or not re.fullmatch(r"[a-z]{3}(?:\+[a-z]{3}){0,3}", languages):
         raise ValueError("Invalid recorded text or installed language codes")
     import math
@@ -92,12 +95,12 @@ def inspect_evidence(path: str | Path, value: str, *, page: int = 1, recorded_te
     if recorded_page_size is not None and any(v<=0 for v in recorded_page_size):
         raise ValueError("Invalid recorded page size")
     return _inspect(path,"inspect",{"value":value,"page":page,"ocr":True,"deskew":True,"languages":languages,
-                    "recordedText":recorded_text,"recordedBox":recorded_bbox,"recordedPageSize":recorded_page_size},timeout_seconds)
+                    "orientation":orientation,"recordedText":recorded_text,"recordedBox":recorded_bbox,"recordedPageSize":recorded_page_size},timeout_seconds)
 
 
 def ground_pdf(path: str | Path, value: str, *, page: int | None = None,
                occurrence_id: str | None = None, ocr: bool = True, deskew: bool = True,
-               languages: str = "eng", timeout_seconds: int = 60) -> GroundingResult:
+               languages: str = "eng", orientation: str = "auto", timeout_seconds: int = 120) -> GroundingResult:
     """Find exact occurrences locally; duplicates never silently select the first.
 
     Native glyph boxes use PDFium's page-to-device transform (rotation/crop included).
@@ -110,12 +113,14 @@ def ground_pdf(path: str | Path, value: str, *, page: int | None = None,
         raise ValueError("Page must be between 1 and 4")
     if not isinstance(languages,str) or not re.fullmatch(r"[a-z]{3}(?:\+[a-z]{3}){0,3}", languages):
         raise ValueError("Use installed Tesseract language codes, such as eng+deu")
+    if orientation not in ("auto", "0", "90", "180", "270"):
+        raise ValueError("Choose auto or a clockwise right-angle OCR orientation")
     if occurrence_id is not None and (not isinstance(occurrence_id, str) or len(occurrence_id) > 200):
         raise ValueError("Invalid occurrence ID")
     if type(ocr) is not bool or type(deskew) is not bool:
         raise ValueError("OCR and deskew options must be booleans")
     data = _inspect(path, "ground", {"value": value, "page": page, "ocr": ocr, "deskew": deskew,
-                                     "languages": languages}, timeout_seconds)
+                                     "languages": languages,"orientation":orientation}, timeout_seconds)
     candidates = tuple(GroundingCandidate(**{**c, "bbox": tuple(c["bbox"]),
                                                "polygon": tuple(tuple(p) for p in c["polygon"])}) for c in data["candidates"])
     selected = next((c.id for c in candidates if c.id == occurrence_id), None)
