@@ -338,6 +338,8 @@ The [measured Docker acceptance report](docs/benchmarks/document-analytics.json)
 
 PySpark reads the same completed exports and performs exact-decimal aggregate/row-count parity checks against DuckDB. It runs as one bounded **`local[2]`** process, without a cluster or Azure service. It preserves the reviewed/VALID Gold gate and separates fields/currencies; results go to a new directory rather than the ETL database.
 
+**Experimental only:** the real PDF parity check passes, but the [Spark image security scan](https://github.com/quocvietphung/document-intelligence-lab/actions/runs/40959443968) reports high/critical findings in bundled Java dependencies of PySpark 4.2.1, including shaded Hadoop/Spark libraries. The ML worker image passes that scan. Spark is not approved for production, shared hosting or untrusted Parquet; it remains an explicit offline batch over this lab's own completed exports. The security gate stays failing until the dependencies are resolved; findings are not suppressed.
+
 Copy the **scope/run pair** from **Document analytics → Parquet · PySpark**, then run:
 
 ```bash
