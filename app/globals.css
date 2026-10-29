@@ -814,3 +814,12 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 @media(max-width:650px){.pipeline-control{padding:18px;border-radius:14px;}.pipeline-control-heading{flex-direction:column;}.pipeline-control h2{font-size:21px;}.pipeline-filters{grid-template-columns:minmax(0,1fr);}.pipeline-list-caption{align-items:flex-start;}.pipeline-job{padding:15px;}.pipeline-job-heading{flex-wrap:wrap;}.pipeline-job-heading>.lab-badge{margin-left:0;}.pipeline-manifest{flex-direction:column;align-items:stretch;}.pipeline-events li{grid-template-columns:minmax(0,1fr);gap:5px;}.pipeline-overview-steps strong{font-size:11px;}}
 .inspection-source-crop{display:block;max-width:100%;max-height:220px;width:auto;height:auto;border:1px solid var(--line);background:white}.document-text-evidence pre{white-space:pre-wrap;overflow-wrap:anywhere}
 .local-inspection>label{display:grid;gap:.45rem;margin:1rem 0;max-width:36rem}.local-inspection>label.lab-consent{display:flex;align-items:flex-start;gap:.55rem;max-width:none}.local-inspection>label>input:not([type=checkbox]){width:100%;min-height:42px;border:1px solid var(--line);border-radius:9px;padding:.55rem .75rem;background:white;font:inherit}.local-inspection>.source-page{padding:1rem;margin-top:1rem;border:1px solid var(--line);border-radius:12px}.local-inspection h4{font-weight:600;margin:.8rem 0 .4rem}.local-inspection figure{margin:.7rem 0}.local-inspection figcaption{font-size:.8rem;color:var(--muted)}
+
+/* Compact source-bound analytics; scoped so research cards keep their own layout. */
+.document-analytics-metrics,.local-etl-panel .research-lineage{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:12px;margin:18px 0}
+.document-analytics-metrics>article,.local-etl-panel .research-lineage>article{min-width:0;padding:14px;border:1px solid #dce8e4;border-radius:12px;background:#f3f8f6}
+.document-analytics-metrics h3,.local-etl-panel .research-lineage h3{font-size:12px;line-height:1.6;color:#5c7474}
+.document-analytics-metrics strong,.local-etl-panel .research-lineage article>strong{display:block;font-size:27px;color:#176b66;margin-top:5px}
+.document-analytics-panel .lab-section-heading>div,.local-etl-panel .lab-section-heading>div{flex:1;min-width:180px}
+.document-analytics-panel .lab-review-form label{display:grid;gap:8px}
+.document-analytics-panel .lab-review-form select,.document-analytics-panel .lab-review-form textarea{width:100%}

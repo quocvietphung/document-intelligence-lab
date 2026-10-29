@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus;
 /** Authenticated snapshot -> private Docker spool -> immutable analytics receipt. No cloud or OCR call. */
 @Service
 public class LocalDataPipeline {
-  static final String METHOD="document-medallion-v2";
+  static final String METHOD="document-medallion-v3";
   public record Request(@Min(0) long caseVersion,@NotNull UUID requestId,@AssertTrue boolean consent) {}
   private final CreditCaseService cases;private final LabStore store;private final DocumentResearch research;
   private final Path root;private final boolean enabled;private final DistributedLimits limits;
@@ -69,10 +69,10 @@ public class LocalDataPipeline {
   static boolean currentMethod(Map<String,Object> run){return run.get("result") instanceof Map<?,?> result&&METHOD.equals(result.get("method"));}
   public byte[] artifact(String tenant,String caseId,String id,String layer){
     cases.require(tenant,caseId);
-    if(!enabled||!id.matches("etl-[a-f0-9-]{36}")||!Set.of("bronze","silver","gold").contains(layer))throw fail(404,"Artifact unavailable");
+    if(!enabled||!id.matches("etl-[a-f0-9-]{36}")||!Set.of("bronze","silver","gold","document-facts","field-observations","invoice-lines","quality-findings").contains(layer))throw fail(404,"Artifact unavailable");
     var run=store.find(tenant,caseId,"medallion-run",id).orElseThrow(()->fail(404,"Artifact unavailable"));
     if(!"COMPLETE".equals(run.get("status")))throw fail(409,"Run has no published artifacts");
-    String scope=RagEngine.hash(tenant+"|"+caseId);Path path=root.resolve("assets").resolve(scope).resolve(id).resolve(layer+".parquet");
+    String scope=RagEngine.hash(tenant+"|"+caseId);Path path=root.resolve("assets").resolve(scope).resolve(id).resolve(layer.replace('-','_')+".parquet");
     try{if(!Files.isRegularFile(path,LinkOption.NOFOLLOW_LINKS)||Files.size(path)>20_000_000)throw fail(404,"Artifact unavailable");return Files.readAllBytes(path);}
     catch(java.io.IOException e){throw fail(404,"Artifact unavailable");}
   }

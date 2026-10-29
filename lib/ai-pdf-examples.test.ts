@@ -8,7 +8,7 @@ describe('PDF exercises',()=>{
       const example=workflowPdfExample(id,locale);expect(example?.file).toMatch(/\.pdf$/);expect(example?.question.length).toBeGreaterThan(30);
       expect(['general','insurance','banking']).toContain(example?.domain);
     }
-    expect(dashboardFeatures.filter(f=>f.category==='ai')).toHaveLength(16);
+    expect(dashboardFeatures.filter(f=>f.category==='ai')).toHaveLength(17);
   });
   it('covers both active and opt-in AI engines without pretending an example is a live result',()=>{
     for(const id of Object.keys(aiServicePdfSamples))expect(servicePdfExample(id,'en')?.file).toMatch(/\.pdf$/);

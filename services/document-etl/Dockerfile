@@ -12,7 +12,7 @@ COPY python /build/python
 RUN /usr/bin/python3.12 -m pip --python /opt/venv/bin/python install --disable-pip-version-check --no-deps /build/python \
     && rm -rf /build \
     && apk del py3.12-pip
-COPY services/document-etl/worker.py services/document-etl/evidence_worker.py ./
+COPY services/document-etl/worker.py services/document-etl/evidence_worker.py services/document-etl/analytics.py ./
 COPY services/document-etl/dbt dbt
 # Runtime tasks never create environments or install packages.
 RUN rm -rf /usr/share/python-wheels /usr/lib/python3.12/ensurepip

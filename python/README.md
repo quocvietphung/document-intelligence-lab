@@ -198,3 +198,22 @@ print(report["pages"])
 ```
 
 Run from the repository root with the Docling extra and previously prepared weights. The included reference is self-authored generated input, not independently reviewed business ground truth. Its six table cells and reading anchors come from the PDF generator's known content. Exact cell checks are not TEDS; order scores cover only unique labelled anchors. Exports can contain private findings. The source/wheel preview remains separate from the published PyPI alpha; these changes do not publish a new release.
+
+
+### Source-preview analytics SDK
+
+These methods are in the repository preview, **not** the published PyPI 0.1.0a1. They add no runtime dependencies. Java enforces the token audience, tenant, dossier and role.
+
+```python
+layers = client.data_layers(case_id)
+report = client.analytics(case_id)
+
+# Explicit private-copy consent and a stable request UUID are required for writes.
+# Read the current case version first; retain receipts and inspect status separately.
+receipt = client.build_data_layers(
+    case_id, case_version=client.get_case(case_id)["version"],
+    request_id="12345678-1234-1234-1234-123456789abc", consent=True,
+)
+```
+
+After that exact ETL receipt completes, `client.evaluate_cohort(case_id, case_version=..., etl_run_id=..., request_id=..., consent=True)` queues the optional local experiment. Read `client.analytics(case_id)` to inspect its result; there is no hidden polling, retry, cloud fallback or model installation. A small PDF cohort returns insufficient baseline data, with unmeasured accuracy metrics. See the main README for Docker, MLflow and PySpark setup.

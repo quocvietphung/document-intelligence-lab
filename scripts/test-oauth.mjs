@@ -199,6 +199,11 @@ if(process.env.TEST_BATCHES==='1') {
   const {auditBatches}=await import('./test-batches.mjs');await auditBatches({request,check,bearer,web,api});
   console.log(`PASS ${checks} OAuth and batch intake checks`);process.exit(0);
 }
+if(process.env.TEST_DOCUMENT_ANALYTICS==='1') {
+  const {auditDocumentAnalytics}=await import('./test-document-analytics.mjs');await auditDocumentAnalytics({request:localRequest,check,bearer,web,api});
+  const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
+  check(ended.status===204,'Analytics acceptance session logged out');console.log(`PASS ${checks} OAuth and document analytics checks`);process.exit(0);
+}
 if(process.env.TEST_DOCUMENT_UPGRADE==='1') {
   const {auditDocumentUpgrade}=await import('./test-document-upgrade.mjs');await auditDocumentUpgrade({request:localRequest,check,bearer,web,api});
   const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});

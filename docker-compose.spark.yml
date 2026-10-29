@@ -1,0 +1,21 @@
+# Overlay base + platform + ETL + ML compose files. Explicit one-shot batch, never a startup dependency.
+services:
+  spark:
+    profiles: [spark]
+    image: document-lab-spark:1
+    build:
+      context: .
+      dockerfile: services/document-spark/Dockerfile
+    user: "1000:1000"
+    network_mode: none
+    hostname: localhost
+    read_only: true
+    # Parquet Snappy loads its packaged JNI library here; general /tmp stays noexec.
+    tmpfs: ["/tmp:size=512m,mode=1777", "/native:size=32m,exec,mode=1777"]
+    environment:
+      JAVA_TOOL_OPTIONS: -Dorg.xerial.snappy.tempdir=/native -XX:ActiveProcessorCount=2
+    volumes: ["lab_etl:/etl:ro", "lab_analytics:/data"]
+    mem_limit: 2g
+    cpus: 2
+    depends_on:
+      analytics-init: {condition: service_completed_successfully}

@@ -13,7 +13,8 @@ class LocalDataPipelineTest {
   @TempDir Path root;
   @Test void oldMoneyNormalizationReceiptsAreNotReusedAsCurrent(){
     assertThat(LocalDataPipeline.currentMethod(Map.of("result",Map.of("method","document-medallion-v1")))).isFalse();
-    assertThat(LocalDataPipeline.currentMethod(Map.of("result",Map.of("method","document-medallion-v2")))).isTrue();
+    assertThat(LocalDataPipeline.currentMethod(Map.of("result",Map.of("method","document-medallion-v2")))).isFalse();
+    assertThat(LocalDataPipeline.currentMethod(Map.of("result",Map.of("method","document-medallion-v3")))).isTrue();
     assertThat(LocalDataPipeline.currentMethod(Map.of())).isFalse();
   }
   @Test void disabledPipelineCannotQueueAndNeverCreatesSampleScores(){

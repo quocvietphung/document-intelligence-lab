@@ -5,7 +5,7 @@ import {pipeline} from 'node:stream/promises';
 import {createHash,randomUUID} from 'node:crypto';
 import {localCompose} from './docker-local.mjs';
 
-const {args,env}=localCompose(),base=resolve('.local/backups');
+const {args,env}=localCompose(undefined,{analytics:true}),base=resolve('.local/backups');
 const run=(a)=>execFileSync('docker',a,{env,encoding:'utf8',maxBuffer:8_000_000}).trim();
 const compose=(a)=>run([...args,...a]);
 async function stream(args,file,input=false){
@@ -16,12 +16,12 @@ async function stream(args,file,input=false){
   await Promise.all([io,done]);
 }
 async function digest(file){const hash=createHash('sha256');for await(const chunk of createReadStream(file))hash.update(chunk);return hash.digest('hex');}
-const volumeKinds=['lab_documents','lab_etl','lab_vectors','lab_limits'];
+const volumeKinds=['lab_documents','lab_etl','lab_vectors','lab_limits','lab_analytics'];
 function archivePathsSafe(list){return list.split('\n').filter(Boolean).every(p=>!p.startsWith('/')&&!p.split('/').includes('..'));}
 async function backup(){
   const folder=join(base,'workspace-'+new Date().toISOString().replaceAll(':','-'));mkdirSync(folder,{recursive:true,mode:0o700});
   const configuration=JSON.parse(compose(['config','--format','json']));
-  const services=['web','credit-api','keycloak','etl','qdrant','redis'];const paused=[];
+  const services=['web','credit-api','keycloak','etl','qdrant','redis','ml-worker','mlflow'];const paused=[];
   const resume=()=>{let failed=false;for(const id of paused.splice(0).reverse())try{run(['unpause',id]);}catch{failed=true;}if(failed)throw Error('Some services could not resume; inspect Docker paused containers.');};
   const interrupted=()=>{try{resume();}finally{process.exit(130);}};
   process.once('SIGINT',interrupted);process.once('SIGTERM',interrupted);
@@ -34,7 +34,7 @@ async function backup(){
     }
     for(const kind of volumeKinds){
       const volume=configuration.volumes?.[kind]?.name;if(!volume)throw Error('Required volume absent: '+kind);
-      run(['volume','inspect','--format','{{.Name}}',volume]);const file=kind+'.tar.gz';
+      try{run(['volume','inspect','--format','{{.Name}}',volume]);}catch(error){if(kind==='lab_analytics'){manifest.omitted.push('analytics volume has not been created');continue;}throw error;}const file=kind+'.tar.gz';
       await stream(['run','--rm','--network','none','--read-only','--memory','64m','--mount',`type=volume,source=${volume},target=/data,readonly`,'busybox:1.37','tar','-czf','-','-C','/data','.'],join(folder,file));
       manifest.files.push({file,sha256:await digest(join(folder,file)),kind:'volume',volumeKind:kind});manifest.volumes.push(kind);
     }

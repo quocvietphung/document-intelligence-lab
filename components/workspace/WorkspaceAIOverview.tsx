@@ -8,6 +8,7 @@ import {AITag} from "./AITransparency";
 import {AIDashboardStats,WorkspaceAICatalog} from './WorkspaceAICatalog';
 import type {CreditDocument} from '@/lib/credit-data';
 import type {TrustSection} from '@/lib/nova-trust';
+import {DocumentAnalyticsPanel} from './DocumentAnalyticsPanel';
 
 export function WorkspaceAIOverview({locale, demo, documentMode, capabilities, navigate, openNova,documents,openTrust,children,caseId}: {
   locale: string;
@@ -35,5 +36,5 @@ export function WorkspaceAIOverview({locale, demo, documentMode, capabilities, n
       <button className="workspace-service" onClick={openNova} aria-label={t.novaAction}><MessageSquareText size={21}/><span><strong>{t.nova}</strong><small>{chat.engine}</small><code>{chat.model}</code></span><AITag kind={chat.kind} locale={locale}/></button>
     </div>
     <p className="ai-configuration-note"><ShieldCheck size={13}/>{ai.notLive}</p>
-  </section><AIDashboardStats locale={locale} documents={documents} capabilities={capabilities} demo={demo}/>{children}<WorkspaceAICatalog caseId={caseId} locale={locale} demo={demo} capabilities={capabilities} navigate={navigate} openNova={openNova} openTrust={openTrust}/></>;
+  </section><AIDashboardStats locale={locale} documents={documents} capabilities={capabilities} demo={demo}/>{children}{caseId&&!demo?<DocumentAnalyticsPanel key={caseId} caseId={caseId} locale={locale} compact/>:null}<WorkspaceAICatalog caseId={caseId} locale={locale} demo={demo} capabilities={capabilities} navigate={navigate} openNova={openNova} openTrust={openTrust}/></>;
 }

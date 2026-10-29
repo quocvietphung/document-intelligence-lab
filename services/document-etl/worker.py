@@ -14,7 +14,7 @@ from pathlib import Path
 
 import duckdb
 
-VERSION = "document-medallion-v2"
+VERSION = "document-medallion-v3"
 MONEY_FIELDS = {"invoiceTotal", "netIncome", "payoutAmount", "premium", "deductible"}
 
 
@@ -147,12 +147,14 @@ def transform(payload, folder, use_dbt=True):
         # Paths are generated from a validated UUID/scope, never supplied by a user/model.
         destination = str(folder / (name + ".parquet")).replace("'", "''")
         db.execute("COPY (" + query + ") TO '" + destination + "' (FORMAT PARQUET)", [] if name == "gold" else [run_id])
+    from analytics import export
+    analytics = export(db, folder, payload, field_rows, issues, normalize_money)
     history_count = db.execute("SELECT count(*) FROM document_versions").fetchone()[0]
     db.execute("INSERT INTO etl_runs VALUES(?,?,?)", [run_id, source_hash, VERSION])
     db.close()
-    manifest = {"method": VERSION, "sourceHash": source_hash, "bronze": len(documents), "silver": len(field_rows), "gold": len(totals), "historyVersions": history_count,
+    manifest = {"method": VERSION, "scope": payload["scope"], "runId": run_id, "sourceHash": source_hash, "bronze": len(documents), "silver": len(field_rows), "gold": len(totals), "historyVersions": history_count, "analytics": analytics,
                 "qualityIssues": issues, "documents": documents, "totals": totals, "dbtVerified": use_dbt,
-                "artifacts": [{"name": name + ".parquet", "sha256": hashlib.sha256((folder / (name + ".parquet")).read_bytes()).hexdigest()} for name in ("bronze", "silver", "gold")],
+                "artifacts": [{"name": name + ".parquet", "sha256": hashlib.sha256((folder / (name + ".parquet")).read_bytes()).hexdigest()} for name in ("bronze", "silver", "gold", "document_facts", "field_observations", "invoice_lines", "quality_findings")],
                 "limitations": ["Gold requires explicit human verification, not AI confidence.", "Ambiguous dates remain unnormalized.", "Artifacts contain private document data; original PDF expiry does not delete exported analytics."]}
     atomic_json(folder / "manifest.json", manifest)
     return manifest

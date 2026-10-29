@@ -1,0 +1,67 @@
+# Optional local analytics. ETL exports are read-only; results/tracking have separate retention.
+services:
+  analytics-init:
+    image: busybox:1.37
+    user: root
+    command: ["sh", "-c", "chown 1000:1000 /data && chmod 700 /data"]
+    volumes: ["lab_analytics:/data"]
+  ml-worker:
+    profiles: [analytics]
+    image: document-lab-analytics:1
+    build:
+      context: .
+      dockerfile: services/document-ml/Dockerfile
+      target: runtime
+    user: "1000:1000"
+    restart: unless-stopped
+    network_mode: none
+    read_only: true
+    tmpfs: ["/tmp:size=128m,mode=1777"]
+    environment:
+      MLFLOW_TRACKING_URI: sqlite:////data/tracking/mlflow.db
+      MLFLOW_DISABLE_TELEMETRY: "true"
+    volumes: ["lab_etl:/etl:ro", "lab_analytics:/data"]
+    mem_limit: 768m
+    cpus: 1
+    depends_on:
+      analytics-init: {condition: service_completed_successfully}
+      etl: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "from pathlib import Path; import time; assert time.time()-Path('/data/heartbeat').stat().st_mtime<90"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+  mlflow:
+    profiles: [tracking]
+    image: document-lab-mlflow:1
+    build:
+      context: .
+      dockerfile: services/document-ml/Dockerfile
+      target: tracking
+    user: "1000:1000"
+    read_only: true
+    tmpfs: ["/tmp:size=128m,mode=1777"]
+    environment:
+      # Tracking UI only; model jobs run in the explicitly authorized offline worker.
+      MLFLOW_SERVER_ENABLE_JOB_EXECUTION: "false"
+      MLFLOW_SERVER_JOB_ENABLE_PERIODIC_TASKS: "false"
+      MLFLOW_DISABLE_TELEMETRY: "true"
+    command: ["mlflow", "server", "--host", "0.0.0.0", "--port", "5000", "--workers", "1", "--backend-store-uri", "sqlite:////data/tracking/mlflow.db", "--default-artifact-root", "/data/tracking/artifacts", "--allowed-hosts", "localhost:*,127.0.0.1:*", "--cors-allowed-origins", "http://localhost:5005,http://127.0.0.1:5005"]
+    volumes: ["lab_analytics:/data"]
+    ports: ["127.0.0.1:5005:5000"]
+    networks: [analytics_tracking]
+    mem_limit: 1g
+    cpus: 1
+    depends_on:
+      analytics-init: {condition: service_completed_successfully}
+  credit-api:
+    environment:
+      LOCAL_ANALYTICS_ENABLED: "true"
+      LOCAL_ANALYTICS_ROOT: /app/analytics
+    volumes: ["lab_analytics:/app/analytics"]
+volumes:
+  lab_analytics:
+networks:
+  analytics_tracking:
+    # Operator UI needs a published loopback port. This bridge has no PDF/model-service mount.
+    driver: bridge

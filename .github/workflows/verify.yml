@@ -44,6 +44,30 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 21, cache: maven }
       - run: mvn --batch-mode verify
+  document-analytics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12', cache: pip, cache-dependency-path: services/document-ml/requirements.txt}
+      - run: python -m pip install -r services/document-ml/requirements.txt
+      - run: python -B -m unittest discover -s services/document-ml -p 'test_*.py'
+        env: {DO_NOT_TRACK: '1', MLFLOW_DISABLE_AGENT_HINT: '1'}
+  document-spark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: 21}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12', cache: pip, cache-dependency-path: services/document-spark/requirements.txt}
+      - run: python -m pip install -r services/document-spark/requirements.txt
+      - run: python -B -m unittest discover -s services/document-spark -p 'test_*.py'
+        env:
+          PYTHONPATH: services/document-ml:services/document-etl
+          TEST_SPARK: '1'
+          SPARK_LOCAL_IP: 127.0.0.1
+          PYSPARK_SUBMIT_ARGS: '--driver-memory 1g pyspark-shell'
   keycloak:
     runs-on: ubuntu-latest
     steps:

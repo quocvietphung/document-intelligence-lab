@@ -1,4 +1,4 @@
-"""Assemble fresh browser captures into an explicitly edited English walkthrough.
+"""Assemble actual browser captures into an explicitly edited English walkthrough.
 
 Usage: python scripts/build-readme-walkthrough.py CAPTURE_DIRECTORY OUTPUT.gif
 Requires Pillow. Screenshots must be captured from the real running app; this
@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 SCENES = [
     ("01-login.jpg", "Sign in with Keycloak", "Local workspace authentication; no credentials are shown.", 3000),
-    ("02-overview.jpg", "Find the right AI workflow", "16 AI-assisted workflows; catalogue entries are not live model calls.", 4000),
+    ("02-overview.jpg", "Find the right AI workflow", "17 AI-assisted workflows; catalogue entries are not live model calls.", 4000),
     ("03-documents.jpg", "Open a prepared PDF result", "Saved Docling extraction; its recorded review state is unchanged for this walkthrough.", 4000),
     ("04-evidence.jpg", "Compare extraction with the original PDF", "Inspect the source page, recorded fields and tables before using a value.", 4500),
     ("05-source.jpg", "Inspect one source occurrence", "The PDF crop, recorded OCR and checked value are separate observations.", 5000),
@@ -23,6 +23,8 @@ SCENES = [
     ("09b-domains.jpg", "Browse DATEV and insurance sources", "Publisher pages stay explicit across payroll, policy wording and official coverage forms.", 4500),
     ("10-research.jpg", "Compare retrieval on actual PDF evidence", "77 authored questions: 69 answerable, 8 unanswerable; no LLM judge score.", 5000),
     ("11-holdout.jpg", "Check held-out results and missing evidence", "Inspect source-grouped metrics and incomplete multi-page results; retrieval is not answer accuracy.", 6000),
+    ("12-analytics.jpg", "Inspect source-bound document analytics", "Observed fields, invoice lines and quality findings link back to the PDF; no automatic approval.", 5500),
+    ("13-mlflow.jpg", "Track a real local cohort experiment", "The small PDF set has insufficient baseline data. No anomaly accuracy or fraud probability is claimed.", 5500),
 ]
 
 
