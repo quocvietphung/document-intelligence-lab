@@ -9,7 +9,7 @@ public final class DocumentDomain {
   public static String normalize(String domain) {
     if(domain==null||domain.isBlank()) return "banking";
     String value=domain.toLowerCase(Locale.ROOT);
-    if(!List.of("banking","insurance","general").contains(value))
+    if(!List.of("banking","insurance","real-estate","general").contains(value))
       throw new IllegalArgumentException("Unsupported document domain");
     return value;
   }
@@ -17,6 +17,7 @@ public final class DocumentDomain {
     return switch(normalize(domain)) {
       case "banking" -> List.of("income","statement");
       case "insurance" -> List.of("insurance-policy");
+      case "real-estate" -> List.of("construction-order","change-order","construction-invoice","acceptance-report");
       default -> List.of();
     };
   }

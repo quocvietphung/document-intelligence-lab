@@ -1,10 +1,10 @@
 "use client";
-import {Building2,FileStack,ShieldCheck,ArrowUpRight,FileSearch} from 'lucide-react';
+import {Building2,FileStack,ShieldCheck,ArrowUpRight,FileSearch,HardHat} from 'lucide-react';
 import {documentDomains,domainOf,domainText,type DocumentDomain} from '@/lib/document-domains';
 import {workspaceText} from '@/lib/workspace-language';
 import type {WorkspaceCase} from '@/lib/credit-api';
 import type {CreditDocument} from '@/lib/credit-data';
-const icons={banking:Building2,insurance:ShieldCheck,general:FileStack};
+const icons={banking:Building2,insurance:ShieldCheck,'real-estate':HardHat,general:FileStack};
 export function DocumentDomains({locale,cases,value,onChange,compact=false}:{locale:string;cases:readonly WorkspaceCase[];value:DocumentDomain|'all';onChange:(value:DocumentDomain|'all')=>void;compact?:boolean}) {
   const t=domainText(locale);
   if(compact)return <section className="domain-compact"><label>{t.domain}<select value={value} onChange={e=>onChange(e.target.value as DocumentDomain|'all')}><option value="all">{t.all} · {cases.length}</option>{documentDomains.map(domain=><option value={domain} key={domain}>{t[domain]} · {cases.filter(c=>domainOf(c.domain)===domain).length}</option>)}</select></label></section>;

@@ -76,7 +76,7 @@ export function DocumentAnalysisWorkspace({caseId,documents,locale,busy,canImpor
     {importError?<p className="notice-error" role="alert">{t[importError as "limit"|"importError"]}</p>:null}
     <DocumentResults payroll={showPayroll} documents={results.concat(documents.filter(doc=>doc.status==="missing"))} jobs={visibleJobs} locale={locale} loading={loading} error={statusError}
       refresh={()=>{void load();void refreshCase();}} open={open} ask={ask} choose={choose} technical={technical}/>
-    <details ref={library} className="document-reference-library" open={guiding||undefined}><summary><strong>{presentation.referenceLibrary}</strong><span>{showPayroll?'DATEV':'Kaggle'}</span></summary><p>{presentation.referenceHint}</p>
+    <details ref={library} className="document-reference-library" open={guiding||undefined}><summary><strong>{presentation.referenceLibrary}</strong><span>{showPayroll?'DATEV':'PDF'}</span></summary><p>{presentation.referenceHint}</p>
       {showPayroll?<PayrollSamples locale={locale} busy={busy||importing} canImport={canImport} azure={azure} importSample={analyze} jobs={jobs} documents={documents} openResult={open} showProgress={focusResults}/>:<ResearchSamples domain={domainOf(domain)} locale={locale} disabled={!canImport||busy||importing} azure={azure} analyze={analyze} jobs={jobs} documents={documents} openResult={open} showProgress={focusResults}/>}
     </details>
   </>;

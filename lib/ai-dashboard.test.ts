@@ -14,11 +14,11 @@ const document=(id:string,change:Partial<CreditDocument>={}):CreditDocument=>({i
 describe('AI dashboard directory',()=>{
   it('places every capability in exactly one of six expandable groups',()=>{
     const grouped=dashboardGroups.flatMap(group=>[...group.features]);
-    expect(dashboardGroups).toHaveLength(6);expect(new Set(grouped).size).toBe(32);
+    expect(dashboardGroups).toHaveLength(6);expect(new Set(grouped).size).toBe(33);
     expect([...grouped].sort()).toEqual(dashboardFeatures.map(feature=>feature.id).sort());
     const html=renderToStaticMarkup(createElement(WorkspaceAICatalog,{locale:'en',demo:false,capabilities,navigate:()=>{},openNova:()=>{}}));
-    expect(html.match(/data-ai-group=/g)).toHaveLength(6);expect(html.match(/data-ai-feature=/g)).toHaveLength(32);
-    expect(html.match(/<summary>PDF example<\/summary>/g)).toHaveLength(20);
+    expect(html.match(/data-ai-group=/g)).toHaveLength(6);expect(html.match(/data-ai-feature=/g)).toHaveLength(33);
+    expect(html.match(/<summary>PDF example<\/summary>/g)).toHaveLength(21);
     expect(html).not.toMatch(/<details[^>]*\sopen[=> ]/);
   });
   it('retains the dossier and batch panel when opening feature links in another tab',()=>{
@@ -29,7 +29,7 @@ describe('AI dashboard directory',()=>{
     expect(stats).toContain('<dt>AI-assisted workflows</dt>');
   });
   it('provides distinct current destinations without payment actions',()=>{
-    expect(dashboardFeatures).toHaveLength(32);expect(new Set(dashboardFeatures.map(f=>f.id)).size).toBe(32);
+    expect(dashboardFeatures).toHaveLength(33);expect(new Set(dashboardFeatures.map(f=>f.id)).size).toBe(33);
     for(const feature of dashboardFeatures){const target=feature.target;if('page' in target)expect(workspaceTabs).toContain(target.page);if('trust' in target)expect(trustSections).toContain(target.trust);}
     expect(JSON.stringify(dashboardFeatures)).not.toMatch(/payment|approve-credit/);
   });
@@ -54,7 +54,7 @@ describe('AI dashboard directory',()=>{
   it('filters by workflow class and accent-insensitive text or engine',()=>{
     const copy=dashboardText('vi').features;
     expect(filteredDashboardFeatures('ai','',copy)).toHaveLength(18);
-    expect(filteredDashboardFeatures('control','',copy)).toHaveLength(14);
+    expect(filteredDashboardFeatures('control','',copy)).toHaveLength(15);
     expect(filteredDashboardFeatures('all','tom tat',copy).map(f=>f.id)).toEqual(['summary','bilingual-summary']);
     expect(filteredDashboardFeatures('all','Qdrant',copy,capabilities).map(f=>f.id)).toEqual(['search','embeddings']);
     expect(filteredDashboardFeatures('all','not-existing',copy)).toEqual([]);

@@ -50,7 +50,7 @@ An example question for an agent is: **“How does `SelectedFieldEvidence` restr
 
 **Document Validation & Evidence — a Python library and a local AI research workspace.**
 
-An MIT-licensed project for turning PDFs into structured data, benchmarked classifications, traceable answers and reviewable findings. It studies **general business documents**, **insurance documents** and **DATEV payroll/banking documents**, without making credit, underwriting, settlement or payment decisions.
+An MIT-licensed project for turning PDFs into structured data, benchmarked classifications, traceable answers and reviewable findings. It studies **general business**, **insurance**, **construction/real-estate** and **DATEV payroll/banking** documents, without making credit, underwriting, settlement, legal-acceptance or payment decisions.
 
 **Published Python alpha:** [document-evidence-lab 0.1.0a1 on PyPI](https://pypi.org/project/document-evidence-lab/0.1.0a1/) · [release source](https://github.com/quocvietphung/document-intelligence-lab/tree/python-v0.1.0a1). Install the standalone library from PyPI, or clone this repository for the full Docker workspace.
 
@@ -66,7 +66,7 @@ The library validates Docling output without requiring the platform; the SDK is 
 
 ## AI workflows
 
-Overview distinguishes **18 AI-assisted workflows** from **14 rule-based, navigation and human-review controls**, not 32 models. Every AI entry has a PDF exercise; opening one does not invoke inference. Classification and anomaly comparisons use the optional local scikit-learn worker.
+Overview distinguishes **18 AI-assisted workflows** from **15 rule-based, navigation and human-review controls**, not 33 models. Every AI entry has a PDF exercise; opening one does not invoke inference. Classification and anomaly comparisons use the optional local scikit-learn worker.
 
 | Workflow | PDF exercise |
 | --- | --- |
@@ -79,6 +79,7 @@ Overview distinguishes **18 AI-assisted workflows** from **14 rule-based, naviga
 | Selected-field explanation | DATEV net earnings versus payout |
 | Evidence summary | Invoice facts and missing context |
 | Cross-document/amount comparison | Invoices 51109301 and 51109302 separately; no inferred settlement |
+| Construction dossier reconciliation | Fictional order, approved change, invoice, acceptance report and site minutes; flag the deliberate EUR 1,200 variance and two open defects |
 | Discrepancy explanation | DATEV extraction versus its original |
 | Document-request draft | Missing insurance context; no email delivery |
 | Manual-review checklist draft | Invoice identity, totals and page sources |
@@ -195,6 +196,8 @@ These are development credentials for a **fresh identity database**. Existing vo
 5. Wait for a completed **Ollama · Local LLM** answer. Open its citations and compare the PDF; source identity is not semantic verification.
 6. In **Research lab → Experiments**, independently check reference values/pages before comparing retrieval, chunking or prompts.
 
+For the construction/real-estate example, create a **Construction & real estate** dossier and import the five authored fictional PDFs from the same library. The deterministic review links project/order references, compares the order plus approved change against the invoice, and carries open defects and their deadline into human review. It flags the deliberate **EUR 1,200** variance; it never approves acceptance, payment or a legal conclusion.
+
 **App guidance** and compass page tours are local navigation helpers, not document inference. Nova's portrait is an AI-generated fictional character. Expand its reading area for longer answers.
 
 CPU generation can take several minutes. Java admits one local inference at a time (`LOCAL_MODEL_BUSY` for competing requests), with a 360-second model deadline inside the proxy's 380-second deadline. **Stop waiting & request cancellation** tracks backend status; it does not confirm provider termination. [Durable request lifecycle](docs/RELIABILITY_LAB.md#durable-nova-lifecycle).
@@ -252,24 +255,25 @@ Only use fictional or explicitly permitted documents. Private originals and mode
 
 <a id="kaggle-document-library"></a>
 
-### Kaggle invoices and insurance wording
+### Reviewed PDF reference library
 
 | Domain | Sample | Exercise |
 | --- | --- | --- |
 | General documents | Synthetic one-page invoices **51109301–51109304** | Identifiers, INR amounts, tables, evidence checks, prompts and ETL |
 | Insurance | Principal definitions/administration and Shelter conditions/personal-liability excerpts | Source search and clause-review drafts; no coverage decision |
 | Banking & payroll | Official fictional DATEV Robert-Muster and Melanie-Muster pages | Net earnings versus payout, person/period checks and source evidence |
+| Construction & real estate | Five authored fictional German PDFs: order, change, invoice, acceptance and site minutes | Cross-document references, amount variance, open defects and deadline consistency; no payment or legal approval |
 
-Sources: [invoice dataset](https://www.kaggle.com/datasets/devp1866/high-quality-ocr-ready-invoice-pdfs) and [insurance dataset](https://www.kaggle.com/datasets/jpardovega/documents). Review source terms. Kaggle license metadata is not independent clearance of publisher-owned wording. Insurance samples are historical English-language US wording, not German policies or complete individual contracts.
+Sources: [invoice dataset](https://www.kaggle.com/datasets/devp1866/high-quality-ocr-ready-invoice-pdfs) and [insurance dataset](https://www.kaggle.com/datasets/jpardovega/documents). Review source terms. Kaggle license metadata is not independent clearance of publisher-owned wording. Insurance samples are historical English-language US wording, not German policies or complete individual contracts. The construction/real-estate pack is authored for this repository, fictional and MIT-licensed; it contains no employer, customer or vendor data.
 
-Prepare the hash-pinned Kaggle samples in your activated Python environment:
+Prepare all hash-pinned references in your activated Python environment. The existing script name is retained for compatibility; authored fixtures are copied locally and publisher-owned samples are downloaded only when explicitly run:
 
 ```bash
 python -m pip install pypdf==6.10.0
 python scripts/prepare-kaggle-references.py --domain all
 ```
 
-The helper verifies hashes/page mappings, refuses changed files and writes under `.local/reference-pdfs/`, outside Git. Missing or changed originals disable library cards rather than silently fetching replacements. [Sample boundaries](docs/PUBLIC_PAYROLL_TESTS.md).
+Use `--domain real-estate` to prepare only the bundled fictional construction pack without a network download. The helper verifies hashes/page mappings, refuses changed files and writes under `.local/reference-pdfs/`, outside Git. Missing or changed originals disable library cards rather than silently fetching replacements. Maintainers regenerate the authored PDFs with `scripts/prepare-real-estate-references.py`; changing them requires reviewed hash and test updates. [Sample boundaries](docs/PUBLIC_PAYROLL_TESTS.md).
 
 <a id="datev-payroll-references"></a>
 
@@ -291,7 +295,7 @@ After preparing DATEV and Kaggle, add the reviewed CMS coverage example and IRS 
 
 **Data Pipelines** separates processing, batch intake and exports. Batch intake accepts one to four permitted files, a source note and check profile. Each file is scanned; provider limits still apply per file. Profiles are versioned field checks, not trained classifiers.
 
-Receipts record hashes, provider, extraction counts, attempts and actual stages. The same request UUID/content returns its receipt; changed content is rejected. Duplicate/cancel/retry controls do not guarantee exactly-once inference. Manual retry is limited to pinned DATEV/Kaggle bytes within retention; inspect arbitrary failed uploads before resubmitting. [Queue details](docs/DOCKER_LOCAL.md).
+Receipts record hashes, provider, extraction counts, attempts and actual stages. The same request UUID/content returns its receipt; changed content is rejected. Duplicate/cancel/retry controls do not guarantee exactly-once inference. Manual retry is limited to hash-pinned reference bytes within retention; inspect arbitrary failed uploads before resubmitting. [Queue details](docs/DOCKER_LOCAL.md).
 
 ### Bronze, Silver and Gold
 
@@ -409,7 +413,7 @@ In the workspace, one document provider and one Nova provider are selected; the 
 
 ## Research scope
 
-The lab studies document extraction, insurance-document classification, evidence preservation, multilingual retrieval and source-bound generation across general business, insurance and payroll documents. [AI workflows](#ai-workflows) lists the user-facing tasks; [architecture](#architecture) shows their providers and trust boundaries.
+The lab studies document extraction, insurance-document classification, cross-document construction dossier review, evidence preservation, multilingual retrieval and source-bound generation across general business, insurance, real-estate and payroll documents. [AI workflows](#ai-workflows) lists the user-facing tasks; [architecture](#architecture) shows their providers and trust boundaries.
 
 ### Insurance classification benchmark
 

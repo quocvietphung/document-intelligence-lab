@@ -6,6 +6,7 @@ const samples={
   insurance:{file:'kaggle-shelter-renters-conditions-p11-12.pdf',libraryId:'shelter-renters-conditions',domain:'insurance'},
   payroll:{file:'datev-lodas-2025-robert-muster.pdf',libraryId:'robert',domain:'banking'},
   classification:{file:'bench-0013.pdf',libraryId:'classification-pdf-v2',domain:'insurance'},
+  realEstate:{file:'fictional-construction-invoice.pdf',libraryId:'real-estate-construction-invoice',domain:'real-estate'},
 } as const;
 type Sample=keyof typeof samples;
 const prompts={
@@ -13,6 +14,7 @@ const prompts={
   insurance:{en:'Which policy conditions or exclusions are explicitly stated? Cite the page and flag missing context; no coverage decision.',de:'Welche Bedingungen oder Ausschlüsse sind ausdrücklich genannt? Quelle und fehlenden Kontext angeben; keine Deckungsentscheidung.',vi:'Điều kiện hay loại trừ nào được ghi rõ? Dẫn trang và nêu ngữ cảnh thiếu; không quyết định phạm vi bảo hiểm.'},
   payroll:{en:'How do Netto-Verdienst and Auszahlungsbetrag differ in this DATEV PDF? Preserve the observed amounts and cite the page.',de:'Wie unterscheiden sich Netto-Verdienst und Auszahlungsbetrag in dieser DATEV-PDF? Beträge unverändert mit Seitenquelle nennen.',vi:'Netto-Verdienst và Auszahlungsbetrag khác nhau thế nào trong PDF DATEV này? Giữ số tiền gốc và dẫn trang.'},
   classification:{en:'Open Research lab → Insurance document classification. Preview bench-0013.pdf, an authored fictional claim report, then compare Java rules and TF-IDF on the complete fixed corpus. Inspect every test PDF, per-class F1 and review coverage; this is not a representative customer benchmark or RAG Hit@5.',de:'Forschungslabor → Versicherungsklassifikation öffnen. bench-0013.pdf als selbst verfasste fiktive Schadenmeldung prüfen und Java-Regeln mit TF-IDF auf dem festgelegten Korpus vergleichen. F1 je Klasse und Prüfquote ansehen; kein repräsentativer Kundenbenchmark und kein RAG-Hit@5.',vi:'Mở Nghiên cứu → Phân loại tài liệu bảo hiểm. Xem bench-0013.pdf, thông báo tổn thất hư cấu tự biên soạn, rồi so quy tắc Java và TF-IDF trên toàn bộ bộ dữ liệu cố định. Kiểm tra PDF test, F1 từng lớp và tỷ lệ cần duyệt; không phải benchmark khách hàng đại diện hay RAG Hit@5.'},
+  realEstate:{en:'Import all five fictional real-estate PDFs into one dossier. Verify project and order references, then confirm that invoice RE-2026-311 exceeds order AUF-2026-081 plus change order NTR-2026-014 by 1,200.00 EUR. Inspect the acceptance defects and matching remediation deadline; do not approve payment or acceptance.',de:'Importiere alle fünf fiktiven Immobilien-PDFs in einen Vorgang. Prüfe Projekt- und Auftragsbezug und bestätige an den Quellen, dass Rechnung RE-2026-311 Auftrag AUF-2026-081 plus Nachtrag NTR-2026-014 um 1.200,00 EUR übersteigt. Offene Abnahmemängel und übereinstimmende Frist prüfen; keine Zahlung oder Abnahme freigeben.',vi:'Nhập cả 5 PDF bất động sản hư cấu vào một hồ sơ. Kiểm tra mã dự án/hợp đồng, rồi xác nhận từ nguồn rằng hóa đơn RE-2026-311 cao hơn hợp đồng AUF-2026-081 cộng phụ lục NTR-2026-014 là 1.200,00 EUR. Kiểm tra lỗi nghiệm thu và hạn khắc phục trùng nhau; không duyệt thanh toán hay nghiệm thu.'},
 };
 export const taskPdfSamples={summary:'invoice',reconcile:'invoice',explain:'payroll','request-documents':'insurance','review-checklist':'invoice',terminology:'payroll','bilingual-summary':'payroll',timeline:'invoice',obligations:'insurance','privacy-review':'invoice'} as const satisfies Record<NonNullable<DraftOptions['taskId']>,Sample>;
 export const aiServicePdfSamples={
@@ -21,6 +23,7 @@ export const aiServicePdfSamples={
 } as const satisfies Record<string,Sample>;
 export const workflowPdfSamples={
   anomaly:'invoice',
+  'dossier-reconciliation':'realEstate',
   classification:'classification',
   document:'invoice',tables:'invoice',search:'insurance',embeddings:'insurance',nova:'invoice','field-explanation':'payroll',experiments:'invoice',lineage:'invoice',...taskPdfSamples,
 } as const satisfies Partial<Record<DashboardFeature['id'],Sample>>;

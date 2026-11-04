@@ -1,0 +1,53 @@
+{
+  "version": "real-estate-dossier-v1",
+  "license": "MIT",
+  "provenance": "Authored fictional PDF dossier; no employer, customer or property developer source material.",
+  "projectId": "RE-2026-042",
+  "expectedFindings": [
+    "Invoice exceeds construction order plus approved change order by 1,200.00 EUR",
+    "Acceptance report contains two open defects with a remediation deadline",
+    "Site minutes assign the same remediation deadline and responsible party"
+  ],
+  "samples": [
+    {
+      "id": "real-estate-construction-order",
+      "file": "fictional-construction-order.pdf",
+      "title": "Construction order · shell fit-out",
+      "documentType": "construction-order",
+      "sha256": "212dd2b106af894ca30e18846e7610b20337ea23c8a952ca8b67148d0ba194d2",
+      "page": 1
+    },
+    {
+      "id": "real-estate-change-order",
+      "file": "fictional-change-order.pdf",
+      "title": "Change order · acoustic ceiling",
+      "documentType": "change-order",
+      "sha256": "8ba059a50d31a34bded24f2b1f80f8a18ef559feeb43abeb10efbf5eca49ceac",
+      "page": 1
+    },
+    {
+      "id": "real-estate-construction-invoice",
+      "file": "fictional-construction-invoice.pdf",
+      "title": "Construction invoice · deliberate variance",
+      "documentType": "construction-invoice",
+      "sha256": "58915f5c8f6e059ed45b149921f997fe602d803b775f1d633668b98d159b8077",
+      "page": 1
+    },
+    {
+      "id": "real-estate-acceptance-report",
+      "file": "fictional-acceptance-report.pdf",
+      "title": "Acceptance report · open defects",
+      "documentType": "acceptance-report",
+      "sha256": "5b465ece081fa66920876c383cdb9d1f15dff7f5c99e4d0e6fa7df9e5654a964",
+      "page": 1
+    },
+    {
+      "id": "real-estate-site-minutes",
+      "file": "fictional-site-meeting-minutes.pdf",
+      "title": "Site meeting minutes · assigned follow-up",
+      "documentType": "site-meeting-minutes",
+      "sha256": "4e169fb4349abc2958f21667c04ac372b17bbff02dce196f71e9fefddd2ba288",
+      "page": 1
+    }
+  ]
+}

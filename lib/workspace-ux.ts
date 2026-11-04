@@ -38,7 +38,7 @@ const en = {
   title: "Your AI tools, at a glance",
   hint: "Start with a source document. AI helps inspect and explain; a person verifies the result.",
   documents: "Analyze a document",
-  documentHint: "Research banking, insurance and general PDFs. Compare extracted fields and tables with the original; DATEV remains in Banking & payroll.",
+  documentHint: "Research banking, insurance, real-estate and general PDFs. Compare extracted fields and tables with the original; DATEV remains in Banking & payroll.",
   azure: "Azure Document Intelligence configured",
   local: "Local PDFBox / Tesseract extraction",
   demo: "Read-only sample evidence",
@@ -50,7 +50,7 @@ const en = {
   nova: "Ask Nova",
   novaHint: "Ask a complete question about this case. Each reply identifies its mode: app guide, guard or Azure AI.",
   novaAction: "Chat with Nova",
-  documentsSubtitle: "Preview banking, insurance and general documents; analyze permitted fictional sources and verify every extracted field.",
+  documentsSubtitle: "Preview banking, insurance, real-estate and general documents; analyze permitted fictional sources and verify every extracted field.",
   bankingSubtitle: "Inspect statements and invoices from uploaded PDFs. No generated accounts or transactions.",
   auditSubtitle: "Follow saved workflow changes and reviewer confirmations for the selected case.",
 };

@@ -7,9 +7,9 @@ import {GET} from '@/app/api/insurance-references/route';
 import {GET as researchGET} from '@/app/api/research-references/route';
 
 afterEach(()=>{vi.unstubAllEnvs();vi.unstubAllGlobals();});
-describe('private Kaggle insurance library',()=>{
+describe('private reviewed PDF reference library',()=>{
   it('pins reviewed version, original and excerpt hashes and exact source pages',()=>{
-    expect(insuranceReferences).toHaveLength(4);expect(kaggleReferences).toHaveLength(8);
+    expect(insuranceReferences).toHaveLength(4);expect(kaggleReferences).toHaveLength(13);
     for(const sample of kaggleReferences){
       expect(sample.sha256).toMatch(/^[a-f0-9]{64}$/);expect(sample.sourceSha256).toMatch(/^[a-f0-9]{64}$/);
       expect(sample.datasetVersion).toBe(sample.domain==='insurance'?3:1);expect(sample.sourcePages).toHaveLength(sample.domain==='insurance'?2:1);
@@ -23,10 +23,20 @@ describe('private Kaggle insurance library',()=>{
     expect(researchSamples('banking')).toEqual([]);
     expect(researchSamples('insurance')).toHaveLength(4);
     expect(researchSamples('general')).toHaveLength(4);
+    expect(researchSamples('real-estate')).toHaveLength(5);
     expect(researchSamples('general').every(s=>s.synthetic&&s.domain==='general'&&s.format==='pdf-original')).toBe(true);
     for(const file of ['insurance-policy-fictional.pdf','insurance-claim-fictional.pdf','invoice-fictional.pdf']){
       expect(existsSync('public/samples/'+file)).toBe(false);
       expect(existsSync('services/credit-api/src/test/resources/legacy-research/'+file)).toBe(true);
+    }
+  });
+  it('ships only the authored fictional real-estate fixtures and pins their bytes',()=>{
+    for(const sample of researchSamples('real-estate')){
+      expect(sample.sourceKind).toBe('authored-fixture');
+      expect(sample.publisher).toBe('Document Intelligence Lab');
+      const bytes=readFileSync('services/credit-api/src/main/resources/real-estate/'+sample.file);
+      expect(createHash('sha256').update(bytes).digest('hex')).toBe(sample.sha256);
+      expect(bytes.subarray(0,5).toString()).toBe('%PDF-');
     }
   });
   it('validates actual bytes, not a filename or PDF prefix alone',()=>{
@@ -39,7 +49,7 @@ describe('private Kaggle insurance library',()=>{
   });
   it.each(['en','de','vi'])('explains source, cloud destination and limitations in %s',locale=>{
     const t=researchSampleLabels(locale);
-    expect(t.rights).toContain('Apache 2.0');expect(t.cloud).toContain('Azure Document Intelligence');
+    expect(t.rights).toMatch(/license|Lizenz|giấy phép/);expect(t.cloud).toContain('Azure Document Intelligence');
     expect(t.scope.length).toBeGreaterThan(100);expect(t.mapped).toContain('→');
   });
   it('requires Bearer authorization even for the catalogue',async()=>{
@@ -73,6 +83,7 @@ describe('private Kaggle insurance library',()=>{
   it('protects the expanded library and rejects invalid domains',async()=>{
     vi.stubEnv('NEXT_PUBLIC_DEMO_MODE','false');
     expect((await researchGET(new Request('http://localhost/api/research-references?domain=general'))).status).toBe(401);
+    expect((await researchGET(new Request('http://localhost/api/research-references?domain=real-estate'))).status).toBe(401);
     expect((await researchGET(new Request('http://localhost/api/research-references?domain=unknown'))).status).toBe(400);
   });
   it('does not serve a reference from another domain',async()=>{

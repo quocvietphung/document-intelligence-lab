@@ -31,7 +31,7 @@ const field = z.object({
 export const creditCaseSchema = z.object({
   id: z.string(),
   tenantId: z.string(),
-  domain: z.enum(['banking','insurance','general']).default('banking'),
+  domain: z.enum(['banking','insurance','real-estate','general']).default('banking'),
   applicant: z.string(),
   coApplicant: z.string(),
   purpose: z.string(),

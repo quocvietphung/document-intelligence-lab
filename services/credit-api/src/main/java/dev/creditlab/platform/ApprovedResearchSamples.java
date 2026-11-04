@@ -6,7 +6,7 @@ import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.Map;
 
-/** Reprocessing is limited to the exact private DATEV/Kaggle references, never a filename alone. */
+/** Reprocessing is limited to exact hash-pinned private references, never a filename alone. */
 public final class ApprovedResearchSamples {
   private ApprovedResearchSamples(){}
   private static final Map<String,String> HASHES=load();

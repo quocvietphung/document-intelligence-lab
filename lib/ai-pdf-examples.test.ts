@@ -6,7 +6,7 @@ describe('PDF exercises',()=>{
   it('covers every registered AI workflow and controlled task in three languages',()=>{
     for(const locale of ['en','de','vi'])for(const id of [...dashboardFeatures.filter(f=>f.category==='ai').map(f=>f.id),...novaTaskIds]){
       const example=workflowPdfExample(id,locale);expect(example?.file).toMatch(/\.pdf$/);expect(example?.question.length).toBeGreaterThan(30);
-      expect(['general','insurance','banking']).toContain(example?.domain);
+      expect(['general','insurance','real-estate','banking']).toContain(example?.domain);
     }
     expect(dashboardFeatures.filter(f=>f.category==='ai')).toHaveLength(18);
   });
@@ -23,5 +23,6 @@ describe('PDF exercises',()=>{
     expect(workflowPdfExample('reconcile','en')?.question).toContain('51109302');
     expect(workflowPdfExample('experiments','en')?.question).toContain('schema');
     expect(workflowPdfExample('lineage','en')?.question).toContain('Gold');
+    expect(workflowPdfExample('dossier-reconciliation','en')?.question).toContain('1,200.00 EUR');
   });
 });
