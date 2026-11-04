@@ -108,7 +108,14 @@ public class DocumentExtractor {
       {"coverageAmount","Deckungssumme|Versicherungssumme|Coverage amount"},{"coverageStart","Versicherungsbeginn|Coverage start"},
       {"coverageEnd","Versicherungsende|Coverage end"},{"claimNumber","Schadennummer|Claim number"},
       {"claimDate","Schadendatum|Date of loss"},{"invoiceNumber","Rechnungsnummer|Invoice number|Invoice no"},
-      {"invoiceTotal","Gesamtbetrag|Rechnungsbetrag|Invoice total"},{"contractNumber","Vertragsnummer|Contract number"}};
+      {"invoiceTotal","Gesamtbetrag|Rechnungsbetrag|Invoice total"},{"contractNumber","Vertragsnummer|Contract number"},
+      {"projectId","Projekt-ID|Project ID"},{"orderNumber","Auftragsnummer|Order number"},
+      {"orderTotal","Auftragssumme|Order total|Contract value"},{"changeOrderNumber","Nachtragsnummer|Change order number"},
+      {"changeOrderTotal","Nachtragssumme|Change order total"},{"acceptanceNumber","Abnahmenummer|Acceptance number"},
+      {"acceptanceDate","Abnahmedatum|Acceptance date"},{"openDefects","Offene Mängel|Open defects"},
+      {"remediationDeadline","Mängelfrist|Remediation deadline"},{"minutesNumber","Protokollnummer|Minutes number"},
+      {"meetingDate","Besprechungsdatum|Meeting date"},{"taskOwner","Verantwortlich|Responsible party"},
+      {"taskDeadline","Frist|Task deadline"}};
     var fields=new ArrayList<CreditCase.Field>();
     for(var page:pages) for(String[] label:labels) {
       var pattern=Pattern.compile("(?im)^\\s*(?:"+label[1]+")\\s*:\\s*([^\\r\\n]{1,300})");
@@ -130,6 +137,11 @@ public class DocumentExtractor {
     if(all.contains("kontoauszug")||all.contains("account statement"))return "statement";
     if(all.contains("schadenmeldung")||all.contains("claim notification"))return "insurance-claim";
     if(all.contains("versicherungsschein")||all.contains("insurance policy")||all.contains("policennummer"))return "insurance-policy";
+    if(all.contains("baubesprechungsprotokoll")||all.contains("site meeting minutes"))return "site-meeting-minutes";
+    if(all.contains("abnahmeprotokoll")||all.contains("acceptance report"))return "acceptance-report";
+    if(all.contains("nachtrag zum bauauftrag")||all.contains("change order"))return "change-order";
+    if(all.contains("baurechnung")||all.contains("construction invoice"))return "construction-invoice";
+    if(all.contains("bauauftrag")||all.contains("construction order"))return "construction-order";
     if(all.contains("rechnungsnummer")||all.contains("invoice number")||all.contains("invoice no:"))return "invoice";
     if(all.contains("vertragsnummer")||all.contains("contract number"))return "contract";
     return all.contains("selbstauskunft")?"disclosure":all.contains("praxisbewertung")?"valuation":"unknown";
@@ -156,6 +168,19 @@ public class DocumentExtractor {
     if(Set.of("rechnungsnummer","invoicenumber","invoiceno").contains(label))return Optional.of("invoiceNumber");
     if(Set.of("gesamtbetrag","rechnungsbetrag","invoicetotal").contains(label))return Optional.of("invoiceTotal");
     if(Set.of("vertragsnummer","contractnumber").contains(label))return Optional.of("contractNumber");
+    if(Set.of("projektid","projectid").contains(label))return Optional.of("projectId");
+    if(Set.of("auftragsnummer","ordernumber").contains(label))return Optional.of("orderNumber");
+    if(Set.of("auftragssumme","ordertotal","contractvalue").contains(label))return Optional.of("orderTotal");
+    if(Set.of("nachtragsnummer","changeordernumber").contains(label))return Optional.of("changeOrderNumber");
+    if(Set.of("nachtragssumme","changeordertotal").contains(label))return Optional.of("changeOrderTotal");
+    if(Set.of("abnahmenummer","acceptancenumber").contains(label))return Optional.of("acceptanceNumber");
+    if(Set.of("abnahmedatum","acceptancedate").contains(label))return Optional.of("acceptanceDate");
+    if(Set.of("offenemängel","opendefects").contains(label))return Optional.of("openDefects");
+    if(Set.of("mängelfrist","remediationdeadline").contains(label))return Optional.of("remediationDeadline");
+    if(Set.of("protokollnummer","minutesnumber").contains(label))return Optional.of("minutesNumber");
+    if(Set.of("besprechungsdatum","meetingdate").contains(label))return Optional.of("meetingDate");
+    if(Set.of("verantwortlich","responsibleparty").contains(label))return Optional.of("taskOwner");
+    if(Set.of("frist","taskdeadline").contains(label))return Optional.of("taskDeadline");
     return Optional.empty();
   }
 }

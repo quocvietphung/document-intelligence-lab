@@ -75,7 +75,7 @@ public class DocumentJobs {
     if(!"FAILED".equals(row.get("status"))||!retryableCode((String)row.get("error_code")))throw fail(409,"This job cannot be retried");
     if(!((java.sql.Timestamp)row.get("expires_at")).toInstant().isAfter(Instant.now()))throw fail(410,"Stored file has expired");
     String name=(String)row.get("name");
-    if(!ApprovedResearchSamples.matchesDigest(name,(String)row.get("sha256")))throw fail(403,"Only approved DATEV or Kaggle references may be retried");
+    if(!ApprovedResearchSamples.matchesDigest(name,(String)row.get("sha256")))throw fail(403,"Only approved hash-pinned references may be retried");
     byte[] bytes=objects.read((String)row.get("object_key"));
     if(!ApprovedResearchSamples.matches(name,bytes))throw fail(403,"Stored reference no longer matches approved bytes");
     // A new bounded job preserves the failure history and repeats all scan checks.

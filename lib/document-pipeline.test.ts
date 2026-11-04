@@ -10,8 +10,8 @@ import {DocumentPipeline} from '@/components/workspace/DocumentPipeline';
 
 const job:PipelineJob={id:'job-current',name:kaggleReferences[4].file,sha256:kaggleReferences[4].sha256,status:'COMPLETE',stage:'HUMAN_REVIEW',reviewStatus:'review',document_id:'doc-1',scan_result:'CLAMAV_CLEAN',error_code:null,createdAt:'2026-10-17T10:00:00Z',expiresAt:'2030-01-01T00:00:00Z',attempt:1,events:[]};
 describe('document processing control room',()=>{
-  it('pins the Java retry registry to the exact eight Kaggle file hashes',()=>{
-    expect(Object.keys(hashes)).toHaveLength(8);
+  it('pins the Java retry registry to every approved private reference hash',()=>{
+    expect(Object.keys(hashes)).toHaveLength(13);
     for(const sample of kaggleReferences){expect(hashes[sample.file as keyof typeof hashes]).toBe(sample.sha256);expect(canRetryDocumentJob({...job,name:sample.file,sha256:sample.sha256,status:'FAILED',error_code:'ANALYSIS_HTTP_503'})).toBe(true);}
     expect(canRetryDocumentJob({...job,status:'FAILED',error_code:'MALWARE_BLOCKED'})).toBe(false);
     expect(canRetryDocumentJob({...job,status:'FAILED',error_code:'SOURCE_INTEGRITY_FAILED'})).toBe(false);

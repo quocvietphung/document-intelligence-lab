@@ -10,20 +10,22 @@ describe('multi-domain document research',()=>{
   it('preserves old dossiers as banking and validates new domains',()=>{
     expect(toWorkspaceCase(source).domain).toBe('banking');
     expect(toWorkspaceCase({...source,domain:'insurance'}).domain).toBe('insurance');
+    expect(toWorkspaceCase({...source,domain:'real-estate'}).domain).toBe('real-estate');
     expect(()=>toWorkspaceCase({...source,domain:'invalid'})).toThrow();
     expect(domainOf()).toBe('banking');
   });
   it('filters actual dossiers without creating synthetic records',()=>{
-    const records=[{id:'old'},{id:'policy',domain:'insurance'},{id:'report',domain:'general'}];
+    const records=[{id:'old'},{id:'policy',domain:'insurance'},{id:'project',domain:'real-estate'},{id:'report',domain:'general'}];
     expect(filterDomain(records,'insurance').map(i=>i.id)).toEqual(['policy']);
     expect(filterDomain(records,'banking').map(i=>i.id)).toEqual(['old']);
-    expect(filterDomain(records,'all')).toHaveLength(3);
+    expect(filterDomain(records,'real-estate').map(i=>i.id)).toEqual(['project']);
+    expect(filterDomain(records,'all')).toHaveLength(4);
   });
   it('has complete EN DE VI domain labels and no credit-only field names',()=>{
     for(const locale of ['en','de','vi']) {
       expect(Object.keys(domainText(locale))).toEqual(Object.keys(domainLanguageTables.en));
       expect(Object.values(domainText(locale)).every(v=>v.trim())).toBe(true);
-      for(const key of ['policyNumber','deductible','insurance-policy','invoiceTotal','coverageStart'])expect(workspaceText(locale)(key)).not.toBe(key);
+      for(const key of ['policyNumber','deductible','insurance-policy','invoiceTotal','coverageStart','construction-order','projectId','changeOrderTotal','openDefects'])expect(workspaceText(locale)(key)).not.toBe(key);
       expect(workspaceText(locale)('applicant')).not.toMatch(/^Applicant$|^Kreditnehmer$/);
     }
   });

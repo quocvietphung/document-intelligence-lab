@@ -53,13 +53,14 @@ public class CreditCaseService {
     var issues=new ArrayList<CreditCase.ValidationIssue>();var rates=new HashSet<String>();
     for(var doc:docs){if(!doc.status().equals("verified"))issues.add(new CreditCase.ValidationIssue("UNREVIEWED_DOCUMENT","MEDIUM",doc.id(),true));for(var f:doc.fields())if(f.label().equals("monthlyRate"))rates.add(FieldValueNormalizer.normalize(f.label(),f.value()));}
     if(rates.size()>1)issues.add(new CreditCase.ValidationIssue("MONTHLY_RATE_CONFLICT","HIGH","Different monthlyRate values extracted from uploaded documents",true));
+    issues.addAll(RealEstateDossierReview.evaluate(c.domain(),docs));
     int progress=docs.isEmpty()?0:(int)(100*docs.stream().filter(d->d.status().equals("verified")).count()/Math.max(Math.max(1,DocumentDomain.required(c.domain()).size()),docs.size()));
     return new CreditCase(c.id(),c.tenantId(),c.applicant(),c.purpose(),c.amountEuro(),progress,docs.isEmpty()?"DRAFT":issues.isEmpty()&&missing.isEmpty()?"REVIEW_COMPLETE":"HUMAN_REVIEW",missing,issues,c.coApplicant(),c.submittedAt(),docs,c.audit(),c.version(),c.domain());
   }
   public CreditCase require(String tenant,String id) { return findById(tenant,id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND)); }
   public record Draft(@NotBlank @Size(max=120) String applicant,@NotBlank @Size(max=160) String purpose,
       @Min(0) @Max(10_000_000) long amountEuro,@Size(max=120) String coApplicant,@Min(0) long version,
-      @Pattern(regexp="banking|insurance|general") String domain) {
+      @Pattern(regexp="banking|insurance|real-estate|general") String domain) {
     public Draft(String applicant,String purpose,long amountEuro,String coApplicant,long version) {
       this(applicant,purpose,amountEuro,coApplicant,version,null);
     }
@@ -131,6 +132,7 @@ public class CreditCaseService {
       for(var f:doc.fields()) if(f.label().equals("monthlyRate")) values.add(FieldValueNormalizer.normalize(f.label(),f.value()));
     }
     if(values.size()>1) issues.add(new CreditCase.ValidationIssue("MONTHLY_RATE_CONFLICT","HIGH","Different monthlyRate values in documents",true));
+    issues.addAll(RealEstateDossierReview.evaluate(old.domain(),docs));
     var missing=new ArrayList<String>();
     for(String type:DocumentDomain.required(old.domain())) if(docs.stream().noneMatch(d->d.type().equals(type))) missing.add(type);
     long reviewed=docs.stream().filter(d->d.originalAvailable()&&d.status().equals("verified")).count();

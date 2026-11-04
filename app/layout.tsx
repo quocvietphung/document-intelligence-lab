@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Document Intelligence Lab",
   description:
-    "An Azure AI document research lab for banking, insurance and general documents, with source-grounded RAG and human review.",
+    "An Azure AI document research lab for banking, insurance, real-estate and general documents, with source-grounded RAG and human review.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

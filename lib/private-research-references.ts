@@ -10,9 +10,9 @@ async function referenceBytes(sample:typeof kaggleReferences[number]){
     const bytes=await file.readFile();if(!validInsuranceReference(bytes,sample.sha256))throw new Error('Invalid reference');return bytes;
   }finally{await file.close();}
 }
-export async function serveResearchReferences(request:Request,onlyDomain?:'insurance'|'general'){
+export async function serveResearchReferences(request:Request,onlyDomain?:'insurance'|'real-estate'|'general'){
   const requested=new URL(request.url).searchParams.get('domain');
-  if(requested&&!['insurance','general'].includes(requested))return Response.json({error:'Unknown domain'},{status:400,headers});
+  if(requested&&!['insurance','real-estate','general'].includes(requested))return Response.json({error:'Unknown domain'},{status:400,headers});
   const domain=onlyDomain||requested;
   const catalogue=kaggleReferences.filter(sample=>!domain||sample.domain===domain);
   if(process.env.NEXT_PUBLIC_DEMO_MODE==='true')return Response.json({error:'Private local references only'},{status:403,headers});

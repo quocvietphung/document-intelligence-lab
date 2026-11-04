@@ -1,7 +1,8 @@
-"""Prepare reviewed PRIVATE Kaggle PDFs for insurance and general documents.
+"""Prepare reviewed private PDF references for the research workspace.
 
-Requires pypdf==6.10.0. Source PDFs are publisher-owned; Kaggle metadata is not
-proof of underlying redistribution rights. Do not put originals/excerpts in Git.
+Requires pypdf==6.10.0. Publisher-owned Kaggle originals/excerpts stay outside
+Git. Authored MIT fixtures are copied from the repository after the same hash,
+page and marker checks. The historical filename remains for compatibility.
 """
 import argparse
 import hashlib
@@ -16,6 +17,7 @@ from pypdf import PdfReader, PdfWriter
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "lib/kaggle-reference-catalog.json"
 MAX_BYTES = 3_000_000
+AUTHORED_FIXTURES = ROOT / "services/credit-api/src/main/resources/real-estate"
 
 
 def digest(data):
@@ -25,29 +27,40 @@ def digest(data):
 def prepare(sample):
     if not re.fullmatch(r"[a-f0-9]{64}", sample["sha256"]):
         raise ValueError("Only reviewed, hash-pinned excerpts may be prepared")
-    cache = ROOT / (".local/kaggle-insurance" if sample["domain"] == "insurance" else ".local/kaggle-invoices")
     target = ROOT / ".local/reference-pdfs" / sample["file"]
-    cache.mkdir(parents=True, exist_ok=True)
     target.parent.mkdir(parents=True, exist_ok=True)
-    original = cache / Path(sample["sourceFile"]).name
-    if original.is_symlink() or target.is_symlink():
+    if target.is_symlink():
         raise ValueError("Symlink references are not accepted")
-    if original.exists():
+
+    if sample.get("sourceKind") == "authored-fixture":
+        original = AUTHORED_FIXTURES / Path(sample["sourceFile"]).name
+        if original.is_symlink() or not original.is_file():
+            raise ValueError("Bundled authored fixture is missing or unsafe")
         data = original.read_bytes()
     else:
-        request = urllib.request.Request(sample["downloadUrl"], headers={"User-Agent": "DocumentIntelligenceLab/1.0"})
-        with urllib.request.urlopen(request, timeout=40) as response:
-            data = response.read(MAX_BYTES + 1)
-        if len(data) > MAX_BYTES or digest(data) != sample["sourceSha256"]:
-            raise ValueError("Source changed or too large; no reference was prepared")
-        with original.open("xb") as stream:
-            stream.write(data)
+        cache = ROOT / (".local/kaggle-insurance" if sample["domain"] == "insurance" else ".local/kaggle-invoices")
+        cache.mkdir(parents=True, exist_ok=True)
+        original = cache / Path(sample["sourceFile"]).name
+        if original.is_symlink():
+            raise ValueError("Symlink references are not accepted")
+        if original.exists():
+            data = original.read_bytes()
+        else:
+            request = urllib.request.Request(sample["downloadUrl"], headers={"User-Agent": "DocumentIntelligenceLab/1.0"})
+            with urllib.request.urlopen(request, timeout=40) as response:
+                data = response.read(MAX_BYTES + 1)
+            if len(data) > MAX_BYTES or digest(data) != sample["sourceSha256"]:
+                raise ValueError("Source changed or too large; no reference was prepared")
+            with original.open("xb") as stream:
+                stream.write(data)
     if len(data) > MAX_BYTES or digest(data) != sample["sourceSha256"] or not data.startswith(b"%PDF-"):
         raise ValueError("Source SHA-256 mismatch; inspect the pinned dataset version")
     reader = PdfReader(io.BytesIO(data))
     if reader.is_encrypted or len(reader.pages) != sample["sourcePageCount"]:
         raise ValueError("Unexpected PDF structure")
-    for page_number, marker in zip(sample["sourcePages"], sample["markers"], strict=True):
+    if len(sample["sourcePages"]) != len(sample["markers"]):
+        raise ValueError("Every source page must have one reviewed marker")
+    for page_number, marker in zip(sample["sourcePages"], sample["markers"]):
         if marker not in (reader.pages[page_number - 1].extract_text() or ""):
             raise ValueError("Source page did not match the reviewed reference")
     if sample["format"] == "pdf-original":
@@ -67,7 +80,9 @@ def prepare(sample):
 
 def excerpt(reader, sample):
     writer = PdfWriter()
-    for page_number, marker in zip(sample["sourcePages"], sample["markers"], strict=True):
+    if len(sample["sourcePages"]) != len(sample["markers"]):
+        raise ValueError("Every source page must have one reviewed marker")
+    for page_number, marker in zip(sample["sourcePages"], sample["markers"]):
         page = reader.pages[page_number - 1]
         if marker not in (page.extract_text() or ""):
             raise ValueError("Source page did not match the reviewed reference")
@@ -83,7 +98,7 @@ if __name__ == "__main__":
     if pypdf.__version__ != "6.10.0":
         raise SystemExit("Install pypdf==6.10.0 in a private virtual environment")
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--domain", choices=["insurance", "general", "all"], default="all")
+    parser.add_argument("--domain", choices=["insurance", "general", "real-estate", "all"], default="all")
     args = parser.parse_args()
     for entry in json.loads(CATALOG.read_text()):
         if args.domain == "all" or entry["domain"] == args.domain:

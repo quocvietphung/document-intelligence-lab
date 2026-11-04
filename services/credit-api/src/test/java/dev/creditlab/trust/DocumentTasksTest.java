@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 class DocumentTasksTest {
   @Test void allTenTasksHaveBoundedPromptsInEachDomainAndLanguage(){
     assertThat(TrustCatalog.TASKS).hasSize(10);
-    for(String id:TrustCatalog.TASKS)for(String locale:java.util.List.of("en","de","vi"))for(String domain:java.util.List.of("banking","insurance","general")){
+    for(String id:TrustCatalog.TASKS)for(String locale:java.util.List.of("en","de","vi"))for(String domain:java.util.List.of("banking","insurance","real-estate","general")){
       assertThat(id).matches(TrustCatalog.TASK_PATTERN);
       assertThat(TrustCatalog.question(id,locale,domain)).isNotBlank().hasSizeLessThanOrEqualTo(2000);
     }

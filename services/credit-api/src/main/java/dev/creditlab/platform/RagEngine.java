@@ -77,6 +77,7 @@ public class RagEngine {
     out.add(new Chunk("case-summary","case",item.id(),0,"case","Applicant="+item.applicant()+"; status="+item.status()+"; completeness="+item.completeness()+"; missing="+item.missingDocuments()+"; issues="+item.validationIssues()));
     String scope=switch(item.domain()) {
       case "insurance" -> "Insurance research: inspect policy numbers, premiums, deductibles, coverage dates and claim evidence. Missing evidence is unknown, not a denied claim. Never decide coverage or settlement.";
+      case "real-estate" -> "Real-estate document research: reconcile project and order references, construction order value, approved change orders, invoice, acceptance defects and site tasks. Cite source pages and keep extracted values separate from interpretation. Never approve payment, acceptance or a legal conclusion.";
       case "general" -> "General document research: inspect invoices, contracts and reports. No payroll or account statement is required. Do not invent missing amounts or legal conclusions.";
       default -> "Banking research: a payslip payout must be compared with matching salary evidence for the same person and period. A matching amount alone is not proof. Never make a lending decision.";
     };

@@ -20,6 +20,7 @@ export const dashboardFeatures=[
   {id:'obligations',category:'ai',engine:'chat',target:{trust:'library'}},
   {id:'privacy-review',category:'ai',engine:'chat',target:{trust:'library'}},
   {id:'validation',category:'control',engine:'rules',target:{page:'controls'}},
+  {id:'dossier-reconciliation',category:'control',engine:'rules',target:{page:'documents'}},
   {id:'quality',category:'control',engine:'rules',target:{page:'evaluation'}},
   {id:'review',category:'control',engine:'human',target:{trust:'tasks'}},
   {id:'transparency',category:'control',engine:'human',target:{trust:'privacy'}},
@@ -45,7 +46,7 @@ export const dashboardGroups=[
   {id:'novaTools',features:['nova','summary','reconcile','explain','request-documents','review-checklist','terminology','bilingual-summary','timeline','obligations','privacy-review','app-guide']},
   {id:'pipelineTools',features:['field-profiles','batches','lineage','anomaly']},
   {id:'researchTools',features:['quality','experiments']},
-  {id:'reviewTools',features:['validation','review','transparency','citations','feedback','governance','performance']},
+  {id:'reviewTools',features:['validation','dossier-reconciliation','review','transparency','citations','feedback','governance','performance']},
 ] as const satisfies readonly {id:string;features:readonly DashboardFeature['id'][]}[];
 export type DashboardFilter='all'|'ai'|'control';
 export function dashboardEngine(feature:DashboardFeature,capabilities:AICapabilities|undefined,demo:boolean):{kind:AIKind;provider:string;model:string;configured:boolean}{

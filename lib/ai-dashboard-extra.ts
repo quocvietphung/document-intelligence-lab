@@ -1,4 +1,5 @@
 export const extraFeaturesEn={
+  'dossier-reconciliation':['Real-estate dossier reconciliation','Deterministic rules compare project and order references, order plus change-order value, invoice, open acceptance defects and task deadlines. Every finding requires source review; no payment or legal approval.'],
   anomaly:['Local anomaly experiment','Compare Isolation Forest with a median/MAD baseline on reviewed PDF-derived amounts. At least 30 distinct original hashes per cohort; insufficient data is explicit. No fraud probability or automatic approval.'],
   timeline:['Document chronology','Draft a source-linked timeline of stated dates and periods. No invented dates or legally binding deadline calculation.'],
   obligations:['Clause & obligation review','List stated obligations, conditions and exclusions with page sources. No legal opinion, coverage or settlement decision.'],
@@ -19,6 +20,7 @@ export const extraFeaturesEn={
 } as const;
 type Copy=Record<keyof typeof extraFeaturesEn,readonly [string,string]>;
 export const extraFeaturesDe:Copy={
+  'dossier-reconciliation':['Immobilienvorgang abgleichen','Deterministische Regeln vergleichen Projekt- und Auftragsbezug, Auftrag plus Nachträge, Rechnung, offene Abnahmemängel und Aufgabenfristen. Jeder Hinweis muss an der Quelle geprüft werden; keine Zahlungs- oder Rechtsfreigabe.'],
   anomaly:['Lokales Anomalieexperiment','Isolation Forest mit einer Median/MAD-Baseline auf geprüften PDF-Beträgen vergleichen. Mindestens 30 verschiedene Originalhashes je Kohorte; Datenmangel bleibt sichtbar. Keine Betrugswahrscheinlichkeit oder Freigabe.'],
   timeline:['Dokument-Zeitleiste','Datumsangaben und Zeiträume mit Quellseiten ordnen. Keine erfundenen Daten oder rechtliche Fristberechnung.'],
   obligations:['Klauseln & Pflichten prüfen','Genannte Pflichten, Bedingungen und Ausschlüsse mit Quellen erfassen. Keine Rechtsberatung, Deckungszusage oder Regulierung.'],
@@ -38,6 +40,7 @@ export const extraFeaturesDe:Copy={
   'injection-guard':['Schutz vor Instruktionsüberschreibung','Regeln blockieren verdächtige Anfragen oder isolieren Abschnitte. Kein Azure Prompt Shields oder vollständiger Schutz.'],
 };
 export const extraFeaturesVi:Copy={
+  'dossier-reconciliation':['Đối chiếu hồ sơ bất động sản','Quy tắc xác định so mã dự án/hợp đồng, giá trị hợp đồng cộng phụ lục, hóa đơn, lỗi nghiệm thu còn mở và hạn công việc. Mọi cảnh báo phải đối chiếu nguồn; không phê duyệt thanh toán hay pháp lý.'],
   anomaly:['Thí nghiệm bất thường local','So Isolation Forest với baseline trung vị/MAD trên số tiền từ PDF đã kiểm duyệt. Cần ít nhất 30 hash gốc khác nhau mỗi nhóm; báo rõ khi thiếu dữ liệu. Không phải xác suất gian lận hay phê duyệt.'],
   timeline:['Dòng thời gian tài liệu','Sắp ngày và kỳ được ghi rõ theo nguồn trang. Không bịa ngày hay tự tính hạn có tính pháp lý.'],
   obligations:['Rà soát điều khoản & nghĩa vụ','Liệt kê nghĩa vụ, điều kiện và loại trừ có nguồn. Không tư vấn luật, quyết định bảo hiểm hay bồi thường.'],
