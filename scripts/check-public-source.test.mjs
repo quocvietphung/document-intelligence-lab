@@ -18,3 +18,10 @@ test('allows only the bounded authored classification corpus, not arbitrary PDFs
   for(const name of ['customer.pdf','bench-0000.pdf','bench-0067.pdf','bench-9999.pdf'])assert.ok(publicationRisk(root+name));
   assert.ok(publicationRisk('public/bench-0001.pdf'));
 });
+test('allows only the five reviewed fictional real-estate fixtures',()=>{
+  const root='services/credit-api/src/main/resources/real-estate/';
+  for(const name of ['fictional-construction-order.pdf','fictional-change-order.pdf','fictional-construction-invoice.pdf','fictional-acceptance-report.pdf','fictional-site-meeting-minutes.pdf'])
+    assert.equal(publicationRisk(root+name),null,name);
+  for(const name of ['customer.pdf','fictional-property-record.pdf','construction-order.pdf'])
+    assert.ok(publicationRisk(root+name),name);
+});

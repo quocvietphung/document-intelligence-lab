@@ -11,7 +11,8 @@ export function publicationRisk(path){
   // Only the 66 authored synthetic benchmark fixtures are publishable here.
   // Their source hashes and native PDF contents are verified by the Java corpus test.
   const classificationFixture=/^services\/credit-api\/src\/main\/resources\/classification\/bench-(?:000[1-9]|00[1-5][0-9]|006[0-6])\.pdf$/.test(path);
-  if(/\.pdf$/i.test(path)&&!classificationFixture&&!/^services\/credit-api\/src\/test\/resources\/evidence\/(?:evidence-inspection-regression|structure-regression|scanned-skew-regression)\.pdf$/.test(path)&&!/^services\/credit-api\/src\/test\/resources\/legacy-(payroll|research)\/[\w-]+\.pdf$/.test(path))return 'PDF without an approved test-fixture location';
+  const realEstateFixture=/^services\/credit-api\/src\/main\/resources\/real-estate\/fictional-(?:construction-order|change-order|construction-invoice|acceptance-report|site-meeting-minutes)\.pdf$/.test(path);
+  if(/\.pdf$/i.test(path)&&!classificationFixture&&!realEstateFixture&&!/^services\/credit-api\/src\/test\/resources\/evidence\/(?:evidence-inspection-regression|structure-regression|scanned-skew-regression)\.pdf$/.test(path)&&!/^services\/credit-api\/src\/test\/resources\/legacy-(payroll|research)\/[\w-]+\.pdf$/.test(path))return 'PDF without an approved test-fixture location';
   return null;
 }
 
