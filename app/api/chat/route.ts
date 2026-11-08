@@ -6,7 +6,9 @@ import {novaLimit,novaModelFailure} from "@/lib/nova-limits";
 import {trustAnswerSchema} from "@/lib/nova-trust";
 import {localChatDispatcher,localChatTimeoutMs} from "@/lib/nova-transport";
 export const runtime="nodejs";
-export const maxDuration=420;
+// Vercel Hobby accepts at most 300 seconds; Azure requests are already bounded
+// to 45 seconds below, while local Ollama runs through Docker rather than Vercel.
+export const maxDuration=300;
 export async function POST(request:Request) {
   if(process.env.NEXT_PUBLIC_DEMO_MODE==="true") return Response.json({error:"Public demo: Azure chat disabled"},{status:503});
   const requestId=crypto.randomUUID(); const root=process.env.CREDIT_API_URL;
