@@ -1,0 +1,28 @@
+{
+  "_comment": "SYNTHETIC recorded-shape fixture for contract tests. Hand-written to match the documented prebuilt-layout response shape. It is NOT output from an Azure resource.",
+  "status": "succeeded",
+  "analyzeResult": {
+    "apiVersion": "2024-11-30",
+    "modelId": "prebuilt-layout",
+    "pages": [
+      {"pageNumber": 1, "angle": 0.0, "width": 8.5, "height": 11.0, "unit": "inch",
+       "words": [{"content": "Projektname:", "confidence": 0.99}, {"content": "Berlin", "confidence": 0.97}],
+       "lines": [
+         {"content": "Projektname: Berlin Living", "polygon": [1.0, 1.0, 4.0, 1.0, 4.0, 1.3, 1.0, 1.3]},
+         {"content": "Nächster Termin: 20.11.2026", "polygon": [1.0, 1.5, 4.0, 1.5, 4.0, 1.8, 1.0, 1.8]}
+       ]},
+      {"pageNumber": 2, "angle": 0.3, "width": 8.5, "height": 11.0, "unit": "inch",
+       "words": [{"content": "Budget:", "confidence": 0.6}, {"content": "12.000.000", "confidence": 0.7}],
+       "lines": [
+         {"content": "Budget: 12.000.000 EUR", "polygon": [1.0, 1.0, 4.0, 1.0, 4.0, 1.3, 1.0, 1.3]}
+       ]}
+    ],
+    "tables": [
+      {"rowCount": 1, "columnCount": 2, "boundingRegions": [{"pageNumber": 2, "polygon": [1.0, 2.0, 5.0, 2.0, 5.0, 2.5, 1.0, 2.5]}],
+       "cells": [
+         {"rowIndex": 0, "columnIndex": 0, "content": "Position", "boundingRegions": [{"pageNumber": 2, "polygon": [1.0, 2.0, 3.0, 2.0, 3.0, 2.5, 1.0, 2.5]}]},
+         {"rowIndex": 0, "columnIndex": 1, "content": "Betrag", "boundingRegions": [{"pageNumber": 2, "polygon": [3.0, 2.0, 5.0, 2.0, 5.0, 2.5, 3.0, 2.5]}]}
+       ]}
+    ]
+  }
+}

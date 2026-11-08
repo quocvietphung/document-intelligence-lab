@@ -1,0 +1,28 @@
+# Local environments and tool caches — never commit
+.venv/
+.venv*/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+# Logs, temporary and generated runtime files
+*.log
+tmp/
+.tmp/
+.local/
+*.bak
+# Secrets and per-developer configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+token*.json
+# Generated report output
+reports/*.json

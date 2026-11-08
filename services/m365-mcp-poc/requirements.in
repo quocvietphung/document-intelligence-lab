@@ -1,0 +1,11 @@
+# Direct runtime dependencies. requirements.txt is the pinned lock (see README "Dependency lock").
+fastapi
+uvicorn
+httpx
+msal
+mcp>=2,<3
+pypdf
+PyJWT[crypto]
+azure-identity
+opentelemetry-api
+opentelemetry-sdk

@@ -1,0 +1,32 @@
+# Standalone, isolated compose profile for the PoC. It does not modify the repository's main stack.
+# Mock/local mode by default. The port is published on the host loopback only.
+name: m365-poc
+services:
+  m365-poc:
+    build:
+      context: ../..
+      dockerfile: services/m365-mcp-poc/Dockerfile
+    image: m365-document-evidence-poc:local
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: "1.0"
+    stop_grace_period: 25s
+    environment:
+      # Explicit, local-only opt-in: the server is reachable only through this host's loopback port mapping.
+      M365_POC_ALLOW_UNAUTHENTICATED_LOCAL_DOCKER: "1"
+    ports:
+      - "127.0.0.1:8765:8765"
+    networks:
+      - poc-internal
+networks:
+  poc-internal:
+    driver: bridge
+    internal: false

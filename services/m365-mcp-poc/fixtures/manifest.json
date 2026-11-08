@@ -1,0 +1,85 @@
+{
+  "tenant_id": "fictional-tenant-001",
+  "documents": [
+    {
+      "filename": "projektstatus-berlin-living.pdf",
+      "document_id": "project-status-001",
+      "tenant_id": "fictional-tenant-001",
+      "project": "Berlin Living",
+      "allowed_principals": [
+        "local-dev-user"
+      ],
+      "rotation": 0
+    },
+    {
+      "filename": "baugenehmigung-berlin-living.pdf",
+      "document_id": "approval-001",
+      "tenant_id": "fictional-tenant-001",
+      "project": "Berlin Living",
+      "allowed_principals": [
+        "local-dev-user"
+      ],
+      "rotation": 0
+    },
+    {
+      "filename": "baubesprechung-2026-11-05.pdf",
+      "document_id": "meeting-2026-11-05-001",
+      "tenant_id": "fictional-tenant-001",
+      "project": "Berlin Living",
+      "allowed_principals": [
+        "local-dev-user"
+      ],
+      "rotation": 0
+    },
+    {
+      "filename": "vorstandsnotiz-berlin-living.pdf",
+      "document_id": "restricted-exec-001",
+      "tenant_id": "fictional-tenant-001",
+      "project": "Berlin Living",
+      "allowed_principals": [
+        "fictional-vorstand-001"
+      ],
+      "rotation": 0
+    },
+    {
+      "filename": "potsdam-quartier-kalkulation.pdf",
+      "document_id": "potsdam-calc-001",
+      "tenant_id": "fictional-tenant-001",
+      "project": "Potsdam Quartier",
+      "allowed_principals": [
+        "local-dev-user"
+      ],
+      "rotation": 0
+    },
+    {
+      "filename": "potsdam-quartier-scan-ocr.pdf",
+      "document_id": "potsdam-scan-001",
+      "tenant_id": "fictional-tenant-001",
+      "project": "Potsdam Quartier",
+      "allowed_principals": [
+        "local-dev-user"
+      ],
+      "rotation": 0
+    },
+    {
+      "filename": "potsdam-quartier-rotiert.pdf",
+      "document_id": "potsdam-rotated-001",
+      "tenant_id": "fictional-tenant-001",
+      "project": "Potsdam Quartier",
+      "allowed_principals": [
+        "local-dev-user"
+      ],
+      "rotation": 90
+    },
+    {
+      "filename": "potsdam-quartier-injection.pdf",
+      "document_id": "potsdam-injection-001",
+      "tenant_id": "fictional-tenant-001",
+      "project": "Potsdam Quartier",
+      "allowed_principals": [
+        "local-dev-user"
+      ],
+      "rotation": 0
+    }
+  ]
+}
