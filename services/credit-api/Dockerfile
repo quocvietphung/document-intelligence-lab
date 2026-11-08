@@ -10,7 +10,13 @@ FROM build AS docling-check
 RUN mvn -q -Dtest=DoclingDocumentAnalysisProviderTest test
 
 FROM eclipse-temurin:21-jre-jammy
-RUN apt-get update && apt-get install -y --no-install-recommends libssl3 tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng wget && rm -rf /var/lib/apt/lists/* && useradd -m app
+# Refresh the base-image packages before adding OCR dependencies. This keeps
+# fixed OS packages (including apt itself) in the released runtime image.
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends libssl3 tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng wget \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd -m app
 USER app
 WORKDIR /app
 COPY --from=build /workspace/target/credit-api-0.1.0.jar app.jar

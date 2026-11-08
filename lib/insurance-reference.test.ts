@@ -86,6 +86,15 @@ describe('private reviewed PDF reference library',()=>{
     expect((await researchGET(new Request('http://localhost/api/research-references?domain=real-estate'))).status).toBe(401);
     expect((await researchGET(new Request('http://localhost/api/research-references?domain=unknown'))).status).toBe(400);
   });
+  it('serves an authorized authored real-estate fixture without a private local copy',async()=>{
+    vi.stubEnv('NEXT_PUBLIC_DEMO_MODE','false');vi.stubEnv('CREDIT_API_URL','http://credit-api:8080');
+    vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(null,{status:200})));
+    const sample=researchSamples('real-estate')[0];
+    const result=await researchGET(new Request(`http://localhost/api/research-references?domain=real-estate&sample=${sample.id}`,{headers:{Authorization:'Bearer fixture'}}));
+    const bytes=Buffer.from(await result.arrayBuffer());
+    expect(result.status).toBe(200);expect(result.headers.get('content-type')).toBe('application/pdf');
+    expect(createHash('sha256').update(bytes).digest('hex')).toBe(sample.sha256);
+  });
   it('does not serve a reference from another domain',async()=>{
     vi.stubEnv('NEXT_PUBLIC_DEMO_MODE','false');vi.stubEnv('CREDIT_API_URL','http://credit-api:8080');
     vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(null,{status:200})));
