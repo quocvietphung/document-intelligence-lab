@@ -5,7 +5,12 @@ import {kaggleReferences,kaggleReference} from '@/lib/research-samples';
 import {validInsuranceReference} from '@/lib/insurance-reference-bytes';
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'};
 async function referenceBytes(sample:typeof kaggleReferences[number]){
-  const file=await open(join(process.cwd(),'.local','reference-pdfs',sample.file),constants.O_RDONLY|constants.O_NOFOLLOW);
+  // Publicly authored fixtures ship with the application. Third-party
+  // references remain private local files and are never bundled for Vercel.
+  const root=sample.sourceKind==='authored-fixture'
+    ?join(process.cwd(),'services','credit-api','src','main','resources','real-estate')
+    :join(process.cwd(),'.local','reference-pdfs');
+  const file=await open(join(root,sample.file),constants.O_RDONLY|constants.O_NOFOLLOW);
   try{const stat=await file.stat();if(!stat.isFile()||stat.size>3_000_000)throw new Error('Invalid reference');
     const bytes=await file.readFile();if(!validInsuranceReference(bytes,sample.sha256))throw new Error('Invalid reference');return bytes;
   }finally{await file.close();}
