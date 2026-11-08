@@ -1,0 +1,18 @@
+# Keep the build context small and free of local environments, caches and secrets.
+**/.venv*
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/*.egg-info
+**/build
+**/dist
+**/*.log
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/token*.json
+services/m365-mcp-poc/tests
+services/m365-mcp-poc/.venv*

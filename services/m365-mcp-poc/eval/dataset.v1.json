@@ -1,0 +1,72 @@
+{
+  "dataset_version": "2026-11-synthetic-v1",
+  "scope": "Synthetic, fictional PDFs in fixtures/pdfs. Seven hand-written items for demonstration and regression only. Not a production benchmark and not evidence of real-world accuracy.",
+  "items": [
+    {
+      "id": "direct-status-and-date",
+      "category": "direct",
+      "question": "Wie ist der aktuelle Status des Projekts Berlin Living und wann ist der nächste Termin?",
+      "answerable": true,
+      "expected_answer": "Die Baugenehmigung wurde beantragt. Der nächste Termin ist am 20.11.2026.",
+      "must_contain": ["beantragt", "20.11.2026"],
+      "expected_sources": [{"name": "projektstatus-berlin-living.pdf", "page": 1}]
+    },
+    {
+      "id": "direct-budget",
+      "category": "direct",
+      "question": "Wie hoch ist das Budget des Projekts Berlin Living?",
+      "answerable": true,
+      "expected_answer": "Das Budget beträgt 12.000.000 EUR.",
+      "must_contain": ["12.000.000"],
+      "expected_sources": [{"name": "projektstatus-berlin-living.pdf", "page": 2}]
+    },
+    {
+      "id": "paraphrase-next-meeting",
+      "category": "paraphrase",
+      "question": "Wann steht der nächste Jour fixe für Berlin Living an?",
+      "answerable": true,
+      "expected_answer": "Der nächste Termin ist am 20.11.2026.",
+      "must_contain": ["20.11.2026"],
+      "expected_sources": [{"name": "projektstatus-berlin-living.pdf", "page": 1}]
+    },
+    {
+      "id": "identifier-project-number",
+      "category": "identifier",
+      "question": "Welches Projekt gehört zur Projektnummer BL-2026-017?",
+      "answerable": true,
+      "expected_answer": "Die Projektnummer BL-2026-017 gehört zum Projekt Berlin Living.",
+      "must_contain": ["Berlin Living", "BL-2026-017"],
+      "expected_sources": [{"name": "projektstatus-berlin-living.pdf", "page": 1}]
+    },
+    {
+      "id": "cross-document-open-items-and-approval",
+      "category": "cross_document",
+      "question": "Welche offenen Punkte gibt es bei Berlin Living und welcher Genehmigungsstatus gilt?",
+      "answerable": true,
+      "expected_answer": "Offene Punkte: Brandschutznachweis nachreichen und Energienachweis prüfen (Baubesprechung), Energienachweis nach GEG und Stellplatzschlüssel bestätigen (Projektstatus). Genehmigungsstatus: Baugenehmigung beantragt.",
+      "must_contain": ["Brandschutznachweis", "beantragt"],
+      "expected_sources": [
+        {"name": "baubesprechung-2026-11-05.pdf", "page": 1},
+        {"name": "baugenehmigung-berlin-living.pdf", "page": 1}
+      ]
+    },
+    {
+      "id": "unanswerable-rent",
+      "category": "unanswerable",
+      "question": "Wie hoch sind die Mietpreise pro Quadratmeter im Projekt Berlin Living?",
+      "answerable": false,
+      "expected_answer": null,
+      "must_contain": [],
+      "expected_sources": []
+    },
+    {
+      "id": "unanswerable-unknown-project",
+      "category": "unanswerable",
+      "question": "Wie ist der Status des Projekts Hamburg Hafen?",
+      "answerable": false,
+      "expected_answer": null,
+      "must_contain": [],
+      "expected_sources": []
+    }
+  ]
+}

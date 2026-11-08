@@ -1,0 +1,36 @@
+# Private deployment on the existing lab VM. Not reachable from the internet:
+#   * the port is bound to the VM loopback only (use an SSH tunnel);
+#   * there is no gateway route for this service;
+#   * mock/local/deterministic mode is the default and the only mode allowed without Entra.
+# Usage on the VM (from the release root):
+#   LAB_NETWORK=<existing compose network> docker compose -f services/m365-mcp-poc/deploy/compose.vm.yml up -d --build
+name: m365-poc
+services:
+  m365-poc:
+    build:
+      context: ../../..
+      dockerfile: services/m365-mcp-poc/Dockerfile
+    image: m365-document-evidence-poc:release
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: "1.0"
+    stop_grace_period: 25s
+    environment:
+      # Allowed only because the service stays private (VM loopback and internal network, no gateway route).
+      M365_POC_ALLOW_UNAUTHENTICATED_LOCAL_DOCKER: "1"
+    ports:
+      - "127.0.0.1:8765:8765"
+    networks:
+      - lab
+networks:
+  lab:
+    external: true
+    name: ${LAB_NETWORK:?set LAB_NETWORK to the existing lab Docker network}
