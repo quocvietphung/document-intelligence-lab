@@ -1,7 +1,23 @@
-# Deployment plan: PoC on the existing VM (not executed)
+# Deployment plan: PoC on the existing VM
 
-Status: **future**. This plan is documentation only. Nothing here has been applied, started, uploaded or deployed.
-Every step below needs a separate, explicit approval (see the approval gate in the README).
+Status: **private mock deployment applied on 2026-11-09** (see section 0). The public gateway route (section 5), Entra authentication and live Microsoft Graph are **not** applied.
+Every further step needs its own explicit approval (see the approval gate in the README).
+
+## 0. Applied on 2026-11-09 (private, mock mode)
+
+- The PoC was built on the VM from a release directory (`/opt/m365-poc/releases/<commit>`) with [`deploy/compose.vm.yml`](../deploy/compose.vm.yml). It is attached to the existing lab Docker network.
+- The port is bound only to the VM loopback (`127.0.0.1:8765`). There is no gateway route, so the service is not reachable from the internet. Reach it through an SSH tunnel or a command on the VM.
+- It uses the mock document provider, local extraction and deterministic answers. `M365_POC_ALLOW_UNAUTHENTICATED_LOCAL_DOCKER=1` is set only because the service stays private.
+- Hardening: the container runs as a non-root user with a read-only root file system, all capabilities dropped and a 512 MB memory limit. With `restart: unless-stopped`, it comes back when the VM starts.
+- The smoke test on the VM passed. It covered health, a grounded answer with its source and page, abstention when evidence is missing, prompt-injection isolation, hiding of the restricted document, and clean logs.
+- The gateway `Caddyfile` was backed up on the VM and left unchanged. No Azure resource was created.
+
+From the release root on the VM:
+
+```bash
+LAB_NETWORK=<existing lab network> docker compose -f services/m365-mcp-poc/deploy/compose.vm.yml up -d --build   # deploy
+LAB_NETWORK=<existing lab network> docker compose -f services/m365-mcp-poc/deploy/compose.vm.yml down             # rollback
+```
 
 ## 1. Existing resources reused (no new resource is created)
 
@@ -14,11 +30,13 @@ Source: `infra/azure/vm-lab/` (Terraform, state kept outside Git).
 | Role assignment on existing Azure OpenAI resource | Future Azure OpenAI answer provider | None until live test is approved |
 | Role assignment on existing Document Intelligence resource | Future `prebuilt-layout` extraction | None until live test is approved |
 | Caddy gateway in `infra/azure/vm-lab/compose.yml` | HTTPS entry point | A new route is needed (section 5) |
-| Daily VM auto-shutdown schedule | Cost control | None |
+| Daily VM auto-shutdown schedule (currently disabled) | Cost control | None; deallocate the VM manually after use |
 
 Names containing `credit-lab` are preserved; renaming them would force Terraform replacement.
 
 ## 2. Proposed files deployed to the VM
+
+The private variant applied in section 0 uses the release root with `deploy/compose.vm.yml`. The gateway snippet listed below has not been added.
 
 - `services/m365-mcp-poc/` (application source, fixtures, evaluation dataset)
 - `services/m365-mcp-poc/Dockerfile` and `docker-compose.yml` (standalone profile)
@@ -73,6 +91,8 @@ curl -sS -o /dev/null -w "%{http_code}\n" "https://<gateway-host>/m365poc/docume
 
 ## 7. Commands (to be run only after approval)
 
+These commands are for the standalone variant behind the gateway. The private variant uses the commands in section 0.
+
 ```bash
 # on the VM, after the files are copied by an approved method
 cd services/m365-mcp-poc
@@ -92,8 +112,8 @@ Rollback removes only the PoC container. Terraform state and the existing applic
 
 ## 9. VM start, deallocation and cost
 
-- Start the VM only after approval. The auto-shutdown schedule still applies.
-- Deallocate after the demo: `az vm deallocate --resource-group <rg> --name <vm>` (command shown for planning only; not run).
+- Start the VM only after approval. The auto-shutdown schedule is currently disabled, so deallocate the VM after use.
+- Deallocate after the demo: `az vm deallocate --resource-group <rg> --name <vm>`.
 - Estimated cost: the VM and public IP are already billed by the existing lab. The PoC container adds no Azure service cost. Azure OpenAI and Document Intelligence calls are billed per use and are not part of this plan's approval.
 
 ## 10. Cleanup

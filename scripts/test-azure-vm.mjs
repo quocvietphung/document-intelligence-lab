@@ -6,7 +6,7 @@ import {readFileSync,writeFileSync} from 'node:fs';
 import {createHash,randomBytes} from 'node:crypto';
 const out=JSON.parse(execFileSync('terraform',['-chdir=infra/azure/vm-lab','output','-json'],{encoding:'utf8'}));
 const backend=out.backend_url.value,auth=out.keycloak_url.value;
-const frontend='https://credit-intelligence-lab.vercel.app';
+const frontend='https://document-intelligence-lab.vercel.app';
 const throughFrontend=process.argv.includes('--frontend');
 const root=throughFrontend?frontend:backend;
 const credentials=JSON.parse(readFileSync('.local/azure-vm/advisor.json','utf8'));

@@ -1,6 +1,6 @@
 # Local operations, security and recovery
 
-The primary runtime is [Docker local](DOCKER_LOCAL.md). The previous Azure VM backend has been removed; the app's local volumes and shared Azure AI resources are independent.
+The primary runtime is [Docker local](DOCKER_LOCAL.md). The optional on-demand Azure VM showcase ([Azure VM lab](AZURE_VM_LAB.md)) is separate. The app's local volumes and the shared Azure AI resources do not depend on it.
 
 ## Service health
 
