@@ -1,4 +1,4 @@
-name: Dependency and image security
+name: Production dependency and image security
 on:
   pull_request:
   push:
@@ -39,12 +39,17 @@ jobs:
           scanners: vuln,secret
           severity: HIGH,CRITICAL
           exit-code: "1"
-  containers:
+  production-images:
+    # Blocking gate for every image built by this repository for the supported stack.
+    # Spark is a research experiment and is scanned separately in spark-research.yml.
+    name: Production images - Trivy HIGH/CRITICAL (blocking)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build local images only
-        run: docker compose -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.etl.yml -f docker-compose.ml.yml -f docker-compose.spark.yml build web credit-api etl ml-worker spark
+      - name: Assert the production Compose stack contains no Spark
+        run: node scripts/check-production-compose.mjs
+      - name: Build production images only (no Spark)
+        run: docker compose -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.etl.yml -f docker-compose.ml.yml -f docker-compose.m365.yml build web credit-api etl ml-worker m365-poc
       - uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: credit-intelligence-lab-credit-api
@@ -67,6 +72,6 @@ jobs:
           exit-code: "1"
       - uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: document-lab-spark:1
+          image-ref: credit-intelligence-lab-m365-poc:local
           severity: HIGH,CRITICAL
           exit-code: "1"
