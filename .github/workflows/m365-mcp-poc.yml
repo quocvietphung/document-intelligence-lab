@@ -64,6 +64,9 @@ jobs:
     name: Container build and health check
     runs-on: ubuntu-latest
     needs: python
+    defaults:
+      run:
+        working-directory: .  # the image builds from the repository root
     steps:
       - uses: actions/checkout@v4
       - name: Build image
@@ -109,5 +112,7 @@ jobs:
         with:
           terraform_version: 1.5.7
       - run: terraform fmt -check -recursive
-      - run: terraform init -backend=false -lockfile=readonly -input=false
+      # The committed lock file holds checksums for the maintainer's platform; init on the Linux runner
+      # verifies the registry checksums and records its own platform hash in the runner workspace only.
+      - run: terraform init -backend=false -input=false
       - run: terraform validate

@@ -45,3 +45,13 @@ def test_mock_provider_enumerates_only_manifest_documents(settings, local_ctx):
     provider = MockGraphProvider(settings.fixtures_dir, settings.manifest_path)
     names = {r.name for r in provider.list_documents(local_ctx, 50)}
     assert "vorstandsnotiz-berlin-living.pdf" not in names and "projektstatus-berlin-living.pdf" in names
+
+
+def test_every_fixture_pdf_is_marked_fictional(settings):
+    manifest = json.loads(settings.manifest_path.read_text(encoding="utf-8"))
+    listed = {item["filename"] for item in manifest["documents"]}
+    on_disk = {p.name for p in settings.fixtures_dir.glob("*.pdf")}
+    assert listed == on_disk  # no unlisted PDF can be published from this folder
+    for name in sorted(on_disk):
+        first_page = extract_pages((settings.fixtures_dir / name).read_bytes())[0].text
+        assert "FIKTIVE DATEN" in first_page, name
