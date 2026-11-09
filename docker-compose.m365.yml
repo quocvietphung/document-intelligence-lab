@@ -1,0 +1,28 @@
+# Optional Microsoft 365 document-evidence service integrated into the main
+# credit-intelligence-lab Compose project. It is local/mock by default and does
+# not contact Microsoft Graph or Azure unless the explicit live settings are
+# supplied by an operator.
+services:
+  m365-poc:
+    build:
+      context: .
+      dockerfile: services/m365-mcp-poc/Dockerfile
+    image: credit-intelligence-lab-m365-poc:local
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: "1.0"
+    stop_grace_period: 25s
+    environment:
+      M365_POC_ALLOW_UNAUTHENTICATED_LOCAL_DOCKER: "1"
+    ports:
+      - "127.0.0.1:8765:8765"
+    labels:
+      com.credit-intelligence-lab.component: "m365-document-evidence"

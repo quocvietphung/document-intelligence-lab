@@ -6,12 +6,16 @@ on:
     paths:
       - "services/m365-mcp-poc/**"
       - "infra/azure/vm-lab/**"
+      - "docker-compose.m365.yml"
+      - "docs/DOCKER_LOCAL.md"
       - ".github/workflows/m365-mcp-poc.yml"
   push:
     branches: [master, develop, "feature/**"]
     paths:
       - "services/m365-mcp-poc/**"
       - "infra/azure/vm-lab/**"
+      - "docker-compose.m365.yml"
+      - "docs/DOCKER_LOCAL.md"
       - ".github/workflows/m365-mcp-poc.yml"
 
 permissions:
@@ -69,8 +73,16 @@ jobs:
         working-directory: .  # the image builds from the repository root
     steps:
       - uses: actions/checkout@v4
+      - name: Validate integrated Compose profile
+        run: docker compose -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.m365.yml config --quiet
       - name: Build image
         run: docker build -f services/m365-mcp-poc/Dockerfile -t m365-document-evidence-poc:ci .
+      - name: Scan image for high and critical vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: m365-document-evidence-poc:ci
+          severity: HIGH,CRITICAL
+          exit-code: "1"
       - name: Start container and check health
         run: |
           docker run -d --name poc-ci -p 127.0.0.1:8765:8765 --read-only --tmpfs /tmp \
