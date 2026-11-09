@@ -23,9 +23,10 @@ docker compose -f docker-compose.yml -f docker-compose.platform.yml \
 
 ### Optional Microsoft 365 evidence PoC
 
-The read-only M365 document-evidence service can join the same Compose project without enabling Microsoft
-Graph or Azure. Its default is a fictional local dataset with deterministic answers; live providers remain
-explicit opt-ins.
+The read-only M365 document-evidence service is part of the full stack started by `node scripts/docker-local.mjs`
+(see [Production stack and the Spark experiment](#production-stack-and-the-spark-experiment)). With the smaller
+base + platform profile above it can be added on its own. It does not enable Microsoft Graph or Azure: its default
+is a fictional local dataset with deterministic answers, and live providers remain explicit opt-ins.
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.platform.yml \
@@ -50,6 +51,57 @@ See [`services/m365-mcp-poc/README.md`](../services/m365-mcp-poc/README.md) for 
 boundary and the explicit Graph/Azure configuration.
 
 There is **no required `.env` file** for this profile. Copying `.env.example` alone does not configure the Java container: Compose supplies its environment. The smaller base file alone is for limited OAuth checks, not the complete research platform.
+
+## Production stack and the Spark experiment
+
+The supported stack is defined once in [`scripts/compose-files.mjs`](../scripts/compose-files.mjs) and started by
+`node scripts/docker-local.mjs`: Java API, Next.js, Keycloak, PostgreSQL (cases and identity), Redis, Qdrant,
+ClamAV, Docling, local Nova (Ollama), the offline Python ETL with **DuckDB Bronze → Silver → Gold** and the M365
+evidence service. `--with-analytics` adds the optional ML worker and MLflow overlay. **DuckDB is the supported
+analytics engine.** Spark is never built or started by this command, by the Azure VM files or by the production
+image gate.
+
+Prove what Docker Compose actually renders (every profile enabled, with and without analytics):
+
+```bash
+node scripts/check-production-compose.mjs
+```
+
+Health checks while the stack runs:
+
+```bash
+PROD="-f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.docling.yml \
+  -f docker-compose.nova-local.yml -f docker-compose.etl.yml -f docker-compose.local-resources.yml \
+  -f docker-compose.m365.yml"
+OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose $PROD ps
+curl --fail http://localhost:8081/actuator/health
+curl --fail http://127.0.0.1:8765/health
+```
+
+Safe shutdown keeps every named volume (documents, databases, models, ETL history):
+
+```bash
+OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose $PROD stop
+# or remove containers and networks only, still keeping volumes:
+OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose $PROD down
+```
+
+| Mode | What leaves the machine |
+| --- | --- |
+| Local (default) | No document, question or answer. Internet is used for image builds, ClamAV signature updates and the explicit `--prepare-model` download only. The ETL worker runs with `network_mode: none`; the M365 service uses fictional mock data. |
+| Azure (opt-in) | A PDF you confirm for analysis is sent to your Azure Document Intelligence resource; Nova sends the question and selected evidence to your Azure OpenAI deployment. The M365 service contacts Azure only with its own explicit live settings. |
+
+**Spark is an experiment, not a deployment target.** It stays in `docker-compose.spark.yml` behind the `spark`
+profile and runs only when you ask for it, as a one-shot batch over an existing ETL export:
+
+```bash
+node scripts/run-document-spark.mjs --snapshot '<scope>/<etl-run-id>'
+```
+
+The Spark image is excluded from production because Trivy reports unresolved HIGH/CRITICAL vulnerabilities in
+Java libraries bundled inside the pinned PySpark wheel. Its tests and its real, unsuppressed scan run in the
+separate *Spark research experiment (non-production, not deployed)* workflow. Do not add Spark to Azure deployment
+files.
 
 ## Expected state and login
 
@@ -229,7 +281,7 @@ docker compose -f docker-compose.yml -f docker-compose.platform.yml \
 
 Optional local traces are not an automatic Application Insights integration. Manage with the same override. Do not remove orphaned containers before checking their purpose.
 
-This guide does not run Terraform, publish images, start a paid VM, expose databases or deploy Vercel. Automatic Git-triggered Vercel deployment is disabled for this showcase release. Cloud release, TLS, secret management, backups and production identity remain separate work.
+This guide does not run Terraform, publish images, start a paid VM, expose databases or deploy Vercel. Azure deployment files (`infra/azure/vm-lab/`) contain no Spark service, and Spark must not be added to them. Automatic Git-triggered Vercel deployment is disabled for this showcase release. Cloud release, TLS, secret management, backups and production identity remain separate work.
 
 The former Azure VM backend and Vercel project have been removed. Local Docker, its volumes and the separately retained Azure AI resources remain available. A future cloud release needs a newly reviewed deployment; no public frontend is active for this lab.
 
