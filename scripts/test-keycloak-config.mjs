@@ -11,7 +11,7 @@ const production = JSON.parse(
     "utf8",
   ).replaceAll(
     "__FRONTEND_URL__",
-    "https://credit-intelligence-lab.vercel.app",
+    "https://document-intelligence-lab.vercel.app",
   ),
 );
 const startup = readFileSync(new URL("start-vercel.sh", root), "utf8");
