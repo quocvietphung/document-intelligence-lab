@@ -28,7 +28,8 @@ Every response reports these labels (`labels` field, and `/health`):
 | OpenTelemetry metrics | `verified-local` (in-memory reader); no exporter configured |
 | Application Insights exporter | `future` (not implemented) |
 | Frontend integration into the web application | `future` (deferred, see section 12) |
-| VM deployment through the existing gateway | `future` (plan only, see `docs/DEPLOYMENT_PLAN.md`) |
+| Private VM deployment (mock mode, reachable only on the VM loopback and the internal network) | `simulated` (deployed and smoke-tested on 2026-11-09, see `docs/DEPLOYMENT_PLAN.md`) |
+| Public route through the existing gateway | `future` (needs Entra; plan only) |
 
 No response label is `live-verified`. One bounded live smoke test of Azure Document Intelligence (2 fictional pages) and Azure OpenAI (3 requests) was executed on 2026-11-09 from a developer workstation with an Entra credential; see [`docs/LIVE_SMOKE_2026-11-09.md`](docs/LIVE_SMOKE_2026-11-09.md). Microsoft Graph has not been tested live.
 
@@ -268,9 +269,9 @@ CI: `.github/workflows/m365-mcp-poc.yml` runs format, lint, types, tests, evalua
 
 Not integrated into the Next.js application in this revision. The existing navigation and design system were not changed, to avoid duplicated menus and the risk of destabilising the current app. The API demo is the deliverable. A UI would need the labels above, the source page, the exact evidence, the review warnings and the EN/DE strings. That work belongs in a separate, reviewed change.
 
-## 13. Deployment and infrastructure (plan only)
+## 13. Deployment and infrastructure
 
-[`docs/DEPLOYMENT_PLAN.md`](docs/DEPLOYMENT_PLAN.md) describes running the PoC on the **existing** VM through Docker Compose and the existing Caddy gateway: resources reused, environment variables, Managed Identity usage, the proposed `/m365poc/*` route, health and smoke tests, rollback, deallocation and cleanup. Nothing has been applied.
+[`docs/DEPLOYMENT_PLAN.md`](docs/DEPLOYMENT_PLAN.md) describes running the PoC on the **existing** VM through Docker Compose and the existing Caddy gateway: resources reused, environment variables, Managed Identity usage, the proposed `/m365poc/*` route, health and smoke tests, rollback, deallocation and cleanup. Only the private mock-mode deployment (section 0 of that file) was applied, on 2026-11-09. The public `/m365poc/*` route is not applied.
 
 Terraform validation of the existing `infra/azure/vm-lab` configuration is recorded in the completion report. No new Azure resource is needed for this showcase. Key Vault, Application Insights, Log Analytics, Storage and Service Bus are optional and need a separate decision.
 
@@ -278,7 +279,7 @@ Terraform validation of the existing `infra/azure/vm-lab` configuration is recor
 
 - Entra validation is tested with locally generated keys, not with a live tenant.
 - Graph and Azure paths are not live-verified. Responses from them are mocked or synthetic.
-- The local Docker profile accepts unauthenticated requests on `127.0.0.1` only, and only for fictional data. The gateway route is not configured.
+- The local Docker profile accepts unauthenticated requests on `127.0.0.1` only, and only for fictional data. The private VM deployment follows the same rule: it is reachable only on the VM loopback and the internal network. The gateway route is not configured.
 - The mock ACL is a manifest. Production ACLs must come from SharePoint permissions, checked by the service.
 - Pipeline state is local. There is no distributed lock, so only in-process concurrency is safe.
 - Not implemented: the Application Insights exporter, Service Bus and Blob adapters, a separate processing manifest file, document versioning beyond the eTag key, and detection of outdated versions in evidence.
@@ -298,7 +299,7 @@ Commands, in order:
 
 Explanation to give:
 
-> Die lokale Demo verwendet ausschließlich fiktive Projektdokumente und Mock-Daten, die als „simuliert“ gekennzeichnet sind. Der Zugriff auf Microsoft 365 ist hinter einer Provider-Schnittstelle gekapselt. Die Graph-Anbindung ist implementiert und mit simulierten Transporten getestet, aber noch nicht gegen einen echten Mandanten geprüft. Azure Document Intelligence und Azure OpenAI sind ebenfalls implementiert, aber nicht live geprüft. Antworten werden nur aus ausgewählten, autorisierten Belegen erzeugt und tragen Dokument, Seite und Beleg-ID. Ohne ausreichende Evidenz wird nicht geantwortet.
+> Die lokale Demo verwendet ausschließlich fiktive Projektdokumente und Mock-Daten, die als „simuliert“ gekennzeichnet sind. Der Zugriff auf Microsoft 365 ist hinter einer Provider-Schnittstelle gekapselt. Die Graph-Anbindung ist implementiert und mit simulierten Transporten getestet, aber noch nicht gegen einen echten Mandanten geprüft. Azure Document Intelligence und Azure OpenAI sind ebenfalls implementiert. Ein einmaliger, begrenzter Live-Smoke-Test mit fiktiven Daten war erfolgreich; eine vollständige Live-Verifikation steht noch aus. Antworten werden nur aus ausgewählten, autorisierten Belegen erzeugt und tragen Dokument, Seite und Beleg-ID. Ohne ausreichende Evidenz wird nicht geantwortet.
 
 Short German notes for the interview:
 
@@ -310,14 +311,16 @@ Short German notes for the interview:
 
 ## 16. Approval gate
 
-No live action has been taken. Each item below needs its own explicit approval and must not be combined with another:
+Status on 2026-11-09. Each pending item needs its own explicit approval and must not be combined with another:
 
-1. Live Microsoft Graph test (test tenant, `Files.Read`, fictional files only). Resources: a test app registration and tenant consent. Cost: none.
-2. Live Azure Document Intelligence test (existing resource; the Managed Identity role is already present). Cost per page. Data sent: the fictional PDF.
-3. Live Azure OpenAI test (existing deployment; the Managed Identity role is already present). Cost per token. Data sent: selected fictional evidence.
-4. Start the existing VM (cost while it runs; the auto-shutdown schedule applies).
-5. Deploy the PoC container to the existing VM and add the gateway route (this changes the public gateway).
-6. HTTPS smoke test through the gateway.
-7. Git commit and push of the new files (`services/m365-mcp-poc/` and `.github/workflows/m365-mcp-poc.yml`).
-8. Merge into `develop`.
-9. Merge into `master`.
+| # | Item | Status |
+| --- | --- | --- |
+| 1 | Live Microsoft Graph test (test tenant, `Files.Read`, fictional files only). Resources: a test app registration and tenant consent. Cost: none. | Pending |
+| 2 | Live Azure Document Intelligence test (existing resource; the Managed Identity role is already present). Cost per page. Data sent: the fictional PDF. | Done once as a bounded smoke test (2 fictional pages), run from a developer workstation rather than through the VM Managed Identity; see [`docs/LIVE_SMOKE_2026-11-09.md`](docs/LIVE_SMOKE_2026-11-09.md) |
+| 3 | Live Azure OpenAI test (existing deployment; the Managed Identity role is already present). Cost per token. Data sent: selected fictional evidence. | Done once in the same smoke test (3 requests) |
+| 4 | Start the existing VM (cost while it runs; the auto-shutdown schedule is currently disabled). | Done for the showcase; deallocate after each use |
+| 5 | Deploy the PoC container to the existing VM and add the gateway route (this changes the public gateway). | Container deployed privately in mock mode; gateway route not added |
+| 6 | HTTPS smoke test through the gateway. | Pending (needs the route and Entra) |
+| 7 | Git commit and push of the new files (`services/m365-mcp-poc/` and `.github/workflows/m365-mcp-poc.yml`). | Done |
+| 8 | Merge into `develop`. | Done |
+| 9 | Merge into `master`. | Done |

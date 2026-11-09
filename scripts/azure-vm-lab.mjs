@@ -66,7 +66,7 @@ if(action==='prepare'){
   // The archive contains source only: no local DB volumes, private PDFs, envs or tokens.
   ssh(o,'sudo cloud-init status --wait && sudo test -d /opt/credit-lab && sudo docker compose version',{stdio:'inherit'});
   run('scp',['-i',key,'-o','StrictHostKeyChecking=accept-new','-o',`UserKnownHostsFile=${join(privateDir,'known_hosts')}`,bundle,`${target(o)}:/home/labadmin/backend.tgz`]);
-  ssh(o,`sudo tar --no-same-owner -xzf /home/labadmin/backend.tgz -C /opt/credit-lab && sudo tar --no-same-owner -xzf /opt/credit-lab/credit-api.tgz -C /opt/credit-lab && sudo chown root:labadmin /opt/credit-lab && sudo chmod 0750 /opt/credit-lab && sudo bash /opt/credit-lab/bootstrap.sh '${host}' 'https://credit-intelligence-lab.vercel.app'`,{stdio:'inherit'});
+  ssh(o,`sudo tar --no-same-owner -xzf /home/labadmin/backend.tgz -C /opt/credit-lab && sudo tar --no-same-owner -xzf /opt/credit-lab/credit-api.tgz -C /opt/credit-lab && sudo chown root:labadmin /opt/credit-lab && sudo chmod 0750 /opt/credit-lab && sudo bash /opt/credit-lab/bootstrap.sh '${host}' 'https://document-intelligence-lab.vercel.app'`,{stdio:'inherit'});
 }else if(action==='references'){
   // Explicit operator action after permission for these two fictional publisher pages.
   const o=outputs();

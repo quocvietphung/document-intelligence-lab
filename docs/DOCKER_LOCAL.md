@@ -283,7 +283,7 @@ Optional local traces are not an automatic Application Insights integration. Man
 
 This guide does not run Terraform, publish images, start a paid VM, expose databases or deploy Vercel. Azure deployment files (`infra/azure/vm-lab/`) contain no Spark service, and Spark must not be added to them. Automatic Git-triggered Vercel deployment is disabled for this showcase release. Cloud release, TLS, secret management, backups and production identity remain separate work.
 
-The former Azure VM backend and Vercel project have been removed. Local Docker, its volumes and the separately retained Azure AI resources remain available. A future cloud release needs a newly reviewed deployment; no public frontend is active for this lab.
+A separate cloud showcase exists. Its Vercel frontend, https://document-intelligence-lab.vercel.app, signs in against the Azure VM backend. That VM is started on demand and is normally deallocated; see [Azure VM lab](AZURE_VM_LAB.md). Local Docker does not use the showcase. Local volumes and the separately retained Azure AI resources do not depend on it.
 
 ## Local memory profile
 
