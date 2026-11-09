@@ -219,4 +219,4 @@ Named database/document volumes remain. Existing Azure-analyzed documents retain
 
 Document Intelligence receives the explicitly confirmed file. Nova receives the current question and permitted selected evidence/tool results, not a silent upload of every local PDF. Sources and model answers remain scoped to the authorized dossier.
 
-The former demo VM has been deleted; it is not needed to call the retained AI resources from local Docker. Terraform, Vercel, Foundry evaluations, Data Factory, Blob ingestion and Application Insights are not activated by this guide. Review usage charges, region and data-handling rules separately.
+Local Docker does not need the optional on-demand Azure VM showcase ([Azure VM lab](AZURE_VM_LAB.md)) to call the retained AI resources. Terraform, Vercel, Foundry evaluations, Data Factory, Blob ingestion and Application Insights are not activated by this guide. Review usage charges, region and data-handling rules separately.
