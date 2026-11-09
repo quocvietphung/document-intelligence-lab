@@ -174,7 +174,20 @@ Subsequent starts reuse models and databases:
 node scripts/docker-local.mjs
 ```
 
-Wait for the helper's readiness message. Use `--no-build` only when source and images match. This profile includes Docling, local Nova and ETL; it clears Azure chat/extraction configuration and has no silent cloud fallback.
+Wait for the helper's readiness message. Use `--no-build` only when source and images match. This command starts the **supported production stack**: Java API, Next.js, Keycloak, PostgreSQL, Redis, Qdrant, ClamAV, Docling, local Nova, the offline Python/DuckDB ETL and the read-only M365 evidence service (fictional mock data, `127.0.0.1:8765`). It clears Azure chat/extraction configuration and has no silent cloud fallback. **It never builds or starts Spark.** The file list lives in [`scripts/compose-files.mjs`](scripts/compose-files.mjs); prove what is rendered with:
+
+```bash
+node scripts/check-production-compose.mjs   # renders every profile; fails if any Spark service, image or build appears
+curl --fail http://localhost:8081/actuator/health
+curl --fail http://127.0.0.1:8765/health
+```
+
+| Mode | What leaves the machine |
+| --- | --- |
+| Local (default) | No document, question or answer. Internet is used only for image builds, ClamAV signature updates and the explicit `--prepare-model` download. The ETL worker runs with `network_mode: none`. |
+| Azure (opt-in) | A PDF you confirm for analysis goes to your Azure Document Intelligence resource; Nova sends the question and selected evidence to your Azure OpenAI deployment. The M365 service sends data to Azure only with its own explicit live settings. |
+
+Health checks, the M365 service and safe shutdown are described in [Docker local setup](docs/DOCKER_LOCAL.md#production-stack-and-the-spark-experiment).
 
 ### Sign in through Keycloak
 
@@ -339,11 +352,14 @@ Open [local MLflow](http://localhost:5005), choose **Model training → Experime
 
 The [measured Docker acceptance report](docs/benchmarks/document-analytics.json) covers a real prepared invoice and the nine-PDF dossier. Both correctly abstain from anomaly training. It also records the one-invoice Spark/DuckDB parity check; these bounded checks do not establish business anomaly accuracy.
 
-### Optional PySpark batch
+### Experimental Spark benchmark (not deployed)
+
+**DuckDB is the supported production and local analytics engine** (Bronze → Silver → Gold above). Spark is an optional scalability benchmark over the same completed exports. It is **not** part of the production Compose stack, the Azure VM deployment or the production image security gate.
+
 
 PySpark reads the same completed exports and performs exact-decimal aggregate/row-count parity checks against DuckDB. It runs as one bounded **`local[2]`** process, without a cluster or Azure service. It preserves the reviewed/VALID Gold gate and separates fields/currencies; results go to a new directory rather than the ETL database.
 
-**Experimental only:** the real PDF parity check passes, but the [Spark image security scan](https://github.com/quocvietphung/document-intelligence-lab/actions/runs/40959443968) reports high/critical findings in bundled Java dependencies of PySpark 4.2.1, including shaded Hadoop/Spark libraries. The ML worker image passes that scan. Spark is not approved for production, shared hosting or untrusted Parquet; it remains an explicit offline batch over this lab's own completed exports. The security gate stays failing until the dependencies are resolved; findings are not suppressed.
+**Why Spark is excluded:** the parity check passes, but Trivy reports unresolved HIGH/CRITICAL vulnerabilities in Java libraries bundled inside PySpark 4.2.1 (shaded Hadoop/Spark/Netty JARs, for example `netty-handler` and `lz4-java`); the scan on 2026-11-09 reported 62 findings (59 HIGH, 3 CRITICAL). They come from upstream artifacts bundled in the pinned PySpark wheel, not from this project's ETL code. Spark is therefore not approved for production, shared hosting or untrusted Parquet. Its tests and its real, unsuppressed image scan run in the separate [Spark research workflow](.github/workflows/spark-research.yml); a red result there does not mean the production deployment contains Spark.
 
 Copy the **scope/run pair** from **Document analytics → Parquet · PySpark**, then run:
 
@@ -403,7 +419,7 @@ flowchart TD
     JAVA -->|Private file spool · explicit benchmark request| CLASSIFIER[Offline TF-IDF / Logistic Regression · actual Java rule baseline]
     CLASSIFIER --> TRACK
     CLASSIFIER -->|Versioned experiment report · no document type changes| DB
-    LAYERS --> SPARK[Optional PySpark local batch · DuckDB parity]
+    LAYERS --> SPARK[Experimental PySpark benchmark · not deployed]
     JAVA --> OBS[Redis quotas · optional OpenTelemetry]
 ```
 
@@ -517,7 +533,18 @@ Labels and PDF hashes are recorded in each report. Synthetic labels come from ge
 
 ### CI and package releases
 
-Platform CI checks web, Java, ETL, local ML benchmarks, Keycloak and Docker/OIDC. Python CI checks **3.10–3.14**, wheel/sdist metadata, licence and package contents; its opt-in Docling smoke job downloads models explicitly. Pushing `master`/`develop` **does not publish PyPI or deploy Azure/Vercel**.
+Platform CI checks web, Java, ETL (including the PDF-based DuckDB production flow), local ML benchmarks, Keycloak and Docker/OIDC.
+
+| Workflow | Role |
+| --- | --- |
+| `Verify platform` | Production: web, Java, ETL, analytics, Keycloak, Docker/OIDC |
+| `Production dependency and image security` | Production, blocking: secret history, dependency audit, and Trivy HIGH/CRITICAL on every image this repository builds for the stack (API, web, ETL, analytics, M365); it first asserts that the production Compose stack has no Spark |
+| `M365 document evidence PoC` | Production, blocking for the M365 service: tests, lint, types, audit, image build, Trivy and health check |
+| `Spark research experiment (non-production, not deployed)` | Research only: Spark parity tests and the real Spark image scan, expected to stay red until upstream fixes the bundled JARs |
+
+`develop` and `master` currently have no branch protection. When it is enabled, require the three production workflows above and do not require the Spark research workflow. Third-party base images (PostgreSQL, Keycloak, Redis, Qdrant, ClamAV, Docling, Ollama) are pulled as published and are not part of this repository's image scan.
+
+Python CI checks **3.10–3.14**, wheel/sdist metadata, licence and package contents; its opt-in Docling smoke job downloads models explicitly. Pushing `master`/`develop` **does not publish PyPI or deploy Azure/Vercel**.
 
 The published package is **0.1.0a1**; source/wheel preview is **0.2.0a1**. A future release requires a reviewed matching `python-v<version>` tag, the manual `python-publish.yml` workflow and owner approval of the protected `pypi` environment. Its Trusted Publisher is scoped to this repository/workflow/environment. TestPyPI is not configured. Verify a clean installation before announcing a release; existing PyPI files and descriptions are not updated by README edits. [Release workflow](.github/workflows/python-publish.yml).
 
@@ -535,7 +562,8 @@ Stop all local services without deleting their data:
 ```bash
 OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose \
   -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.docling.yml \
-  -f docker-compose.nova-local.yml -f docker-compose.etl.yml stop
+  -f docker-compose.nova-local.yml -f docker-compose.etl.yml \
+  -f docker-compose.local-resources.yml -f docker-compose.m365.yml stop
 ```
 
 `storage-init`/`etl-init` exiting 0 is expected. Ports bind to loopback. Historical `credit-*` realm/service/volume names preserve compatibility; changing the Compose project name does not migrate data. [Docker diagnostics](docs/DOCKER_LOCAL.md#logs-and-troubleshooting).
