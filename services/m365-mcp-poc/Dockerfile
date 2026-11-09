@@ -6,12 +6,12 @@ RUN apk add --no-cache python-3.12-base=3.12.16-r0 py3.12-pip=26.2.2-r0 \
     && python3.12 -m venv /opt/venv
 WORKDIR /build
 COPY services/m365-mcp-poc/requirements.txt ./
-# Python's bundled venv seed can lag security fixes even when the application
-# lock is clean. Pin the patched build bootstrap explicitly because the venv is
-# copied into the runtime image and is therefore part of the shipped SBOM.
-RUN /opt/venv/bin/python -m pip install --disable-pip-version-check --no-cache-dir \
-      setuptools==78.1.1 \
-    && /opt/venv/bin/python -m pip install --disable-pip-version-check --no-cache-dir -r requirements.txt
+# Build/install tooling is unnecessary at runtime. Remove it after resolving
+# the locked application dependencies so vendored setuptools/wheel helpers do
+# not expand the shipped attack surface or SBOM.
+RUN /opt/venv/bin/python -m pip install --disable-pip-version-check --no-cache-dir -r requirements.txt \
+    && /opt/venv/bin/python -m pip uninstall --yes setuptools \
+    && /opt/venv/bin/python -m pip uninstall --yes pip
 
 FROM cgr.dev/chainguard/wolfi-base@sha256:0feab531471d2edfcca55f18883441cb7df598e724fa2dedf9985273f532eed7 AS runtime
 LABEL org.opencontainers.image.title="m365-document-evidence-poc" \
