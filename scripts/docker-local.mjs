@@ -1,12 +1,14 @@
 import {spawnSync,execFileSync} from 'node:child_process';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
+import {analyticsComposeFiles,composeFileArgs,productionComposeFiles} from './compose-files.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const localModel='qwen3:4b-instruct-2507-q4_K_M';
 export const ollamaImage='document-lab-ollama-cpu:0.40.6';
 export function validateModel(value){if(!/^[a-zA-Z0-9][a-zA-Z0-9_.:/-]{0,99}$/.test(value)||value.includes('..')||value.includes('://')||/(?:-cloud|:cloud)(?::.*)?$/i.test(value))throw Error('Select a local model identifier, not a URL or cloud model');return value;}
-export function localCompose(model=localModel,{analytics=false}={}){return {args:['compose','-f','docker-compose.yml','-f','docker-compose.platform.yml','-f','docker-compose.docling.yml','-f','docker-compose.nova-local.yml','-f','docker-compose.etl.yml','-f','docker-compose.local-resources.yml',...(analytics?['-f','docker-compose.ml.yml','--profile','analytics']:[])],env:{...process.env,OLLAMA_CHAT_MODEL:validateModel(model)}};}
+// The normal stack is exactly the production file list (Spark is never included; see compose-files.mjs).
+export function localCompose(model=localModel,{analytics=false}={}){return {args:['compose',...composeFileArgs(productionComposeFiles),...(analytics?[...composeFileArgs(analyticsComposeFiles),'--profile','analytics']:[])],env:{...process.env,OLLAMA_CHAT_MODEL:validateModel(model)}};}
 export function warmupRequest(model=localModel){return JSON.stringify({model:validateModel(model),prompt:'',stream:false,keep_alive:'5m',options:{num_ctx:4096}});}
 function run(args,options={}){const result=spawnSync('docker',args,{cwd:root,stdio:'inherit',...options});if(result.error||result.status!==0)throw Error('Docker step failed; existing documents and databases were not removed');return result;}
 function output(args){return execFileSync('docker',args,{cwd:root,encoding:'utf8',timeout:15000,stdio:['ignore','pipe','pipe']}).trim();}
@@ -43,7 +45,7 @@ async function main(){
   if(!flags.includes('--no-build')){
     // Do not compete with resident model/cache RAM while rebuilding the app.
     run([...args,'stop','ollama'],{env});
-    for(const service of ['credit-api','etl','web',...(flags.includes('--with-analytics')?['ml-worker']:[])])run([...args,'build',service],{env});
+    for(const service of ['credit-api','etl','web','m365-poc',...(flags.includes('--with-analytics')?['ml-worker']:[])])run([...args,'build',service],{env});
   }
   run([...args,'up','-d','--no-build','--wait','--wait-timeout','420'],{env});
   if(flags.includes('--warmup')){

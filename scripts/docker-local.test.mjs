@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {localCompose,localModel,validateModel,freeDiskKb,warmupRequest} from './docker-local.mjs';
 import {sparkBatchArgs} from './run-document-spark.mjs';
+import {experimentalComposeFiles,missingServices,productionComposeFiles,sparkFindings} from './compose-files.mjs';
 test('analytics is explicit and Spark remains a separate bounded one-shot batch',()=>{
   assert.ok(!localCompose().args.includes('docker-compose.ml.yml'));
   assert.ok(localCompose(localModel,{analytics:true}).args.includes('docker-compose.ml.yml'));
@@ -32,4 +33,23 @@ test('Docker disk guard checks Docker filesystem capacity, not host free space',
   assert.ok(freeDiskKb('Filesystem 1024-blocks Used Available Capacity Mounted\noverlay 60000000 40000000 20000000 66% /')>8*1024*1024);
   assert.throws(()=>freeDiskKb('overlay 60000000 59000000 1000000 98% /'));assert.throws(()=>freeDiskKb('unavailable'));
   assert.ok(freeDiskKb('overlay 60000000 57000000 3000000 95% /',1)>1024*1024);
+});
+
+test('the normal stack uses only production Compose files and never Spark',()=>{
+  for(const analytics of [false,true]){
+    const {args}=localCompose(undefined,{analytics});
+    const files=args.filter((_,index)=>args[index-1]==='-f');
+    for(const file of experimentalComposeFiles)assert.ok(!files.includes(file),`${file} must not be in the normal stack`);
+    assert.ok(!files.some(file=>/spark/i.test(file)));
+    assert.ok(files.includes('docker-compose.m365.yml'));
+    assert.ok(!args.includes('spark'));
+  }
+  assert.ok(!productionComposeFiles.some(file=>/spark/i.test(file)));
+});
+test('the production check detects Spark services, images and builds',()=>{
+  assert.deepEqual(sparkFindings({services:{web:{image:'credit-intelligence-lab-web'}}}),[]);
+  assert.equal(sparkFindings({services:{spark:{image:'x'}}}).length,1);
+  assert.equal(sparkFindings({services:{batch:{image:'document-lab-spark:1'}}}).length,1);
+  assert.equal(sparkFindings({services:{batch:{build:{context:'.',dockerfile:'services/document-spark/Dockerfile'}}}}).length,1);
+  assert.deepEqual(missingServices({services:{web:{}}},['web','etl']),['etl']);
 });
