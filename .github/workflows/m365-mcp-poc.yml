@@ -87,7 +87,7 @@ jobs:
         run: |
           docker run -d --name poc-ci -p 127.0.0.1:8765:8765 --read-only --tmpfs /tmp \
             -e M365_POC_ALLOW_UNAUTHENTICATED_LOCAL_DOCKER=1 m365-document-evidence-poc:ci
-          for i in $(seq 1 30); do
+          for _ in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:8765/health; then exit 0; fi
             sleep 2
           done
