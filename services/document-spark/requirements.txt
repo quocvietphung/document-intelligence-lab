@@ -1,2 +1,2 @@
 duckdb==1.4.3
-pyspark==4.3.0
+pyspark==4.2.1
