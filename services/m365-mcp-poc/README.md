@@ -75,13 +75,22 @@ python3.12 -m venv .venv
 .venv/bin/uvicorn m365_poc.api:create_app --factory --host 127.0.0.1 --port 8765
 ```
 
-Docker (isolated profile, published on host loopback only, read-only root filesystem, non-root user, resource limits):
+Docker as an optional service in the main `credit-intelligence-lab` project (recommended):
 
 ```bash
-cd services/m365-mcp-poc
-docker compose -f docker-compose.yml up -d --build
-docker compose -f docker-compose.yml down        # the PoC has no persistent store or volume
+docker compose -f docker-compose.yml -f docker-compose.platform.yml \
+  -f docker-compose.m365.yml up -d --build --no-deps m365-poc
+curl --fail http://127.0.0.1:8765/health
+docker compose -f docker-compose.yml -f docker-compose.platform.yml \
+  -f docker-compose.m365.yml stop m365-poc
+docker compose -f docker-compose.yml -f docker-compose.platform.yml \
+  -f docker-compose.m365.yml rm -f m365-poc
 ```
+
+This produces the predictable Compose container name `credit-intelligence-lab-m365-poc-1`, publishes only
+on host loopback, uses a read-only root filesystem and a non-root user, and applies resource limits. It has
+no persistent store or volume. The existing `services/m365-mcp-poc/docker-compose.yml` remains available for
+isolated component development, but it intentionally creates a separate `m365-poc` Compose project.
 
 Configuration (all optional for the local demo):
 

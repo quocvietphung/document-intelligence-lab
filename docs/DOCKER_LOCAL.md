@@ -21,6 +21,34 @@ docker compose -f docker-compose.yml -f docker-compose.platform.yml \
   up --build -d --wait --wait-timeout 900
 ```
 
+### Optional Microsoft 365 evidence PoC
+
+The read-only M365 document-evidence service can join the same Compose project without enabling Microsoft
+Graph or Azure. Its default is a fictional local dataset with deterministic answers; live providers remain
+explicit opt-ins.
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.platform.yml \
+  -f docker-compose.m365.yml up -d --build --no-deps m365-poc
+curl --fail http://127.0.0.1:8765/health
+docker compose -f docker-compose.yml -f docker-compose.platform.yml \
+  -f docker-compose.m365.yml ps m365-poc
+```
+
+The service appears as `credit-intelligence-lab-m365-poc-1`, binds only to `127.0.0.1:8765`, runs as a
+non-root user with a read-only filesystem and has no database or persistent volume. Stop only this optional
+service with:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.platform.yml \
+  -f docker-compose.m365.yml stop m365-poc
+docker compose -f docker-compose.yml -f docker-compose.platform.yml \
+  -f docker-compose.m365.yml rm -f m365-poc
+```
+
+See [`services/m365-mcp-poc/README.md`](../services/m365-mcp-poc/README.md) for the API, MCP tools, Entra
+boundary and the explicit Graph/Azure configuration.
+
 There is **no required `.env` file** for this profile. Copying `.env.example` alone does not configure the Java container: Compose supplies its environment. The smaller base file alone is for limited OAuth checks, not the complete research platform.
 
 ## Expected state and login
