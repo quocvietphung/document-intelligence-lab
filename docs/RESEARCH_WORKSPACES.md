@@ -5,7 +5,7 @@ Use the current document evidence to build reproducible references and compariso
 ## Start from an original
 
 1. Sign in at `http://localhost:3000/en` (or `/de`, `/vi`). Local credentials: `advisor.demo` / `demo-password`.
-2. Choose a domain and dossier. Open **Documents & review**; preview and explicitly analyze an approved fictional PDF. Private official DATEV samples remain in the banking domain and are never put into Git/public assets.
+2. Choose a domain and dossier. Open **Documents & evidence**; preview and explicitly analyze an approved fictional PDF. Private official DATEV samples remain in the banking domain and are never put into Git/public assets.
 3. Open **AI Experiments**. Select the original document/page and open its PDF. Read the expected values yourself; do not copy model predictions and call them ground truth.
 4. Add fields using their extraction key (e.g. `netIncome`, `payoutAmount`, `premium`, `invoiceTotal`). Missing field keys are permitted. Add retrieval questions with all independently checked relevant pages. Mark a question unanswerable when no source supplies the requested value, and keep related questions in one tuning/held-out group.
 5. Name the reference version, acknowledge the independent source check and save. This creates an immutable `document-reference` record in `lab_records`, scoped to the verified tenant and dossier.
@@ -19,7 +19,7 @@ Use the current document evidence to build reproducible references and compariso
 - Runs use local isolated ranking and the configured embedding implementation. They do not overwrite Qdrant's live case index or claim to benchmark the Qdrant service. The ranking comparison uses no LLM judge. RRF is rank fusion, not a learned reranker. The optional learned reranker is not enabled by this reference pack.
 - A SHA-256 fingerprint binds labels/results to the source records (pages, fields, tables and provenance). This is an extraction-record fingerprint, not a cryptographic attestation of the original PDF bytes. Changed sources require a new independently checked reference version. Stale dossier versions return HTTP 409.
 
-## Data Pipelines
+## Processing & data
 
 The processing tab retains the actual persistent upload queue, malware scanning, extraction, retry history and retention behavior. The **Data assets & Azure** tab provides logical export layers:
 
@@ -88,7 +88,7 @@ TEST_RAG_PDFS=prepare node scripts/test-oauth.mjs
 TEST_RAG_PDFS=measure node scripts/test-oauth.mjs
 ```
 
-Preparation creates a separate research dossier, uploads the pinned PDFs through the existing ClamAV/Docling queue and checks that all originals were saved. It never disables scanning or uploads to Azure. Measurement verifies each authorized stored original's SHA-256, saves source-bound labels and queues the actual Java ranking experiments. Results persist in PostgreSQL and appear in **Research lab → Experiments**. The helper prints the case-specific preview link. Private row-level results are in `.local/rag-benchmark/docling-results.json`.
+Preparation creates a separate research dossier, uploads the pinned PDFs through the existing ClamAV/Docling queue and checks that all originals were saved. It never disables scanning or uploads to Azure. Measurement verifies each authorized stored original's SHA-256, saves source-bound labels and queues the actual Java ranking experiments. Results persist in PostgreSQL and appear in **AI experiments**. The helper prints the case-specific preview link. Private row-level results are in `.local/rag-benchmark/docling-results.json`.
 
 Unanswerable references are retained separately and excluded from positive retrieval metrics. Candidate passages for them do not establish an answer or a correct model refusal; that needs a separate generation/answerability test. Empty denominators remain unmeasured. Ranking p50/p95 includes local embedding/ranking and warm caches; it does not measure Qdrant service latency or end-to-end Nova generation. Keep cold-start and concurrent-load measurements separate.
 

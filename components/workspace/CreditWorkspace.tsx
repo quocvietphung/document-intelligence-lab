@@ -1,6 +1,6 @@
 "use client";
 import {useCallback,useEffect,useMemo,useRef,useState, type FormEvent} from "react";
-import {ArrowUpRight,CheckCircle2,ChevronDown,Compass,FileSearch,FlaskConical,GitBranch,Layers3,LayoutDashboard,LogOut,Menu,MessageSquareText,Plus,RefreshCw,ScanSearch,Search,ShieldCheck,Square,Trash2,Upload,X} from "lucide-react";
+import {ArrowUpRight,CheckCircle2,ChevronDown,Compass,Eye,FileSearch,FlaskConical,FolderSearch,Inbox,ListChecks,ListTodo,LogOut,Menu,MessageSquareText,PlugZap,Plus,RefreshCw,ScanSearch,ScrollText,Search,Settings2,ShieldCheck,Square,Trash2,Upload,X} from "lucide-react";
 import {useChat} from "@ai-sdk/react";
 import {DefaultChatTransport} from "ai";
 import {useAuth} from "@/components/auth/KeycloakProvider";
@@ -31,7 +31,7 @@ import {documentReceiptSchema,type DocumentImportOutcome} from "@/lib/document-r
 import {DocumentEvidence} from "./DocumentEvidence";
 import {documentText} from "@/lib/document-language";
 import {caseChatPayload} from "@/lib/credit-chat";
-import {novaWelcomeMessage,welcomeSessionKey} from "@/lib/nova-welcome";
+import {novaWelcomeMessage} from "@/lib/nova-welcome";
 import {NovaGuideCard} from "./NovaGuideCard";
 import {NovaMessageText} from "./NovaMessageText";
 import {datevReference,hasOnlyDatevPayroll,legacyPayroll,datevLibraryUx} from "@/lib/datev-reference";
@@ -47,11 +47,11 @@ import {TrustWorkbench} from "./TrustWorkbench";
 import {NovaAnswerActions} from "./NovaEvidence";
 import {trustAnswerSchema,citationTarget,type DraftOptions,type TrustSection} from "@/lib/nova-trust";
 import {trustText} from "@/lib/nova-trust-language";
-import {workspaceNavigation,workspacePresentation,workspaceSection,workspaceSubpages} from "@/lib/workspace-presentation";
+import {workspaceNavigation,workspacePageName,workspacePresentation} from "@/lib/workspace-presentation";
 import type {EvidenceContext} from '@/lib/evidence-inspection';
 import {novaRunSchema,novaRunText} from '@/lib/nova-runs';
 type Tab=WorkspaceTab;
-const navigationIcons={overview:LayoutDashboard,documents:FileSearch,pipeline:Layers3,studio:FlaskConical,experiments:ScanSearch,controls:ShieldCheck,operations:GitBranch};
+const navigationIcons:Record<WorkspaceTab,typeof FileSearch>={overview:ListTodo,integrations:PlugZap,pipeline:Inbox,documents:FileSearch,controls:ListChecks,audit:ScrollText,studio:FlaskConical,experiments:ScanSearch,banking:Compass,evaluation:FolderSearch,trust:Eye,operations:Settings2};
 
 function Copilot({item,locale,open,onOpen,close,initialQuestion,initialOptions,onDraft,openSource,navigate,currentTab,onPageGuide,pageGuideLabel,onTrust,onAnswerHistory,aiCapabilities}:{item:WorkspaceCase;locale:string;open:boolean;onOpen:()=>void;close:()=>void;initialQuestion?:string;initialOptions?:DraftOptions;onDraft:(question:string,options:DraftOptions)=>void;openSource:(id:string,context?:EvidenceContext)=>void;navigate:(tab:WorkspaceTab)=>void;currentTab:WorkspaceTab;aiCapabilities?:AICapabilities;onAnswerHistory?:()=>void} & NovaPageGuide) {
   const auth=useAuth(); const base=workspaceText(locale),d=documentText(locale); const t=(key:string)=>key==="chatReady"?d("greeting"):key==="sources"?d("sources"):base(key); const [text,setText]=useState(initialQuestion||""); const [mode,setMode]=useState<string>();
@@ -105,8 +105,7 @@ export function CreditWorkspace({locale}:{locale:string}) {
   const d=publicDemoText(locale); const baseText=workspaceText(locale); const domainCopy=domainText(locale); const t=(key:string)=>["studio","controls","operations","evaluation"].includes(key)?platformText(locale)(key):key==="banking"?domainCopy.research:baseText(key); const auth=useAuth();
   const router=useRouter();
   const ai=aiText(locale),presentation=workspacePresentation(locale);
-  const sectionLabel=(page:WorkspaceTab)=>page==='experiments'?presentation.researchLab:page==='controls'?presentation.reviewCenter:t(page);
-  const subpageLabel=(page:WorkspaceTab)=>page==='experiments'?presentation.experiments:page==='banking'?presentation.domainInsights:page==='evaluation'?presentation.sourceInventory:t(page);
+  const sectionLabel=(page:WorkspaceTab)=>workspacePageName(locale,page);
   const [aiCapabilities,setAICapabilities]=useState<AICapabilities>();
   useEffect(()=>{
     const controller=new AbortController();
@@ -145,15 +144,6 @@ export function CreditWorkspace({locale}:{locale:string}) {
   const writeInFlight=useRef(false);
   const [uploading,setUploading]=useState(false);
   const item=auth.authenticated?(domainCases.find(c=>c.id===selected)||domainCases.find(hasOnlyDatevPayroll)||domainCases.find(c=>c.documents.some(doc=>datevReference(doc.name)))||domainCases[0]):undefined;
-  const welcomeKey=welcomeSessionKey(auth),hasCase=Boolean(item);
-  const welcomedSession=useRef<string|undefined>(undefined);
-  useEffect(()=>{
-    if(!welcomeKey){welcomedSession.current=undefined;return;}
-    if(!hasCase||welcomedSession.current===welcomeKey)return;
-    // Set the marker inside the timer so StrictMode cleanup cannot swallow the greeting.
-    const timer=window.setTimeout(()=>{welcomedSession.current=welcomeKey;setChat(true);},0);
-    return()=>window.clearTimeout(timer);
-  },[welcomeKey,hasCase]);
   const Chat=auth.mode==="demo"?DemoCopilot:Copilot;
   const canWrite=auth.mode==="keycloak"&&auth.roles.some(r=>r==="ADVISOR"||r==="ADMIN");
   const canReview=auth.roles.some(r=>r==="REVIEWER"||r==="ADMIN");
@@ -237,16 +227,17 @@ export function CreditWorkspace({locale}:{locale:string}) {
   const shown=domainCases.filter(c=>searchText(`${c.applicant} ${c.id} ${c.purpose}`).includes(searchText(query)));
   const legacyDocs=item?.documents.filter(legacyPayroll)||[];
   const payrollUx=datevLibraryUx(locale);
+  const navCount=(id:WorkspaceTab)=>!item?0:id==='overview'?item.issues.length:id==='documents'?item.documents.filter(d=>d.status==='review').length:0;
   function documentRow(doc:CreditDocument){return <DocumentResultCard key={doc.id} doc={doc} locale={locale} open={inspect} ask={askNova} historical/>;}
   return <div className="workspace-shell">
     <a className="workspace-skip-link" href="#workspace-content" onClick={event=>{event.preventDefault();document.getElementById('workspace-content')?.focus();}}>{presentation.skip}</a>
     <aside className={`workspace-sidebar ${menu?"sidebar-open":""}`}><a href={`/${locale}`} className="brand"><span className="brand-icon"><FileSearch size={23}/></span><span>Document Intelligence<small>{t("lab")}</small></span></a>
       <button className="icon-button sidebar-close" onClick={()=>setMenu(false)} aria-label={t("close")}><X/></button>
-      <nav className="workspace-nav-groups" aria-label={t('workspace')}>{workspaceNavigation.map(group=><section key={group.title}><h2>{t(group.title)}</h2>{group.pages.map(id=>{const Icon=navigationIcons[id],active=workspaceSection(tab)===id;return <button key={id} data-page-tour={`menu-${id}`} className={`nav-button ${active?"nav-active":""}`} aria-label={sectionLabel(id)} aria-current={active?"page":undefined} onClick={()=>navigate(id)}><Icon size={19}/><span className="nav-label">{sectionLabel(id)}</span>{["studio","documents"].includes(id)?<span className="nav-ai-mark" aria-hidden="true">{auth.mode==="demo"?"DEMO":ai.ai}</span>:null}</button>;})}</section>)}</nav>
+      <nav className="workspace-nav-groups" aria-label={t('workspace')}>{workspaceNavigation.map(group=><section key={group.title||'start'}>{group.title?<h2>{workspacePageName(locale,group.title)}</h2>:null}{group.pages.map(id=>{const Icon=navigationIcons[id],active=tab===id,count=navCount(id);return <button key={id} data-page-tour={`menu-${id}`} className={`nav-button ${active?"nav-active":""}`} aria-label={count?`${sectionLabel(id)} (${count})`:sectionLabel(id)} aria-current={active?"page":undefined} onClick={()=>navigate(id)}><Icon size={19}/><span className="nav-label">{sectionLabel(id)}</span>{count?<span className="nav-count" aria-hidden="true">{count}</span>:null}{["studio","documents"].includes(id)?<span className="nav-ai-mark" aria-hidden="true">{auth.mode==="demo"?"DEMO":ai.ai}</span>:null}</button>;})}</section>)}</nav>
       <div className="sidebar-footer"><ShieldCheck size={22}/><strong>{auth.mode==="demo"?d("badge"):t("security")}</strong><label htmlFor="workspace-language">{t("language")}</label><select id="workspace-language" value={locale} onChange={event=>router.replace(workspaceLocalePath(`#${tab}`,item?.id),{locale:event.target.value})}><option value="en">English</option><option value="de">Deutsch</option><option value="vi">Tiếng Việt</option></select></div>
     </aside>
     <main className="workspace-main"><header className="workspace-header workspace-header-compact">
-      <div className="workspace-title-group"><button className="icon-button mobile-menu" onClick={()=>setMenu(true)} aria-label={t("workspace")}><Menu size={21}/></button><div><h1>{sectionLabel(workspaceSection(tab))}</h1><small title={t('notice')}>{presentation.research}</small></div></div>
+      <div className="workspace-title-group"><button className="icon-button mobile-menu" onClick={()=>setMenu(true)} aria-label={t("workspace")}><Menu size={21}/></button><div><h1>{sectionLabel(tab)}</h1><small title={t('notice')}>{presentation.research}</small></div></div>
       <div className="workspace-header-actions">{auth.authenticated&&auth.mode==='keycloak'?<button className="icon-button" aria-label={trustText(locale).open} title={trustText(locale).open} onClick={()=>openTrust()}><ShieldCheck size={19}/></button>:null}<span className="workspace-user">{auth.authenticated?auth.displayName:''}</span>{auth.mode==="demo"?<span className="lab-badge">{d("badge")}</span>:auth.authenticated?<button className="button-secondary workspace-session-action" disabled={!auth.ready} onClick={auth.logout} aria-label={t('signOut')} title={t('signOut')}><LogOut size={16}/><span>{t('signOut')}</span></button>:null}</div>
     </header><div id="workspace-content" tabIndex={-1} className="workspace-content workspace-content-compact">
         {auth.error?<p className="notice-error" role="alert">{auth.authenticated?presentation.sessionError:presentation.signInError}</p>:null}
@@ -261,9 +252,8 @@ export function CreditWorkspace({locale}:{locale:string}) {
           </div></details>
           {error?<div className="notice-error workspace-recovery" role="alert"><p>{t(error)}</p>{error==="sessionExpired"?<button className="button-secondary" onClick={auth.login}>{t("signIn")}</button>:error==="serviceUnavailable"?<button className="button-secondary" disabled={loading} onClick={()=>void refresh()}><RefreshCw size={16}/>{t("refresh")}</button>:null}</div>:null}{success?<p className="notice-success" role="status">{t("saved")}</p>:null}
           {item?<>
-            {workspaceSubpages(tab).length?<nav className="workspace-section-tabs" aria-label={presentation.sectionNavigation}>{workspaceSubpages(tab).map(page=><button key={page} type="button" aria-current={tab===page?'page':undefined} onClick={()=>navigate(page)}>{subpageLabel(page)}</button>)}</nav>:null}
             {tab==="overview"?<WorkspaceAIOverview caseId={item.id} locale={locale} demo={auth.mode==="demo"} documentMode={analysis?.mode} capabilities={aiCapabilities} navigate={navigate} openNova={()=>askNova()} documents={item.documents} openTrust={auth.mode==='keycloak'?openTrust:undefined}><section className="surface workspace-attention"><header><h3 className="section-heading">{t("issues")} <span>{item.issues.length}</span></h3><p>{t('documentsCount')}: {item.documents.filter(d=>d.status!=='missing').length} · {t('progress')}: {item.progress}%</p></header>{item.issues.length?item.issues.map((issue,i)=><div className="review-item" key={i}><span className="review-dot"/><div><strong>{t(issue.title.includes("Missing")?"missingDocument":issue.title.replaceAll(" ","_"))}</strong><p>{t(issue.detail)}</p></div><button className="button-link" onClick={()=>{const doc=item.documents.find(d=>d.id===issue.documentId);if(doc)inspect(doc);else navigate("documents");}}>{t("inspect")} →</button></div>):<p className="mt-4 text-slate-500">{t("noIssues")}</p>}</section></WorkspaceAIOverview>:null}
-            {tab!=="overview"&&tab!=="integrations"?<AIPageBanner page={tab} locale={locale} capabilities={aiCapabilities} demo={auth.mode==="demo"} ask={askNova}/>:null}
+            {tab!=="overview"&&tab!=="integrations"&&tab!=="trust"?<AIPageBanner page={tab} locale={locale} capabilities={aiCapabilities} demo={auth.mode==="demo"} ask={askNova}/>:null}
             {tab==='integrations'?<IntegrationsWorkbench key={`integrations:${item.id}`} caseId={item.id} caseVersion={item.version||0} locale={locale} documents={item.documents} navigate={navigate} refreshCase={()=>void refresh()}/>:null}
             {tab==='experiments'?<DocumentResearchPanel key={`${item.id}:${item.version}`} caseId={item.id} caseVersion={item.version||0} locale={locale} view="experiments" inspect={(id,page)=>{const doc=item.documents.find(d=>d.id===id);if(doc)inspect(doc,page);}}/>:null}
             {tab==="documents"?<section className="surface"><header className="section-toolbar"><div><h2 className="section-heading">{presentation.upload}</h2><p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-500">{analysis&&analysis.mode!=="local"?t("uploadHintAzure").replace("Azure Document Intelligence",analysis.mode==="docling"?"Docling · Local AI":"Azure Document Intelligence").replace("{pages}",String(analysis.maxPages)):t("uploadHint")}</p></div><input ref={inputFile} type="file" className="hidden" accept={analysis&&analysis.mode!=="local"?".pdf,.png,.jpg,.jpeg":".pdf,.png,.jpg,.jpeg,.txt"} onChange={event=>{const file=event.target.files?.[0];event.target.value="";if(file)uploadFile(file);}}/><button data-page-tour="documents-upload" className="button-primary" disabled={!canWrite||busy} onClick={()=>inputFile.current?.click()}><Upload size={16}/>{t(busy?"loading":"upload")}</button></header>
@@ -272,7 +262,7 @@ export function CreditWorkspace({locale}:{locale:string}) {
               <DocumentAnalysisWorkspace key={`document-analysis:${item.id}`} caseId={item.id} documents={item.documents} locale={locale} busy={busy} canImport={canWrite&&!!analysis} azure={!!analysis&&analysis.mode.startsWith("azure")} importSample={uploadSample} refreshCase={refresh} open={inspect} ask={askNova} technical={()=>navigate("pipeline")} showPayroll={domainOf(item.domain)==='banking'} domain={domainOf(item.domain)} guiding={guide?.page==='documents'}/>
               {legacyDocs.length?<details className="payroll-legacy"><summary>{payrollUx.legacy} · {legacyDocs.length}</summary><p>{payrollUx.kept}</p>{legacyDocs.map(documentRow)}</details>:null}</section>:null}
             {(["studio","pipeline","controls","operations","evaluation"] as string[]).includes(tab)?<PlatformWorkbench key={item.id} domain={item.domain} caseId={item.id} locale={locale} view={tab as "studio"|"pipeline"|"controls"|"operations"|"evaluation"} guiding={guide?.page===tab} caseVersion={item.version||0} documents={item.documents} changed={refresh} ask={askNova} inspect={(id,page)=>{const doc=item.documents.find(d=>d.id===id);if(doc)inspect(doc,page);else navigate("documents");}}/>:null}
-            {auth.mode==='keycloak'&&tab==='controls'?<TrustWorkbench key={`trust-${item.id}`} caseId={item.id} caseVersion={item.version||0} locale={locale} onDraft={askNova} openSource={openCitation} initialSection="tasks"/>:null}
+            {tab==='trust'?auth.mode==='keycloak'?<TrustWorkbench key={`trust-${item.id}`} caseId={item.id} caseVersion={item.version||0} locale={locale} onDraft={askNova} openSource={openCitation} initialSection="tasks"/>:<section className="surface p-6"><p className="tone-secondary">{presentation.trustSignIn}</p></section>:null}
             {tab==="audit"?<section className="surface p-6"><h3 className="section-heading">{t("activity")}</h3><div className="overflow-x-auto"><table data-page-tour="audit-table" className="audit-table"><thead><tr><th>{t("time")}</th><th>{t("event")}</th><th>{t("actor")}</th></tr></thead><tbody>{item.audit.toReversed().map(([time,event,actor],i)=><tr key={i}><td>{time}</td><td>{t(event)}</td><td><code>{actor}</code></td></tr>)}</tbody></table></div></section>:null}
           </>:null}</>}
         {tab==="banking"&&item?<DomainResearch locale={locale} item={item} ask={askNova} inspect={inspect}/>:null}
@@ -283,7 +273,7 @@ export function CreditWorkspace({locale}:{locale:string}) {
     {inspected&&item?<ModalSurface wide title={inspected.name} label={t("close")} close={()=>{if(!busy)setInspected(null);}}><p className="document-review-instruction">{inspected.originalAvailable?documentText(locale)("review"):t("fixture")}</p><DocumentEvidence context={evidenceContext} caseVersion={item.version||0} onOcrSaved={updated=>{setCases(list=>list.map(c=>c.id===updated.id?updated:c));setInspected(updated.documents.find(d=>d.id===inspected.id)||null);}} initialPage={inspectedPage} onExplain={question=>{setInspected(null);askNova(question);}} key={inspected.id} doc={inspected} caseId={item.id} locale={locale} editable={canReview&&!!inspected.originalAvailable&&!busy} values={reviewValues} onChange={(index,value)=>setReviewValues(v=>v.map((previous,i)=>i===index?value:previous))}/>
       {error?<p className="notice-error" role="alert">{t(error)}</p>:null}<div className="mt-6 flex flex-wrap justify-end gap-2">{inspected.originalAvailable?<button className="button-secondary" onClick={()=>void original(inspected)}>{t("original")}</button>:null}<button className="button-primary" disabled={!canReview||!inspected.originalAvailable||!inspected.fields?.length||reviewValues.some(v=>!v.trim())||busy} onClick={()=>void request(`/api/cases/${item.id}/documents/${inspected.id}/review`,"POST",JSON.stringify({version:item.version||0,values:reviewValues}))}><CheckCircle2 size={17}/>{t(busy?"loading":"confirm")}</button></div></ModalSurface>:null}
     {trustOpen&&item&&auth.mode==='keycloak'?<ModalSurface wide title={trustText(locale).title} label={t('close')} close={()=>setTrustOpen(false)}><TrustWorkbench initialSection={trustSection} key={`${item.id}:${trustSection}`} caseId={item.id} caseVersion={item.version||0} locale={locale} onDraft={askNova} openSource={openCitation}/></ModalSurface>:null}
-    {item&&auth.authenticated?<div hidden={Boolean(editor||inspected||trustOpen)}><Chat aiCapabilities={aiCapabilities} key={`${item.id}:${auth.tenantId}:${auth.displayName}`} item={item} locale={locale} open={chat} onOpen={()=>setChat(true)} navigate={navigate} currentTab={tab} onPageGuide={startPageGuide} pageGuideLabel={`${guideText.start} · ${t(tab)}`} openSource={openCitation} initialQuestion={chatQuestion} initialOptions={chatOptions} onDraft={askNova} onTrust={auth.mode==='keycloak'?()=>openTrust():undefined} onAnswerHistory={()=>openTrust('history')} close={()=>{setChat(false);setChatQuestion(undefined);}}/></div>:null}
+    {item&&auth.authenticated?<div hidden={Boolean(editor||inspected||trustOpen)}><Chat aiCapabilities={aiCapabilities} key={`${item.id}:${auth.tenantId}:${auth.displayName}`} item={item} locale={locale} open={chat} onOpen={()=>setChat(true)} navigate={navigate} currentTab={tab} onPageGuide={startPageGuide} pageGuideLabel={`${guideText.start} · ${sectionLabel(tab)}`} openSource={openCitation} initialQuestion={chatQuestion} initialOptions={chatOptions} onDraft={askNova} onTrust={auth.mode==='keycloak'?()=>openTrust():undefined} onAnswerHistory={()=>openTrust('history')} close={()=>{setChat(false);setChatQuestion(undefined);}}/></div>:null}
     {guide&&auth.authenticated&&!editor&&!inspected?<PageTour locale={locale} page={guide.page} domain={item?.domain} step={guide.step} onStep={step=>setGuide(previous=>previous?{...previous,step}:null)} close={()=>setGuide(null)}/>:null}
   </div>;
 }

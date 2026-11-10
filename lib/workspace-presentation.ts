@@ -23,7 +23,7 @@ const en = {
   search: "Search", status: "Status", sort: "Sort", newest: "Newest first", oldest: "Oldest first", filename: "Filename",
   clear: "Reset filters", noMatches: "No documents match these filters.", shown: "shown", document: "Document", evidence: "Source checks", actions: "Actions",
   resultSearch: "Search filename or document type", allResults: "All results", awaitingReview: "Awaiting review", verified: "Human-verified",
-  stages: "Processing stages", skip: "Skip to workspace content",
+  stages: "Processing stages", skip: "Skip to workspace content", trustSignIn: "AI transparency needs a signed-in lab account. Sign in to see answer history, review tasks and AI governance.",
   signInError: "Could not complete sign-in. Choose Sign in to retry.", sessionError: "The session action could not be completed. Retry your sign-in or sign-out action.",
 };
 const de: typeof en = {
@@ -49,7 +49,7 @@ const de: typeof en = {
   search: "Suchen", status: "Status", sort: "Sortieren", newest: "Neueste zuerst", oldest: "Älteste zuerst", filename: "Dateiname",
   clear: "Filter zurücksetzen", noMatches: "Keine Dokumente entsprechen diesen Filtern.", shown: "angezeigt", document: "Dokument", evidence: "Quellprüfung", actions: "Aktionen",
   resultSearch: "Dateiname oder Dokumenttyp suchen", allResults: "Alle Ergebnisse", awaitingReview: "Prüfung ausstehend", verified: "Menschlich bestätigt",
-  stages: "Verarbeitungsschritte", skip: "Zum Arbeitsbereich springen",
+  stages: "Verarbeitungsschritte", skip: "Zum Arbeitsbereich springen", trustSignIn: "KI-Transparenz braucht ein angemeldetes Lab-Konto. Melde dich an, um Antwortverlauf, Prüfaufgaben und KI-Steuerung zu sehen.",
   signInError: "Anmeldung nicht abgeschlossen. Wähle Anmelden, um es erneut zu versuchen.", sessionError: "Die Sitzungsaktion konnte nicht abgeschlossen werden. Wiederhole die An- oder Abmeldung.",
 };
 const vi: typeof en = {
@@ -75,7 +75,7 @@ const vi: typeof en = {
   search: "Tìm kiếm", status: "Trạng thái", sort: "Sắp xếp", newest: "Mới nhất trước", oldest: "Cũ nhất trước", filename: "Tên tệp",
   clear: "Đặt lại bộ lọc", noMatches: "Không có tài liệu phù hợp với bộ lọc.", shown: "đang hiện", document: "Tài liệu", evidence: "Kiểm tra nguồn", actions: "Thao tác",
   resultSearch: "Tìm tên tệp hoặc loại tài liệu", allResults: "Mọi kết quả", awaitingReview: "Chờ kiểm duyệt", verified: "Đã được người kiểm duyệt",
-  stages: "Các bước xử lý", skip: "Đến nội dung chính",
+  stages: "Các bước xử lý", skip: "Đến nội dung chính", trustSignIn: "Minh bạch AI cần tài khoản lab đã đăng nhập. Đăng nhập để xem lịch sử câu trả lời, nhiệm vụ kiểm duyệt và quản trị AI.",
   signInError: "Chưa hoàn tất đăng nhập. Bấm Đăng nhập để thử lại.", sessionError: "Chưa hoàn tất thao tác phiên đăng nhập. Hãy thử đăng nhập hoặc đăng xuất lại.",
 };
 export const workspacePresentationLanguages = {en, de, vi};
@@ -83,18 +83,33 @@ export function workspacePresentation(locale: string) {
   return workspacePresentationLanguages[locale === "vi" ? "vi" : locale === "de" ? "de" : "en"];
 }
 
+/**
+ * Navigation follows the work: take documents in, review them, analyse, then govern.
+ * Every page is one click away; there are no hidden subpages and no page-level tab rows.
+ * Hashes stay the same, so Nova links and page tours keep working.
+ */
 export const workspaceNavigation = [
-  {title:'groupDocuments',pages:['overview','documents','pipeline']},
-  {title:'groupResearch',pages:['studio','experiments']},
-  {title:'groupOperations',pages:['controls','operations']},
-] as const;
-const sectionPages:Partial<Record<WorkspaceTab,readonly WorkspaceTab[]>> = {
-  experiments:['experiments','banking','evaluation'], operations:['operations','audit'], pipeline:['pipeline','integrations'],
+  {title:'',pages:['overview']},
+  {title:'intake',pages:['integrations','pipeline']},
+  {title:'review',pages:['documents','controls','audit']},
+  {title:'analysis',pages:['studio','experiments','banking','evaluation']},
+  {title:'governance',pages:['trust','operations']},
+] as const satisfies readonly {title:string;pages:readonly WorkspaceTab[]}[];
+export type WorkspaceGroup=Exclude<typeof workspaceNavigation[number]['title'],''>;
+
+type PageNames=Record<WorkspaceTab|WorkspaceGroup,string>;
+/** The single name of each page and group. The sidebar, page title, page tour and Nova catalog all use it. */
+export const workspacePageNameLanguages:Record<'en'|'de'|'vi',PageNames>={
+  en:{overview:'Tasks',integrations:'Sources & integrations',pipeline:'Processing & data',documents:'Documents & evidence',controls:'Reconciliation',audit:'Activity log',
+    studio:'AI Studio',experiments:'AI experiments',banking:'Domain insights',evaluation:'Document research',trust:'AI transparency',operations:'Operations',
+    intake:'Intake',review:'Review',analysis:'Analysis',governance:'Governance'},
+  de:{overview:'Aufgaben',integrations:'Quellen & Integrationen',pipeline:'Verarbeitung & Daten',documents:'Dokumente & Belege',controls:'Abgleich',audit:'Aktivitätsprotokoll',
+    studio:'AI Studio',experiments:'KI-Experimente',banking:'Fachliche Einblicke',evaluation:'Dokumentrecherche',trust:'KI-Transparenz',operations:'Betrieb',
+    intake:'Eingang',review:'Prüfung',analysis:'Analyse',governance:'Steuerung'},
+  vi:{overview:'Việc cần làm',integrations:'Nguồn & tích hợp',pipeline:'Xử lý & dữ liệu',documents:'Tài liệu & chứng cứ',controls:'Đối chiếu dữ liệu',audit:'Nhật ký hoạt động',
+    studio:'AI Studio',experiments:'Thí nghiệm AI',banking:'Phân tích theo lĩnh vực',evaluation:'Nghiên cứu tài liệu',trust:'Minh bạch AI',operations:'Vận hành',
+    intake:'Nhận tài liệu',review:'Kiểm duyệt',analysis:'Phân tích',governance:'Quản trị'},
 };
-/** Keep existing hashes, Nova links and tours while grouping related pages. */
-export function workspaceSection(page:WorkspaceTab):WorkspaceTab {
-  return page==='banking'||page==='evaluation'?'experiments':page==='audit'?'operations':page==='integrations'?'pipeline':page;
-}
-export function workspaceSubpages(page:WorkspaceTab):readonly WorkspaceTab[] {
-  return sectionPages[workspaceSection(page)]||[];
+export function workspacePageName(locale:string,page:WorkspaceTab|WorkspaceGroup){
+  return workspacePageNameLanguages[locale==='vi'?'vi':locale==='de'?'de':'en'][page];
 }

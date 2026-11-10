@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
 
 export function sparkBatchArgs(snapshot,repeat=1,id=randomUUID()){
-  if(!/^[a-f0-9]{64}\/etl-[a-f0-9-]{36}$/.test(snapshot))throw Error('Copy the scope/run pair from Data Pipelines → Analytics → Parquet / PySpark.');
+  if(!/^[a-f0-9]{64}\/etl-[a-f0-9-]{36}$/.test(snapshot))throw Error('Copy the scope/run pair from Processing & data → Analytics → Parquet / PySpark.');
   if(!Number.isInteger(repeat)||repeat<1||repeat>10000)throw Error('Repeat must be an integer from 1 to 10000. Repetition creates synthetic rows, not more PDFs.');
   if(!/^[a-f0-9-]{36}$/.test(id))throw Error('Invalid run UUID');
   const compose=['compose','-f','docker-compose.yml','-f','docker-compose.platform.yml','-f','docker-compose.etl.yml','-f','docker-compose.ml.yml','-f','docker-compose.spark.yml','--profile','spark'];

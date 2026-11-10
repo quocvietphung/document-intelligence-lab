@@ -40,7 +40,7 @@ export function TrustWorkbench({caseId,caseVersion,locale,onDraft,openSource,ini
   const fmt=(value:string)=>new Date(value).toLocaleString(locale==='vi'?'vi-VN':locale==='de'?'de-DE':'en-GB');
   return <section className="trust-workbench" aria-label={t.title}>
     <header className="trust-heading"><div><span className="eyebrow"><ShieldCheck size={15}/> NOVA TRUST</span><h2>{t.title}</h2><p>{t.intro}</p></div><button className="button-secondary" disabled={busy} onClick={reload}><RefreshCw size={16}/>{t.refresh}</button></header>
-    <nav className="trust-tabs" aria-label={t.title}>{trustSections.map(key=><button type="button" key={key} aria-pressed={section===key} onClick={()=>setSection(key)}>{t[key]}</button>)}</nav>
+    <nav className="trust-tabs" data-page-tour="trust-sections" aria-label={t.title}>{trustSections.map(key=><button type="button" key={key} aria-pressed={section===key} onClick={()=>setSection(key)}>{t[key]}</button>)}</nav>
     <p className="trust-boundary">{t.lab}</p>
     {error?<div className="notice-error" role="alert"><p>{t[error as keyof typeof t]||t.failed}</p><button type="button" className="button-link" disabled={busy} onClick={reload}>{t.refresh}</button></div>:null}
     {busy&&!data?<p role="status">{t.loading}</p>:null}

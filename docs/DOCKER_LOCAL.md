@@ -62,7 +62,7 @@ There is **no required `.env` file** for this profile. Copying `.env.example` al
 | observability (traces) | `docker-compose.observability.yml`, see below | none |
 | analytics (ML worker, MLflow) | `--with-analytics` | none |
 
-The Integrations page (**Data Pipelines → Integrations**) shows each adapter's label. Without the Google layer, Gmail and Drive are listed as not configured, and the simulated Microsoft 365 adapter reads fictional documents from the M365 service over the private Compose network.
+The Integrations page (**Sources & integrations**) shows each adapter's label. Without the Google layer, Gmail and Drive are listed as not configured, and the simulated Microsoft 365 adapter reads fictional documents from the M365 service over the private Compose network.
 
 ## Production stack and the Spark experiment
 
@@ -144,7 +144,7 @@ These public example credentials are **local only**. Ports bind to loopback; nev
 3. Wait for extraction; open the private PDF/result and compare amount, date and identifier.
 4. In AI Studio, search for the invoice total and inspect its original source.
 5. In AI Experiments, independently read labels from the PDF or specify a question's target page, acknowledge the source check, save a reference and run an experiment.
-6. Inspect Data Pipelines: Processing queue versus Data assets & Azure. Exports contain text and require private handling.
+6. Inspect Processing & data: Processing queue versus Data assets & Azure. Exports contain text and require private handling.
 
 Local profile: PDFBox text extraction, Tesseract German/English image OCR and Java field rules. It is **not Azure OCR**; table/field results can differ. Supported PDF/image/TXT inputs stay within app limits. User-facing samples come only from the private Kaggle library and preserved DATEV references; legacy self-authored PDFs are test-only.
 

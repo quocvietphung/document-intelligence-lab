@@ -82,7 +82,8 @@ export function IntegrationsWorkbench({caseId,caseVersion,locale,documents,navig
     <header className="section-toolbar"><div><h2 id="integrations-title" className="section-heading">{t.title}</h2><p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-600">{t.intro}</p></div>
       <button type="button" className="button-secondary" disabled={!!busy} onClick={()=>void run('load',load)}>{t.refresh}</button></header>
     {error?<p className="notice-error mx-6" role="alert">{error}</p>:null}
-
+    {!overview&&!error?<p className="lab-loading" role="status">{t.loading}</p>:null}
+    {overview?<>
     <div className="px-6 py-4" data-page-tour="integrations-providers">
       <h3 className="section-heading">{t.sources}</h3>
       <ul className="integration-grid">{sources.map(p=>{const text=describeAdapter(p,locale);return <li key={p.id} className="integration-card">
@@ -191,5 +192,6 @@ export function IntegrationsWorkbench({caseId,caseVersion,locale,documents,navig
       <ul className="integration-future">{[...future,...(overview?.businessData??[]),...(overview?.destinations??[])].filter(p=>p.label==='future').map(p=>{const text=describeAdapter(p,locale);return <li key={`${p.kind}-${p.id}`}>
         <strong>{text.name}</strong> <Badge provider={p} locale={locale}/>{text.note?<small> — {text.note}</small>:null}</li>;})}</ul>
     </div>
+    </>:null}
   </section>;
 }

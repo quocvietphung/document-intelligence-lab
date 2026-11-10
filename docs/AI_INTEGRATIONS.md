@@ -16,7 +16,7 @@ The default remains local Docker, with the existing Docling or PDFBox/Tesseract 
 | BGE reranker | Learned reranking of at most 24 hybrid candidates | Prepared weights and measured relevance versus latency |
 | Vision | One original page to an explicit local Ollama vision model | Installed vision model, image support and numeric correctness; observations remain unverified |
 
-UI locations: **Data Pipelines → Data layers & exports** for local ETL and separate Sources & orchestration, **Research lab → Experiments** for evaluation and optional local vision, **Operations** for monitoring configuration. Opening a page reads local configuration only. Refreshing configuration does not run a model or contact Azure.
+UI locations: **Processing & data → Data layers & exports** for local ETL and separate Sources & orchestration, **AI experiments** for evaluation and optional local vision, **Operations** for monitoring configuration. Opening a page reads local configuration only. Refreshing configuration does not run a model or contact Azure.
 
 ### Local reliability recheck — 22 October 2026
 
@@ -51,9 +51,9 @@ Local Nova uses supplied authorized context without agent tools; the separately 
 
 The normal local helper now also starts `docker-compose.etl.yml`. DuckDB/dbt runs in a private, non-root, network-disabled worker with no public API port and no database or Azure credentials. The approximately **293 MB** ARM64 ETL image measured for this version is separate from Ollama weights. Its named `lab_etl` volume contains private extracted data and must not be published.
 
-On the prepared invoice `kaggle-invoice-51109301.pdf`, use **Data Pipelines → Data layers & exports → Build data layers** after consent. Bronze stores immutable extraction snapshots and available original hashes; Silver preserves raw strings and flags ambiguous dates/separators or duplicate candidates; Gold includes only reviewer-confirmed amounts, grouped separately by field and currency. SCD Type 2 records observed snapshot changes. Actual Parquet downloads require the same Bearer/tenant/dossier authorization. Original PDF expiry does not automatically remove these analytical copies.
+On the prepared invoice `kaggle-invoice-51109301.pdf`, use **Processing & data → Data layers & exports → Build data layers** after consent. Bronze stores immutable extraction snapshots and available original hashes; Silver preserves raw strings and flags ambiguous dates/separators or duplicate candidates; Gold includes only reviewer-confirmed amounts, grouped separately by field and currency. SCD Type 2 records observed snapshot changes. Actual Parquet downloads require the same Bearer/tenant/dossier authorization. Original PDF expiry does not automatically remove these analytical copies.
 
-In **Research lab → Experiments**, independently label invoice number `51109301` on page 1, or the stated coverage period on the Shelter excerpt. Compare four chunking strategies without modifying the live index. The separate prompt comparison makes two real local calls with explicit JSON Schema and keeps the expected reference out of both prompts. Abstentions, unsupported quotes and wrong values remain failed samples; a well-formed JSON object is not proof of factual correctness. No extra model download or cloud request is required by these additions. See the README for exact setup and acceptance commands.
+In **AI experiments**, independently label invoice number `51109301` on page 1, or the stated coverage period on the Shelter excerpt. Compare four chunking strategies without modifying the live index. The separate prompt comparison makes two real local calls with explicit JSON Schema and keeps the expected reference out of both prompts. Abstentions, unsupported quotes and wrong values remain failed samples; a well-formed JSON object is not proof of factual correctness. No extra model download or cloud request is required by these additions. See the README for exact setup and acceptance commands.
 
 Blob, ADF and Application Insights are **infrastructure, not extra AI models**. For their PDF exercise, import the same synthetic invoice through the explicit source queue, inspect the source hash/receipt, and inspect metadata-only monitoring. Azure runs remain separately authorized and not automatically verified by a local success.
 
@@ -176,7 +176,7 @@ Your existing pipeline must accept `labRequestId`, `labCaseId` and `labSourcePre
 
 ## Foundry / Azure AI Evaluation SDK
 
-From Research lab → Experiments, load saved answers containing original-document sources and explicitly download private evaluation input. It contains question, answer and cited excerpts, **not PDF bytes**. A saved answer may predate the current dossier revision; this is a historical answer snapshot, not re-extraction of the current document. Ground truth is blank until a human independently supplies it.
+From AI experiments, load saved answers containing original-document sources and explicitly download private evaluation input. It contains question, answer and cited excerpts, **not PDF bytes**. A saved answer may predate the current dossier revision; this is a historical answer snapshot, not re-extraction of the current document. Ground truth is blank until a human independently supplies it.
 
 Validation without SDK installation or inference:
 

@@ -35,7 +35,7 @@ export function AIPageBanner({page,locale,capabilities,demo=false,ask}:{page:Wor
   }else if(page==='experiments'){
     const research=researchText(locale);kind='context';engine='Java + scikit-learn · CPU';model='source-evaluation-v1 / insurance-tfidf-logreg-v1';title=research('experiments');hint=classificationText(locale).intro+' '+research('notJudge');
   }else{
-    engine=page==="controls"?"Java · deterministic rules":page==="evaluation"||page==="banking"?"PDF · source evidence":"Java · configuration / audit";
+    engine=page==="controls"?t.engineRules:page==="evaluation"||page==="banking"?t.engineEvidence:t.engineConfig;
     model=t.human;hint=page==="evaluation"?t.qualityHint:page==="controls"?t.rulesHint:t.reviewHint;
     title=t[page==="controls"?"controls":page==="evaluation"?"quality":page==="banking"?"banking":page==="operations"?"operations":"audit"];
   }
