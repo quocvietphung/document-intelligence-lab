@@ -6,7 +6,7 @@ import {proxyCase} from './case-proxy';
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
 describe('PDF classification benchmark boundaries',()=>{
   it('localizes all controls and clearly distinguishes synthetic evidence and uncalibrated scores',()=>{
-    for(const locale of ['en','de','vi']){const t=classificationText(locale);expect(Object.keys(t).sort()).toEqual(Object.keys(classificationLanguages.en).sort());expect(t.scope).toContain('66');expect(t.scope).toContain('Zurich');expect(t.gate).toBeTruthy();expect(documentClassName('invoice',locale)).toBeTruthy();expect(documentClassName(null,locale)).toBe(t.unassigned);}
+    for(const locale of ['en','de','vi']){const t=classificationText(locale);expect(Object.keys(t).sort()).toEqual(Object.keys(classificationLanguages.en).sort());expect(t.scope).toContain('66');expect(t.scope).not.toMatch(/zurich/i);expect(t.gate).toBeTruthy();expect(documentClassName('invoice',locale)).toBeTruthy();expect(documentClassName(null,locale)).toBe(t.unassigned);}
   });
   it('does not fabricate a completed evaluation when no experiment exists',()=>{
     const value=classificationSchema.parse({caseId:'case',caseVersion:1,datasetFingerprint:'hash',workerReady:false,dataset:{version:'v1',provenance:'fictional',license:'MIT',splitUnit:'template-family',splits:{train:36,test:12},samples:[]},runs:[]});expect(value.runs).toEqual([]);expect(value.workerReady).toBe(false);

@@ -1,10 +1,10 @@
 [
   {
     "id":"experiments",
-    "aliases":["ai experiments","experiments","ki-experimente","thi nghiem","thí nghiệm","referenzdatensatz"],
-    "en":{"title":"AI Experiments","description":"Create source-checked labels on actual PDFs and measure saved extraction or compare BM25, vector and hybrid retrieval. No Foundry judge or automatic Azure call.","steps":["Inspect an original PDF and add independent expected fields or a target page for a question.","Save an immutable reference version and explicitly run the selected experiment.","Inspect measured results and failed examples; changed sources require a new reference version."]},
+    "aliases":["ai experiments","experiments","ki-experimente","thi nghiem","thí nghiệm","referenzdatensatz","thí nghiệm ai","thi nghiem ai"],
+    "en":{"title":"AI experiments","description":"Create source-checked labels on actual PDFs and measure saved extraction or compare BM25, vector and hybrid retrieval. No Foundry judge or automatic Azure call.","steps":["Inspect an original PDF and add independent expected fields or a target page for a question.","Save an immutable reference version and explicitly run the selected experiment.","Inspect measured results and failed examples; changed sources require a new reference version."]},
     "de":{"title":"KI-Experimente","description":"Geprüfte Referenzen an echten PDF-Originalen anlegen und Extraktion oder BM25-, Vektor- und Hybrid-Suche messen. Kein Foundry-Judge oder automatischer Azure-Aufruf.","steps":["Original prüfen und unabhängige Sollfelder oder Zielseite einer Frage angeben.","Unveränderliche Referenzversion speichern und gewähltes Experiment selbst starten.","Messungen und Fehler prüfen; geänderte Quellen erfordern eine neue Referenzversion."]},
-    "vi":{"title":"AI Experiments","description":"Gắn nhãn đã kiểm tra theo PDF thật và đo trích xuất đã lưu hoặc so sánh BM25, vector và hybrid. Không có Foundry judge hay tự gọi Azure.","steps":["Mở PDF gốc, nhập nhãn đúng hoặc trang phải trả lời được câu hỏi.","Lưu phiên bản tham chiếu bất biến rồi tự bấm chạy thí nghiệm.","Xem điểm đo và trường sai; nguồn thay đổi thì cần bộ tham chiếu mới."]}
+    "vi":{"title":"Thí nghiệm AI","description":"Gắn nhãn đã kiểm tra theo PDF thật và đo trích xuất đã lưu hoặc so sánh BM25, vector và hybrid. Không có Foundry judge hay tự gọi Azure.","steps":["Mở PDF gốc, nhập nhãn đúng hoặc trang phải trả lời được câu hỏi.","Lưu phiên bản tham chiếu bất biến rồi tự bấm chạy thí nghiệm.","Xem điểm đo và trường sai; nguồn thay đổi thì cần bộ tham chiếu mới."]}
   },
   {
     "id": "overview",
@@ -12,10 +12,14 @@
       "overview",
       "tổng quan",
       "tong quan",
-      "übersicht"
+      "übersicht",
+      "tasks",
+      "aufgaben",
+      "việc cần làm",
+      "viec can lam"
     ],
     "en": {
-      "title": "Overview",
+      "title": "Tasks",
       "description": "Select a case, see review progress, missing documents and conflicts.",
       "steps": [
         "Select a case card.",
@@ -24,7 +28,7 @@
       ]
     },
     "de": {
-      "title": "Übersicht",
+      "title": "Aufgaben",
       "description": "Vorgang auswählen, Prüfstand, fehlende Unterlagen und Widersprüche ansehen.",
       "steps": [
         "Eine Vorgangskarte auswählen.",
@@ -33,7 +37,7 @@
       ]
     },
     "vi": {
-      "title": "Tổng quan",
+      "title": "Việc cần làm",
       "description": "Chọn hồ sơ, xem tiến độ kiểm duyệt, tài liệu thiếu và thông tin mâu thuẫn.",
       "steps": [
         "Chọn thẻ hồ sơ cần xem.",
@@ -93,10 +97,14 @@
       "bảng lương",
       "bang luong",
       "pdf",
-      "ocr"
+      "ocr",
+      "documents & evidence",
+      "dokumente & belege",
+      "tài liệu & chứng cứ",
+      "tai lieu & chung cu"
     ],
     "en": {
-      "title": "Documents & evidence review",
+      "title": "Documents & evidence",
       "description": "Preview PDFs/images, inspect extracted fields, tables, confidence and page evidence. The DATEV library uses official fictional LODAS references privately, not self-made payslips.",
       "steps": [
         "Open a document to compare the source and extracted fields.",
@@ -105,7 +113,7 @@
       ]
     },
     "de": {
-      "title": "Dokumente & Belegprüfung",
+      "title": "Dokumente & Belege",
       "description": "PDFs/Bilder, extrahierte Felder, Tabellen, Konfidenz und Seitenbelege prüfen. Die DATEV-Bibliothek nutzt offizielle fiktive LODAS-Muster privat, keine selbst erstellten Abrechnungen.",
       "steps": [
         "Dokument öffnen und Quelle mit Feldern vergleichen.",
@@ -114,7 +122,7 @@
       ]
     },
     "vi": {
-      "title": "Tài liệu & kiểm duyệt",
+      "title": "Tài liệu & chứng cứ",
       "description": "Xem PDF/ảnh, trường trích xuất, bảng, độ tin cậy và chứng cứ từng trang. Thư viện DATEV dùng mẫu LODAS giả lập chính thức ở local, không phải bảng lương tự tạo.",
       "steps": [
         "Mở tài liệu để so nguồn gốc với các trường.",
@@ -133,10 +141,14 @@
       "dokumentenpipeline",
       "queue",
       "hàng đợi",
-      "hang doi"
+      "hang doi",
+      "processing & data",
+      "verarbeitung & daten",
+      "xử lý & dữ liệu",
+      "xu ly & du lieu"
     ],
     "en": {
-      "title": "Document pipeline",
+      "title": "Processing & data",
       "description": "Follow upload jobs through scanning, extraction and human review; inspect retention and provider status.",
       "steps": [
         "Upload a permitted sample locally; Azure processing requires your confirmation.",
@@ -145,7 +157,7 @@
       ]
     },
     "de": {
-      "title": "Dokumentenpipeline",
+      "title": "Verarbeitung & Daten",
       "description": "Upload-Aufträge, Virenprüfung, Extraktion, menschliche Prüfung, Aufbewahrung und Anbieterstatus verfolgen.",
       "steps": [
         "Lokal ein erlaubtes Muster hochladen; Azure-Verarbeitung vorher bestätigen.",
@@ -154,7 +166,7 @@
       ]
     },
     "vi": {
-      "title": "Luồng tài liệu",
+      "title": "Xử lý & dữ liệu",
       "description": "Theo dõi tác vụ tải lên, quét virus, trích xuất, kiểm duyệt; xem lưu trữ và bộ xử lý đang dùng.",
       "steps": [
         "Tải mẫu được phép ở local; xác nhận trước xử lý Azure.",
@@ -172,10 +184,12 @@
       "reconciliation",
       "abgleich",
       "prüfungen",
-      "kiem duyet"
+      "kiem duyet",
+      "đối chiếu dữ liệu",
+      "doi chieu du lieu"
     ],
     "en": {
-      "title": "Review & reconciliation",
+      "title": "Reconciliation",
       "description": "Inspect document alerts, review tasks and source-linked field corrections in the selected domain. No ledger, payment or automated decision workflow.",
       "steps": [
         "Inspect the alert and its document source.",
@@ -184,7 +198,7 @@
       ]
     },
     "de": {
-      "title": "Prüfung & Abgleich",
+      "title": "Abgleich",
       "description": "Dokumenthinweise, Prüfaufgaben und quellenbezogene Feldkorrekturen des Bereichs prüfen. Kein Zahlungs-, Buchungs- oder automatischer Entscheidungsablauf.",
       "steps": [
         "Hinweis und Belegquelle prüfen.",
@@ -193,7 +207,7 @@
       ]
     },
     "vi": {
-      "title": "Kiểm duyệt & đối chiếu",
+      "title": "Đối chiếu dữ liệu",
       "description": "Xem cảnh báo tài liệu, nhiệm vụ kiểm duyệt và chỉnh sửa trường có nguồn trong lĩnh vực đang chọn. Không có sổ cái, thanh toán hay quyết định tự động.",
       "steps": [
         "Xem cảnh báo và tài liệu nguồn.",
@@ -219,10 +233,14 @@
       "banking evidence",
       "bankbelege",
       "chứng cứ ngân hàng",
-      "chung cu ngan hang"
+      "chung cu ngan hang",
+      "domain insights",
+      "fachliche einblicke",
+      "phân tích theo lĩnh vực",
+      "phan tich theo linh vuc"
     ],
     "en": {
-      "title": "Domain research",
+      "title": "Domain insights",
       "description": "Only analyzed original documents from this case, with fields, tables and source pages. No mock accounts, generated transactions or fixed benchmarks.",
       "steps": [
         "Upload a source PDF or explicitly import an official DATEV reference.",
@@ -231,7 +249,7 @@
       ]
     },
     "de": {
-      "title": "Bereichsrecherche",
+      "title": "Fachliche Einblicke",
       "description": "Nur analysierte Originaldokumente mit Feldern, Tabellen und Quellen. Keine Musterkonten, erzeugten Umsätze oder Benchmarkwerte.",
       "steps": [
         "Quell-PDF hochladen oder DATEV-Referenz ausdrücklich importieren.",
@@ -240,7 +258,7 @@
       ]
     },
     "vi": {
-      "title": "Nghiên cứu theo lĩnh vực",
+      "title": "Phân tích theo lĩnh vực",
       "description": "Chỉ dùng tài liệu có bản gốc đã phân tích: trường, bảng và trang nguồn. Không dùng tài khoản mock, giao dịch tự sinh hay điểm benchmark mẫu.",
       "steps": [
         "Tải PDF nguồn hoặc xác nhận nhập mẫu DATEV chính thức.",
@@ -264,10 +282,14 @@
       "f1",
       "precision",
       "recall",
-      "ki-qualität"
+      "ki-qualität",
+      "document research",
+      "dokumentrecherche",
+      "nghiên cứu tài liệu",
+      "nghien cuu tai lieu"
     ],
     "en": {
-      "title": "Study uploaded PDFs",
+      "title": "Document research",
       "description": "Only analyzed original documents from this case, with fields, tables and source pages. No mock accounts, generated transactions or fixed benchmarks.",
       "steps": [
         "Upload a source PDF or explicitly import an official DATEV reference.",
@@ -276,7 +298,7 @@
       ]
     },
     "de": {
-      "title": "Hochgeladene PDFs untersuchen",
+      "title": "Dokumentrecherche",
       "description": "Nur analysierte Originaldokumente mit Feldern, Tabellen und Quellen. Keine Musterkonten, erzeugten Umsätze oder Benchmarkwerte.",
       "steps": [
         "Quell-PDF hochladen oder DATEV-Referenz ausdrücklich importieren.",
@@ -285,7 +307,7 @@
       ]
     },
     "vi": {
-      "title": "Nghiên cứu PDF đã nhập",
+      "title": "Nghiên cứu tài liệu",
       "description": "Chỉ dùng tài liệu có bản gốc đã phân tích: trường, bảng và trang nguồn. Không dùng tài khoản mock, giao dịch tự sinh hay điểm benchmark mẫu.",
       "steps": [
         "Tải PDF nguồn hoặc xác nhận nhập mẫu DATEV chính thức.",
@@ -387,34 +409,45 @@
       "microsoft 365",
       "sharepoint",
       "nguồn tài liệu",
-      "dokumentquellen"
+      "dokumentquellen",
+      "sources & integrations",
+      "quellen & integrationen",
+      "nguồn & tích hợp",
+      "nguon & tich hop"
     ],
     "en": {
-      "title": "Integrations",
+      "title": "Sources & integrations",
       "description": "Connect optional document sources (local fixtures, Gmail, Google Drive, Microsoft 365), import selected PDFs into the shared pipeline and run the offline use cases. Tokens stay on the server.",
       "steps": [
         "Check each provider's label: verified-local, simulated or implemented but not live-verified.",
         "Preview a source, select up to four PDFs and confirm processing consent.",
-        "Follow the jobs in Data Pipelines, then review fields and evidence; drafts need your approval and are never sent."
+        "Follow the jobs in Processing & data, then review fields and evidence; drafts need your approval and are never sent."
       ]
     },
     "de": {
-      "title": "Integrationen",
+      "title": "Quellen & Integrationen",
       "description": "Optionale Dokumentquellen verbinden (lokale Testdokumente, Gmail, Google Drive, Microsoft 365), ausgewählte PDFs in die gemeinsame Pipeline importieren und die Offline-Anwendungsfälle prüfen. Tokens bleiben auf dem Server.",
       "steps": [
         "Das Label jedes Anbieters prüfen: verified-local, simuliert oder implementiert, aber nicht live geprüft.",
         "Quelle ansehen, bis zu vier PDFs auswählen und die Verarbeitung bestätigen.",
-        "Aufträge in den Datenpipelines verfolgen, dann Felder und Evidenz prüfen; Entwürfe brauchen deine Freigabe und werden nie gesendet."
+        "Aufträge unter „Verarbeitung & Daten“ verfolgen, dann Felder und Evidenz prüfen; Entwürfe brauchen deine Freigabe und werden nie gesendet."
       ]
     },
     "vi": {
-      "title": "Tích hợp",
+      "title": "Nguồn & tích hợp",
       "description": "Kết nối nguồn tài liệu tùy chọn (fixture cục bộ, Gmail, Google Drive, Microsoft 365), nhập PDF đã chọn vào pipeline chung và chạy các use case offline. Token chỉ nằm trên máy chủ.",
       "steps": [
         "Xem nhãn của từng nhà cung cấp: verified-local, mô phỏng hoặc đã triển khai nhưng chưa kiểm chứng thực tế.",
         "Xem trước một nguồn, chọn tối đa bốn PDF và xác nhận đồng ý xử lý.",
-        "Theo dõi tác vụ ở Data Pipelines, rồi kiểm tra trường và chứng cứ; bản nháp cần bạn phê duyệt và không bao giờ được gửi."
+        "Theo dõi tác vụ ở Xử lý & dữ liệu, rồi kiểm tra trường và chứng cứ; bản nháp cần bạn phê duyệt và không bao giờ được gửi."
       ]
     }
+  },
+  {
+    "id":"trust",
+    "aliases":["trust","nova trust","minh bạch","minh bach","transparency","transparenz","ki-transparenz","quản trị ai","quan tri ai","ai governance","answer history","lịch sử câu trả lời","lich su cau tra loi","antwortverlauf"],
+    "en":{"title":"AI transparency","description":"See how Nova answered, which sources it used and which AI tasks exist: data and privacy, the AI task library, answer history, review tasks, AI governance and measured activity. Records only; nothing is approved automatically.","steps":["Choose a view, for example answer history or review tasks.","Open a cited source to check an answer against the original page.","Create a review task only when a person should follow up. Tasks never approve documents."]},
+    "de":{"title":"KI-Transparenz","description":"Sieh nach, wie Nova geantwortet hat, welche Quellen genutzt wurden und welche KI-Aufgaben es gibt: Daten und Datenschutz, KI-Aufgabenbibliothek, Antwortverlauf, Prüfaufgaben, KI-Steuerung und gemessene Aktivität. Nur Aufzeichnungen; nichts wird automatisch freigegeben.","steps":["Ansicht wählen, zum Beispiel Antwortverlauf oder Prüfaufgaben.","Zitierte Quelle öffnen und die Antwort mit der Originalseite vergleichen.","Prüfaufgabe nur anlegen, wenn eine Person nachfassen soll. Aufgaben geben keine Dokumente frei."]},
+    "vi":{"title":"Minh bạch AI","description":"Xem Nova đã trả lời thế nào, dùng nguồn nào và có những tác vụ AI nào: dữ liệu và quyền riêng tư, thư viện tác vụ AI, lịch sử câu trả lời, nhiệm vụ kiểm duyệt, quản trị AI và hoạt động đo được. Chỉ là bản ghi; không tự phê duyệt gì.","steps":["Chọn một mục, ví dụ lịch sử câu trả lời hoặc nhiệm vụ kiểm duyệt.","Mở nguồn được trích dẫn để đối chiếu câu trả lời với trang gốc.","Chỉ tạo nhiệm vụ kiểm duyệt khi cần người theo dõi tiếp. Nhiệm vụ không phê duyệt tài liệu."]}
   }
 ]

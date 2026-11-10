@@ -2,24 +2,29 @@ import {readFileSync} from 'node:fs';
 import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {describe,it,expect,vi} from 'vitest';
-import {workspaceNavigation,workspaceSection,workspaceSubpages,workspacePresentation,workspacePresentationLanguages} from './workspace-presentation';
-import {workspaceTabs} from './nova-guide';
+import {workspaceNavigation,workspacePageName,workspacePresentation,workspacePresentationLanguages} from './workspace-presentation';
+import {novaFeature,workspaceTabs} from './nova-guide';
 import {DocumentBatchReceipt} from '@/components/workspace/DocumentBatches';
 import {AIPageBanner} from '@/components/workspace/AITransparency';
 import type {DocumentBatch} from './document-batches';
 
 const receipt:DocumentBatch={id:'batch-1',name:'Invoice sources',source:'Pinned public source',profile:'invoice',time:'2026-10-18T10:00:00Z',state:'SUBMITTED',items:[{name:'invoice.pdf',sha256:'original-hash',size:100,state:'ACCEPTED',status:'COMPLETE',documentId:'D1'}],manifestHash:'manifest',persistent:true};
 describe('compact workspace presentation',()=>{
-  it('groups ten stable routes into seven primary destinations without orphan pages',()=>{
-    const primary=workspaceNavigation.flatMap(group=>[...group.pages]);
-    expect(primary).toHaveLength(7);expect(new Set(primary).size).toBe(7);
-    for(const page of workspaceTabs){
-      expect(primary).toContain(workspaceSection(page));
-      const children=workspaceSubpages(page);
-      if(children.length)expect(children).toContain(page);
+  it('puts every page in exactly one workflow group, with no hidden subpages',()=>{
+    const pages=workspaceNavigation.flatMap(group=>[...group.pages]);
+    expect(pages).toHaveLength(workspaceTabs.length);
+    expect(new Set(pages)).toEqual(new Set(workspaceTabs));
+    expect(workspaceNavigation.map(group=>group.title)).toEqual(['','intake','review','analysis','governance']);
+    expect(readFileSync('components/workspace/CreditWorkspace.tsx','utf8')).not.toContain('workspace-section-tabs');
+  });
+  it('gives each page one name, shared by the sidebar, the page title and the Nova catalog',()=>{
+    for(const locale of ['en','de','vi'] as const){
+      const names=workspaceTabs.map(page=>workspacePageName(locale,page));
+      expect(new Set(names).size).toBe(names.length);
+      for(const page of workspaceTabs)expect(novaFeature(page,locale).title).toBe(workspacePageName(locale,page));
     }
-    expect(workspaceSection('banking')).toBe('experiments');expect(workspaceSection('evaluation')).toBe('experiments');
-    expect(workspaceSection('audit')).toBe('operations');expect(workspaceSubpages('documents')).toEqual([]);
+    expect(workspacePageName('unknown','overview')).toBe('Tasks');
+    expect(workspacePageName('vi','review')).toBe('Kiểm duyệt');
   });
   it('keeps the reference library expandable and automatically visible for a page tour',()=>{
     const source=readFileSync('components/workspace/DocumentAnalysisWorkspace.tsx','utf8');

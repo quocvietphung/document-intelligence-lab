@@ -120,7 +120,7 @@ def evaluate(payload, models_root=None, tracking_uri=None):
               'modelInputs':['pageText'], 'scoreCalibrated': False, 'thresholdSelection': 'Fixed before the first held-out evaluation; not tuned on test/challenge.',
               'metrics': {}, 'rows': observed, 'tracking': 'NOT_REQUESTED', 'cloudCalls':0, 'documentTypesChanged':0,
               'limitations': [
-                  'All benchmark PDFs and labels are authored synthetic fixtures, not Zurich documents or representative customer data.',
+                  'All benchmark PDFs and labels are authored synthetic fixtures, not documents from a real insurer or representative customer data.',
                   'Template families and exact original/text hashes do not cross splits; all templates still share one author and renderer.',
                   'This development/reference corpus was inspected during implementation; it is not a blind independent holdout.',
                   'This is classical text ML, not a trained deep-learning or visual-layout model.',

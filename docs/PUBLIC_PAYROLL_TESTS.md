@@ -49,7 +49,7 @@ If the web container was started before the directory existed, recreate the web 
 ## Try a DATEV document
 
 1. Open `http://localhost:3000/en` and select a **Banking & payroll** dossier.
-2. Open **Documents & review → Official DATEV payroll library**.
+2. Open **Documents & evidence → Official DATEV payroll library**.
 3. Preview the private PDF, then choose **Import & analyze** and confirm the provider/data destination.
 4. Look in **Analysis results**, above the sample library. Select **View result & PDF**.
 5. Compare net earnings and payout separately against the original.

@@ -30,7 +30,7 @@ docker compose -f docker-compose.yml -f docker-compose.platform.yml \
 ## Try a document
 
 1. Open [the English workspace](http://localhost:3000/en) and sign in through Keycloak as described in the README.
-2. Create a research dossier. Upload a permitted PDF/image through **Data Pipelines → Processing queue**, or prepare a private DATEV/Kaggle reference and import it from **Documents & review**.
+2. Create a research dossier. Upload a permitted PDF/image through **Processing & data → Processing queue**, or prepare a private DATEV/Kaggle reference and import it from **Documents & evidence**.
 3. Confirm **Docling** in processing settings. The durable queue scans the file before calling the internal parser.
 4. Open **Result & PDF**. Verify the provider `docling`, page text, fields, tables and original currency. Successful extraction remains **awaiting human review**.
 5. Try **AI Studio** for local retrieval. **Nova App guidance** remains available, but **Evidence analysis is unavailable without a configured generative model**. This profile must not be advertised as a fully local Nova chatbot.

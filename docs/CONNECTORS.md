@@ -53,7 +53,7 @@ Labels describe what was actually tested. Configuration alone never upgrades a l
 node scripts/docker-local.mjs
 ```
 
-The default stack contains no Google, Microsoft or Azure credential. In **Data Pipelines → Integrations**:
+The default stack contains no Google, Microsoft or Azure credential. In **Sources & integrations**:
 
 1. Choose **Local files and fictional fixtures**, preview, select up to four PDFs, confirm consent and import. They go through the same scan, extraction and review as uploads.
 2. Run **Use cases → Run deterministic check** for any of the eight use cases. Each result reports `networkCalls: 0`.

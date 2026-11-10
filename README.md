@@ -56,7 +56,7 @@ Each use case runs first with local PDFs. It ships fictional documents labelled 
 | ESG evidence completeness | Present, missing and pending evidence; no certification |
 | Knowledge assistant with citations | Answers only with cited evidence; unsupported questions are refused |
 
-Run them in **Data Pipelines → Integrations → Use cases**. A language model may explain the results or draft a report; it never computes them.
+Run them in **Sources & integrations → Use cases**. A language model may explain the results or draft a report; it never computes them.
 
 ## Docker quick start
 
@@ -66,7 +66,7 @@ cd document-intelligence-lab
 node scripts/docker-local.mjs --prepare-model
 ```
 
-The first run builds the images and downloads the local model once. Open <http://localhost:3000/en>, sign in with the local development account `advisor.demo` / `demo-password`, and open **Data Pipelines → Integrations**. Requirements, health checks and troubleshooting are in [Local Docker workspace](#local-docker-workspace). Gmail and Drive are added explicitly with `--with-google-connectors` ([setup](docs/CONNECTORS.md#optional-google-gmail-and-drive)).
+The first run builds the images and downloads the local model once. Open <http://localhost:3000/en>, sign in with the local development account `advisor.demo` / `demo-password`, and open **Sources & integrations**. Requirements, health checks and troubleshooting are in [Local Docker workspace](#local-docker-workspace). Gmail and Drive are added explicitly with `--with-google-connectors` ([setup](docs/CONNECTORS.md#optional-google-gmail-and-drive)).
 
 ## Evidence, confidence and human review
 
@@ -247,11 +247,11 @@ These are development credentials for a **fresh identity database**. Existing vo
 ### Try a complete workflow
 
 1. Create a **General documents** dossier and prepare a permitted [PDF example](#pdf-examples).
-2. In **Documents & review → Reference library**, select invoice **51109301**, preview it and confirm **Import & analyze**.
-3. Follow its job in **Data Pipelines**, then open **Analysis results → View result & PDF**. Inspect the original, fields and tables.
+2. In **Documents & evidence → Reference library**, select invoice **51109301**, preview it and confirm **Import & analyze**.
+3. Follow its job in **Processing & data**, then open **Analysis results → View result & PDF**. Inspect the original, fields and tables.
 4. Open Nova's portrait, select **Evidence analysis** and ask: *“What invoice number, currency and gross total are stated? Cite the source page.”* Enter sends; Shift+Enter adds a line break.
 5. Wait for a completed **Ollama · Local LLM** answer. Open its citations and compare the PDF; source identity is not semantic verification.
-6. In **Research lab → Experiments**, independently check reference values/pages before comparing retrieval, chunking or prompts.
+6. In **AI experiments**, independently check reference values/pages before comparing retrieval, chunking or prompts.
 
 For the construction/real-estate example, create a **Construction & real estate** dossier and import the five authored fictional PDFs from the same library. The deterministic review links project/order references, compares the order plus approved change against the invoice, and carries open defects and their deadline into human review. It flags the deliberate **EUR 1,200** variance; it never approves acceptance, payment or a legal conclusion.
 
@@ -342,7 +342,7 @@ Review the publisher's terms and download the unchanged [official DATEV LODAS sa
 python scripts/prepare-datev-reference.py .local/datev-lodas-musterauswertung-2025.pdf
 ```
 
-In **Banking & payroll → Documents & review → Reference library**, keep `Netto-Verdienst` separate from `Auszahlungsbetrag`. Publisher PDFs retain DATEV's rights. The Python reader can inspect these permitted pages, but its generic label checks do not implement every Java payroll-layout rule.
+In **Banking & payroll → Documents & evidence → Reference library**, keep `Netto-Verdienst` separate from `Auszahlungsbetrag`. Publisher PDFs retain DATEV's rights. The Python reader can inspect these permitted pages, but its generic label checks do not implement every Java payroll-layout rule.
 
 ### Official forms for RAG evaluation
 
@@ -350,7 +350,7 @@ After preparing DATEV and Kaggle, add the reviewed CMS coverage example and IRS 
 
 ## Document pipeline operations
 
-**Data Pipelines** separates processing, batch intake and exports. Batch intake accepts one to four permitted files, a source note and check profile. Each file is scanned; provider limits still apply per file. Profiles are versioned field checks, not trained classifiers.
+**Processing & data** separates processing, batch intake and exports. Batch intake accepts one to four permitted files, a source note and check profile. Each file is scanned; provider limits still apply per file. Profiles are versioned field checks, not trained classifiers.
 
 Receipts record hashes, provider, extraction counts, attempts and actual stages. The same request UUID/content returns its receipt; changed content is rejected. Duplicate/cancel/retry controls do not guarantee exactly-once inference. Manual retry is limited to hash-pinned reference bytes within retention; inspect arbitrary failed uploads before resubmitting. [Queue details](docs/DOCKER_LOCAL.md).
 
@@ -477,9 +477,9 @@ The lab studies document extraction, insurance-document classification, cross-do
 
 ### Insurance classification benchmark
 
-Open **Research lab → Insurance document classification** after enabling the [optional local ML worker](#document-analytics-and-local-ml). Expand **Dataset & run controls**, preview a labelled PDF, opt into the local comparison, then inspect the held-out metrics, per-class precision/recall/F1, confusion matrices and PDF-by-PDF predictions. After a completed run, setup collapses so the results come first. **Overview → Insurance classification benchmark** links to the same page. No new service, deep-learning weights or Azure resource is required.
+Open **AI experiments → Insurance document classification** after enabling the [optional local ML worker](#document-analytics-and-local-ml). Expand **Dataset & run controls**, preview a labelled PDF, opt into the local comparison, then inspect the held-out metrics, per-class precision/recall/F1, confusion matrices and PDF-by-PDF predictions. After a completed run, setup collapses so the results come first. **Overview → Insurance classification benchmark** links to the same page. No new service, deep-learning weights or Azure resource is required.
 
-The [corpus manifest](services/credit-api/src/main/resources/classification/manifest.json) identifies **66 authored fictional one-page PDFs**, with MIT-licensed generated content. Four labels are used: *Schadenmeldung, Versicherungsschein, Rechnung, Sonstiges*. Five template families per class produce three variants each: **36 train / 12 validation / 12 test**, plus **6 challenge packets**. The test set has only **four held-out template families, one per class**, with three variants each. An entire family stays in one split, as do exact source/text hashes. These fixtures are separate from the existing DATEV/Kaggle library. They are not customer records, Zurich documents or a representative insurance corpus.
+The [corpus manifest](services/credit-api/src/main/resources/classification/manifest.json) identifies **66 authored fictional one-page PDFs**, with MIT-licensed generated content. Four labels are used: *Schadenmeldung, Versicherungsschein, Rechnung, Sonstiges*. Five template families per class produce three variants each: **36 train / 12 validation / 12 test**, plus **6 challenge packets**. The test set has only **four held-out template families, one per class**, with three variants each. An entire family stays in one split, as do exact source/text hashes. These fixtures are separate from the existing DATEV/Kaggle library. They are not customer records, documents from a real insurer or a representative insurance corpus.
 
 Java verifies each PDF hash, reads its native text with PDFBox and applies the **actual `DocumentExtractor` rules**. The offline Python worker fits word/character TF-IDF and class-weighted Logistic Regression on **training page text only**; labels, filenames and group IDs are excluded from features. Fixed score/margin thresholds and rule/model disagreement request review. Model scores are uncalibrated. The validation and test reports count every labelled PDF, including review cases; selective coverage is reported separately.
 
@@ -499,7 +499,7 @@ To regenerate fixtures, run `python scripts/prepare-classification-benchmark.py`
 
 ### Evidence inspection
 
-Open **Documents & review → View result & PDF** and inspect a field, table cell or recorded source occurrence:
+Open **Documents & evidence → View result & PDF** and inspect a field, table cell or recorded source occurrence:
 
 - Compare the **original crop, recorded OCR and answer value**. Matching a citation does not prove the OCR read the original correctly.
 - Repeated values retain separate occurrence IDs. Selecting a candidate is explicit; page references cannot identify the correct occurrence by themselves.
@@ -524,7 +524,7 @@ Agreement is labelled **not verified**. Reports contain private source text/crop
 
 The lab now includes a [registry of nine prepared PDF references](lib/rag-pdf-sources.json) and [77 authored questions](lib/rag-pdf-questions.json) covering DATEV payroll, invoices, insurance and blank tax forms. CMS and IRS add official examples; publisher-owned references stay private. CFPB links that could not be downloaded are recorded separately and are not counted in measured results.
 
-In **Research lab → Experiments**, compare **BM25 / Vector / Hybrid / RRF / Previous Hybrid** with multiple relevant pages, tuning/held-out groups, Hit@5, Recall@5, unique-source Precision@5, nDCG@5, MRR@5 and ranking p50/p95. Unanswerable questions remain explicit; retrieval does not certify a model's refusal or answer correctness. Lexical matching now uses term frequency, compound identifiers and a small explicit EN/DE/VI glossary; it never rewrites stored source amounts.
+In **AI experiments**, compare **BM25 / Vector / Hybrid / RRF / Previous Hybrid** with multiple relevant pages, tuning/held-out groups, Hit@5, Recall@5, unique-source Precision@5, nDCG@5, MRR@5 and ranking p50/p95. Unanswerable questions remain explicit; retrieval does not certify a model's refusal or answer correctness. Lexical matching now uses term frequency, compound identifiers and a small explicit EN/DE/VI glossary; it never rewrites stored source amounts.
 
 All nine prepared PDFs passed the local ClamAV/Docling intake. The [measured report](docs/benchmarks/rag-pdf-retrieval.json) compares the same 69 answerable questions; eight unanswerable questions are kept separately:
 

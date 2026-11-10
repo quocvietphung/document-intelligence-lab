@@ -58,7 +58,7 @@ def classification_metrics(expected, predicted):
 
 def inspect_bundle(bundle):
     if bundle.get("format") != "document-research-assets-v1":
-        raise ValueError("Export a private research bundle from Data Pipelines first")
+        raise ValueError("Export a private research bundle from Processing & data first")
     documents = bundle.get("silver", [])
     # Concrete PDF page numbers connect the Python exercises to document processing.
     pages = [page["number"] for doc in documents for page in doc.get("pages", [])]
