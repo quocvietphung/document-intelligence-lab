@@ -73,6 +73,18 @@ def test_search_and_list_return_only_authorised_documents(local_client):
     assert all("vorstand" not in h["name"] for h in found)
 
 
+def test_content_returns_only_authorised_pdf_bytes_without_existence_oracle(local_client):
+    r = local_client.get("/documents/project-status-001/content")
+    assert r.status_code == 200 and r.content.startswith(b"%PDF-")
+    assert r.headers["content-type"] == "application/pdf"
+    assert r.headers["cache-control"] == "no-store" and r.headers["x-content-type-options"] == "nosniff"
+    hidden = local_client.get("/documents/restricted-exec-001/content")
+    missing = local_client.get("/documents/does-not-exist/content")
+    assert hidden.status_code == missing.status_code == 404
+    assert hidden.json()["error"]["code"] == missing.json()["error"]["code"]
+    assert local_client.get("/documents/bad id!/content").status_code == 422
+
+
 def test_core_question_is_grounded_with_page_source(local_client):
     r = local_client.post(
         "/ask",

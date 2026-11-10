@@ -1,0 +1,10 @@
+# Optional "google-connectors" layer: Gmail and Google Drive (read-only) plus optional Gmail drafts.
+# Off by default; the default stack needs no Google, Microsoft or Azure credential.
+# Enable explicitly with: node scripts/docker-local.mjs --with-google-connectors
+# The variables come only from the git-ignored .env.google.local (see .env.example and docs/CONNECTORS.md);
+# they are injected into the Java API container and never reach the browser image.
+services:
+  credit-api:
+    env_file:
+      - path: .env.google.local
+        required: true

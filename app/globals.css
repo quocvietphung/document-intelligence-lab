@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./document-batches.css";
 @import "./workspace-compact.css";
+@import "./integrations.css";
 
 .research-connections .lab-ops-grid{margin:16px 0;gap:12px}.research-connections .lab-ops-grid article{min-width:0;border:1px solid #e1eae8;border-radius:12px;padding:14px;background:#f8fbfa}.research-connections label:not(.research-consent){display:flex;flex-direction:column;gap:7px;margin:14px 0;font-size:13px;font-weight:600}.research-connections .research-consent{display:flex;align-items:flex-start;gap:9px;margin:16px 0;line-height:1.6;font-size:13px}.research-connections .research-consent input{margin-top:4px;flex-shrink:0}.research-connections select,.research-connections textarea,.research-connections input[type=number]{max-width:100%;padding:10px 12px;border:1px solid #cbded9;border-radius:9px;background:white;font:inherit}.research-connections textarea{min-height:90px;resize:vertical}.research-connections .lab-reconcile strong{overflow-wrap:anywhere}.research-connections .lab-reconcile small{display:block;font-size:12px;color:#617777}.research-connections .research-reference-details{margin-top:20px}.research-connections button:disabled{opacity:.5;cursor:not-allowed}
 

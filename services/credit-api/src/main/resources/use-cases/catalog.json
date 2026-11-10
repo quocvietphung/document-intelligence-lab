@@ -1,0 +1,668 @@
+{
+  "version": "use-cases-v1",
+  "license": "MIT",
+  "provenance": "Authored fictional documents; no employer, customer, vendor or property-developer material.",
+  "useCases": [
+    {
+      "id": "project-assessment",
+      "title": {
+        "en": "Project and real-estate assessment",
+        "de": "Projekt- und Immobilienbewertung",
+        "vi": "Đánh giá dự án và bất động sản"
+      },
+      "summary": {
+        "en": "Totals, cost variance, revenue scenarios, margin, cost per m² and schedule variance are computed in code from the CSV; a model may only explain them.",
+        "de": "Summen, Kostenabweichung, Erlösszenarien, Marge, Kosten je m² und Terminabweichung werden im Code aus der CSV berechnet; ein Modell darf sie nur erläutern.",
+        "vi": "Tổng chi phí, chênh lệch chi phí, kịch bản doanh thu, biên lợi nhuận, chi phí/m² và chênh lệch tiến độ được tính bằng code từ CSV; mô hình chỉ được giải thích."
+      },
+      "fixtures": [
+        {
+          "path": "use-cases/projektbewertung-musterquartier.pdf",
+          "sha256": "dadd2907ff0ff22ce34a68b9109057611d8eec1c3244c9fb2dacac304b6aedf2",
+          "pages": 2,
+          "label": "FIKTIVE DATEN"
+        }
+      ],
+      "businessData": "use-cases/projektbewertung-musterquartier.csv",
+      "businessDataSample": "type,name,planned,forecast\ncost,KG 100 Grundstück,4200000.00,4200000.00\ncost,KG 200 Herrichten und Erschließen,350000.00,380000.00\ncost,KG 300/400 Bauwerk,9800000.00,10450000.00\ncost,KG 700 Baunebenkosten,1650000.00,1720000.00\narea,Wohnfläche m²,6500,\nrevenue,Basis,21450000.00,\nrevenue,Vorsichtig,18200000.00,\nmilestone,Baubeginn,2026-03-01,2026-03-01\nmilestone,Fertigstellung,2027-09-30,2027-12-15\n",
+      "fields": [
+        "totalPlannedCost",
+        "totalForecastCost",
+        "areaSqm",
+        "revenueScenarios",
+        "milestones"
+      ],
+      "expectedValidation": [
+        {
+          "check": "costs.planned",
+          "expected": "16000000.00"
+        },
+        {
+          "check": "costs.forecast",
+          "expected": "16750000.00"
+        },
+        {
+          "check": "costs.variance",
+          "expected": "750000.00"
+        },
+        {
+          "check": "costs.variancePercent",
+          "expected": "4.69"
+        },
+        {
+          "check": "costPerSqm.planned",
+          "expected": "2461.54"
+        },
+        {
+          "check": "costPerSqm.forecast",
+          "expected": "2576.92"
+        },
+        {
+          "check": "margin.Basis",
+          "expected": "4700000.00"
+        },
+        {
+          "check": "marginPercent.Basis",
+          "expected": "21.91"
+        },
+        {
+          "check": "margin.Vorsichtig",
+          "expected": "1450000.00"
+        },
+        {
+          "check": "marginPercent.Vorsichtig",
+          "expected": "7.97"
+        },
+        {
+          "check": "varianceDays.Fertigstellung",
+          "expected": "76"
+        },
+        {
+          "check": "humanReviewRequired",
+          "expected": "true"
+        }
+      ],
+      "answerable": {
+        "question": {
+          "en": "What total forecast cost does the assessment state?",
+          "de": "Welche prognostizierten Gesamtkosten nennt die Bewertung?",
+          "vi": "Bản đánh giá nêu tổng chi phí dự báo là bao nhiêu?"
+        },
+        "answer": "16.750.000,00 EUR",
+        "evidence": {
+          "path": "use-cases/projektbewertung-musterquartier.pdf",
+          "page": 1,
+          "quote": "16.750.000,00 EUR"
+        }
+      },
+      "unanswerable": {
+        "question": {
+          "en": "What is the appraised market value?",
+          "de": "Wie hoch ist der Verkehrswert laut Gutachten?",
+          "vi": "Giá trị thị trường theo thẩm định là bao nhiêu?"
+        },
+        "absentTerms": [
+          "Verkehrswert",
+          "Gutachten"
+        ],
+        "expected": "abstain"
+      },
+      "boundary": {
+        "en": "Research support only. No legal, investment, payment, valuation or ESG certification decision.",
+        "de": "Nur Forschungsunterstützung. Keine Rechts-, Investitions-, Zahlungs-, Bewertungs- oder ESG-Zertifizierungsentscheidung.",
+        "vi": "Chỉ hỗ trợ nghiên cứu. Không đưa ra quyết định pháp lý, đầu tư, thanh toán, định giá hay chứng nhận ESG."
+      }
+    },
+    {
+      "id": "email-intake",
+      "title": {
+        "en": "Document intake from email",
+        "de": "Dokumenteneingang per E-Mail",
+        "vi": "Tiếp nhận tài liệu từ email"
+      },
+      "summary": {
+        "en": "A fictional Gmail message with a PDF attachment enters the shared pipeline; offline it is served by a mock, never by real mail.",
+        "de": "Eine fiktive Gmail-Nachricht mit PDF-Anhang läuft durch die gemeinsame Pipeline; offline liefert ein Mock sie, nie echte Post.",
+        "vi": "Một email Gmail giả lập có PDF đính kèm đi vào pipeline chung; khi offline do mock cung cấp, không dùng thư thật."
+      },
+      "fixtures": [
+        {
+          "path": "use-cases/email-nachtragsangebot-musterquartier.pdf",
+          "sha256": "905e174cc058476e2ff55f6604df6041c0eee8f8a1648e282634c5f9971044fa",
+          "pages": 1,
+          "label": "FIKTIVE DATEN"
+        }
+      ],
+      "mockMessage": "use-cases/email-intake-message.json",
+      "fields": [
+        "changeOrderNumber",
+        "relatedOrder",
+        "changeOrderAmount",
+        "validUntil"
+      ],
+      "expectedValidation": [
+        {
+          "check": "attachments",
+          "expected": "1"
+        },
+        {
+          "check": "Nachtragsnummer",
+          "expected": "NA-2026-007"
+        },
+        {
+          "check": "Bezug Auftrag",
+          "expected": "AUF-2026-112"
+        },
+        {
+          "check": "Nachtragssumme",
+          "expected": "18.400,00 EUR netto"
+        }
+      ],
+      "answerable": {
+        "question": {
+          "en": "Which change-order amount does the offer state?",
+          "de": "Welche Nachtragssumme nennt das Angebot?",
+          "vi": "Đề nghị nêu giá trị bổ sung là bao nhiêu?"
+        },
+        "answer": "18.400,00 EUR netto",
+        "evidence": {
+          "path": "use-cases/email-nachtragsangebot-musterquartier.pdf",
+          "page": 1,
+          "quote": "18.400,00 EUR netto"
+        }
+      },
+      "unanswerable": {
+        "question": {
+          "en": "Has the change order already been commissioned?",
+          "de": "Wurde der Nachtrag bereits beauftragt?",
+          "vi": "Phần bổ sung đã được giao thầu chưa?"
+        },
+        "absentTerms": [
+          "beauftragt am",
+          "Beauftragungsdatum"
+        ],
+        "expected": "abstain"
+      },
+      "boundary": {
+        "en": "Research support only. No legal, investment, payment, valuation or ESG certification decision.",
+        "de": "Nur Forschungsunterstützung. Keine Rechts-, Investitions-, Zahlungs-, Bewertungs- oder ESG-Zertifizierungsentscheidung.",
+        "vi": "Chỉ hỗ trợ nghiên cứu. Không đưa ra quyết định pháp lý, đầu tư, thanh toán, định giá hay chứng nhận ESG."
+      }
+    },
+    {
+      "id": "classification-extraction",
+      "title": {
+        "en": "Classification and extraction",
+        "de": "Klassifikation und Extraktion",
+        "vi": "Phân loại và trích xuất tài liệu"
+      },
+      "summary": {
+        "en": "Detect the document type and extract invoice fields; net plus VAT must equal gross. The insurance classification benchmark measures classification separately.",
+        "de": "Dokumenttyp erkennen und Rechnungsfelder extrahieren; Netto plus USt muss Brutto ergeben. Der Versicherungs-Benchmark misst Klassifikation getrennt.",
+        "vi": "Nhận diện loại tài liệu và trích xuất trường hóa đơn; tiền trước thuế cộng VAT phải bằng tổng. Benchmark phân loại bảo hiểm đo riêng phần phân loại."
+      },
+      "fixtures": [
+        {
+          "path": "use-cases/eingangsrechnung-musterquartier.pdf",
+          "sha256": "af98fe02bddf18a679c1ca3d5c8db97f53467503e2ac38676c115953d88b69bf",
+          "pages": 1,
+          "label": "FIKTIVE DATEN"
+        }
+      ],
+      "fields": [
+        "documentType",
+        "invoiceNumber",
+        "netAmount",
+        "vatAmount",
+        "grossAmount"
+      ],
+      "expectedValidation": [
+        {
+          "check": "documentType",
+          "expected": "invoice"
+        },
+        {
+          "check": "net+vat=gross",
+          "expected": "42000.00+7980.00=49980.00"
+        }
+      ],
+      "answerable": {
+        "question": {
+          "en": "What gross amount does the invoice state?",
+          "de": "Welchen Bruttobetrag nennt die Rechnung?",
+          "vi": "Hóa đơn nêu tổng tiền sau thuế là bao nhiêu?"
+        },
+        "answer": "49.980,00 EUR",
+        "evidence": {
+          "path": "use-cases/eingangsrechnung-musterquartier.pdf",
+          "page": 1,
+          "quote": "49.980,00 EUR"
+        }
+      },
+      "unanswerable": {
+        "question": {
+          "en": "Has the invoice been paid?",
+          "de": "Wurde die Rechnung bereits bezahlt?",
+          "vi": "Hóa đơn đã được thanh toán chưa?"
+        },
+        "absentTerms": [
+          "bezahlt am",
+          "Zahlungseingang"
+        ],
+        "expected": "abstain"
+      },
+      "boundary": {
+        "en": "Research support only. No legal, investment, payment, valuation or ESG certification decision.",
+        "de": "Nur Forschungsunterstützung. Keine Rechts-, Investitions-, Zahlungs-, Bewertungs- oder ESG-Zertifizierungsentscheidung.",
+        "vi": "Chỉ hỗ trợ nghiên cứu. Không đưa ra quyết định pháp lý, đầu tư, thanh toán, định giá hay chứng nhận ESG."
+      }
+    },
+    {
+      "id": "project-status",
+      "title": {
+        "en": "Project status summary",
+        "de": "Zusammenfassung des Projektstatus",
+        "vi": "Tổng hợp trạng thái dự án"
+      },
+      "summary": {
+        "en": "Labelled status lines are extracted deterministically; a model may draft wording only from those cited lines.",
+        "de": "Beschriftete Statuszeilen werden deterministisch extrahiert; ein Modell darf nur aus diesen zitierten Zeilen formulieren.",
+        "vi": "Các dòng trạng thái có nhãn được trích xuất xác định; mô hình chỉ được soạn câu từ chính các dòng đã trích dẫn."
+      },
+      "fixtures": [
+        {
+          "path": "use-cases/projektstatus-musterquartier.pdf",
+          "sha256": "e41d70751df03e1a29a85d7ed7329df875f6ced95b8bc85b9d60e57f8c30ddc3",
+          "pages": 2,
+          "label": "FIKTIVE DATEN"
+        }
+      ],
+      "fields": [
+        "Projektphase",
+        "Status",
+        "Fertigstellungsgrad Rohbau",
+        "Nächster Meilenstein",
+        "Offene Risiken"
+      ],
+      "expectedValidation": [
+        {
+          "check": "Projektphase",
+          "expected": "Rohbau"
+        },
+        {
+          "check": "Status",
+          "expected": "Im Plan mit Terminrisiko"
+        },
+        {
+          "check": "Fertigstellungsgrad Rohbau",
+          "expected": "62 %"
+        },
+        {
+          "check": "risks",
+          "expected": "2"
+        }
+      ],
+      "answerable": {
+        "question": {
+          "en": "When is the topping-out ceremony planned?",
+          "de": "Wann ist das Richtfest geplant?",
+          "vi": "Lễ cất nóc dự kiến vào ngày nào?"
+        },
+        "answer": "14.11.2026",
+        "evidence": {
+          "path": "use-cases/projektstatus-musterquartier.pdf",
+          "page": 1,
+          "quote": "Richtfest am 14.11.2026"
+        }
+      },
+      "unanswerable": {
+        "question": {
+          "en": "What is the tenant occupancy rate?",
+          "de": "Wie hoch ist die Mieterauslastung?",
+          "vi": "Tỷ lệ lấp đầy khách thuê là bao nhiêu?"
+        },
+        "absentTerms": [
+          "Mieterauslastung",
+          "Vermietungsstand"
+        ],
+        "expected": "abstain"
+      },
+      "boundary": {
+        "en": "Research support only. No legal, investment, payment, valuation or ESG certification decision.",
+        "de": "Nur Forschungsunterstützung. Keine Rechts-, Investitions-, Zahlungs-, Bewertungs- oder ESG-Zertifizierungsentscheidung.",
+        "vi": "Chỉ hỗ trợ nghiên cứu. Không đưa ra quyết định pháp lý, đầu tư, thanh toán, định giá hay chứng nhận ESG."
+      }
+    },
+    {
+      "id": "contract-risk",
+      "title": {
+        "en": "Contract and risk check",
+        "de": "Vertrags- und Risikoprüfung",
+        "vi": "Kiểm tra hợp đồng và rủi ro"
+      },
+      "summary": {
+        "en": "Clause values are extracted and compared with review thresholds; a triggered threshold asks a person to review, it is not legal advice.",
+        "de": "Klauselwerte werden extrahiert und mit Prüfschwellen verglichen; eine ausgelöste Schwelle bittet um menschliche Prüfung und ist keine Rechtsberatung.",
+        "vi": "Giá trị điều khoản được trích xuất và so với ngưỡng cần xem xét; vượt ngưỡng chỉ yêu cầu người kiểm tra, không phải tư vấn pháp lý."
+      },
+      "fixtures": [
+        {
+          "path": "use-cases/bauvertrag-musterquartier.pdf",
+          "sha256": "f3edd3f00316b46fb9582fccc659b24a1f1f2d0a46bd674d327d17daff94cf54",
+          "pages": 1,
+          "label": "FIKTIVE DATEN"
+        }
+      ],
+      "fields": [
+        "contractSum",
+        "penaltyPerWorkingDay",
+        "penaltyCap",
+        "warrantyPeriod",
+        "securityRetention"
+      ],
+      "expectedValidation": [
+        {
+          "check": "penaltyPerDayPercent",
+          "expected": "0.3"
+        },
+        {
+          "check": "penaltyCapPercent",
+          "expected": "5"
+        },
+        {
+          "check": "warrantyYears",
+          "expected": "5"
+        },
+        {
+          "check": "PENALTY_RATE_ABOVE_REVIEW_THRESHOLD",
+          "expected": "true"
+        },
+        {
+          "check": "PENALTY_CAP_ABOVE_REVIEW_THRESHOLD",
+          "expected": "false"
+        },
+        {
+          "check": "WARRANTY_BELOW_REVIEW_THRESHOLD",
+          "expected": "false"
+        }
+      ],
+      "answerable": {
+        "question": {
+          "en": "How long is the warranty period?",
+          "de": "Wie lang ist die Gewährleistungsfrist?",
+          "vi": "Thời hạn bảo hành là bao lâu?"
+        },
+        "answer": "5 Jahre ab Abnahme",
+        "evidence": {
+          "path": "use-cases/bauvertrag-musterquartier.pdf",
+          "page": 1,
+          "quote": "5 Jahre ab Abnahme"
+        }
+      },
+      "unanswerable": {
+        "question": {
+          "en": "Is the penalty clause legally enforceable?",
+          "de": "Ist die Vertragsstrafenklausel wirksam?",
+          "vi": "Điều khoản phạt có hiệu lực pháp lý không?"
+        },
+        "absentTerms": [
+          "wirksam",
+          "unwirksam"
+        ],
+        "expected": "abstain"
+      },
+      "boundary": {
+        "en": "Research support only. No legal, investment, payment, valuation or ESG certification decision.",
+        "de": "Nur Forschungsunterstützung. Keine Rechts-, Investitions-, Zahlungs-, Bewertungs- oder ESG-Zertifizierungsentscheidung.",
+        "vi": "Chỉ hỗ trợ nghiên cứu. Không đưa ra quyết định pháp lý, đầu tư, thanh toán, định giá hay chứng nhận ESG."
+      }
+    },
+    {
+      "id": "order-change-invoice-acceptance",
+      "title": {
+        "en": "Order, change order, invoice and acceptance reconciliation",
+        "de": "Abgleich Auftrag – Nachtrag – Rechnung – Abnahme",
+        "vi": "Đối chiếu Auftrag – Nachtrag – Rechnung – Abnahme"
+      },
+      "summary": {
+        "en": "The existing deterministic dossier review links references, flags the EUR 1,200 variance and carries two open defects into human review.",
+        "de": "Die bestehende deterministische Dossierprüfung verknüpft Referenzen, markiert die Abweichung von 1.200 EUR und übergibt zwei offene Mängel an die menschliche Prüfung.",
+        "vi": "Bộ kiểm tra hồ sơ xác định hiện có liên kết các tham chiếu, đánh dấu chênh lệch 1.200 EUR và chuyển hai lỗi còn mở sang bước người kiểm tra."
+      },
+      "fixtures": [
+        {
+          "path": "real-estate/fictional-construction-order.pdf",
+          "sha256": "212dd2b106af894ca30e18846e7610b20337ea23c8a952ca8b67148d0ba194d2",
+          "pages": 1,
+          "label": "FIKTIV"
+        },
+        {
+          "path": "real-estate/fictional-change-order.pdf",
+          "sha256": "8ba059a50d31a34bded24f2b1f80f8a18ef559feeb43abeb10efbf5eca49ceac",
+          "pages": 1,
+          "label": "FIKTIV"
+        },
+        {
+          "path": "real-estate/fictional-construction-invoice.pdf",
+          "sha256": "58915f5c8f6e059ed45b149921f997fe602d803b775f1d633668b98d159b8077",
+          "pages": 1,
+          "label": "FIKTIV"
+        },
+        {
+          "path": "real-estate/fictional-acceptance-report.pdf",
+          "sha256": "5b465ece081fa66920876c383cdb9d1f15dff7f5c99e4d0e6fa7df9e5654a964",
+          "pages": 1,
+          "label": "FIKTIV"
+        },
+        {
+          "path": "real-estate/fictional-site-meeting-minutes.pdf",
+          "sha256": "4e169fb4349abc2958f21667c04ac372b17bbff02dce196f71e9fefddd2ba288",
+          "pages": 1,
+          "label": "FIKTIV"
+        }
+      ],
+      "fields": [
+        "projectId",
+        "orderNumber",
+        "orderSum",
+        "changeOrderSum",
+        "invoiceTotal",
+        "openDefects",
+        "deadline"
+      ],
+      "expectedValidation": [
+        {
+          "check": "variance",
+          "expected": "1.200,00 EUR"
+        },
+        {
+          "check": "openDefects",
+          "expected": "2"
+        }
+      ],
+      "answerable": {
+        "question": {
+          "en": "What order sum does the construction order state?",
+          "de": "Welche Auftragssumme nennt der Bauauftrag?",
+          "vi": "Hợp đồng thi công nêu giá trị đơn hàng là bao nhiêu?"
+        },
+        "answer": "184.450,00 EUR",
+        "evidence": {
+          "path": "real-estate/fictional-construction-order.pdf",
+          "page": 1,
+          "quote": "184.450,00 EUR"
+        }
+      },
+      "unanswerable": {
+        "question": {
+          "en": "Was the invoice approved for payment?",
+          "de": "Wurde die Rechnung zur Zahlung freigegeben?",
+          "vi": "Hóa đơn đã được duyệt thanh toán chưa?"
+        },
+        "absentTerms": [
+          "zur Zahlung freigegeben",
+          "Zahlungsfreigabe erteilt"
+        ],
+        "expected": "abstain"
+      },
+      "boundary": {
+        "en": "Research support only. No legal, investment, payment, valuation or ESG certification decision.",
+        "de": "Nur Forschungsunterstützung. Keine Rechts-, Investitions-, Zahlungs-, Bewertungs- oder ESG-Zertifizierungsentscheidung.",
+        "vi": "Chỉ hỗ trợ nghiên cứu. Không đưa ra quyết định pháp lý, đầu tư, thanh toán, định giá hay chứng nhận ESG."
+      }
+    },
+    {
+      "id": "esg-evidence",
+      "title": {
+        "en": "ESG evidence completeness",
+        "de": "Vollständigkeit der ESG-Nachweise",
+        "vi": "Kiểm tra mức độ đầy đủ của chứng cứ ESG"
+      },
+      "summary": {
+        "en": "Counts which required evidence items are present, missing or pending; it never certifies ESG, taxonomy or sustainability compliance.",
+        "de": "Zählt, welche geforderten Nachweise vorliegen, fehlen oder in Prüfung sind; es wird nie eine ESG-, Taxonomie- oder Nachhaltigkeitskonformität bescheinigt.",
+        "vi": "Đếm các chứng cứ bắt buộc đã có, còn thiếu hoặc đang xét; không bao giờ chứng nhận tuân thủ ESG, taxonomy hay bền vững."
+      },
+      "fixtures": [
+        {
+          "path": "use-cases/esg-nachweise-musterquartier.pdf",
+          "sha256": "fb7f76a47f1d059c81adc69ec28339e620b76d8a5b663be77ca536ba37ad0827",
+          "pages": 1,
+          "label": "FIKTIVE DATEN"
+        }
+      ],
+      "fields": [
+        "Energieausweis",
+        "GEG-Nachweis",
+        "Ökobilanz Tragwerk",
+        "Regenwassermanagement",
+        "Barrierefreiheit",
+        "Taxonomie-Screening"
+      ],
+      "expectedValidation": [
+        {
+          "check": "present",
+          "expected": "3"
+        },
+        {
+          "check": "missing",
+          "expected": "2"
+        },
+        {
+          "check": "pending",
+          "expected": "1"
+        },
+        {
+          "check": "completenessPercent",
+          "expected": "50"
+        }
+      ],
+      "answerable": {
+        "question": {
+          "en": "Until when is the energy certificate valid?",
+          "de": "Bis wann ist der Energieausweis gültig?",
+          "vi": "Chứng chỉ năng lượng có hiệu lực đến khi nào?"
+        },
+        "answer": "2036",
+        "evidence": {
+          "path": "use-cases/esg-nachweise-musterquartier.pdf",
+          "page": 1,
+          "quote": "gültig bis 2036"
+        }
+      },
+      "unanswerable": {
+        "question": {
+          "en": "Does the project comply with the EU taxonomy?",
+          "de": "Erfüllt das Projekt die EU-Taxonomie?",
+          "vi": "Dự án có tuân thủ EU Taxonomy không?"
+        },
+        "absentTerms": [
+          "taxonomiekonform",
+          "erfüllt die EU-Taxonomie"
+        ],
+        "expected": "abstain"
+      },
+      "boundary": {
+        "en": "Research support only. No legal, investment, payment, valuation or ESG certification decision.",
+        "de": "Nur Forschungsunterstützung. Keine Rechts-, Investitions-, Zahlungs-, Bewertungs- oder ESG-Zertifizierungsentscheidung.",
+        "vi": "Chỉ hỗ trợ nghiên cứu. Không đưa ra quyết định pháp lý, đầu tư, thanh toán, định giá hay chứng nhận ESG."
+      }
+    },
+    {
+      "id": "knowledge-assistant",
+      "title": {
+        "en": "Knowledge assistant with citations",
+        "de": "Wissensassistent mit Quellenangaben",
+        "vi": "Trợ lý tri thức có trích nguồn"
+      },
+      "summary": {
+        "en": "Questions across the status report, contract and ESG overview are answered only with cited evidence; unsupported questions are refused.",
+        "de": "Fragen über Statusbericht, Vertrag und ESG-Übersicht werden nur mit zitierter Evidenz beantwortet; nicht belegte Fragen werden abgelehnt.",
+        "vi": "Câu hỏi trên báo cáo trạng thái, hợp đồng và tổng quan ESG chỉ được trả lời kèm chứng cứ trích dẫn; câu hỏi không có căn cứ bị từ chối."
+      },
+      "fixtures": [
+        {
+          "path": "use-cases/projektstatus-musterquartier.pdf",
+          "sha256": "e41d70751df03e1a29a85d7ed7329df875f6ced95b8bc85b9d60e57f8c30ddc3",
+          "pages": 2,
+          "label": "FIKTIVE DATEN"
+        },
+        {
+          "path": "use-cases/bauvertrag-musterquartier.pdf",
+          "sha256": "f3edd3f00316b46fb9582fccc659b24a1f1f2d0a46bd674d327d17daff94cf54",
+          "pages": 1,
+          "label": "FIKTIVE DATEN"
+        },
+        {
+          "path": "use-cases/esg-nachweise-musterquartier.pdf",
+          "sha256": "fb7f76a47f1d059c81adc69ec28339e620b76d8a5b663be77ca536ba37ad0827",
+          "pages": 1,
+          "label": "FIKTIVE DATEN"
+        }
+      ],
+      "fields": [
+        "citations",
+        "abstention"
+      ],
+      "expectedValidation": [
+        {
+          "check": "answerCitesSourcePage",
+          "expected": "true"
+        },
+        {
+          "check": "unsupportedQuestionAbstains",
+          "expected": "true"
+        }
+      ],
+      "answerable": {
+        "question": {
+          "en": "Which warranty period does the construction contract state?",
+          "de": "Welche Gewährleistungsfrist nennt der Bauvertrag?",
+          "vi": "Hợp đồng thi công nêu thời hạn bảo hành nào?"
+        },
+        "answer": "5 Jahre ab Abnahme",
+        "evidence": {
+          "path": "use-cases/bauvertrag-musterquartier.pdf",
+          "page": 1,
+          "quote": "5 Jahre ab Abnahme"
+        }
+      },
+      "unanswerable": {
+        "question": {
+          "en": "How high is the property tax for the project?",
+          "de": "Wie hoch ist die Grundsteuer für das Projekt?",
+          "vi": "Thuế bất động sản của dự án là bao nhiêu?"
+        },
+        "absentTerms": [
+          "Grundsteuer"
+        ],
+        "expected": "abstain"
+      },
+      "boundary": {
+        "en": "Research support only. No legal, investment, payment, valuation or ESG certification decision.",
+        "de": "Nur Forschungsunterstützung. Keine Rechts-, Investitions-, Zahlungs-, Bewertungs- oder ESG-Zertifizierungsentscheidung.",
+        "vi": "Chỉ hỗ trợ nghiên cứu. Không đưa ra quyết định pháp lý, đầu tư, thanh toán, định giá hay chứng nhận ESG."
+      }
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "_comment": "Fictional Gmail API message (format=full) used by tests and offline demos. Not real mail.",
+  "id": "18c2f0a1b2c3d4e5",
+  "threadId": "18c2f0a1b2c3d4e5",
+  "internalDate": "1793001600000",
+  "labelIds": [
+    "INBOX",
+    "Label_Nachtraege"
+  ],
+  "payload": {
+    "partId": "",
+    "mimeType": "multipart/mixed",
+    "filename": "",
+    "headers": [
+      {
+        "name": "Subject",
+        "value": "Nachtragsangebot NA-2026-007 (fiktiv)"
+      },
+      {
+        "name": "From",
+        "value": "Angebote <angebote@musterbau.example>"
+      },
+      {
+        "name": "Date",
+        "value": "Mon, 26 Oct 2026 09:30:00 +0100"
+      }
+    ],
+    "body": {
+      "size": 0
+    },
+    "parts": [
+      {
+        "partId": "0",
+        "mimeType": "text/plain",
+        "filename": "",
+        "body": {
+          "size": 120,
+          "data": "SGllciBkYXMgZmlrdGl2ZSBOYWNodHJhZ3NhbmdlYm90LiBCaXR0ZSBwcsO8ZmVuLg"
+        }
+      },
+      {
+        "partId": "1",
+        "mimeType": "application/pdf",
+        "filename": "Nachtragsangebot-NA-2026-007.pdf",
+        "body": {
+          "attachmentId": "ANGjdJ-fixture-attachment-001",
+          "size": 2577
+        }
+      }
+    ]
+  }
+}

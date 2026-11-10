@@ -372,5 +372,49 @@
         "Không coi bản ghi demo là hoạt động đã kiểm toán thực tế."
       ]
     }
+  },
+  {
+    "id": "integrations",
+    "aliases": [
+      "integrations",
+      "integrationen",
+      "tích hợp",
+      "tich hop",
+      "connectors",
+      "connector",
+      "gmail",
+      "google drive",
+      "microsoft 365",
+      "sharepoint",
+      "nguồn tài liệu",
+      "dokumentquellen"
+    ],
+    "en": {
+      "title": "Integrations",
+      "description": "Connect optional document sources (local fixtures, Gmail, Google Drive, Microsoft 365), import selected PDFs into the shared pipeline and run the offline use cases. Tokens stay on the server.",
+      "steps": [
+        "Check each provider's label: verified-local, simulated or implemented but not live-verified.",
+        "Preview a source, select up to four PDFs and confirm processing consent.",
+        "Follow the jobs in Data Pipelines, then review fields and evidence; drafts need your approval and are never sent."
+      ]
+    },
+    "de": {
+      "title": "Integrationen",
+      "description": "Optionale Dokumentquellen verbinden (lokale Testdokumente, Gmail, Google Drive, Microsoft 365), ausgewählte PDFs in die gemeinsame Pipeline importieren und die Offline-Anwendungsfälle prüfen. Tokens bleiben auf dem Server.",
+      "steps": [
+        "Das Label jedes Anbieters prüfen: verified-local, simuliert oder implementiert, aber nicht live geprüft.",
+        "Quelle ansehen, bis zu vier PDFs auswählen und die Verarbeitung bestätigen.",
+        "Aufträge in den Datenpipelines verfolgen, dann Felder und Evidenz prüfen; Entwürfe brauchen deine Freigabe und werden nie gesendet."
+      ]
+    },
+    "vi": {
+      "title": "Tích hợp",
+      "description": "Kết nối nguồn tài liệu tùy chọn (fixture cục bộ, Gmail, Google Drive, Microsoft 365), nhập PDF đã chọn vào pipeline chung và chạy các use case offline. Token chỉ nằm trên máy chủ.",
+      "steps": [
+        "Xem nhãn của từng nhà cung cấp: verified-local, mô phỏng hoặc đã triển khai nhưng chưa kiểm chứng thực tế.",
+        "Xem trước một nguồn, chọn tối đa bốn PDF và xác nhận đồng ý xử lý.",
+        "Theo dõi tác vụ ở Data Pipelines, rồi kiểm tra trường và chứng cứ; bản nháp cần bạn phê duyệt và không bao giờ được gửi."
+      ]
+    }
   }
 ]

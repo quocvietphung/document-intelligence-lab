@@ -1,21 +1,21 @@
 import {spawnSync,execFileSync} from 'node:child_process';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
-import {analyticsComposeFiles,composeFileArgs,productionComposeFiles} from './compose-files.mjs';
+import {analyticsComposeFiles,composeFileArgs,googleConnectorComposeFiles,productionComposeFiles} from './compose-files.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const localModel='qwen3:4b-instruct-2507-q4_K_M';
 export const ollamaImage='document-lab-ollama-cpu:0.40.6';
 export function validateModel(value){if(!/^[a-zA-Z0-9][a-zA-Z0-9_.:/-]{0,99}$/.test(value)||value.includes('..')||value.includes('://')||/(?:-cloud|:cloud)(?::.*)?$/i.test(value))throw Error('Select a local model identifier, not a URL or cloud model');return value;}
 // The normal stack is exactly the production file list (Spark is never included; see compose-files.mjs).
-export function localCompose(model=localModel,{analytics=false}={}){return {args:['compose',...composeFileArgs(productionComposeFiles),...(analytics?[...composeFileArgs(analyticsComposeFiles),'--profile','analytics']:[])],env:{...process.env,OLLAMA_CHAT_MODEL:validateModel(model)}};}
+export function localCompose(model=localModel,{analytics=false,google=false}={}){return {args:['compose',...composeFileArgs(productionComposeFiles),...(google?composeFileArgs(googleConnectorComposeFiles):[]),...(analytics?[...composeFileArgs(analyticsComposeFiles),'--profile','analytics']:[])],env:{...process.env,OLLAMA_CHAT_MODEL:validateModel(model)}};}
 export function warmupRequest(model=localModel){return JSON.stringify({model:validateModel(model),prompt:'',stream:false,keep_alive:'5m',options:{num_ctx:4096}});}
 function run(args,options={}){const result=spawnSync('docker',args,{cwd:root,stdio:'inherit',...options});if(result.error||result.status!==0)throw Error('Docker step failed; existing documents and databases were not removed');return result;}
 function output(args){return execFileSync('docker',args,{cwd:root,encoding:'utf8',timeout:15000,stdio:['ignore','pipe','pipe']}).trim();}
 export function freeDiskKb(value,minimumGiB=8){const available=Number(value.trim().split('\n').at(-1)?.trim().split(/\s+/)[3]);if(!Number.isFinite(available)||available<minimumGiB*1024*1024)throw Error(`Keep at least ${minimumGiB} GiB available inside Docker. Do not delete database/PDF volumes`);return available;}
 async function main(){
-  const flags=process.argv.slice(2);if(flags.some(flag=>!['--prepare-model','--no-build','--warmup','--with-analytics'].includes(flag)))throw Error('Usage: node scripts/docker-local.mjs [--prepare-model] [--no-build] [--warmup] [--with-analytics]');
-  const {args,env}=localCompose(process.env.OLLAMA_CHAT_MODEL||localModel,{analytics:flags.includes('--with-analytics')});
+  const flags=process.argv.slice(2);if(flags.some(flag=>!['--prepare-model','--no-build','--warmup','--with-analytics','--with-google-connectors'].includes(flag)))throw Error('Usage: node scripts/docker-local.mjs [--prepare-model] [--no-build] [--warmup] [--with-analytics] [--with-google-connectors]');
+  const {args,env}=localCompose(process.env.OLLAMA_CHAT_MODEL||localModel,{analytics:flags.includes('--with-analytics'),google:flags.includes('--with-google-connectors')});
   output(['info','--format','{{.ServerVersion}}']);
   try{output(['image','inspect','busybox:1.37']);}catch{run(['pull','busybox:1.37']);}
   freeDiskKb(output(['run','--rm','--pull','never','--network','none','busybox:1.37','df','-Pk','/']),flags.includes('--prepare-model')?8:1);

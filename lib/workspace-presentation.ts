@@ -89,11 +89,11 @@ export const workspaceNavigation = [
   {title:'groupOperations',pages:['controls','operations']},
 ] as const;
 const sectionPages:Partial<Record<WorkspaceTab,readonly WorkspaceTab[]>> = {
-  experiments:['experiments','banking','evaluation'], operations:['operations','audit'],
+  experiments:['experiments','banking','evaluation'], operations:['operations','audit'], pipeline:['pipeline','integrations'],
 };
 /** Keep existing hashes, Nova links and tours while grouping related pages. */
 export function workspaceSection(page:WorkspaceTab):WorkspaceTab {
-  return page==='banking'||page==='evaluation'?'experiments':page==='audit'?'operations':page;
+  return page==='banking'||page==='evaluation'?'experiments':page==='audit'?'operations':page==='integrations'?'pipeline':page;
 }
 export function workspaceSubpages(page:WorkspaceTab):readonly WorkspaceTab[] {
   return sectionPages[workspaceSection(page)]||[];
