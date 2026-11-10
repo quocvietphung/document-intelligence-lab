@@ -1,50 +1,94 @@
 # Document Intelligence Lab
 
-## Search the source with XERJ
+**An open-source, provider-neutral Document AI research platform.** It studies how business PDFs become structured data, traceable answers and reviewable findings, with page evidence, deterministic checks and a person in control. Microsoft 365, Dynamics 365, Google and Azure are optional adapters. The local workflow needs no cloud credential.
 
-[![XERJ Corpus Hub contributor](https://hub.xerj.org/contributors/quocvietphung/badge.svg)](https://hub.xerj.org/contributors/quocvietphung)
+> Research support only. Results are not legal, financial, investment, payment, valuation, compliance or ESG certification decisions.
 
-For code review, an AI agent can use XERJ to index this public repository and retrieve implementation passages with file paths. This is a separate developer tool; running the application or Nova does not require it. See the [Corpus Hub entry](https://hub.xerj.org/corpus/quocvietphung--document-intelligence-lab) for its current publication status.
+## What the project researches
 
-The Hub reference names commit [`cd45b95171f9497bb298c4e8ad2c3d64c822f706`](https://github.com/quocvietphung/document-intelligence-lab/tree/cd45b95171f9497bb298c4e8ad2c3d64c822f706). The steps below reproduce that historical snapshot locally, independently of downloadable pack availability. Newer features on `master` may be absent; always identify the commit used in an answer. Selection for the Hub is not an audit or an accuracy certification.
+- Text, layout, table and OCR extraction, with source locations kept for every value.
+- Classification, BM25, vector and hybrid retrieval, and answers that cite pages or refuse.
+- Deterministic validation, cross-document reconciliation and project metrics computed in code.
+- Human review, an audit trail and provider-neutral intake from local files, email, drives and Microsoft 365.
 
-<details>
-<summary>Search the pinned reference locally (macOS/Linux)</summary>
+## Provider-neutral architecture
 
-Install XERJ using its [official installation guide](https://xerj.org/docs/install), then check each command's result before continuing. Use a new reference directory outside your working checkout so private PDFs, credentials and runtime files are not indexed. Port 9200 must be free; do not replace an existing node. [CLI and query reference](https://xerj.org/llms.txt).
+```mermaid
+flowchart LR
+    L[Local PDFs and fictional fixtures] --> P
+    G[Gmail · Google Drive] -. optional .-> P
+    M[Microsoft 365 via the M365 service] -. optional .-> P
+    F[WebDAV · S3 · REST · Dataverse<br/>planned, disabled] -.-> P
+    P[Shared intake<br/>authorization · real MIME · hash · ClamAV · durable queue] --> X[OCR · layout · tables<br/>Docling, Azure DI optional]
+    X --> E[Normalization · RAG · evidence]
+    E --> V[Deterministic validation]
+    V --> H[Human review]
+    H --> D[Approved destination<br/>report · Gmail draft]
+    H --> A[(Audit trail)]
+```
 
-**Terminal 1:** verify usage, clone the reference and start the local node. The node's data directory is a sibling of the indexed source, never inside it. Keep this terminal running; `Ctrl+C` stops this node.
+Adapters only list and fetch documents or deliver an approved result. OCR, retrieval, the queue, evidence and review exist once and are shared by every source. [Connector architecture, setup, scopes and security](docs/CONNECTORS.md).
+
+## Connectors
+
+| Connector | Status | Notes |
+| --- | --- | --- |
+| Local files and fictional fixtures | `verified-local` | Default; runs offline |
+| Gmail attachments (read-only), Gmail drafts after approval | `implemented-not-live-verified` | Optional; tested with a mocked Gmail API only |
+| Google Drive (read-only) | `implemented-not-live-verified` | Optional; tested with a mocked Drive API only |
+| Microsoft 365 (SharePoint / OneDrive) through the M365 service | `simulated` (mock provider) | Optional; its Graph provider is implemented but not live-verified |
+| Azure Document Intelligence and Azure OpenAI | optional | Your own resources; one bounded live smoke test is recorded for the M365 service |
+| CSV business data | `verified-local` | Deterministic project assessment |
+| WebDAV / Nextcloud, S3 / MinIO, PostgreSQL, generic REST, Dynamics 365 / Dataverse, webhook, CRM write-back | `future` | Disabled descriptors with no network code |
+
+## Use cases
+
+Each use case runs first with local PDFs. It ships fictional documents labelled `FIKTIVE DATEN`, a list of fields, expected validation results, one answerable question with page evidence and one unanswerable question that must be refused.
+
+| Use case | Deterministic result |
+| --- | --- |
+| Project and real-estate assessment | Total cost, cost variance, revenue scenarios, margin, cost per m² and schedule variance, all computed in code |
+| Document intake from email | Fictional Gmail message → PDF attachment → shared pipeline (mocked API offline) |
+| Classification and extraction | Document type; net plus VAT equals gross |
+| Project status summary | Labelled status, progress and risks |
+| Contract and risk check | Penalty, cap and warranty compared with review thresholds; not legal advice |
+| Order – change order – invoice – acceptance | EUR 1,200 variance and two open defects passed to review |
+| ESG evidence completeness | Present, missing and pending evidence; no certification |
+| Knowledge assistant with citations | Answers only with cited evidence; unsupported questions are refused |
+
+Run them in **Data Pipelines → Integrations → Use cases**. A language model may explain the results or draft a report; it never computes them.
+
+## Docker quick start
 
 ```bash
-xerj --help
-mkdir document-lab-reference
-cd document-lab-reference
 git clone https://github.com/quocvietphung/document-intelligence-lab.git
-git -C document-intelligence-lab checkout --detach cd45b95171f9497bb298c4e8ad2c3d64c822f706
-git -C document-intelligence-lab rev-parse HEAD
-export XERJ_DISABLE_FEEDBACK=true
-xerj --insecure --bind 127.0.0.1 --port 9200 --data-dir ./xerj-data
+cd document-intelligence-lab
+node scripts/docker-local.mjs --prepare-model
 ```
 
-Verify the checkout prints the pinned SHA and the node starts on loopback. `--insecure` disables authentication/TLS for this local reference node only; keep its listeners on loopback. Feedback submission is disabled for this walkthrough. See [XERJ's authentication and network documentation](https://xerj.org/docs/security).
+The first run builds the images and downloads the local model once. Open <http://localhost:3000/en>, sign in with the local development account `advisor.demo` / `demo-password`, and open **Data Pipelines → Integrations**. Requirements, health checks and troubleshooting are in [Local Docker workspace](#local-docker-workspace). Gmail and Drive are added explicitly with `--with-google-connectors` ([setup](docs/CONNECTORS.md#optional-google-gmail-and-drive)).
 
-**Terminal 2:** open the same `document-lab-reference` directory, index only the reference clone, inspect the map and search for an actual symbol in that snapshot:
+## Evidence, confidence and human review
 
-```bash
-export XERJ_DISABLE_FEEDBACK=true
-xerj autoindex ./document-intelligence-lab --url http://127.0.0.1:9200 --prefix document-intelligence-la --progress plain
-xerj autoindex map --url http://127.0.0.1:9200
-curl --fail --silent --show-error \
-  -X POST 'http://127.0.0.1:9200/document-intelligence-la-*/_search' \
-  -H 'Content-Type: application/json' \
-  -d '{"size":3,"_source":["ax_path","defs","body"],"query":{"multi_match":{"query":"SelectedFieldEvidence","fields":["defs^3","body","title"]}}}'
-```
+- Every extracted value keeps its page, original text and evidence. A matching citation does not prove that the OCR read the original correctly.
+- Confidence and relevance scores are not accuracy. Missing values stay unknown instead of being guessed.
+- Deterministic rules and thresholds only request review. Nothing is approved, paid or certified automatically.
+- Nova answers from authorized evidence, cites sources and refuses unsupported questions. Text inside PDFs and emails is treated as untrusted data.
+- Destinations deliver only content that a person previewed and approved. A Gmail draft is never sent by the application.
 
-Read the indexing summary before querying: exit 0 means complete; exit 3 means completed with skipped/junk files that need inspection; other nonzero results require following the CLI's diagnostic. The map describes indexed fields; it does not answer a code question by itself. Check the search response has relevant hits, then inspect their passages. If it has none, report that rather than inventing an implementation.
+## Real, simulated or optional
 
-An example question for an agent is: **“How does `SelectedFieldEvidence` restrict the evidence passed to Nova?”** Ask it to use the returned passages, cite each hit's `_source.ax_path` (and line numbers when supplied), identify the pinned commit and distinguish source findings from inference. Retain the [MIT copyright notice](LICENSE) and credit Viet Phung and the repository contributors when adapting their code. An indexed hit alone does not verify application behavior.
+| Runs for real, locally | Simulated (fictional data) | Optional, needs your credentials |
+| --- | --- | --- |
+| Upload, ClamAV scan, durable queue, Docling extraction, retrieval, Nova with Ollama, DuckDB ETL, deterministic use-case checks, review and audit | Microsoft 365 documents through the M365 mock provider; the email use case's Gmail message | Gmail, Google Drive, Gmail drafts, Microsoft Graph, Azure Document Intelligence, Azure OpenAI |
 
-</details>
+## Current limitations
+
+- No connector has been tested against a real Google account or Microsoft tenant. Labels say so.
+- The Google scopes `drive.readonly` and `gmail.compose` are broader than ideal; [why](docs/CONNECTORS.md#3-scopes-and-why-they-are-needed).
+- Excel files must be exported as CSV; `.xlsx` parsing is not implemented.
+- The planned adapters (WebDAV, S3, PostgreSQL, REST, Dataverse, webhook, CRM write-back) are not implemented.
+- Benchmarks use small authored corpora; they are development measurements, not general accuracy.
 
 ## About the project
 
@@ -518,6 +562,7 @@ TEST_DOCUMENT_STRUCTURE=1 node scripts/test-oauth.mjs
 TEST_RAG_PDFS=prepare node scripts/test-oauth.mjs
 TEST_RAG_PDFS=measure node scripts/test-oauth.mjs
 TEST_DOCUMENT_CLASSIFICATION=1 node scripts/test-oauth.mjs
+TEST_CONNECTORS=1 node scripts/test-oauth.mjs
 ```
 
 Prepare the [PDF sources](#pdf-examples) first for RAG acceptance. These checks create research records, not human approvals. [Research recipes and metric definitions](docs/RESEARCH_WORKSPACES.md) · [Python wheel/Docling checks](python/README.md#development) · [Nova, recovery and cancellation](docs/RELIABILITY_LAB.md).
@@ -576,12 +621,60 @@ OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose \
 | `python/src/document_evidence/contracts/` | Shared synthetic validation fixtures |
 | `app/`, `components/workspace/`, `lib/` | Localized web UI, contracts and frontend tests |
 | `services/credit-api/` | Java authorization, processing, evidence, workflows and audit |
+| `services/credit-api/src/main/java/dev/creditlab/sources/` | Provider-neutral source, business-data and destination contracts, Gmail/Drive/M365/local adapters, use-case checks |
+| `services/credit-api/src/main/resources/use-cases/` | Fictional use-case PDFs, CSV, mock Gmail message and catalog (regenerate with `scripts/prepare-use-case-fixtures.py`) |
 | `services/document-etl/` | Offline DuckDB/dbt and Parquet |
 | `infra/keycloak/` | Local development realm |
 | `scripts/` | Startup, Azure token bridge, private sample preparation and acceptance |
 | `.github/workflows/` | Platform checks and separately gated Python packaging/release |
 
-More: [Python](python/README.md) · [Docker](docs/DOCKER_LOCAL.md) · [Local document AI](docs/LOCAL_DOCUMENT_AI.md) · [Azure AI](docs/AZURE_AI.md) · [Research](docs/RESEARCH_WORKSPACES.md) · [Nova](docs/NOVA_TRUST.md) · [Operations](docs/RELIABILITY_LAB.md).
+More: [Connectors](docs/CONNECTORS.md) · [Python](python/README.md) · [Docker](docs/DOCKER_LOCAL.md) · [Local document AI](docs/LOCAL_DOCUMENT_AI.md) · [Azure AI](docs/AZURE_AI.md) · [Research](docs/RESEARCH_WORKSPACES.md) · [Nova](docs/NOVA_TRUST.md) · [Operations](docs/RELIABILITY_LAB.md).
+
+## Search the source with XERJ
+
+[![XERJ Corpus Hub contributor](https://hub.xerj.org/contributors/quocvietphung/badge.svg)](https://hub.xerj.org/contributors/quocvietphung)
+
+For code review, an AI agent can use XERJ to index this public repository and retrieve implementation passages with file paths. This is a separate developer tool; running the application or Nova does not require it. See the [Corpus Hub entry](https://hub.xerj.org/corpus/quocvietphung--document-intelligence-lab) for its current publication status.
+
+The Hub reference names commit [`cd45b95171f9497bb298c4e8ad2c3d64c822f706`](https://github.com/quocvietphung/document-intelligence-lab/tree/cd45b95171f9497bb298c4e8ad2c3d64c822f706). The steps below reproduce that historical snapshot locally, independently of downloadable pack availability. Newer features on `master` may be absent; always identify the commit used in an answer. Selection for the Hub is not an audit or an accuracy certification.
+
+<details>
+<summary>Search the pinned reference locally (macOS/Linux)</summary>
+
+Install XERJ using its [official installation guide](https://xerj.org/docs/install), then check each command's result before continuing. Use a new reference directory outside your working checkout so private PDFs, credentials and runtime files are not indexed. Port 9200 must be free; do not replace an existing node. [CLI and query reference](https://xerj.org/llms.txt).
+
+**Terminal 1:** verify usage, clone the reference and start the local node. The node's data directory is a sibling of the indexed source, never inside it. Keep this terminal running; `Ctrl+C` stops this node.
+
+```bash
+xerj --help
+mkdir document-lab-reference
+cd document-lab-reference
+git clone https://github.com/quocvietphung/document-intelligence-lab.git
+git -C document-intelligence-lab checkout --detach cd45b95171f9497bb298c4e8ad2c3d64c822f706
+git -C document-intelligence-lab rev-parse HEAD
+export XERJ_DISABLE_FEEDBACK=true
+xerj --insecure --bind 127.0.0.1 --port 9200 --data-dir ./xerj-data
+```
+
+Verify the checkout prints the pinned SHA and the node starts on loopback. `--insecure` disables authentication/TLS for this local reference node only; keep its listeners on loopback. Feedback submission is disabled for this walkthrough. See [XERJ's authentication and network documentation](https://xerj.org/docs/security).
+
+**Terminal 2:** open the same `document-lab-reference` directory, index only the reference clone, inspect the map and search for an actual symbol in that snapshot:
+
+```bash
+export XERJ_DISABLE_FEEDBACK=true
+xerj autoindex ./document-intelligence-lab --url http://127.0.0.1:9200 --prefix document-intelligence-la --progress plain
+xerj autoindex map --url http://127.0.0.1:9200
+curl --fail --silent --show-error \
+  -X POST 'http://127.0.0.1:9200/document-intelligence-la-*/_search' \
+  -H 'Content-Type: application/json' \
+  -d '{"size":3,"_source":["ax_path","defs","body"],"query":{"multi_match":{"query":"SelectedFieldEvidence","fields":["defs^3","body","title"]}}}'
+```
+
+Read the indexing summary before querying: exit 0 means complete; exit 3 means completed with skipped/junk files that need inspection; other nonzero results require following the CLI's diagnostic. The map describes indexed fields; it does not answer a code question by itself. Check the search response has relevant hits, then inspect their passages. If it has none, report that rather than inventing an implementation.
+
+An example question for an agent is: **“How does `SelectedFieldEvidence` restrict the evidence passed to Nova?”** Ask it to use the returned passages, cite each hit's `_source.ax_path` (and line numbers when supplied), identify the pinned commit and distinguish source findings from inference. Retain the [MIT copyright notice](LICENSE) and credit Viet Phung and the repository contributors when adapting their code. An indexed hit alone does not verify application behavior.
+
+</details>
 
 ## License and limits
 

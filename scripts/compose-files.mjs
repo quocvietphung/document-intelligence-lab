@@ -14,6 +14,8 @@ export const productionComposeFiles=Object.freeze([
 export const analyticsComposeFiles=Object.freeze(['docker-compose.ml.yml']);
 // Explicit research experiments. Started only by scripts/run-document-spark.mjs, never by the normal stack.
 export const experimentalComposeFiles=Object.freeze(['docker-compose.spark.yml']);
+// Optional Google connectors (Gmail, Drive, Gmail drafts). Never part of the default production stack.
+export const googleConnectorComposeFiles=Object.freeze(['docker-compose.google.yml']);
 export const requiredProductionServices=Object.freeze(['case-db','identity-db','keycloak','credit-api','web','redis','qdrant','etl','m365-poc']);
 
 export function composeFileArgs(files){return files.flatMap(file=>['-f',file]);}

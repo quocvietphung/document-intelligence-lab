@@ -52,6 +52,18 @@ boundary and the explicit Graph/Azure configuration.
 
 There is **no required `.env` file** for this profile. Copying `.env.example` alone does not configure the Java container: Compose supplies its environment. The smaller base file alone is for limited OAuth checks, not the complete research platform.
 
+## Optional layers ("profiles")
+
+| Layer | How to enable | Credentials |
+| --- | --- | --- |
+| default (core local stack) | `node scripts/docker-local.mjs` | none |
+| google-connectors (Gmail, Google Drive, Gmail drafts) | `--with-google-connectors` adds `docker-compose.google.yml`, which reads the git-ignored `.env.google.local` | your own Google OAuth client; see [Connectors](CONNECTORS.md) |
+| local-ai (Nova/Ollama) | part of the default stack (`docker-compose.nova-local.yml`); `--prepare-model` downloads the model once | none |
+| observability (traces) | `docker-compose.observability.yml`, see below | none |
+| analytics (ML worker, MLflow) | `--with-analytics` | none |
+
+The Integrations page (**Data Pipelines → Integrations**) shows each adapter's label. Without the Google layer, Gmail and Drive are listed as not configured, and the simulated Microsoft 365 adapter reads fictional documents from the M365 service over the private Compose network.
+
 ## Production stack and the Spark experiment
 
 The supported stack is defined once in [`scripts/compose-files.mjs`](../scripts/compose-files.mjs) and started by

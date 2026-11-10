@@ -55,6 +55,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/cases/*/documents/*/ocr-corrections").hasAnyRole("REVIEWER","ADMIN")
             .requestMatchers(HttpMethod.POST, "/api/cases/*/banking/**").denyAll()
             .requestMatchers("/api/cases/**").hasAnyRole("ADVISOR","ADMIN")
+            .requestMatchers("/api/connectors/**").hasAnyRole("ADVISOR","REVIEWER","ADMIN")
             .anyRequest().authenticated())
         .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter())))
         .build();

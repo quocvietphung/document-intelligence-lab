@@ -26,3 +26,7 @@ services:
       - "127.0.0.1:8765:8765"
     labels:
       com.credit-intelligence-lab.component: "m365-document-evidence"
+  # The Java API reads the simulated M365 adapter through the private Compose network (no host port, no Graph call).
+  credit-api:
+    environment:
+      M365_POC_BASE_URL: http://m365-poc:8765

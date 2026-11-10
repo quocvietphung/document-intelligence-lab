@@ -25,3 +25,9 @@ test('allows only the five reviewed fictional real-estate fixtures',()=>{
   for(const name of ['customer.pdf','fictional-property-record.pdf','construction-order.pdf'])
     assert.ok(publicationRisk(root+name),name);
 });
+test('allows only the named authored use-case fixtures, not arbitrary PDFs next to them',()=>{
+  for(const name of ['projektbewertung','email-nachtragsangebot','eingangsrechnung','projektstatus','bauvertrag','esg-nachweise'])
+    assert.equal(publicationRisk(`services/credit-api/src/main/resources/use-cases/${name}-musterquartier.pdf`),null,name);
+  for(const path of ['services/credit-api/src/main/resources/use-cases/customer-contract.pdf','services/credit-api/src/main/resources/use-cases/bauvertrag-musterquartier.pdf.pdf','services/credit-api/src/main/resources/use-cases/sub/bauvertrag-musterquartier.pdf'])
+    assert.ok(publicationRisk(path),path);
+});

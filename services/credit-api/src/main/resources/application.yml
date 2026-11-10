@@ -69,6 +69,12 @@ app.integrations.adf-resource: ${AZURE_ADF_RESOURCE_ID:}
 app.integrations.foundry-endpoint: ${AZURE_EVALUATION_ENDPOINT:}
 app.integrations.telemetry: ${APPLICATIONINSIGHTS_ENABLED:false}
 app.ai.vision-model: ${OLLAMA_VISION_MODEL:}
+# Optional provider adapters. Empty values keep them disabled; the default stack needs no cloud credential.
+app.connectors.token-key: ${CONNECTOR_TOKEN_KEY:}
+app.connectors.google.client-id: ${GOOGLE_OAUTH_CLIENT_ID:}
+app.connectors.google.client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET:}
+app.connectors.google.redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:}
+app.connectors.m365.base-url: ${M365_POC_BASE_URL:}
 app.platform.qdrant-url: ${QDRANT_URL:}
 app.platform.redis-enabled: ${REDIS_LIMITS_ENABLED:false}
 app.platform.clamav-host: ${CLAMAV_HOST:}

@@ -54,6 +54,7 @@ from .telemetry import Telemetry
 
 logger = logging.getLogger("m365_poc.api")
 _CORRELATION_RE = re.compile(r"^[A-Za-z0-9\-]{8,64}$")
+_DOCUMENT_ID_RE = re.compile(r"^[A-Za-z0-9_.\-]{1,120}$")
 CORRELATION_HEADER = "X-Correlation-ID"
 
 
@@ -221,6 +222,26 @@ def create_app(
     ) -> SearchResponse:
         ctx = _ctx(request)
         return SearchResponse(query=q, results=service.search(ctx, q, max_results))
+
+    @app.get("/documents/{document_id}/content", response_model=None)
+    async def document_content(request: Request, document_id: str) -> Response:
+        """Read-only PDF bytes for the provider-neutral intake, after the same tenant and ACL check as search.
+
+        Unknown and forbidden documents return the same 404, so the endpoint is no existence oracle.
+        """
+        if not _DOCUMENT_ID_RE.match(document_id):
+            return _error(422, "invalid_document_id", "Invalid document identifier.", _cid(request))
+        ctx = _ctx(request)
+        fetched = service.fetch_authorised(ctx, document_id)
+        return Response(
+            content=fetched.data,
+            media_type="application/pdf",
+            headers={
+                "Cache-Control": "no-store",
+                "X-Content-Type-Options": "nosniff",
+                "Content-Disposition": 'attachment; filename="document.pdf"',
+            },
+        )
 
     @app.post("/ask", response_model=AskResponse)
     async def ask(body: AskRequest, request: Request) -> AskResponse:

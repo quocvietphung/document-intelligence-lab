@@ -114,6 +114,7 @@ There is **no static API token option**. Production-shaped access uses Entra tok
 | `GET /health` | none | Minimal status, active providers and labels. No tenant or secret data |
 | `GET /documents` | required in `entra` | Authorised documents (name and ID) |
 | `GET /documents/search?q=&max_results=` | required in `entra` | Authorised search results |
+| `GET /documents/{id}/content` | required in `entra` | Read-only PDF bytes after the same tenant/ACL check; unknown and forbidden both return 404. Used by the Java workspace's provider-neutral intake (`microsoft-365` source) over the private Compose network |
 | `POST /ask` | required in `entra` | Grounded answer with claims, sources, page, evidence ID and labels, or an abstention |
 
 Examples (mock mode):

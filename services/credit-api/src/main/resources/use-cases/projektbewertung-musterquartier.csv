@@ -1,0 +1,10 @@
+type,name,planned,forecast
+cost,KG 100 Grundstück,4200000.00,4200000.00
+cost,KG 200 Herrichten und Erschließen,350000.00,380000.00
+cost,KG 300/400 Bauwerk,9800000.00,10450000.00
+cost,KG 700 Baunebenkosten,1650000.00,1720000.00
+area,Wohnfläche m²,6500,
+revenue,Basis,21450000.00,
+revenue,Vorsichtig,18200000.00,
+milestone,Baubeginn,2026-03-01,2026-03-01
+milestone,Fertigstellung,2027-09-30,2027-12-15

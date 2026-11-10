@@ -53,3 +53,9 @@ test('the production check detects Spark services, images and builds',()=>{
   assert.equal(sparkFindings({services:{batch:{build:{context:'.',dockerfile:'services/document-spark/Dockerfile'}}}}).length,1);
   assert.deepEqual(missingServices({services:{web:{}}},['web','etl']),['etl']);
 });
+test('Google connectors are an explicit layer and never part of the default stack',()=>{
+  assert.ok(!localCompose().args.includes('docker-compose.google.yml'));
+  const google=localCompose(localModel,{google:true}).args;
+  assert.ok(google.includes('docker-compose.google.yml'));
+  assert.ok(google.includes('docker-compose.m365.yml'));
+});
