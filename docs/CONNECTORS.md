@@ -53,11 +53,12 @@ Labels describe what was actually tested. Configuration alone never upgrades a l
 node scripts/docker-local.mjs
 ```
 
-The default stack contains no Google, Microsoft or Azure credential. In **Sources & integrations**:
+The default stack contains no Google, Microsoft or Azure credential. Each feature has one place in the workspace:
 
-1. Choose **Local files and fictional fixtures**, preview, select up to four PDFs, confirm consent and import. They go through the same scan, extraction and review as uploads.
-2. Run **Use cases → Run deterministic check** for any of the eight use cases. Each result reports `networkCalls: 0`.
-3. Calculate the **Project assessment** from the fictional CSV.
+1. **Sources & integrations**: choose **Local files and fictional fixtures**, preview, select up to four PDFs, confirm consent and import. They go through the same scan, extraction and review as uploads.
+2. **Research datasets → Sample scenarios**: run the deterministic check for any of the eight use cases. Each result reports `networkCalls: 0`.
+3. **Domain analysis → Project assessment**: calculate the deterministic figures from the fictional CSV.
+4. **Documents & evidence**: after a person confirms a document, download the report or, with Google connected, create a Gmail draft from that document's row menu.
 
 The authenticated acceptance check runs the same flow through Keycloak, the Next.js proxies and Java. It creates one dedicated fictional dossier, imports a local fixture and a simulated Microsoft 365 document, waits for ClamAV and extraction, and checks labels, duplicates, review gating, the report and the audit trail:
 

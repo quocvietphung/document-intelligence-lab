@@ -182,3 +182,8 @@ export function useAuth() {
   if (!value) throw new Error("useAuth must be used inside KeycloakProvider");
   return value;
 }
+
+/** For components that also render outside the provider (static previews, tests): no session means no requests. */
+export function useOptionalAuth() {
+  return useContext(AuthContext);
+}

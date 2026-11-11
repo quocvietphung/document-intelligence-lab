@@ -33,7 +33,7 @@ docker compose -f docker-compose.yml -f docker-compose.platform.yml \
 2. Create a research dossier. Upload a permitted PDF/image through **Processing & data → Processing queue**, or prepare a private DATEV/Kaggle reference and import it from **Documents & evidence**.
 3. Confirm **Docling** in processing settings. The durable queue scans the file before calling the internal parser.
 4. Open **Result & PDF**. Verify the provider `docling`, page text, fields, tables and original currency. Successful extraction remains **awaiting human review**.
-5. Try **AI Studio** for local retrieval. **Nova App guidance** remains available, but **Evidence analysis is unavailable without a configured generative model**. This profile must not be advertised as a fully local Nova chatbot.
+5. Try **Ask documents** for local retrieval. **Nova App guidance** remains available, but **Evidence analysis is unavailable without a configured generative model**. This profile must not be advertised as a fully local Nova chatbot.
 
 The lab accepts PDF, PNG and JPEG, at most 3 MB, four PDF pages or 6 MP images. The bridge sends bytes, not URLs or original customer filenames; follows no redirects; rejects partial/oversized/ambiguous-page output; and does not silently fall back to Azure. Layout/table models provide structure; Java still performs transparent field mapping and validation. `docling-layout-tableformer` identifies the pipeline, not a custom trained payroll model or a measured accuracy. Missing confidence stays unknown.
 

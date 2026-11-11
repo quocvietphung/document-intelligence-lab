@@ -16,7 +16,7 @@ The default remains local Docker, with the existing Docling or PDFBox/Tesseract 
 | BGE reranker | Learned reranking of at most 24 hybrid candidates | Prepared weights and measured relevance versus latency |
 | Vision | One original page to an explicit local Ollama vision model | Installed vision model, image support and numeric correctness; observations remain unverified |
 
-UI locations: **Processing & data → Data layers & exports** for local ETL and separate Sources & orchestration, **AI experiments** for evaluation and optional local vision, **Operations** for monitoring configuration. Opening a page reads local configuration only. Refreshing configuration does not run a model or contact Azure.
+UI locations: **Processing & data → Data layers & exports** for local ETL and separate Sources & orchestration, **Quality evaluation** for evaluation and optional local vision, **Operations** for monitoring configuration. Opening a page reads local configuration only. Refreshing configuration does not run a model or contact Azure.
 
 ### Local reliability recheck — 22 October 2026
 
@@ -53,7 +53,7 @@ The normal local helper now also starts `docker-compose.etl.yml`. DuckDB/dbt run
 
 On the prepared invoice `kaggle-invoice-51109301.pdf`, use **Processing & data → Data layers & exports → Build data layers** after consent. Bronze stores immutable extraction snapshots and available original hashes; Silver preserves raw strings and flags ambiguous dates/separators or duplicate candidates; Gold includes only reviewer-confirmed amounts, grouped separately by field and currency. SCD Type 2 records observed snapshot changes. Actual Parquet downloads require the same Bearer/tenant/dossier authorization. Original PDF expiry does not automatically remove these analytical copies.
 
-In **AI experiments**, independently label invoice number `51109301` on page 1, or the stated coverage period on the Shelter excerpt. Compare four chunking strategies without modifying the live index. The separate prompt comparison makes two real local calls with explicit JSON Schema and keeps the expected reference out of both prompts. Abstentions, unsupported quotes and wrong values remain failed samples; a well-formed JSON object is not proof of factual correctness. No extra model download or cloud request is required by these additions. See the README for exact setup and acceptance commands.
+In **Quality evaluation**, independently label invoice number `51109301` on page 1, or the stated coverage period on the Shelter excerpt. Compare four chunking strategies without modifying the live index. The separate prompt comparison makes two real local calls with explicit JSON Schema and keeps the expected reference out of both prompts. Abstentions, unsupported quotes and wrong values remain failed samples; a well-formed JSON object is not proof of factual correctness. No extra model download or cloud request is required by these additions. See the README for exact setup and acceptance commands.
 
 Blob, ADF and Application Insights are **infrastructure, not extra AI models**. For their PDF exercise, import the same synthetic invoice through the explicit source queue, inspect the source hash/receipt, and inspect metadata-only monitoring. Azure runs remain separately authorized and not automatically verified by a local success.
 
@@ -176,7 +176,7 @@ Your existing pipeline must accept `labRequestId`, `labCaseId` and `labSourcePre
 
 ## Foundry / Azure AI Evaluation SDK
 
-From AI experiments, load saved answers containing original-document sources and explicitly download private evaluation input. It contains question, answer and cited excerpts, **not PDF bytes**. A saved answer may predate the current dossier revision; this is a historical answer snapshot, not re-extraction of the current document. Ground truth is blank until a human independently supplies it.
+From Quality evaluation, load saved answers containing original-document sources and explicitly download private evaluation input. It contains question, answer and cited excerpts, **not PDF bytes**. A saved answer may predate the current dossier revision; this is a historical answer snapshot, not re-extraction of the current document. Ground truth is blank until a human independently supplies it.
 
 Validation without SDK installation or inference:
 

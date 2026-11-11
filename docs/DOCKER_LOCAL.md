@@ -142,7 +142,7 @@ These public example credentials are **local only**. Ports bind to loopback; nev
 1. Create a General documents dossier.
 2. Prepare the private Kaggle library using the [README](../README.md#kaggle-document-library). In Document research library, preview invoice 51109301, then confirm Import & analyze. Visiting a page never uploads it automatically.
 3. Wait for extraction; open the private PDF/result and compare amount, date and identifier.
-4. In AI Studio, search for the invoice total and inspect its original source.
+4. In Ask documents, search for the invoice total and inspect its original source.
 5. In AI Experiments, independently read labels from the PDF or specify a question's target page, acknowledge the source check, save a reference and run an experiment.
 6. Inspect Processing & data: Processing queue versus Data assets & Azure. Exports contain text and require private handling.
 

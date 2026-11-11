@@ -3,7 +3,7 @@ import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {dashboardFeatures,dashboardGroups,dashboardStats,dashboardEngine,filteredDashboardFeatures} from './ai-dashboard';
 import {dashboardLanguages,dashboardText} from './ai-dashboard-language';
-import {WorkspaceAICatalog,AIDashboardStats} from '@/components/workspace/WorkspaceAICatalog';
+import {WorkspaceAICatalog} from '@/components/workspace/WorkspaceAICatalog';
 import {workspaceTabs} from './nova-guide';
 import {trustSections} from './nova-trust';
 import type {AICapabilities} from './ai-capabilities';
@@ -25,8 +25,8 @@ describe('AI dashboard directory',()=>{
     const html=renderToStaticMarkup(createElement(WorkspaceAICatalog,{locale:'en',demo:false,caseId:'CR-1',navigate:()=>{},openNova:()=>{}}));
     expect(html).toContain('href="?case=CR-1&amp;pipeline=batches#pipeline"');
     expect(html).toContain('href="?case=CR-1#documents"');
-    const stats=renderToStaticMarkup(createElement(AIDashboardStats,{locale:'en',demo:false}));
-    expect(stats).toContain('<dt>AI-assisted workflows</dt>');
+    // The catalogue count is named as such, so it cannot be read as a number of AI runs.
+    expect(html).toContain('33 features in the catalog');
   });
   it('provides distinct current destinations without payment actions',()=>{
     expect(dashboardFeatures).toHaveLength(33);expect(new Set(dashboardFeatures.map(f=>f.id)).size).toBe(33);
@@ -79,6 +79,7 @@ describe('AI dashboard directory',()=>{
   it('keeps demo controls honest and never calls inference while rendering',()=>{
     const html=renderToStaticMarkup(createElement(WorkspaceAICatalog,{locale:'en',demo:true,capabilities,navigate:()=>{},openNova:()=>{}}));
     expect(html).toContain('Demo · no model calls');expect(html).not.toContain('actual-lab-deployment');expect(html).toContain('disabled');
-    const stats=renderToStaticMarkup(createElement(AIDashboardStats,{locale:'en',demo:false}));expect(stats).toContain('—');expect(stats).toContain('Catalogue count');
+    // The list stays collapsed until opened, searched, filtered or deep-linked, but every feature is still rendered.
+    expect(html).toContain('id="ai-directory-groups" hidden=""');expect(html).toContain('aria-expanded="false"');
   });
 });

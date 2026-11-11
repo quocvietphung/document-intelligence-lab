@@ -98,7 +98,8 @@ export const workspaceNavigation = [
   {title:'',pages:['overview']},
   {title:'intake',pages:['integrations','pipeline']},
   {title:'review',pages:['documents','controls','audit']},
-  {title:'analysis',pages:['studio','experiments','banking','evaluation']},
+  {title:'analysis',pages:['studio','banking']},
+  {title:'research',pages:['experiments','evaluation']},
   {title:'governance',pages:['trust','operations']},
 ] as const satisfies readonly {title:string;pages:readonly WorkspaceTab[]}[];
 export type WorkspaceGroup=Exclude<typeof workspaceNavigation[number]['title'],''>;
@@ -107,14 +108,14 @@ type PageNames=Record<WorkspaceTab|WorkspaceGroup,string>;
 /** The single name of each page and group. The sidebar, page title, page tour and Nova catalog all use it. */
 export const workspacePageNameLanguages:Record<'en'|'de'|'vi',PageNames>={
   en:{overview:'Tasks',integrations:'Sources & integrations',pipeline:'Processing & data',documents:'Documents & evidence',controls:'Reconciliation',audit:'Activity log',
-    studio:'AI Studio',experiments:'AI experiments',banking:'Domain insights',evaluation:'Document research',trust:'AI transparency',operations:'Operations',
-    intake:'Intake',review:'Review',analysis:'Analysis',governance:'Governance'},
+    studio:'Ask documents',experiments:'Quality evaluation',banking:'Domain analysis',evaluation:'Research datasets',trust:'AI transparency',operations:'Operations',
+    intake:'Intake',review:'Review',analysis:'Analysis',research:'Research',governance:'Governance'},
   de:{overview:'Aufgaben',integrations:'Quellen & Integrationen',pipeline:'Verarbeitung & Daten',documents:'Dokumente & Belege',controls:'Abgleich',audit:'Aktivitätsprotokoll',
-    studio:'AI Studio',experiments:'KI-Experimente',banking:'Fachliche Einblicke',evaluation:'Dokumentrecherche',trust:'KI-Transparenz',operations:'Betrieb',
-    intake:'Eingang',review:'Prüfung',analysis:'Analyse',governance:'Steuerung'},
+    studio:'Dokumente fragen',experiments:'Qualitätsbewertung',banking:'Bereichsanalyse',evaluation:'Forschungsdatensätze',trust:'KI-Transparenz',operations:'Betrieb',
+    intake:'Eingang',review:'Prüfung',analysis:'Analyse',research:'Forschung',governance:'Steuerung'},
   vi:{overview:'Việc cần làm',integrations:'Nguồn & tích hợp',pipeline:'Xử lý & dữ liệu',documents:'Tài liệu & chứng cứ',controls:'Đối chiếu dữ liệu',audit:'Nhật ký hoạt động',
-    studio:'AI Studio',experiments:'Thí nghiệm AI',banking:'Phân tích theo lĩnh vực',evaluation:'Nghiên cứu tài liệu',trust:'Minh bạch AI',operations:'Vận hành',
-    intake:'Nhận tài liệu',review:'Kiểm duyệt',analysis:'Phân tích',governance:'Quản trị'},
+    studio:'Hỏi tài liệu',experiments:'Đánh giá chất lượng',banking:'Phân tích lĩnh vực',evaluation:'Bộ dữ liệu nghiên cứu',trust:'Minh bạch AI',operations:'Vận hành',
+    intake:'Nhận tài liệu',review:'Kiểm duyệt',analysis:'Phân tích',research:'Nghiên cứu',governance:'Quản trị'},
 };
 export function workspacePageName(locale:string,page:WorkspaceTab|WorkspaceGroup){
   return workspacePageNameLanguages[locale==='vi'?'vi':locale==='de'?'de':'en'][page];

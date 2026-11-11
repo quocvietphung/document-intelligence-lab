@@ -144,7 +144,7 @@ public class SourceIntake {
     var response = new LinkedHashMap<String, Object>();
     response.put("sourceId", command.sourceId()); response.put("items", results);
     response.put("batchId", receipt == null ? null : receipt.get("id"));
-    response.put("next", "Follow the jobs in Data Pipelines, then review fields and evidence in Documents & review.");
+    response.put("next", "Follow the jobs in Processing & data, then review fields and evidence in Documents & evidence.");
     return response;
   }
 
