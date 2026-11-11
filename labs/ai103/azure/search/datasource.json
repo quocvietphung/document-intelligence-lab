@@ -1,0 +1,11 @@
+{
+  "name": "ai103-contractor-dossier-blob",
+  "description": "FIKTIVE DATEN. Blob container with the fictional contractor PDFs only. Use an identity-based connection string (ResourceId=...) and a managed identity; do not put account keys here.",
+  "type": "azureblob",
+  "credentials": {
+    "connectionString": "ResourceId=/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.Storage/storageAccounts/<storage-account>/;"
+  },
+  "container": {
+    "name": "contractor-dossier"
+  }
+}

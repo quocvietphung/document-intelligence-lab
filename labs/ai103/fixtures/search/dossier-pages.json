@@ -1,0 +1,57 @@
+{
+ "_comment": "FIKTIVE DATEN. Page texts of the four fictional contractor PDFs, extracted with pdf.js for the local keyword check of the AI-103 search exercise. Not the Java extraction.",
+ "documents": [
+  {
+   "name": "bauauftrag-wv-2026-031.pdf",
+   "pages": [
+    {
+     "number": 1,
+     "text": "DOCUMENT INTELLIGENCE LAB · AI-103 CONTRACTOR DOSSIER · FIKTIVE DATEN\nBauauftrag (Werkvertrag) WV-2026-031\nProjekt-ID:   LH-2026-C07\nAuftragsnummer:   WV-2026-031\nAuftraggeber:   Nordblick Projektgesellschaft mbH (fiktiv)\nAuftragnehmer:   Trockenbau Beispiel GmbH (fiktiv)\nLeistung:   Trockenbauwände und Deckenbekleidung Haus C, 1. bis 3.\nOG\nAusführungszeitraum:   05.10.2026 bis 30.11.2026\nLeistungen außerhalb dieses Umfangs werden nur nach einem schriftlich genehmigten Nachtrag vergütet.\nFIKTIVES FORSCHUNGSDOKUMENT · FIKTIVE DATEN · Keine reale Firma, Baustelle, Rechnung, Abnahme oder\nZahlungsfreigabe. Alle Namen, Nummern, Beträge und Daten sind frei erfunden."
+    },
+    {
+     "number": 2,
+     "text": "DOCUMENT INTELLIGENCE LAB · AI-103 CONTRACTOR DOSSIER · FIKTIVE DATEN\nVergütung und Zahlungsbedingungen\nVergütung netto:   36.000,00 EUR netto\nUmsatzsteuer 19 %:   6.840,00 EUR\nAuftragssumme:   42.840,00 EUR brutto\nZahlungsbedingung:   Zahlung erst nach Abnahme und sachlicher\nRechnungsprüfung\nDie Auftragssumme ist ein Bruttobetrag einschließlich 19 % Umsatzsteuer. Dieser Vertrag ist keine\nZahlungsfreigabe.\nFIKTIVES FORSCHUNGSDOKUMENT · FIKTIVE DATEN · Keine reale Firma, Baustelle, Rechnung, Abnahme oder\nZahlungsfreigabe. Alle Namen, Nummern, Beträge und Daten sind frei erfunden."
+    }
+   ]
+  },
+  {
+   "name": "nachtrag-n01-wv-2026-031.pdf",
+   "pages": [
+    {
+     "number": 1,
+     "text": "DOCUMENT INTELLIGENCE LAB · AI-103 CONTRACTOR DOSSIER · FIKTIVE DATEN\nNachtrag zum Bauauftrag N-01\nProjekt-ID:   LH-2026-C07\nAuftragsnummer:   WV-2026-031\nNachtragsnummer:   N-01\nLeistung:   Zusätzliche Schallschutz-Vorsatzschale im Treppenhaus Haus\nC\nBegründung:   Planänderung Akustik vom 12.10.2026\nDieser Nachtrag ist eine Anlage zum Bauauftrag WV-2026-031 und ändert dessen übrige Bedingungen\nnicht.\nFIKTIVES FORSCHUNGSDOKUMENT · FIKTIVE DATEN · Keine reale Firma, Baustelle, Rechnung, Abnahme oder\nZahlungsfreigabe. Alle Namen, Nummern, Beträge und Daten sind frei erfunden."
+    },
+    {
+     "number": 2,
+     "text": "DOCUMENT INTELLIGENCE LAB · AI-103 CONTRACTOR DOSSIER · FIKTIVE DATEN\nNachtragsvergütung und Genehmigung\nNachtragsvergütung netto:   4.991,60 EUR netto\nUmsatzsteuer 19 %:   948,40 EUR\nNachtragssumme:   5.940,00 EUR brutto\nGenehmigungsstatus:   schriftlich genehmigt durch den Auftraggeber am 16.10.2026\nGenehmigte Gesamtvergütung:   48.780,00 EUR brutto\nDie genehmigte Gesamtvergütung ergibt sich aus Auftragssumme 42.840,00 EUR brutto und Nachtrag\nN-01 5.940,00 EUR brutto. Weitere Leistungen sind nicht genehmigt.\nFIKTIVES FORSCHUNGSDOKUMENT · FIKTIVE DATEN · Keine reale Firma, Baustelle, Rechnung, Abnahme oder\nZahlungsfreigabe. Alle Namen, Nummern, Beträge und Daten sind frei erfunden."
+    }
+   ]
+  },
+  {
+   "name": "baurechnung-rg-2026-0457.pdf",
+   "pages": [
+    {
+     "number": 1,
+     "text": "DOCUMENT INTELLIGENCE LAB · AI-103 CONTRACTOR DOSSIER · FIKTIVE DATEN\nBaurechnung (Schlussrechnung) RG-2026-0457\nRechnungsnummer:   RG-2026-0457\nProjekt-ID:   LH-2026-C07\nAuftragsnummer:   WV-2026-031\nRechnungssteller:   Trockenbau Beispiel GmbH (fiktiv)\nRechnungsempfänger:   Nordblick Projektgesellschaft mbH (fiktiv)\nRechnungsdatum:   04.12.2026\nLeistungszeitraum:   05.10.2026 bis 30.11.2026\nPos.   Leistung   Bezug   Netto EUR\n1   Trockenbauwände und Deckenbekleidung WV-2026-031   36.000,00\nHaus C\n2   Schallschutz-Vorsatzschale Treppenhaus   Nachtrag N-01   4.991,60\n3   Zusätzliche Spachtelung Q3 Flur 2. OG   ohne Nachtrag   1.008,40\nDie Positionen sind Nettobeträge. Die Rechnungssumme mit Umsatzsteuer steht auf Seite 2.\nFIKTIVES FORSCHUNGSDOKUMENT · FIKTIVE DATEN · Keine reale Firma, Baustelle, Rechnung, Abnahme oder\nZahlungsfreigabe. Alle Namen, Nummern, Beträge und Daten sind frei erfunden."
+    },
+    {
+     "number": 2,
+     "text": "DOCUMENT INTELLIGENCE LAB · AI-103 CONTRACTOR DOSSIER · FIKTIVE DATEN\nRechnungssumme\nNettobetrag:   42.000,00 EUR netto\nUmsatzsteuer 19 %:   7.980,00 EUR\nRechnungsbetrag:   49.980,00 EUR brutto\nZahlungsziel:   30 Tage nach Rechnungseingang\nEine Zahlungsfreigabe ist nicht Teil dieses Dokuments. Prüfung und Freigabe erfolgen getrennt durch\nMenschen.\nFIKTIVES FORSCHUNGSDOKUMENT · FIKTIVE DATEN · Keine reale Firma, Baustelle, Rechnung, Abnahme oder\nZahlungsfreigabe. Alle Namen, Nummern, Beträge und Daten sind frei erfunden."
+    }
+   ]
+  },
+  {
+   "name": "abnahmeprotokoll-ap-2026-019.pdf",
+   "pages": [
+    {
+     "number": 1,
+     "text": "DOCUMENT INTELLIGENCE LAB · AI-103 CONTRACTOR DOSSIER · FIKTIVE DATEN\nAbnahmeprotokoll AP-2026-019\nProjekt-ID:   LH-2026-C07\nAuftragsnummer:   WV-2026-031\nAbnahmenummer:   AP-2026-019\nAbnahmedatum:   01.12.2026\nAbnahmeergebnis:   abgenommen mit Vorbehalt\nOffene Mängel:   1\nMängelfrist:   15.12.2026\nMangel M-1: Kantenschutz im Treppenhaus fehlt, siehe Foto F-01.\nFIKTIVES FORSCHUNGSDOKUMENT · FIKTIVE DATEN · Keine reale Firma, Baustelle, Rechnung, Abnahme oder\nZahlungsfreigabe. Alle Namen, Nummern, Beträge und Daten sind frei erfunden."
+    },
+    {
+     "number": 2,
+     "text": "DOCUMENT INTELLIGENCE LAB · AI-103 CONTRACTOR DOSSIER · FIKTIVE DATEN\nAbnahmeumfang und Fotodokumentation\nAbgenommener Umfang:   Pos. 1 (WV-2026-031) und Pos. 2 (Nachtrag N-01)\nNicht abgenommen:   Zusätzliche Spachtelung Q3 Flur 2. OG (kein Nachtrag\nvorhanden)\nFotodokumentation:   F-01, F-02, F-03\nZahlungsnachweis:   nicht Bestandteil dieses Protokolls\nDieses Protokoll dokumentiert die Abnahme. Es ist weder Zahlungsnachweis noch Zahlungsfreigabe.\nFIKTIVES FORSCHUNGSDOKUMENT · FIKTIVE DATEN · Keine reale Firma, Baustelle, Rechnung, Abnahme oder\nZahlungsfreigabe. Alle Namen, Nummern, Beträge und Daten sind frei erfunden."
+    }
+   ]
+  }
+ ]
+}

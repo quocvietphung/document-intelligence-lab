@@ -94,7 +94,9 @@ public class RagEngine {
     return search(item,chunks,question,limit,indexCase,Strategy.HYBRID);
   }
   private Search search(CreditCase item,List<Chunk> chunks,String question,int limit,boolean indexCase,Strategy strategy) {
-    var quarantine=chunks.stream().filter(c->!c.kind().equals("policy")&&EvidenceGuard.suspicious(c.text())).map(Chunk::id).toList();
+    // Page-level isolation: every chunk, field and table cell of a quarantined page leaves model context.
+    var isolated=PageIsolation.quarantinedPages(item);
+    var quarantine=chunks.stream().filter(c->!c.kind().equals("policy")&&(EvidenceGuard.untrustedForModel(c.text())||PageIsolation.isolated(isolated,c.documentId(),c.page()))).map(Chunk::id).toList();
     var safe=chunks.stream().filter(c->!quarantine.contains(c.id())).toList();
     float[] query=strategy==Strategy.BM25?new float[dimensions()]:vector(question);Map<String,Double> scores=new HashMap<>();String backend=strategy==Strategy.BM25?"local-bm25":"local-vector";
     if(indexCase&&!qdrant.isBlank()) {

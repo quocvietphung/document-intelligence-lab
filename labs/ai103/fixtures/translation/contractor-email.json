@@ -1,0 +1,8 @@
+{
+  "_comment": "FIKTIVE DATEN. Contractor e-mail (German) with a human-written English reference. Identifiers, amounts and currency must survive translation; number formatting may change.",
+  "from": "de",
+  "to": "en",
+  "identifiers": ["RG-2026-0457"],
+  "source": "Betreff: Schlussrechnung RG-2026-0457\nSehr geehrte Damen und Herren,\nanbei übersenden wir die Schlussrechnung RG-2026-0457 über 49.980,00 EUR brutto (42.000,00 EUR netto zuzüglich 7.980,00 EUR Umsatzsteuer). Die Position 3, zusätzliche Spachtelung im Flur 2. OG, beträgt 1.008,40 EUR netto und ist durch keinen Nachtrag gedeckt.\nMit freundlichen Grüßen\nMusterbau Ausbau GmbH (fiktiv)",
+  "reference": "Subject: Final invoice RG-2026-0457\nDear Sir or Madam,\nplease find attached final invoice RG-2026-0457 for EUR 49,980.00 gross (EUR 42,000.00 net plus EUR 7,980.00 VAT). Item 3, additional filling work in the second-floor corridor, amounts to EUR 1,008.40 net and is not covered by any change order.\nKind regards,\nMusterbau Ausbau GmbH (fictional)"
+}

@@ -1,0 +1,10 @@
+{
+  "_comment": "FIKTIVE DATEN. Sample response with a misheard invoice number and a missing currency word, to show what the transcript check must catch. Not a live response.",
+  "durationMilliseconds": 26600,
+  "combinedPhrases": [
+    {"text": "Begehung Haus C am 14.12.2026. Bei der Schlussrechnung RG-2026-0475 über 49.980,00 brutto ist die Position drei zu prüfen."}
+  ],
+  "phrases": [
+    {"offsetMilliseconds": 2400, "durationMilliseconds": 6100, "text": "Bei der Schlussrechnung RG-2026-0475 über 49.980,00 brutto ist die Position drei zu prüfen.", "locale": "de-DE", "confidence": 0.71}
+  ]
+}

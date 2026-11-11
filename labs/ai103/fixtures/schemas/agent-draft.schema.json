@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Read-only agent draft (AI-103 contractor pre-check)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["caseId", "status", "approved", "emailSent", "planner", "traceId", "amounts", "missingEvidence", "embeddedInstructions", "summary", "toolCalls", "deniedTools"],
+  "properties": {
+    "caseId": {"type": "string", "pattern": "^CR-[-A-Za-z0-9]+$"},
+    "status": {"const": "DRAFT_REQUIRES_HUMAN_REVIEW"},
+    "approved": {"const": false},
+    "emailSent": {"const": false},
+    "planner": {"enum": ["scripted", "ollama", "foundry-agent"]},
+    "traceId": {"type": "string", "pattern": "^[a-f0-9]{32}$"},
+    "amounts": {"type": "object", "additionalProperties": false, "required": ["approved", "invoice", "variance"], "properties": {
+      "approved": {"type": "object", "required": ["amount", "basis", "source"], "properties": {
+        "amount": {"type": ["string", "null"], "pattern": "^-?\\d+\\.\\d{2}$"}, "basis": {"enum": ["GROSS", "NET", "UNKNOWN"]},
+        "source": {"type": "object", "required": ["documentName", "page"], "properties": {"documentName": {"type": ["string", "null"]}, "page": {"type": ["integer", "null"], "minimum": 1}, "quote": {"type": ["string", "null"]}}}}},
+      "invoice": {"type": "object", "required": ["amount", "basis", "source"], "properties": {
+        "amount": {"type": ["string", "null"], "pattern": "^-?\\d+\\.\\d{2}$"}, "basis": {"enum": ["GROSS", "NET", "UNKNOWN"]},
+        "source": {"type": "object", "required": ["documentName", "page"], "properties": {"documentName": {"type": ["string", "null"]}, "page": {"type": ["integer", "null"], "minimum": 1}, "quote": {"type": ["string", "null"]}}}}},
+      "variance": {"type": "object", "required": ["amount", "basis", "sameTaxBasis"], "properties": {
+        "amount": {"type": ["string", "null"], "pattern": "^-?\\d+\\.\\d{2}$"}, "basis": {"type": ["string", "null"]}, "sameTaxBasis": {"type": "boolean"}}}}},
+    "missingEvidence": {"type": "array", "items": {"type": "string"}},
+    "embeddedInstructions": {"type": "array", "items": {"type": "object", "required": ["documentName", "page"]}},
+    "summary": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "toolCalls": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["tool", "ok", "ms"], "properties": {
+      "tool": {"type": "string"}, "ok": {"type": "boolean"}, "ms": {"type": "number", "minimum": 0}}}},
+    "deniedTools": {"type": "array", "items": {"type": "string"}}
+  }
+}

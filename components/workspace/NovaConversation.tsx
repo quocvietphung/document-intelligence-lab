@@ -3,6 +3,7 @@ import {useEffect,useRef,useState,type ReactNode} from "react";
 import {ArrowDown,Check,Copy} from "lucide-react";
 import {customerUx,nearChatBottom,novaSuggestions} from "@/lib/customer-ux";
 import type {WorkspaceTab} from "@/lib/nova-guide";
+import {NovaListenAnswer} from "./NovaSpeech";
 
 export function NovaConversation({open,messages,label,locale,children}:{open:boolean;messages:readonly unknown[];label:string;locale:string;children?:ReactNode}) {
   const log=useRef<HTMLDivElement>(null),following=useRef(true);
@@ -22,9 +23,9 @@ export function NovaSuggestions({locale,page,select,disabled=false}:{locale:stri
   const choices=novaSuggestions(locale,page);
   return <details className="nova-suggestions"><summary>{choices.label}</summary><p>{choices.hint}</p><div>{choices.questions.map(question=><button type="button" key={question} disabled={disabled} onClick={()=>select(question)}>{question}</button>)}</div></details>;
 }
-export function NovaCopyAnswer({text,locale}:{text:string;locale:string}) {
+export function NovaCopyAnswer({text,locale,speech}:{text:string;locale:string;speech?:{id:string;complete?:boolean}}) {
   const t=customerUx(locale),[result,setResult]=useState<"copied"|"failed">();
   useEffect(()=>{if(!result)return;const timer=setTimeout(()=>setResult(undefined),2500);return()=>clearTimeout(timer);},[result]);
   async function copy(){try{await navigator.clipboard.writeText(text);setResult("copied");}catch{setResult("failed");}}
-  return <div className="nova-answer-actions"><button type="button" aria-label={t.copy} title={t.copy} disabled={!text.trim()} onClick={()=>void copy()}>{result==="copied"?<Check size={14}/>:<Copy size={14}/>} {t.copy}</button>{result?<span role="status">{result==="copied"?t.copied:t.copyFailed}</span>:null}</div>;
+  return <div className="nova-answer-actions"><button type="button" aria-label={t.copy} title={t.copy} disabled={!text.trim()} onClick={()=>void copy()}>{result==="copied"?<Check size={14}/>:<Copy size={14}/>} {t.copy}</button>{speech?<NovaListenAnswer id={speech.id} text={text} locale={locale} complete={speech.complete}/>:null}{result?<span role="status">{result==="copied"?t.copied:t.copyFailed}</span>:null}</div>;
 }

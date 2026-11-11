@@ -1,0 +1,11 @@
+{
+  "name": "ai103-contractor-dossier-index",
+  "description": "FIKTIVE DATEN. One document per page piece; citations keep the document name, the page and the source id.",
+  "fields": [
+    {"name": "id", "type": "Edm.String", "key": true, "searchable": false, "filterable": false, "sortable": false, "facetable": false, "retrievable": true},
+    {"name": "sourceId", "type": "Edm.String", "searchable": false, "filterable": true, "sortable": false, "facetable": false, "retrievable": true},
+    {"name": "documentName", "type": "Edm.String", "searchable": true, "filterable": true, "sortable": false, "facetable": false, "retrievable": true},
+    {"name": "page", "type": "Edm.Int32", "searchable": false, "filterable": true, "sortable": true, "facetable": false, "retrievable": true},
+    {"name": "content", "type": "Edm.String", "searchable": true, "filterable": false, "sortable": false, "facetable": false, "retrievable": true}
+  ]
+}

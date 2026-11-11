@@ -41,6 +41,12 @@ app:
     credential: ${AZURE_OPENAI_CREDENTIAL:default}
     token-file: ${AZURE_OPENAI_TOKEN_FILE:}
     required: ${AZURE_AI_REQUIRED:false}
+    # Evidence and prompt switches for Nova; see docs/NOVA_AUDIO_AND_CONTEXT.md.
+    context:
+      dedupe: ${NOVA_CONTEXT_DEDUPE:true}
+      relative-score: ${NOVA_CONTEXT_RELATIVE_SCORE:0}
+    prompt:
+      static-first: ${NOVA_PROMPT_STATIC_FIRST:false}
   security:
     enabled: ${SECURITY_ENABLED:true}
 management:

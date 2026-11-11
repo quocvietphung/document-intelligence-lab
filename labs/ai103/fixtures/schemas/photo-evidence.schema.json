@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Acceptance photo evidence (AI-103 contractor dossier)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["photoId", "file", "image", "captionText", "capturedOn", "location", "subject", "defectIndicated", "linkedTo", "analysis"],
+  "properties": {
+    "photoId": {"type": ["string", "null"], "pattern": "^F-\\d{2}$"},
+    "file": {"type": "object", "additionalProperties": false, "required": ["name", "sha256", "mediaType"], "properties": {
+      "name": {"type": "string", "minLength": 1}, "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "mediaType": {"enum": ["image/png", "image/jpeg"]}}},
+    "image": {"type": "object", "additionalProperties": false, "required": ["width", "height"], "properties": {
+      "width": {"type": "integer", "minimum": 1}, "height": {"type": "integer", "minimum": 1}}},
+    "captionText": {"type": "string"},
+    "capturedOn": {"type": ["string", "null"], "format": "date"},
+    "location": {"type": ["string", "null"]},
+    "subject": {"type": ["string", "null"]},
+    "defectIndicated": {"type": ["boolean", "null"]},
+    "linkedTo": {"type": "object", "additionalProperties": false, "required": ["acceptanceReference", "defectId"], "properties": {
+      "acceptanceReference": {"type": ["string", "null"]}, "defectId": {"type": ["string", "null"], "pattern": "^M-\\d+$"}}},
+    "analysis": {"type": "object", "additionalProperties": false, "required": ["ocr", "semanticDescription", "semanticMethod", "humanReviewRequired"], "properties": {
+      "ocr": {"enum": ["tesseract-local", "docling-local", "azure-vision-read", "azure-content-understanding", "mock"]},
+      "semanticDescription": {"type": ["string", "null"]},
+      "semanticMethod": {"enum": ["not-run-local", "azure-vision-caption", "azure-content-understanding", "mock"]},
+      "humanReviewRequired": {"const": true}}}
+  }
+}

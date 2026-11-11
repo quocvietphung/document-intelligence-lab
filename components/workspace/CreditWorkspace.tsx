@@ -13,6 +13,7 @@ import {workspaceText} from "@/lib/workspace-language";
 import {useRouter} from "@/routing";
 import {ModalSurface} from "./ModalSurface";
 import {NovaChatContext,NovaChatSurface} from "./NovaChatSurface";
+import {stopSpeechWithPrefix} from "@/lib/nova-speech";
 import {NovaComposer} from "./NovaComposer";
 import type {NovaPageGuide} from "./NovaChatSurface";
 import {PageTour} from "./PageTour";
@@ -70,6 +71,8 @@ function Copilot({item,locale,open,onOpen,close,initialQuestion,initialOptions,o
   },prepareSendMessagesRequest:({messages,body})=>({body:{...caseChatPayload(messages,item.id,locale),...body,caseId:item.id,locale,caseVersion:item.version||0}})}),[auth.token,item.id,item.version,locale,setMode,setLimit]);
   const {messages,sendMessage,status,error,stop,setMessages,clearError}=useChat({transport,messages:[novaWelcomeMessage(locale)],onError:()=>setText(current=>current||pendingQuestion.current),onFinish:({isAbort,isDisconnect,isError})=>{if(!isAbort&&!isDisconnect&&!isError)setDraftOptions(undefined);}});
   const busy=status==="submitted"||status==="streaming";
+  // Closing Nova stops a chat answer that is being read aloud.
+  useEffect(()=>{if(!open)stopSpeechWithPrefix("chat-");},[open]);
   const cancelling=runState==='CANCEL_REQUESTED';
   async function stopRun(){void stop();setRunState('CANCEL_REQUESTED');if(!runId){setRunState('UNKNOWN');return;}
     try{const r=await fetch(`/api/cases/${item.id}/platform/nova-runs/${runId}/cancel`,{method:'POST',headers:{Authorization:`Bearer ${auth.token}`}});if(!r.ok)throw Error();setRunState(novaRunSchema.parse(await r.json()).status);}catch{setRunState('UNKNOWN');}}
@@ -89,7 +92,7 @@ function Copilot({item,locale,open,onOpen,close,initialQuestion,initialOptions,o
         <NovaMessageText text={message.parts.filter(p=>p.type==="text").map(p=>p.text).join("")} navigate={navigate} citations={record.success?record.data.sources.filter(s=>s.documentId&&s.originalAvailable).map(s=>s.id):[]} openSource={id=>{const source=record.success?record.data.sources.find(s=>s.id===id):undefined;openSource(id,{sourceId:id,ocrText:source?.excerpt,answerText:message.parts.filter(p=>p.type==='text').map(p=>p.text).join('')});}}/>
         {message.parts.filter(p=>p.type==="data-nova-guide").map((p,i)=><NovaGuideCard key={i} guide={"data" in p?p.data:undefined} locale={locale} item={item} navigate={navigate} openSource={openSource}/>)}
         {message.parts.some(p=>p.type==="source-document")?<details className="mt-4 border-t border-slate-200 pt-3 text-xs"><summary>{t("sources")}</summary><ul className="mt-2 space-y-2">{message.parts.filter(p=>p.type==="source-document").map(p=><li key={p.sourceId}>{item.documents.some(doc=>p.sourceId.startsWith(doc.id+":"))?<button className="button-link" onClick={()=>{void stop();openSource(p.sourceId);}}>{p.title||p.sourceId} → {d("preview")}</button>:<span>{p.title||p.sourceId} <code>[{p.sourceId}]</code></span>}</li>)}</ul></details>:null}
-        {message.role==="assistant"&&message.id!=="nova-welcome"&&!message.parts.some(p=>p.type==="data-nova-guide")?<NovaCopyAnswer text={message.parts.filter(p=>p.type==="text").map(p=>p.text).join("")} locale={locale}/>:null}
+        {message.role==="assistant"&&message.id!=="nova-welcome"&&!message.parts.some(p=>p.type==="data-nova-guide")?<NovaCopyAnswer text={message.parts.filter(p=>p.type==="text").map(p=>p.text).join("")} locale={locale} speech={{id:`chat-${message.id}`,complete:!(busy&&message.id===messages.at(-1)?.id)}}/>:null}
         {record.success?<NovaAnswerActions answer={record.data} caseId={item.id} caseVersion={item.version||0} locale={locale} onDraft={onDraft} openSource={openSource}/>:null}
       </article>;})}
       {busy?<p className="p-3 text-sm text-slate-500" role="status">{aiCapabilities?.chat.provider==='ollama'?(locale==='vi'?'Nova đang đọc chứng cứ bằng model local. Lần đầu trên CPU có thể hơn một phút; chưa có kết quả được phê duyệt.':locale==='de'?'Nova liest die Belege mit dem lokalen Modell. Der erste CPU-Aufruf kann über eine Minute dauern; noch kein geprüftes Ergebnis.':'Nova is reading evidence with the local model. The first CPU request can take over a minute; no approved result yet.'):t("loading")}</p>:null}

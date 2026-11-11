@@ -1,0 +1,29 @@
+# AI-103 opt-in: keep traces on this machine. Spans go to a JSON-lines file under the git-ignored
+# .local/ai103/otel/ folder (bind-mounted at /otel). Nothing is exported to Azure from this config.
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+processors:
+  batch: {}
+  # Keep durations and route templates; drop full URLs (case ids, query strings) and span events.
+  transform/privacy:
+    error_mode: ignore
+    trace_statements:
+      - context: span
+        statements:
+          - delete_key(attributes, "http.url")
+          - delete_key(attributes, "url.full")
+          - delete_key(attributes, "url.query")
+exporters:
+  file:
+    path: /otel/traces.jsonl
+  debug:
+    verbosity: basic
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [transform/privacy, batch]
+      exporters: [file, debug]

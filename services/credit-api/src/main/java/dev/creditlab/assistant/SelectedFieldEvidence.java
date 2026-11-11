@@ -10,9 +10,10 @@ final class SelectedFieldEvidence {
   private SelectedFieldEvidence() {}
   static List<CreditAssistantService.Source> sources(CreditCase item,String question,List<RagEngine.Hit> hits) {
     var terms=EvidenceGuard.terms(question);
+    var isolated=dev.creditlab.platform.PageIsolation.quarantinedPages(item);
     var eligible=item.documents().stream().filter(d->d.originalAvailable()&&!d.status().equals("missing")
         &&!Set.of("synthetic","datev-reference-values").contains(Objects.requireNonNullElse(d.analysisProvider(),""))
-        &&!EvidenceGuard.suspicious(d.name())&&d.pages().stream().noneMatch(p->EvidenceGuard.suspicious(p.text()))).toList();
+        &&!EvidenceGuard.suspicious(d.name())).toList();
     var named=eligible.stream().filter(d->EvidenceGuard.terms(d.name()).stream()
         .filter(t->!Set.of("datev","lodas","muster","pdf","payroll","payslip","gehaltsabrechnung").contains(t))
         .filter(t->t.length()>2&&!t.matches("[0-9]+"))
@@ -20,11 +21,12 @@ final class SelectedFieldEvidence {
     var retrieved=hits.stream().map(RagEngine.Hit::documentId).collect(java.util.stream.Collectors.toSet());
     var result=new ArrayList<CreditAssistantService.Source>();
     // Explicit location IDs select stored OCR occurrences, not the first matching quote.
-    for(var d:eligible)for(var page:d.pages())for(var region:page.regions()){
+    for(var d:eligible)for(var page:d.pages())if(!dev.creditlab.platform.PageIsolation.isolated(isolated,d.id(),page.number()))for(var region:page.regions()){
       String id=d.id()+":p"+page.number()+":"+region.id();
-      if(question.contains("["+id+"]")&&!EvidenceGuard.suspicious(region.text())&&result.size()<6){
+      if(question.contains("["+id+"]")&&!EvidenceGuard.untrustedForModel(region.text())&&result.size()<6){
         String context="";
-        if(region.table()!=null&&region.table()>=0&&region.table()<d.tables().size()){
+        if(region.table()!=null&&region.table()>=0&&region.table()<d.tables().size()
+            &&!dev.creditlab.platform.PageIsolation.isolated(isolated,d.id(),d.tables().get(region.table()).page())){
           var cells=d.tables().get(region.table()).cells();boolean typed=cells.stream().anyMatch(c->Boolean.TRUE.equals(c.columnHeader())||Boolean.TRUE.equals(c.rowHeader()));
           context=cells.stream().filter(c->Objects.equals(c.row(),region.row())
               ||Boolean.TRUE.equals(c.columnHeader())&&region.column()!=null&&region.column()>=c.column()&&region.column()<c.column()+c.columnSpan()
@@ -38,7 +40,7 @@ final class SelectedFieldEvidence {
     }
     if(!result.isEmpty())return List.copyOf(result);
     for(var d:eligible.stream().filter(d->named.isEmpty()?retrieved.contains(d.id()):named.contains(d.id())).limit(3).toList()) {
-      var pages=d.fields().stream().filter(f->f.page()>0&&!f.evidence().isBlank()
+      var pages=d.fields().stream().filter(f->f.page()>0&&!f.evidence().isBlank()&&!dev.creditlab.platform.PageIsolation.isolated(isolated,d.id(),f.page())
           &&!EvidenceGuard.suspicious(f.label()+" "+f.value()+" "+f.evidence())&&d.pages().stream().anyMatch(p->p.number()==f.page()))
           .collect(java.util.stream.Collectors.groupingBy(CreditCase.Field::page,TreeMap::new,java.util.stream.Collectors.toList()));
       for(var entry:pages.entrySet()) {

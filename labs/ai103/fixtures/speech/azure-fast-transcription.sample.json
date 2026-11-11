@@ -1,0 +1,13 @@
+{
+  "_comment": "FIKTIVE DATEN. Sample response in the documented shape of the fast transcription REST API (durationMilliseconds, combinedPhrases, phrases). It is NOT a live response: no Azure call was made to produce it.",
+  "durationMilliseconds": 26600,
+  "combinedPhrases": [
+    {"text": "Begehung Haus C am 14.12.2026. Bei der Schlussrechnung RG-2026-0457 über 49.980,00 Euro brutto ist die Position drei zu prüfen. Die zusätzliche Spachtelung im Flur zweites Obergeschoss, 1.008,40 Euro netto, ist nicht beauftragt. Die Zahlung entscheidet die Bauleitung nach der Abnahme."}
+  ],
+  "phrases": [
+    {"offsetMilliseconds": 40, "durationMilliseconds": 2300, "text": "Begehung Haus C am 14.12.2026.", "locale": "de-DE", "confidence": 0.94},
+    {"offsetMilliseconds": 2400, "durationMilliseconds": 6100, "text": "Bei der Schlussrechnung RG-2026-0457 über 49.980,00 Euro brutto ist die Position drei zu prüfen.", "locale": "de-DE", "confidence": 0.91},
+    {"offsetMilliseconds": 8600, "durationMilliseconds": 7000, "text": "Die zusätzliche Spachtelung im Flur zweites Obergeschoss, 1.008,40 Euro netto, ist nicht beauftragt.", "locale": "de-DE", "confidence": 0.9},
+    {"offsetMilliseconds": 15800, "durationMilliseconds": 4400, "text": "Die Zahlung entscheidet die Bauleitung nach der Abnahme.", "locale": "de-DE", "confidence": 0.93}
+  ]
+}

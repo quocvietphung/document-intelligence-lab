@@ -58,6 +58,14 @@ Each use case runs first with local PDFs. It ships fictional documents labelled 
 
 Run them in **Research datasets → Sample scenarios**; import their PDFs under **Sources & integrations** (local files). The CSV project assessment is in **Domain analysis**, and the report download and Gmail drafts sit next to reviewed results in **Documents & evidence**. A language model may explain the results or draft a report; it never computes them.
 
+### AI-103 lab: contractor pre-check before accounting
+
+A fictional four-document contractor dossier (contract, change order, invoice, acceptance report) runs through ClamAV, Docling and Qdrant/BM25; a read-only check compares **48.780,00 EUR approved** with the **49.980,00 EUR invoice** on the same gross basis in code (difference **1.200,00 EUR**), cites the source page of both amounts and states missing acceptance and payment evidence. A person reviews the draft under **Reconciliation**; nothing is approved or sent. Python exercises add a read-only agent, Nova drafting, embedded-instruction checks, email triage with PII masking, photo/audio evidence as JSON and OpenTelemetry step timings, plus an opt-in Azure configuration plan. [Guide, pass/fail criteria and results](docs/AI103_CONTRACTOR_PRECHECK.md) · [lab code](labs/ai103/README.md).
+
+Run the offline part without Docker: `cd labs/ai103 && python3 -m unittest discover -s tests -v && python3 -m contractor_lab offline`.
+The speech, translation, Voice Live and Azure AI Search exercises run offline on fixtures and sample responses;
+their live Azure calls are off by default. Status of every service and the open points: [docs/AI103_CONTRACTOR_PRECHECK.md](docs/AI103_CONTRACTOR_PRECHECK.md).
+
 ## Docker quick start
 
 ```bash
@@ -563,6 +571,7 @@ TEST_RAG_PDFS=prepare node scripts/test-oauth.mjs
 TEST_RAG_PDFS=measure node scripts/test-oauth.mjs
 TEST_DOCUMENT_CLASSIFICATION=1 node scripts/test-oauth.mjs
 TEST_CONNECTORS=1 node scripts/test-oauth.mjs
+TEST_CONTRACTOR_PRECHECK=1 node scripts/test-oauth.mjs
 ```
 
 Prepare the [PDF sources](#pdf-examples) first for RAG acceptance. These checks create research records, not human approvals. [Research recipes and metric definitions](docs/RESEARCH_WORKSPACES.md) · [Python wheel/Docling checks](python/README.md#development) · [Nova, recovery and cancellation](docs/RELIABILITY_LAB.md).

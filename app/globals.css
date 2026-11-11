@@ -982,3 +982,10 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 /* Dossier checks sit inside the task card as a plain group, not a nested card. */
 .overview-attention .workspace-attention{padding:0;margin:16px 0 0;border:0;border-radius:0;box-shadow:none;background:transparent}
 .overview-attention .workspace-attention .review-item{padding:10px 0;border-top:1px solid var(--border);border-bottom:0}
+
+/* Read-aloud beside Copy: local voice only; status and guidance stay next to the controls. */
+.nova-answer-actions{flex-wrap:wrap}
+.nova-answer-actions .nova-speech-stop{color:var(--danger-fg)}
+.nova-answer-actions .nova-speech-engine{font-size:12px;line-height:1.5;color:var(--text-muted)}
+.nova-answer-actions .nova-speech-status{font-size:12px;color:var(--brand)}
+.nova-answer-actions .nova-speech-note{flex-basis:100%;font-size:12px;line-height:1.5;color:var(--warning-fg);background:var(--warning-bg);border-radius:8px;padding:6px 8px}
