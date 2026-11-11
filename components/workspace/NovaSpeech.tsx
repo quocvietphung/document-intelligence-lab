@@ -18,6 +18,7 @@ export function NovaListenAnswer({id,text,locale,complete=true}:{id:string;text:
     {speaking?<button type="button" className="nova-speech-stop" aria-label={t.stop} title={t.stop} onClick={()=>stopSpeech(id)}><Square size={13}/> {t.stop}</button>
       :<button type="button" className="nova-speech-play" aria-label={mine&&state.status==='done'?t.replay:t.listen} title={t.local} disabled={!complete||!text.trim()}
         onClick={()=>void speakAnswer(id,text,locale)}>{mine&&state.status==='done'?<RotateCcw size={14}/>:<Volume2 size={14}/>} {mine&&state.status==='done'?t.replay:t.listen}</button>}
+    <span className="nova-speech-engine" title={t.engine}>{t.engine}</span>
     {speaking?<span role="status" className="nova-speech-status">{t.speaking}</span>:null}
     {note?<span role="status" className="nova-speech-note">{note}</span>:null}
   </>;

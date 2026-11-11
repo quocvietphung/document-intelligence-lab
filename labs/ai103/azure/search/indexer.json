@@ -1,0 +1,23 @@
+{
+  "name": "ai103-contractor-dossier-indexer",
+  "description": "FIKTIVE DATEN. Blob indexer with normalized page images for OCR. The page-number mapping from normalized images must be confirmed in the portal before a live run (not verified in the documentation read on 2026-11-11).",
+  "dataSourceName": "ai103-contractor-dossier-blob",
+  "targetIndexName": "ai103-contractor-dossier-index",
+  "skillsetName": "ai103-contractor-ocr-skillset",
+  "parameters": {
+    "batchSize": 4,
+    "configuration": {
+      "dataToExtract": "contentAndMetadata",
+      "parsingMode": "default",
+      "imageAction": "generateNormalizedImagePerPage",
+      "indexedFileNameExtensions": ".pdf,.png"
+    }
+  },
+  "fieldMappings": [
+    {"sourceFieldName": "metadata_storage_name", "targetFieldName": "documentName"},
+    {"sourceFieldName": "metadata_storage_path", "targetFieldName": "sourceId", "mappingFunction": {"name": "base64Encode"}}
+  ],
+  "outputFieldMappings": [
+    {"sourceFieldName": "/document/pages/*", "targetFieldName": "content"}
+  ]
+}

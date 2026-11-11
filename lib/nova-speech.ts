@@ -14,18 +14,21 @@ const en={listen:'Listen to answer',replay:'Listen again',stop:'Stop',speaking:'
   local:'Uses a voice on this device. No audio is sent or saved.',
   noVoice:(language:SpeechLanguage)=>`No ${names.en[language]} voice is installed on this device. Add one in your system speech settings (macOS: Accessibility → Spoken Content), then reload. The text answer stays here.`,
   unsupported:'This browser cannot read answers aloud. The text answer stays here.',
-  error:'Reading aloud stopped unexpectedly. The text answer stays here.',link:'link'};
+  error:'Reading aloud stopped unexpectedly. The text answer stays here.',link:'link',
+  engine:'Browser voice on this device. Azure Speech is not used here.'};
 type Copy=typeof en;
 const de:Copy={listen:'Antwort anhören',replay:'Erneut anhören',stop:'Stopp',speaking:'Wird vorgelesen…',
   local:'Nutzt eine Stimme auf diesem Gerät. Es wird kein Audio gesendet oder gespeichert.',
   noVoice:language=>`Auf diesem Gerät ist keine ${names.de[language]} Stimme installiert. Füge in den Spracheinstellungen des Systems eine hinzu (macOS: Bedienungshilfen → Gesprochene Inhalte) und lade neu. Die Textantwort bleibt hier.`,
   unsupported:'Dieser Browser kann Antworten nicht vorlesen. Die Textantwort bleibt hier.',
-  error:'Das Vorlesen wurde unerwartet beendet. Die Textantwort bleibt hier.',link:'Link'};
+  error:'Das Vorlesen wurde unerwartet beendet. Die Textantwort bleibt hier.',link:'Link',
+  engine:'Browser-Stimme auf diesem Gerät. Azure Speech wird hier nicht verwendet.'};
 const vi:Copy={listen:'Nghe câu trả lời',replay:'Nghe lại',stop:'Dừng',speaking:'Đang đọc…',
   local:'Dùng giọng đọc trên thiết bị này. Không gửi hay lưu âm thanh.',
   noVoice:language=>`Thiết bị chưa có giọng đọc ${names.vi[language]}. Thêm giọng trong cài đặt giọng nói của hệ thống (macOS: Trợ năng → Nội dung được đọc) rồi tải lại trang. Câu trả lời dạng chữ vẫn ở đây.`,
   unsupported:'Trình duyệt này không đọc được câu trả lời. Câu trả lời dạng chữ vẫn ở đây.',
-  error:'Việc đọc bị dừng bất ngờ. Câu trả lời dạng chữ vẫn ở đây.',link:'đường liên kết'};
+  error:'Việc đọc bị dừng bất ngờ. Câu trả lời dạng chữ vẫn ở đây.',link:'đường liên kết',
+  engine:'Giọng đọc của trình duyệt trên thiết bị này. Không dùng Azure Speech.'};
 export const speechLanguages={en,de,vi};
 export function speechCopy(locale:string){return speechLanguages[speechLanguage(locale)];}
 export function speechLanguage(locale:string):SpeechLanguage{return locale==='vi'?'vi':locale==='de'?'de':'en';}

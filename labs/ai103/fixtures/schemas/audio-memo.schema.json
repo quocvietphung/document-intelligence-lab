@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Site-inspection voice memo (AI-103 contractor dossier)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["memoId", "language", "recordedOn", "transcriptSource", "durationSeconds", "audioFile", "mentions", "defects", "notAccepted", "amountsMentioned", "humanReviewRequired"],
+  "properties": {
+    "memoId": {"type": "string", "minLength": 3},
+    "language": {"type": "string", "pattern": "^[a-z]{2}-[A-Z]{2}$"},
+    "recordedOn": {"type": ["string", "null"], "format": "date"},
+    "transcriptSource": {"enum": ["mock-reference-transcript", "azure-speech", "azure-content-understanding", "azure-openai-transcribe"]},
+    "durationSeconds": {"type": ["number", "null"], "minimum": 0},
+    "audioFile": {"type": ["object", "null"], "additionalProperties": false, "required": ["name", "sha256"], "properties": {
+      "name": {"type": "string"}, "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}},
+    "mentions": {"type": "object", "additionalProperties": false, "required": ["photos", "documents"], "properties": {
+      "photos": {"type": "array", "items": {"type": "string", "pattern": "^F-\\d{2}$"}},
+      "documents": {"type": "array", "items": {"type": "string"}}}},
+    "defects": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["text", "photoId", "startSeconds"], "properties": {
+      "text": {"type": "string", "minLength": 3}, "photoId": {"type": ["string", "null"], "pattern": "^F-\\d{2}$"}, "startSeconds": {"type": "number", "minimum": 0}}}},
+    "notAccepted": {"type": "array", "items": {"type": "string"}},
+    "amountsMentioned": {"type": "array", "items": {"type": "string"}},
+    "humanReviewRequired": {"const": true}
+  }
+}

@@ -1,0 +1,601 @@
+{
+  "method": "contractor-precheck-v1",
+  "caseId": "CR-2de4fdcb-40a",
+  "caseVersion": 6,
+  "domain": "real-estate",
+  "readOnly": true,
+  "dossierWrites": 0,
+  "locale": "vi",
+  "documents": [
+    {
+      "id": "doc-6eb1f4cf-86aa-46ac-b41f-45b82cb7ba18",
+      "name": "bauauftrag-wv-2026-031.pdf",
+      "role": "contract",
+      "type": "construction-order",
+      "reviewStatus": "review",
+      "pages": 2,
+      "provider": "docling"
+    },
+    {
+      "id": "doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb",
+      "name": "nachtrag-n01-wv-2026-031.pdf",
+      "role": "change-order",
+      "type": "change-order",
+      "reviewStatus": "review",
+      "pages": 2,
+      "provider": "docling"
+    },
+    {
+      "id": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba",
+      "name": "baurechnung-rg-2026-0457.pdf",
+      "role": "invoice",
+      "type": "construction-invoice",
+      "reviewStatus": "review",
+      "pages": 2,
+      "provider": "docling"
+    },
+    {
+      "id": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3",
+      "name": "abnahmeprotokoll-ap-2026-019.pdf",
+      "role": "acceptance",
+      "type": "acceptance-report",
+      "reviewStatus": "review",
+      "pages": 2,
+      "provider": "docling"
+    },
+    {
+      "id": "doc-87c180f7-5eda-4eed-ad0c-d6a45bb30412",
+      "name": "foto-f-01.png",
+      "role": "photo",
+      "type": "unknown",
+      "reviewStatus": "review",
+      "pages": 1,
+      "provider": "docling"
+    },
+    {
+      "id": "doc-fe91aa77-5306-4168-8fce-7c7a97599f53",
+      "name": "foto-f-02.png",
+      "role": "photo",
+      "type": "unknown",
+      "reviewStatus": "review",
+      "pages": 1,
+      "provider": "docling"
+    }
+  ],
+  "approved": {
+    "amount": "48780.00",
+    "basis": "GROSS",
+    "literal": "48.780,00 EUR brutto",
+    "source": {
+      "documentId": "doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb",
+      "documentName": "nachtrag-n01-wv-2026-031.pdf",
+      "page": 2,
+      "label": "Genehmigte Gesamtvergütung",
+      "quote": "Genehmigte Gesamtvergütung: 48.780,00 EUR brutto",
+      "regionId": "r13",
+      "ref": "[doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb:p2]"
+    },
+    "derivation": "stated approved total",
+    "crossCheck": {
+      "order": "42840.00",
+      "orderSource": {
+        "documentId": "doc-6eb1f4cf-86aa-46ac-b41f-45b82cb7ba18",
+        "documentName": "bauauftrag-wv-2026-031.pdf",
+        "page": 2,
+        "label": "Auftragssumme",
+        "quote": "Auftragssumme: 42.840,00 EUR brutto",
+        "regionId": "r9",
+        "ref": "[doc-6eb1f4cf-86aa-46ac-b41f-45b82cb7ba18:p2]"
+      },
+      "changeOrders": "5940.00",
+      "changeOrderSources": [
+        {
+          "documentId": "doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb",
+          "documentName": "nachtrag-n01-wv-2026-031.pdf",
+          "page": 2,
+          "label": "Nachtragssumme",
+          "quote": "Nachtragssumme: 5.940,00 EUR brutto",
+          "regionId": "r9",
+          "ref": "[doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb:p2]"
+        }
+      ],
+      "sum": "48780.00",
+      "consistent": true
+    }
+  },
+  "invoice": {
+    "amount": "49980.00",
+    "basis": "GROSS",
+    "literal": "49.980,00 EUR brutto",
+    "source": {
+      "documentId": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba",
+      "documentName": "baurechnung-rg-2026-0457.pdf",
+      "page": 2,
+      "label": "Rechnungsbetrag",
+      "quote": "Rechnungsbetrag: 49.980,00 EUR brutto",
+      "regionId": "r9",
+      "ref": "[doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p2]"
+    },
+    "net": "42000.00",
+    "vat": "7980.00",
+    "number": "RG-2026-0457",
+    "date": "04.12.2026",
+    "netPlusVatEqualsGross": true
+  },
+  "variance": {
+    "amount": "1200.00",
+    "basis": "GROSS",
+    "sameTaxBasis": true,
+    "net": "1008.40",
+    "vat": "191.60"
+  },
+  "explanation": {
+    "unapprovedNet": "1008.40",
+    "vatRate": "0.19",
+    "unapprovedGross": "1200.00",
+    "explainsVariance": true
+  },
+  "invoiceLines": [
+    {
+      "position": 1,
+      "description": "Trockenbauwände und Deckenbekleidung Haus C",
+      "reference": "WV-2026-031",
+      "net": "36000.00",
+      "approved": true,
+      "source": {
+        "documentName": "baurechnung-rg-2026-0457.pdf",
+        "ref": "[doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p1]",
+        "documentId": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba",
+        "page": 1,
+        "origin": "table row 1"
+      }
+    },
+    {
+      "position": 2,
+      "description": "Schallschutz-Vorsatzschale Treppenhaus",
+      "reference": "Nachtrag N-01",
+      "net": "4991.60",
+      "approved": true,
+      "source": {
+        "documentName": "baurechnung-rg-2026-0457.pdf",
+        "ref": "[doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p1]",
+        "documentId": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba",
+        "page": 1,
+        "origin": "table row 2"
+      }
+    },
+    {
+      "position": 3,
+      "description": "Zusätzliche Spachtelung Q3 Flur 2. OG",
+      "reference": "ohne Nachtrag",
+      "net": "1008.40",
+      "approved": false,
+      "source": {
+        "documentName": "baurechnung-rg-2026-0457.pdf",
+        "ref": "[doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p1]",
+        "documentId": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba",
+        "page": 1,
+        "origin": "table row 3"
+      }
+    }
+  ],
+  "evidence": {
+    "acceptance": {
+      "status": "PARTIAL",
+      "result": "abgenommen mit Vorbehalt",
+      "acceptedPositions": [
+        1,
+        2
+      ],
+      "notAcceptedPositions": [
+        3
+      ],
+      "openDefects": 1,
+      "remediationDeadline": "15.12.2026",
+      "sources": [
+        {
+          "quote": "Abnahmeergebnis: abgenommen mit Vorbehalt",
+          "documentName": "abnahmeprotokoll-ap-2026-019.pdf",
+          "ref": "[doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p1]",
+          "documentId": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3",
+          "page": 1
+        },
+        {
+          "quote": "Abgenommener Umfang: Pos. 1 (WV-2026-031) und Pos. 2 (Nachtrag N-01)",
+          "documentName": "abnahmeprotokoll-ap-2026-019.pdf",
+          "ref": "[doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p2]",
+          "documentId": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3",
+          "page": 2
+        }
+      ]
+    },
+    "payment": {
+      "status": "MISSING",
+      "sources": [],
+      "rule": "dated payment confirmation (bezahlt/überwiesen/Zahlungseingang am DD.MM.YYYY); keywords alone are not evidence"
+    },
+    "photos": {
+      "referenced": [
+        "F-01",
+        "F-02",
+        "F-03"
+      ],
+      "provided": [
+        {
+          "page": 1,
+          "documentName": "foto-f-01.png",
+          "documentId": "doc-87c180f7-5eda-4eed-ad0c-d6a45bb30412",
+          "photoId": "F-01"
+        },
+        {
+          "page": 1,
+          "documentName": "foto-f-02.png",
+          "documentId": "doc-fe91aa77-5306-4168-8fce-7c7a97599f53",
+          "photoId": "F-02"
+        }
+      ],
+      "missing": [
+        "F-03"
+      ],
+      "unreferenced": []
+    },
+    "retrieval": [
+      {
+        "purpose": "approved",
+        "question": "Genehmigte Gesamtvergütung brutto Nachtrag genehmigt",
+        "backend": "qdrant",
+        "hits": [
+          {
+            "id": "doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb:p2:c1",
+            "documentId": "doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb",
+            "page": 2,
+            "score": 0.793,
+            "role": "change-order",
+            "confirmed": true
+          },
+          {
+            "id": "doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb:p2:t1:c1",
+            "documentId": "doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb",
+            "page": 2,
+            "score": 0.752,
+            "role": "change-order",
+            "confirmed": true
+          },
+          {
+            "id": "doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb:p2:fields",
+            "documentId": "doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb",
+            "page": 2,
+            "score": 0.414,
+            "role": "change-order",
+            "confirmed": true
+          },
+          {
+            "id": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p2:t2:c1",
+            "documentId": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba",
+            "page": 2,
+            "score": 0.288,
+            "role": "invoice",
+            "confirmed": false
+          },
+          {
+            "id": "doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb:p1:c1",
+            "documentId": "doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb",
+            "page": 1,
+            "score": 0.288,
+            "role": "change-order",
+            "confirmed": false
+          }
+        ]
+      },
+      {
+        "purpose": "invoice",
+        "question": "Rechnungsbetrag brutto Rechnungssumme Umsatzsteuer",
+        "backend": "qdrant",
+        "hits": [
+          {
+            "id": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p2:c1",
+            "documentId": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba",
+            "page": 2,
+            "score": 0.693,
+            "role": "invoice",
+            "confirmed": true
+          },
+          {
+            "id": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p2:t2:c1",
+            "documentId": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba",
+            "page": 2,
+            "score": 0.635,
+            "role": "invoice",
+            "confirmed": true
+          },
+          {
+            "id": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p1:c2",
+            "documentId": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba",
+            "page": 1,
+            "score": 0.557,
+            "role": "invoice",
+            "confirmed": false
+          },
+          {
+            "id": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p2:fields",
+            "documentId": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba",
+            "page": 2,
+            "score": 0.524,
+            "role": "invoice",
+            "confirmed": true
+          },
+          {
+            "id": "doc-6eb1f4cf-86aa-46ac-b41f-45b82cb7ba18:p2:t1:c1",
+            "documentId": "doc-6eb1f4cf-86aa-46ac-b41f-45b82cb7ba18",
+            "page": 2,
+            "score": 0.516,
+            "role": "contract",
+            "confirmed": false
+          }
+        ]
+      },
+      {
+        "purpose": "acceptance",
+        "question": "Abnahmeprotokoll Abnahmeergebnis abgenommen Umfang Mängel",
+        "backend": "qdrant",
+        "hits": [
+          {
+            "id": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p1:c1",
+            "documentId": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3",
+            "page": 1,
+            "score": 0.656,
+            "role": "acceptance",
+            "confirmed": true
+          },
+          {
+            "id": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p1:t0:c1",
+            "documentId": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3",
+            "page": 1,
+            "score": 0.619,
+            "role": "acceptance",
+            "confirmed": true
+          },
+          {
+            "id": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p2:t1:c1",
+            "documentId": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3",
+            "page": 2,
+            "score": 0.521,
+            "role": "acceptance",
+            "confirmed": true
+          },
+          {
+            "id": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p2:c1",
+            "documentId": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3",
+            "page": 2,
+            "score": 0.478,
+            "role": "acceptance",
+            "confirmed": true
+          },
+          {
+            "id": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p1:fields",
+            "documentId": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3",
+            "page": 1,
+            "score": 0.473,
+            "role": "acceptance",
+            "confirmed": true
+          }
+        ]
+      },
+      {
+        "purpose": "payment",
+        "question": "Zahlungsnachweis Zahlung bezahlt überwiesen Zahlungseingang",
+        "backend": "qdrant",
+        "hits": [
+          {
+            "id": "doc-6eb1f4cf-86aa-46ac-b41f-45b82cb7ba18:p2:c1",
+            "documentId": "doc-6eb1f4cf-86aa-46ac-b41f-45b82cb7ba18",
+            "page": 2,
+            "score": 0.391,
+            "role": "contract",
+            "confirmed": false
+          },
+          {
+            "id": "doc-6eb1f4cf-86aa-46ac-b41f-45b82cb7ba18:p2:t1:c1",
+            "documentId": "doc-6eb1f4cf-86aa-46ac-b41f-45b82cb7ba18",
+            "page": 2,
+            "score": 0.39,
+            "role": "contract",
+            "confirmed": false
+          },
+          {
+            "id": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p2:c1",
+            "documentId": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3",
+            "page": 2,
+            "score": 0.336,
+            "role": "acceptance",
+            "confirmed": false
+          },
+          {
+            "id": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p2:t1:c1",
+            "documentId": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3",
+            "page": 2,
+            "score": 0.316,
+            "role": "acceptance",
+            "confirmed": false
+          },
+          {
+            "id": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p2:c1",
+            "documentId": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba",
+            "page": 2,
+            "score": 0.184,
+            "role": "invoice",
+            "confirmed": false
+          }
+        ]
+      }
+    ]
+  },
+  "embeddedInstructions": [],
+  "findings": [
+    {
+      "code": "INVOICE_EXCEEDS_APPROVED_AMOUNT",
+      "severity": "HIGH",
+      "message": "Invoice exceeds the approved amount by 1.200,00 EUR (GROSS)",
+      "sources": [
+        {
+          "documentId": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba",
+          "documentName": "baurechnung-rg-2026-0457.pdf",
+          "page": 2,
+          "label": "Rechnungsbetrag",
+          "quote": "Rechnungsbetrag: 49.980,00 EUR brutto",
+          "regionId": "r9",
+          "ref": "[doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p2]"
+        },
+        {
+          "documentId": "doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb",
+          "documentName": "nachtrag-n01-wv-2026-031.pdf",
+          "page": 2,
+          "label": "Genehmigte Gesamtvergütung",
+          "quote": "Genehmigte Gesamtvergütung: 48.780,00 EUR brutto",
+          "regionId": "r13",
+          "ref": "[doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb:p2]"
+        }
+      ],
+      "humanReviewRequired": true
+    },
+    {
+      "code": "INVOICE_LINE_WITHOUT_APPROVAL",
+      "severity": "HIGH",
+      "message": "Invoice line 3 (ohne Nachtrag, 1.008,40 EUR netto) is not covered by the order or an approved change order",
+      "sources": [
+        {
+          "ref": "[doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p1]",
+          "page": 1,
+          "documentId": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba"
+        }
+      ],
+      "humanReviewRequired": true
+    },
+    {
+      "code": "ACCEPTANCE_EVIDENCE_MISSING",
+      "severity": "MEDIUM",
+      "message": "No acceptance evidence for invoice line 3",
+      "sources": [
+        {
+          "quote": "Abnahmeergebnis: abgenommen mit Vorbehalt",
+          "documentName": "abnahmeprotokoll-ap-2026-019.pdf",
+          "ref": "[doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p1]",
+          "documentId": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3",
+          "page": 1
+        },
+        {
+          "quote": "Abgenommener Umfang: Pos. 1 (WV-2026-031) und Pos. 2 (Nachtrag N-01)",
+          "documentName": "abnahmeprotokoll-ap-2026-019.pdf",
+          "ref": "[doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p2]",
+          "documentId": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3",
+          "page": 2
+        }
+      ],
+      "humanReviewRequired": true
+    },
+    {
+      "code": "OPEN_ACCEPTANCE_DEFECTS",
+      "severity": "MEDIUM",
+      "message": "1 open defect(s); remediation deadline 15.12.2026",
+      "sources": [
+        {
+          "quote": "Offene Mängel: 1",
+          "documentName": "abnahmeprotokoll-ap-2026-019.pdf",
+          "ref": "[doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p1]",
+          "documentId": "doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3",
+          "page": 1
+        }
+      ],
+      "humanReviewRequired": true
+    },
+    {
+      "code": "PHOTO_EVIDENCE_MISSING",
+      "severity": "MEDIUM",
+      "message": "Referenced acceptance photo(s) not in the dossier: F-03",
+      "sources": [],
+      "humanReviewRequired": true
+    },
+    {
+      "code": "PAYMENT_EVIDENCE_MISSING",
+      "severity": "MEDIUM",
+      "message": "No payment evidence in the dossier; payment status is unknown, not confirmed",
+      "sources": [],
+      "humanReviewRequired": true
+    },
+    {
+      "code": "SOURCES_NOT_HUMAN_REVIEWED",
+      "severity": "INFO",
+      "message": "6 source document(s) still await human field review",
+      "sources": [],
+      "humanReviewRequired": true
+    }
+  ],
+  "humanReviewRequired": true,
+  "draft": {
+    "status": "DRAFT_REQUIRES_HUMAN_REVIEW",
+    "approved": false,
+    "emailSent": false,
+    "paymentReleased": false,
+    "generatedBy": "deterministic template; no language model",
+    "summary": [
+      "Bản nháp kiểm tra trước khi chuyển kế toán – cần người duyệt. Không có phê duyệt, thanh toán hay email nào được thực hiện.",
+      "Giá trị đã duyệt: 48.780,00 EUR brutto [doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb:p2]. Hóa đơn: 49.980,00 EUR brutto [doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p2]. Chênh lệch: 1.200,00 EUR, cùng cơ sở thuế (brutto).",
+      "Dòng hóa đơn 3 (Zusätzliche Spachtelung Q3 Flur 2. OG, 1.008,40 EUR netto) không có Nachtrag được duyệt [doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p1].",
+      "Phần chưa duyệt 1.008,40 EUR netto cộng thuế GTGT bằng đúng chênh lệch 1.200,00 EUR (tính bằng code).",
+      "Bằng chứng nghiệm thu: MỘT PHẦN – đã nghiệm thu các dòng [1, 2], thiếu cho dòng [3]; 1 lỗi còn mở đến 15.12.2026 [doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p1] [doc-ac5eb4cb-52d0-41b3-b0d9-182114b921f3:p2].",
+      "Bằng chứng thanh toán: THIẾU – hồ sơ không có xác nhận thanh toán có ngày; chưa biết trạng thái thanh toán.",
+      "Ảnh nghiệm thu được tham chiếu nhưng không có trong hồ sơ: F-03."
+    ],
+    "email": {
+      "recipients": [],
+      "subject": "Câu hỏi về hóa đơn RG-2026-0457 (bản nháp)",
+      "body": "Kính gửi Quý công ty,\n\nliên quan đến hóa đơn RG-2026-0457, chúng tôi còn các điểm sau:\n1. Số tiền hóa đơn 49.980,00 EUR brutto vượt tổng giá trị đã duyệt 48.780,00 EUR brutto là 1.200,00 EUR.\n2. Dòng 3 (Zusätzliche Spachtelung Q3 Flur 2. OG, 1.008,40 EUR netto) chưa có Nachtrag được duyệt. Đề nghị gửi Nachtrag đã duyệt hoặc hóa đơn điều chỉnh.\n3. Chưa có biên bản nghiệm thu cho dòng 3.\n4. Thiếu ảnh F-03 được nêu trong biên bản nghiệm thu.\n\nTrân trọng\n[Tên người kiểm tra]\n\nBẢN NHÁP – chưa gửi. Người kiểm tra xem lại nội dung và tự gửi.",
+      "send": false
+    },
+    "citations": [
+      {
+        "documentId": "doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb",
+        "documentName": "nachtrag-n01-wv-2026-031.pdf",
+        "page": 2,
+        "label": "Genehmigte Gesamtvergütung",
+        "quote": "Genehmigte Gesamtvergütung: 48.780,00 EUR brutto",
+        "regionId": "r13",
+        "ref": "[doc-5ba417f8-6d3f-43c3-aefb-ce65a9f811fb:p2]"
+      },
+      {
+        "documentId": "doc-410bcb6a-868c-44df-b0af-ef641ac765ba",
+        "documentName": "baurechnung-rg-2026-0457.pdf",
+        "page": 2,
+        "label": "Rechnungsbetrag",
+        "quote": "Rechnungsbetrag: 49.980,00 EUR brutto",
+        "regionId": "r9",
+        "ref": "[doc-410bcb6a-868c-44df-b0af-ef641ac765ba:p2]"
+      }
+    ],
+    "reviewerActions": [
+      "open each cited page",
+      "confirm or correct extracted fields",
+      "edit and send the email yourself"
+    ]
+  },
+  "steps": [
+    {
+      "name": "extract",
+      "durationMs": 13.8
+    },
+    {
+      "name": "search",
+      "durationMs": 2954.73
+    },
+    {
+      "name": "reconcile",
+      "durationMs": 9.54
+    },
+    {
+      "name": "draft",
+      "durationMs": 2.12
+    }
+  ],
+  "boundary": "Research support only. A draft for human review: no approval, payment release, legal acceptance or email delivery.",
+  "traceId": "2e11a5228b21e1b6b34ef8618da9dc82"
+}

@@ -1,0 +1,5 @@
+{
+  "_comment": "MOCK fallback only: the captions scripts/prepare-contractor-dossier.py draws into each image. Used when no local OCR engine is installed; results are then labelled ocr=mock.",
+  "foto-f-01.png": "FIKTIV · Foto F-01\nTreppenhaus Haus C · Kantenschutz fehlt\nAufnahmedatum 01.12.2026",
+  "foto-f-02.png": "FIKTIV · Foto F-02\nTreppenhaus Haus C · Vorsatzschale montiert\nAufnahmedatum 01.12.2026"
+}

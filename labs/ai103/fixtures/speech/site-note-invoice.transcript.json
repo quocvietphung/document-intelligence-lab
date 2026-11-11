@@ -1,0 +1,12 @@
+{
+  "_comment": "FIKTIVE DATEN. Reference transcript of fixtures/speech/site-note-invoice.wav (synthetic speech made with macOS say). The invoice number and amounts match the fictional contractor dossier. Used as the offline stand-in for speech-to-text.",
+  "source": "mock-reference-transcript",
+  "locale": "de-DE",
+  "durationSeconds": 26.6,
+  "segments": [
+    {"text": "Begehung Haus C am 14.12.2026."},
+    {"text": "Bei der Schlussrechnung RG-2026-0457 über 49.980,00 EUR brutto ist die Position drei zu prüfen."},
+    {"text": "Die zusätzliche Spachtelung im Flur zweites Obergeschoss, 1.008,40 EUR netto, ist nicht beauftragt."},
+    {"text": "Die Zahlung entscheidet die Bauleitung nach der Abnahme."}
+  ]
+}

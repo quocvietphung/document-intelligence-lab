@@ -120,10 +120,13 @@ public class CreditAssistantService {
 
   private List<Source> reviewSources(CreditCase item){
     // Broad review needs original page text, not a narrow semantic hit or a header-field summary.
+    var isolated=dev.creditlab.platform.PageIsolation.quarantinedPages(item);
     return item.documents().stream().filter(d->d.originalAvailable()&&!EvidenceGuard.suspicious(d.name()))
-        .flatMap(d->d.pages().stream().filter(p->!EvidenceGuard.suspicious(p.text())).map(p->new Source(d.id()+":p"+p.number(),d.name()+" · p. "+p.number(),bounded(p.text(),2000))))
+        .flatMap(d->d.pages().stream().filter(p->!dev.creditlab.platform.PageIsolation.isolated(isolated,d.id(),p.number()))
+            .map(p->new Source(d.id()+":p"+p.number(),d.name()+" · p. "+p.number(),bounded(p.text(),2000))))
         .limit(3).toList();
   }
+
   private String reviewPrompt(CreditCase item,AssistantRequest request,List<Source> sources){
     String task=switch(request.taskId()){
       case "timeline"->"List only explicitly dated events, preserving the original date string. Never invent a due date or treat undated names, identifiers or totals as events.";
@@ -182,7 +185,9 @@ public class CreditAssistantService {
 
   private List<Source> sources(String question,CreditCase item) {
     Set<String> terms=new HashSet<>(Arrays.asList(question.toLowerCase(Locale.ROOT).split("[^\\p{L}\\p{N}]+")));
-    var pages=item.documents().stream().filter(document->document.originalAvailable()).flatMap(document->document.pages().stream().map(page->{
+    var isolated=dev.creditlab.platform.PageIsolation.quarantinedPages(item);
+    var pages=item.documents().stream().filter(document->document.originalAvailable()).flatMap(document->document.pages().stream()
+        .filter(page->!dev.creditlab.platform.PageIsolation.isolated(isolated,document.id(),page.number())).map(page->{
       long score=terms.stream().filter(term->term.length()>2&&page.text().toLowerCase(Locale.ROOT).contains(term)).count();
       return new Scored(new Source(document.id()+":p"+page.number(),document.name()+" · p. "+page.number(),bounded(page.text(),2000)),score);
     })).filter(scored->scored.score()>0).sorted(Comparator.comparingLong(Scored::score).reversed()).limit(3).map(Scored::source).toList();
