@@ -17,7 +17,7 @@ async function request(url, options = {}) {
   const response = await fetch(url, {
     ...options,
     redirect: "manual",
-    signal: AbortSignal.timeout(process.env.TEST_NOVA_LOCAL==='1'||process.env.TEST_EVIDENCE_NOVA==='1'?395_000:55_000),
+    signal: AbortSignal.timeout(process.env.TEST_NOVA_LOCAL==='1'||process.env.TEST_NOVA_BENCHMARK==='1'||process.env.TEST_EVIDENCE_NOVA==='1'?395_000:55_000),
     headers: {
       ...options.headers,
       Cookie: [...jar].map(([key, value]) => `${key}=${value}`).join("; "),
@@ -189,6 +189,11 @@ if(process.env.TEST_NOVA_LOCAL==='1') {
   const {auditNovaLocal}=await import('./test-nova-local.mjs');await auditNovaLocal({request:localRequest,check,bearer,web,api});
   const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
   check(ended.status===204,'Local Nova verification session logged out');console.log(`${checks} ${process.env.TEST_NOVA_PREPARE_ONLY==='1'?'document-preparation (no LLM)':'local Nova acceptance'} checks passed.`);process.exit(0);
+}
+if(process.env.TEST_NOVA_BENCHMARK==='1') {
+  const {benchmarkNova}=await import('./benchmark-nova.mjs');await benchmarkNova({request:localRequest,check,bearer,web,api});
+  const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
+  check(ended.status===204,'Nova benchmark session logged out');console.log(`${checks} Nova benchmark checks passed.`);process.exit(0);
 }
 if(process.env.TEST_INTEGRATIONS==='1') {
   const {auditIntegrations}=await import('./test-integrations-local.mjs');await auditIntegrations({request,check,bearer,web,api});

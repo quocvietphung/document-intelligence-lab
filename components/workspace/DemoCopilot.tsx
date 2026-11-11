@@ -8,6 +8,7 @@ import {workspaceText} from "@/lib/workspace-language";
 import {NovaChatContext,NovaChatSurface} from "./NovaChatSurface";
 import {NovaComposer} from "./NovaComposer";
 import {NovaConversation,NovaCopyAnswer,NovaSuggestions} from "./NovaConversation";
+import {stopSpeechWithPrefix} from "@/lib/nova-speech";
 import type {NovaPageGuide} from "./NovaChatSurface";
 import {novaGreeting} from "@/lib/nova-welcome";
 import {NovaGuideCard} from "./NovaGuideCard";
@@ -19,6 +20,8 @@ export function DemoCopilot({item,locale,open,onOpen,close,initialQuestion,openS
   const [text,setText]=useState(initialQuestion||"");
   const welcome={id:"nova-welcome",role:"assistant" as const,text:novaGreeting(locale)};
   const [messages,setMessages]=useState<{id:string;role:"user"|"assistant";text:string;guide?:NovaGuide}[]>(()=>[welcome]);
+  // Closing Nova stops a demo answer that is being read aloud.
+  useEffect(()=>{if(!open)stopSpeechWithPrefix("demo-");},[open]);
   useEffect(()=>{if(initialQuestion===undefined)return;const timer=window.setTimeout(()=>setText(initialQuestion),0);return()=>window.clearTimeout(timer);},[initialQuestion]);
   function send(event?:FormEvent,question=text,all=false) {
     event?.preventDefault();if(!question.trim())return;
@@ -36,7 +39,7 @@ export function DemoCopilot({item,locale,open,onOpen,close,initialQuestion,openS
         {m.role==="assistant"&&m.id!=="nova-welcome"&&!m.guide?<details className="mt-4 text-xs"><summary>{t("sources")}</summary>
           {publicDemoCase.documents.filter(doc=>doc.pages?.length).map(doc=><button key={doc.id} className="button-link block mt-2" onClick={()=>openSource(`${doc.id}:p1`)}>{doc.name} →</button>)}
           <span className="block mt-2">{item.id} · bundled synthetic data</span></details>:null}
-        {m.role==="assistant"&&m.id!=="nova-welcome"&&!m.guide?<NovaCopyAnswer text={m.text} locale={locale}/>:null}
+        {m.role==="assistant"&&m.id!=="nova-welcome"&&!m.guide?<NovaCopyAnswer text={m.text} locale={locale} speech={{id:`demo-${m.id}`}}/>:null}
       </article>)}
     <NovaSuggestions locale={locale} page={currentTab} select={setText}/>
     <div className="nova-chat-shortcuts"><button className="button-link" onClick={()=>send(undefined,novaGuideLabels(locale).actions,true)}><Compass size={14}/>{novaGuideLabels(locale).actions}</button></div>

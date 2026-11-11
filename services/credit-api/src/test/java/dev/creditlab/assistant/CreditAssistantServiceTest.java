@@ -28,8 +28,41 @@ class CreditAssistantServiceTest {
   }};
   var service=localService(model);
   org.springframework.test.util.ReflectionTestUtils.setField(service,"chatProvider","azure");
-  assertThat(service.answer("praxisbank-demo","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048","en","Explain the app features")).answer()).contains("[app-guide]");
+  var result=service.answer("praxisbank-demo","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048","en","Explain the app features"));
+  assertThat(result.answer()).contains("[app-guide]");
   assertThat(calls.get()).isEqualTo(2);
+  assertThat(result.metrics()).containsEntry("toolCalls",1).containsEntry("tokenSource","unavailable").containsEntry("inputTokens",null);
+ }
+ @Test void providerTokenUsageIsReportedAsMeasuredAndCacheHitsAreNotClaimed(){
+  ChatModel model=new ChatModel(){@Override public ChatResponse doChat(ChatRequest request){
+   return ChatResponse.builder().finishReason(dev.langchain4j.model.output.FinishReason.STOP).tokenUsage(new dev.langchain4j.model.output.TokenUsage(1830,64))
+     .aiMessage(AiMessage.from("Use the supplied document research guide [app-guide].")).build();
+  }};
+  var metrics=localService(model).answer("praxisbank-demo","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048","en","Explain the app features")).metrics();
+  assertThat(metrics).containsEntry("provider","local-ollama").containsEntry("inputTokens",1830).containsEntry("outputTokens",64).containsEntry("tokenSource","provider")
+    .containsEntry("cachedInputTokens",null).containsEntry("cacheSource","not-reported-by-client");
+  assertThat((Integer)metrics.get("evidenceSources")).isPositive();
+  assertThat((Integer)metrics.get("promptChars")).isGreaterThan((Integer)metrics.get("evidenceChars"));
+  assertThat(metrics.values()).noneMatch(value->value instanceof String text&&text.contains("app features"));
+ }
+ @Test void azurePromptStartsWithTheSameFixedRulesAndAsksTheQuestionOnce(){
+  var prompts=new java.util.ArrayList<String>();
+  ChatModel model=new ChatModel(){@Override public ChatResponse doChat(ChatRequest request){
+   prompts.add(((dev.langchain4j.data.message.UserMessage)request.messages().getLast()).singleText());
+   return ChatResponse.builder().finishReason(dev.langchain4j.model.output.FinishReason.STOP).aiMessage(AiMessage.from("No contract is in the supplied evidence [case-summary].")).build();
+  }};
+  var service=localService(model);
+  org.springframework.test.util.ReflectionTestUtils.setField(service,"chatProvider","azure");
+  org.springframework.test.util.ReflectionTestUtils.setField(service,"staticFirstPrompt",true);
+  for(String question:java.util.List.of("Which warranty period applies?","Wie hoch ist die Auftragssumme?"))
+   service.answer("praxisbank-demo","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048","en",question));
+  assertThat(prompts).hasSize(2).allSatisfy(prompt->assertThat(prompt).startsWith(CreditAssistantService.STATIC_REQUIREMENTS));
+  assertThat(prompts.get(0)).endsWith("Question: Which warranty period applies?");
+  assertThat(prompts.get(0).split("Which warranty period applies\\?",-1)).hasSize(2);
+  org.springframework.test.util.ReflectionTestUtils.setField(service,"staticFirstPrompt",false);
+  service.answer("praxisbank-demo","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048","en","Which warranty period applies?"));
+  assertThat(prompts.getLast()).startsWith("Selected document domain:").contains("Response requirements: answer the question");
+  assertThat(prompts.getLast().split("Which warranty period applies\\?",-1)).hasSize(3);
  }
  @Test void localEvidenceChatUsesSuppliedContextWithoutToolCalls(){
   ChatModel model=new ChatModel(){@Override public ChatResponse doChat(ChatRequest request){
