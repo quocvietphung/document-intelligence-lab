@@ -1,0 +1,14 @@
+{
+  "_comment": "FIKTIVE DATEN. Sample response in the documented Translator v3.0 shape. Not a live response; no Azure call produced it.",
+  "response": [
+    {
+      "translations": [
+        {"text": "Subject: Final invoice RG-2026-0457\nDear Sir or Madam,\nplease find attached final invoice RG-2026-0457 for EUR 49,980.00 gross (EUR 42,000.00 net plus EUR 7,980.00 VAT). Item 3, additional filling work in the second-floor corridor, amounts to EUR 1,008.40 net and is not covered by any change order.\nKind regards,\nMusterbau Ausbau GmbH (fictional)", "to": "en"}
+      ]
+    }
+  ],
+  "transliterate": [
+    {"text": "Primer Testov", "script": "Latn"}
+  ],
+  "transliterateSource": {"text": "Пример Тестов", "language": "ru", "fromScript": "Cyrl", "toScript": "Latn"}
+}

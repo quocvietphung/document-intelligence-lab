@@ -27,6 +27,8 @@ Selecting a task prepares a draft; the user decides whether to send it. No tool 
 
 A reply can expose source links and evidence by statement. Open the original page and compare its text/amounts before accepting a conclusion.
 
+**Listen to answer**, next to **Copy**, reads a completed answer aloud with a voice on this device. Nothing is recorded or sent, and the citations stay on screen. See [listen to answers and evidence-context measurements](NOVA_AUDIO_AND_CONTEXT.md).
+
 `SOURCE_LINKED` means the referenced source ID exists in the selected context. It is **not semantic verification, calibrated confidence or factual accuracy**. An exact PDF highlight is displayed only when supported by a unique text match; otherwise the viewer opens the page without pretending to identify an exact region.
 
 Document field edits and reviewer confirmation are separate from the model answer. Net earnings and payout must not be substituted for each other. German source quotations, names and number formatting remain unchanged in every UI language.

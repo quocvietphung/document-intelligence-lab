@@ -63,7 +63,7 @@ export function TrustWorkbench({caseId,caseVersion,locale,onDraft,openSource,ini
       <p className="trust-muted">{answer.mode} · {answer.modelId||'—'} · {t.promptVersion} {answer.promptVersion} · {t.noHumanApproval}</p>
       {answer.revisionOf?<p>{t.revised}: <code>{answer.revisionOf}</code></p>:null}
       {answerIsStale(answer,caseVersion)?<p className="trust-warning">{t.staleAnswer}</p>:null}
-      <div className="trust-stored-answer">{answer.answer}</div><NovaCopyAnswer text={answer.answer} locale={locale}/>
+      <div className="trust-stored-answer">{answer.answer}</div><NovaCopyAnswer text={answer.answer} locale={locale} speech={{id:`history-${answer.id}`}}/>
       <NovaAnswerActions answer={answer} caseId={caseId} caseVersion={caseVersion} locale={locale} onDraft={onDraft} openSource={openSource}/>
       {data.feedback.some(f=>f.answerId===answer.id)?<details><summary>{t.feedbackHistory}</summary>{data.feedback.filter(f=>f.answerId===answer.id).map(f=><p key={f.id}>{t[f.reason]} · {fmt(f.time)}<br/>{f.note}</p>)}</details>:null}
     </details>)}</>:null}

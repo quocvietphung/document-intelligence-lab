@@ -1,0 +1,11 @@
+{
+  "_comment": "FIKTIVE DATEN. Body for POST {endpoint}/contentunderstanding/analyzers/{analyzerId}:analyze?api-version=2025-11-01 (GA). analyzerId goes into the URL and is removed from the body. Replace the placeholder with base64 content of a fictional PDF, or use a url. The MIME key is mimeType (documented). Analyzer names are the documented prebuilt names; prebuilt-documentAnalyzer does not exist.",
+  "analyzerId": "prebuilt-documentSearch",
+  "inputs": [
+    {
+      "name": "bauauftrag-wv-2026-031.pdf",
+      "mimeType": "application/pdf",
+      "data": "<base64 of a fictional PDF>"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "ai103-contractor-ocr-skillset",
+  "description": "FIKTIVE DATEN. OCR of the normalized page images, and page-sized text pieces for the index.",
+  "skills": [
+    {
+      "@odata.type": "#Microsoft.Skills.Vision.OcrSkill",
+      "name": "page-ocr",
+      "description": "OCR of each normalized page image (scanned or photographed pages).",
+      "context": "/document/normalized_images/*",
+      "lineEnding": "Space",
+      "inputs": [
+        {"name": "image", "source": "/document/normalized_images/*"}
+      ],
+      "outputs": [
+        {"name": "text", "targetName": "text"},
+        {"name": "layoutText", "targetName": "layoutText"}
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Text.SplitSkill",
+      "name": "page-pieces",
+      "description": "Keeps one piece per page of the extracted text.",
+      "context": "/document",
+      "defaultLanguageCode": "de",
+      "textSplitMode": "pages",
+      "maximumPageLength": 4000,
+      "inputs": [
+        {"name": "text", "source": "/document/content"}
+      ],
+      "outputs": [
+        {"name": "textItems", "targetName": "pages"}
+      ]
+    }
+  ]
+}

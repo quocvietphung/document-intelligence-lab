@@ -1,0 +1,14 @@
+{
+  "_comment": "FIKTIVE DATEN. MOCK speech-to-text output: a reference transcript of a fictional site-inspection voice memo. No audio is distributed; generate one locally with `python3 -m contractor_lab make-audio` (macOS say) if you want to test a real ASR service later.",
+  "memoId": "MEMO-2026-12-01-HAUS-C",
+  "language": "de-DE",
+  "source": "mock-reference-transcript",
+  "durationSeconds": 31.0,
+  "segments": [
+    {"start": 0.0, "end": 6.2, "text": "Begehung Haus C am 01.12.2026, Abnahme AP-2026-019 zum Auftrag WV-2026-031."},
+    {"start": 6.2, "end": 12.8, "text": "Treppenhaus: Kantenschutz fehlt, siehe Foto F-01."},
+    {"start": 12.8, "end": 18.4, "text": "Die Vorsatzschale aus Nachtrag N-01 ist montiert, Foto F-02."},
+    {"start": 18.4, "end": 26.0, "text": "Die zusätzliche Spachtelung im Flur zweites Obergeschoss ist nicht beauftragt und wird nicht abgenommen. Foto F-03 folgt."},
+    {"start": 26.0, "end": 31.0, "text": "Zur Zahlung wird hier nichts festgestellt."}
+  ]
+}
