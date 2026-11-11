@@ -67,7 +67,7 @@ const en={
   timeline:'Recorded stage history',legacy:'Detailed stage events were not recorded for this historical job. Its saved result remains available.',
   source:'Source identity',hash:'SHA-256 of uploaded bytes',submitted:'Submitted',finished:'Finished',next:'Next automatic attempt',attempt:'Attempt',retryOf:'Previous job',
   extraction:'Saved extraction',pages:'Pages',fields:'Fields',tables:'Tables',characters:'Text characters',provider:'Provider / model',
-  reviewHint:'Compare the original before confirming. Zero form fields can be valid for reference wording.',ragHint:'Search/RAG indexing is built on demand in AI Studio; successful OCR does not certify an index.',
+  reviewHint:'Compare the original before confirming. Zero form fields can be valid for reference wording.',ragHint:'Search/RAG indexing is built on demand in Ask documents; successful OCR does not certify an index.',
   RECEIVED:'Received',SCAN:'Security scan',EXTRACT:'AI extraction',REUSE_EXTRACTION:'Reuse saved extraction',VALIDATE:'Content checks',ATTACH:'Save evidence',HUMAN_REVIEW:'Human review',STOPPED:'Stopped',PURGED:'Retention cleanup',CANCELLED:'Cancelled',
   running:'Worker active',paused:'Worker disabled',persistent:'Durable PostgreSQL queue',volatile:'Non-durable storage',private:'Bearer-protected original',
 };
@@ -82,7 +82,7 @@ const de:Copy={
   timeline:'Aufgezeichnete Schritte',legacy:'Für diesen historischen Auftrag wurden keine einzelnen Schritte aufgezeichnet. Das gespeicherte Ergebnis bleibt verfügbar.',
   source:'Quellidentität',hash:'SHA-256 der hochgeladenen Bytes',submitted:'Eingereicht',finished:'Beendet',next:'Nächster automatischer Versuch',attempt:'Versuch',retryOf:'Vorheriger Auftrag',
   extraction:'Gespeicherte Extraktion',pages:'Seiten',fields:'Felder',tables:'Tabellen',characters:'Textzeichen',provider:'Anbieter / Modell',
-  reviewHint:'Vor der Bestätigung das Original vergleichen. Bei Referenzbedingungen sind null Formularfelder möglich.',ragHint:'Such-/RAG-Indizes entstehen bei Bedarf im KI-Studio. Erfolgreiche OCR bestätigt keinen Index.',
+  reviewHint:'Vor der Bestätigung das Original vergleichen. Bei Referenzbedingungen sind null Formularfelder möglich.',ragHint:'Such-/RAG-Indizes entstehen bei Bedarf unter „Dokumente fragen“. Erfolgreiche OCR bestätigt keinen Index.',
   RECEIVED:'Eingegangen',SCAN:'Sicherheitsprüfung',EXTRACT:'KI-Extraktion',REUSE_EXTRACTION:'Gespeicherte Extraktion nutzen',VALIDATE:'Inhaltsprüfung',ATTACH:'Belege speichern',HUMAN_REVIEW:'Manuelle Prüfung',STOPPED:'Angehalten',PURGED:'Aufbewahrung bereinigt',CANCELLED:'Abgebrochen',
   running:'Verarbeitung aktiv',paused:'Verarbeitung deaktiviert',persistent:'Dauerhafte PostgreSQL-Warteschlange',volatile:'Nicht dauerhafter Speicher',private:'Original mit Bearer-Schutz',
 };
@@ -96,7 +96,7 @@ const vi:Copy={
   timeline:'Lịch sử từng bước đã ghi nhận',legacy:'Tác vụ cũ này chưa có nhật ký từng bước. Kết quả đã lưu vẫn xem được.',
   source:'Nhận diện tài liệu nguồn',hash:'SHA-256 của tệp đã tải lên',submitted:'Đã gửi',finished:'Hoàn tất lúc',next:'Lần thử tự động tiếp theo',attempt:'Lần thử',retryOf:'Tác vụ trước',
   extraction:'Kết quả trích xuất đã lưu',pages:'Trang',fields:'Trường',tables:'Bảng',characters:'Ký tự văn bản',provider:'Nhà cung cấp / mô hình',
-  reviewHint:'Đối chiếu bản gốc trước khi xác nhận. Điều khoản tham khảo có thể không có trường biểu mẫu.',ragHint:'Chỉ mục tìm kiếm/RAG được tạo khi cần trong AI Studio. OCR thành công không chứng minh chỉ mục đã sẵn sàng.',
+  reviewHint:'Đối chiếu bản gốc trước khi xác nhận. Điều khoản tham khảo có thể không có trường biểu mẫu.',ragHint:'Chỉ mục tìm kiếm/RAG được tạo khi cần trong Hỏi tài liệu. OCR thành công không chứng minh chỉ mục đã sẵn sàng.',
   RECEIVED:'Tiếp nhận',SCAN:'Quét bảo mật',EXTRACT:'AI trích xuất',REUSE_EXTRACTION:'Dùng lại kết quả đã lưu',VALIDATE:'Kiểm tra nội dung',ATTACH:'Lưu chứng cứ',HUMAN_REVIEW:'Người kiểm duyệt',STOPPED:'Đã dừng',PURGED:'Đã dọn theo thời hạn',CANCELLED:'Đã hủy',
   running:'Bộ xử lý đang bật',paused:'Bộ xử lý đang tắt',persistent:'Hàng đợi PostgreSQL bền vững',volatile:'Kho không bền vững',private:'Bản gốc được bảo vệ bằng Bearer token',
 };

@@ -11,9 +11,9 @@ import {ResearchSamples} from "./ResearchSamples";
 import {domainOf,type DocumentDomain} from "@/lib/document-domains";
 import {workspacePresentation} from '@/lib/workspace-presentation';
 
-export function DocumentAnalysisWorkspace({caseId,documents,locale,busy,canImport,azure,importSample,refreshCase,open,ask,technical,showPayroll=true,domain='banking',guiding=false}:{
+export function DocumentAnalysisWorkspace({caseId,documents,locale,busy,canImport,azure,importSample,refreshCase,open,ask,technical,showPayroll=true,domain='banking',guiding=false,draft,report}:{
   caseId:string;documents:readonly CreditDocument[];locale:string;busy:boolean;canImport:boolean;azure:boolean;
-  importSample:(file:string)=>Promise<DocumentImportOutcome>;refreshCase:()=>Promise<void>;open:(doc:CreditDocument)=>void;ask:(question:string)=>void;technical:()=>void;showPayroll?:boolean;domain?:DocumentDomain;guiding?:boolean;
+  importSample:(file:string)=>Promise<DocumentImportOutcome>;refreshCase:()=>Promise<void>;open:(doc:CreditDocument)=>void;ask:(question:string)=>void;technical:()=>void;showPayroll?:boolean;domain?:DocumentDomain;guiding?:boolean;draft?:(doc:CreditDocument)=>void;report?:React.ReactNode;
 }){
   const auth=useAuth(),t=documentUi(locale),demo=auth.mode==="demo";
   const presentation=workspacePresentation(locale),library=useRef<HTMLDetailsElement>(null);
@@ -75,7 +75,7 @@ export function DocumentAnalysisWorkspace({caseId,documents,locale,busy,canImpor
     {notice?<p className="document-analysis-notice" role="status">{notice==="accepted"&&ready?t.finished:t[notice]}</p>:null}
     {importError?<p className="notice-error" role="alert">{t[importError as "limit"|"importError"]}</p>:null}
     <DocumentResults payroll={showPayroll} documents={results.concat(documents.filter(doc=>doc.status==="missing"))} jobs={visibleJobs} locale={locale} loading={loading} error={statusError}
-      refresh={()=>{void load();void refreshCase();}} open={open} ask={ask} choose={choose} technical={technical}/>
+      refresh={()=>{void load();void refreshCase();}} open={open} ask={ask} choose={choose} technical={technical} draft={draft} report={report}/>
     <details ref={library} className="document-reference-library" open={guiding||undefined}><summary><strong>{presentation.referenceLibrary}</strong><span>{showPayroll?'DATEV':'PDF'}</span></summary><p>{presentation.referenceHint}</p>
       {showPayroll?<PayrollSamples locale={locale} busy={busy||importing} canImport={canImport} azure={azure} importSample={analyze} jobs={jobs} documents={documents} openResult={open} showProgress={focusResults}/>:<ResearchSamples domain={domainOf(domain)} locale={locale} disabled={!canImport||busy||importing} azure={azure} analyze={analyze} jobs={jobs} documents={documents} openResult={open} showProgress={focusResults}/>}
     </details>

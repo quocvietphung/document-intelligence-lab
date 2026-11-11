@@ -35,9 +35,9 @@ export function novaSuggestions(locale:string,page:WorkspaceTab) {
   const labels=customerUx(locale);
   const language=locale==="vi"?"vi":locale==="de"?"de":"en";
   const questions={
-    en:[`How do I use ${page==="studio"?"AI Studio":page==="banking"?"domain research":"this page"}?`,"What evidence is missing from this dossier?","Explain the important amounts and dates in the uploaded documents, with page sources."],
-    de:[`Wie nutze ich ${page==="studio"?"AI Studio":page==="banking"?"die Bereichsrecherche":"diese Seite"}?`,"Welche Belege fehlen in diesem Vorgang?","Erkläre wichtige Beträge und Daten der hochgeladenen Dokumente mit Quellseiten."],
-    vi:[`Hướng dẫn sử dụng ${page==="studio"?"AI Studio":page==="banking"?"nghiên cứu theo lĩnh vực":"trang này"}.`,"Hồ sơ này còn thiếu chứng cứ nào?","Giải thích số tiền và ngày quan trọng trong tài liệu đã tải, kèm trang nguồn."],
+    en:[`How do I use ${page==="studio"?"Ask documents":page==="banking"?"Domain analysis":"this page"}?`,"What evidence is missing from this dossier?","Explain the important amounts and dates in the uploaded documents, with page sources."],
+    de:[`Wie nutze ich ${page==="studio"?"„Dokumente fragen“":page==="banking"?"die Bereichsanalyse":"diese Seite"}?`,"Welche Belege fehlen in diesem Vorgang?","Erkläre wichtige Beträge und Daten der hochgeladenen Dokumente mit Quellseiten."],
+    vi:[`Hướng dẫn sử dụng ${page==="studio"?"Hỏi tài liệu":page==="banking"?"Phân tích lĩnh vực":"trang này"}.`,"Hồ sơ này còn thiếu chứng cứ nào?","Giải thích số tiền và ngày quan trọng trong tài liệu đã tải, kèm trang nguồn."],
   }[language];
   return {label:labels.suggestions,hint:labels.fillHint,questions};
 }

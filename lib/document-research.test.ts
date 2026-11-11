@@ -11,9 +11,9 @@ describe('source-bound document experiments',()=>{
     expect(researchText('en')('labelFlow')).toBe('PDF → checked labels');
     expect(researchText('de')('labelFlow')).toBe('PDF → geprüfte Labels');
     expect(researchText('vi')('labelFlow')).toBe('PDF → nhãn đã kiểm tra');
-    expect(researchText('de')('pipeline')).toBe('Datenpipelines');
-    expect(researchText('vi')('pipeline')).toBe('Luồng dữ liệu');
-    expect(researchText('vi')('experiments')).toBe('Thí nghiệm AI');
+    expect(researchText('de')('pipeline')).toBe('Verarbeitung & Daten');
+    expect(researchText('vi')('pipeline')).toBe('Xử lý & dữ liệu');
+    expect(researchText('vi')('experiments')).toBe('Đánh giá chất lượng');
   });
   it('never renders missing metrics as a zero or success score',()=>{expect(researchMetric(null)).toBe('—');expect(researchMetric(undefined)).toBe('—');expect(researchMetric(0)).toBe('0.0%');});
   it('keeps ranking milliseconds and sample counts separate from percentages',()=>{expect(researchMetricValue('p95Ms',120)).toBe('120.0 ms');expect(researchMetricValue('answerableSamples',32)).toBe('32');expect(researchMetricValue('recallAt5',50)).toBe('50.0%');});

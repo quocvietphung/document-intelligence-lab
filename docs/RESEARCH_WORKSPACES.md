@@ -88,7 +88,7 @@ TEST_RAG_PDFS=prepare node scripts/test-oauth.mjs
 TEST_RAG_PDFS=measure node scripts/test-oauth.mjs
 ```
 
-Preparation creates a separate research dossier, uploads the pinned PDFs through the existing ClamAV/Docling queue and checks that all originals were saved. It never disables scanning or uploads to Azure. Measurement verifies each authorized stored original's SHA-256, saves source-bound labels and queues the actual Java ranking experiments. Results persist in PostgreSQL and appear in **AI experiments**. The helper prints the case-specific preview link. Private row-level results are in `.local/rag-benchmark/docling-results.json`.
+Preparation creates a separate research dossier, uploads the pinned PDFs through the existing ClamAV/Docling queue and checks that all originals were saved. It never disables scanning or uploads to Azure. Measurement verifies each authorized stored original's SHA-256, saves source-bound labels and queues the actual Java ranking experiments. Results persist in PostgreSQL and appear in **Quality evaluation**. The helper prints the case-specific preview link. Private row-level results are in `.local/rag-benchmark/docling-results.json`.
 
 Unanswerable references are retained separately and excluded from positive retrieval metrics. Candidate passages for them do not establish an answer or a correct model refusal; that needs a separate generation/answerability test. Empty denominators remain unmeasured. Ranking p50/p95 includes local embedding/ranking and warm caches; it does not measure Qdrant service latency or end-to-end Nova generation. Keep cold-start and concurrent-load measurements separate.
 

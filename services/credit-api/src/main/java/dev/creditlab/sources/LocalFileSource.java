@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * The default source: needs no Google, Microsoft or Azure credential. Direct uploads keep using the existing
- * Documents & review flow; this adapter exposes the bundled fictional use-case PDFs through the same contract
+ * Processing & data flow; this adapter exposes the bundled fictional use-case PDFs through the same contract
  * so every use case can run offline through the shared pipeline.
  */
 @Component
@@ -18,7 +18,7 @@ public class LocalFileSource implements DocumentSource {
 
   @Override public Descriptor descriptor() {
     return new Descriptor(ID, Kind.DOCUMENT_SOURCE, "Local files and fictional fixtures", Label.VERIFIED_LOCAL, true, false, false, List.of(),
-        List.of("Upload your own permitted PDFs in Documents & review", "Import bundled fictional use-case PDFs; no network call"),
+        List.of("Upload your own permitted PDFs under Processing & data", "Import bundled fictional use-case PDFs; no network call"),
         "Default mode. Works without any cloud credential.");
   }
 

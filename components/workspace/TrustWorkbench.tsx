@@ -11,13 +11,20 @@ import {NovaCopyAnswer} from './NovaConversation';
 import {workflowPdfExample} from '@/lib/ai-pdf-examples';
 import {AIPdfExample} from './AIPdfExample';
 
-export function TrustWorkbench({caseId,caseVersion,locale,onDraft,openSource,initialSection='privacy'}:{caseId:string;caseVersion:number;locale:string;onDraft:(question:string,options:DraftOptions)=>void;openSource:(id:string)=>void;initialSection?:TrustSection}) {
+/**
+ * The single AI transparency page: data and privacy, task library, answer history, review tasks, governance and measured activity.
+ * The open section can be controlled by the page URL, and a history link can focus one stored answer.
+ */
+export function TrustWorkbench({caseId,caseVersion,locale,onDraft,openSource,initialSection='privacy',section:controlledSection,onSection,focusAnswer}:{caseId:string;caseVersion:number;locale:string;onDraft:(question:string,options:DraftOptions)=>void;openSource:(id:string)=>void;initialSection?:TrustSection;section?:TrustSection;onSection?:(section:TrustSection)=>void;focusAnswer?:string}) {
   const auth=useAuth(),t=trustText(locale);
-  const [section,setSection]=useState<TrustSection>(initialSection),[data,setData]=useState<TrustSnapshot>(),[error,setError]=useState(''),[busy,setBusy]=useState(false),[newTask,setNewTask]=useState(false);
+  const [ownSection,setOwnSection]=useState<TrustSection>(initialSection),[data,setData]=useState<TrustSnapshot>(),[error,setError]=useState(''),[busy,setBusy]=useState(false),[newTask,setNewTask]=useState(false);
   const lifetime=useRef<AbortController|null>(null),[revision,setRevision]=useState(0);
   const [taskAction,setTaskAction]=useState<{id:string;action:'CLAIM'|'RETURN'|'RESOLVE'|'REOPEN';version:number}>();
   const [feature,setFeature]=useState<TrustSnapshot['features'][number]>(),[note,setNote]=useState('');
   const canReview=auth.roles.some(r=>r==='REVIEWER'||r==='ADMIN'),canAdmin=auth.roles.includes('ADMIN');
+  const section=controlledSection??ownSection;
+  const setSection=(next:TrustSection)=>{if(onSection)onSection(next);else setOwnSection(next);};
+  useEffect(()=>{if(!data||section!=='history'||!focusAnswer)return;const timer=window.setTimeout(()=>document.getElementById(`trust-answer-${focusAnswer}`)?.scrollIntoView({block:'start'}),0);return()=>window.clearTimeout(timer);},[data,section,focusAnswer]);
   useEffect(()=>{
     const controller=new AbortController();lifetime.current=controller;
     const timer=setTimeout(()=>{setBusy(true);setError('');setData(undefined);void requestTrust(auth.token,caseId,'',undefined,controller.signal).then(value=>{
@@ -51,7 +58,7 @@ export function TrustWorkbench({caseId,caseVersion,locale,onDraft,openSource,ini
       <article className="trust-card"><Sparkles size={22}/><h3>{t.analysisMode}</h3><p>{t.noInference}</p><p>{t.readOnly}</p></article>
     </div>:null}
     {data&&section==='library'?<><p className="notice-lab">{t.draftHint}</p><div className="trust-grid">{data.features.filter(f=>f.id!=='nova').map(f=><article className="trust-card" key={f.id}><Sparkles size={22}/><h3>{t[f.id]}</h3><p>{t.readOnly}</p><AIPdfExample example={workflowPdfExample(f.id,locale)} locale={locale}/><small>{f.enabled&&data.features.find(x=>x.id==='nova')?.enabled?t.enabled:t.disabled}</small><button type="button" className="button-primary" disabled={busy||!f.enabled||!data.features.find(x=>x.id==='nova')?.enabled} onClick={()=>void taskPrompt(f.id as DraftOptions['taskId'])}>{t.draft}</button></article>)}</div></>:null}
-    {data&&section==='history'?<><p className="trust-muted">{t.historyHint}</p>{!data.answers.length?<p className="trust-empty">{t.noAnswers}</p>:data.answers.map(answer=><details className="trust-history" key={answer.id}>
+    {data&&section==='history'?<><p className="trust-muted">{t.historyHint}</p>{!data.answers.length?<p className="trust-empty">{t.noAnswers}</p>:data.answers.map(answer=><details className="trust-history" key={answer.id} id={`trust-answer-${answer.id}`} open={answer.id===focusAnswer||undefined}>
       <summary><MessageSquareText size={17}/><span>{answer.question.slice(0,120)}</span><small>{fmt(answer.time)}</small></summary>
       <p className="trust-muted">{answer.mode} · {answer.modelId||'—'} · {t.promptVersion} {answer.promptVersion} · {t.noHumanApproval}</p>
       {answer.revisionOf?<p>{t.revised}: <code>{answer.revisionOf}</code></p>:null}

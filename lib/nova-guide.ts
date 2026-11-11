@@ -1,6 +1,6 @@
 import catalog from "../services/credit-api/src/main/resources/nova-features.json";
 import {z} from "zod";
-export const workspaceTabs=["overview","integrations","pipeline","documents","controls","audit","studio","experiments","banking","evaluation","trust","operations"] as const;
+export const workspaceTabs=["overview","integrations","pipeline","documents","controls","audit","studio","banking","experiments","evaluation","trust","operations"] as const;
 export type WorkspaceTab=typeof workspaceTabs[number];
 export const guideSchema=z.object({features:z.array(z.enum(workspaceTabs)).max(workspaceTabs.length),query:z.string().max(2000)});
 export type NovaGuide=z.infer<typeof guideSchema>;

@@ -56,7 +56,7 @@ Each use case runs first with local PDFs. It ships fictional documents labelled 
 | ESG evidence completeness | Present, missing and pending evidence; no certification |
 | Knowledge assistant with citations | Answers only with cited evidence; unsupported questions are refused |
 
-Run them in **Sources & integrations → Use cases**. A language model may explain the results or draft a report; it never computes them.
+Run them in **Research datasets → Sample scenarios**; import their PDFs under **Sources & integrations** (local files). The CSV project assessment is in **Domain analysis**, and the report download and Gmail drafts sit next to reviewed results in **Documents & evidence**. A language model may explain the results or draft a report; it never computes them.
 
 ## Docker quick start
 
@@ -251,7 +251,7 @@ These are development credentials for a **fresh identity database**. Existing vo
 3. Follow its job in **Processing & data**, then open **Analysis results → View result & PDF**. Inspect the original, fields and tables.
 4. Open Nova's portrait, select **Evidence analysis** and ask: *“What invoice number, currency and gross total are stated? Cite the source page.”* Enter sends; Shift+Enter adds a line break.
 5. Wait for a completed **Ollama · Local LLM** answer. Open its citations and compare the PDF; source identity is not semantic verification.
-6. In **AI experiments**, independently check reference values/pages before comparing retrieval, chunking or prompts.
+6. In **Quality evaluation**, independently check reference values/pages before comparing retrieval, chunking or prompts.
 
 For the construction/real-estate example, create a **Construction & real estate** dossier and import the five authored fictional PDFs from the same library. The deterministic review links project/order references, compares the order plus approved change against the invoice, and carries open defects and their deadline into human review. It flags the deliberate **EUR 1,200** variance; it never approves acceptance, payment or a legal conclusion.
 
@@ -477,7 +477,7 @@ The lab studies document extraction, insurance-document classification, cross-do
 
 ### Insurance classification benchmark
 
-Open **AI experiments → Insurance document classification** after enabling the [optional local ML worker](#document-analytics-and-local-ml). Expand **Dataset & run controls**, preview a labelled PDF, opt into the local comparison, then inspect the held-out metrics, per-class precision/recall/F1, confusion matrices and PDF-by-PDF predictions. After a completed run, setup collapses so the results come first. **Overview → Insurance classification benchmark** links to the same page. No new service, deep-learning weights or Azure resource is required.
+Open **Quality evaluation → Insurance document classification** after enabling the [optional local ML worker](#document-analytics-and-local-ml). Expand **Dataset & run controls**, preview a labelled PDF, opt into the local comparison, then inspect the held-out metrics, per-class precision/recall/F1, confusion matrices and PDF-by-PDF predictions. After a completed run, setup collapses so the results come first. **Overview → Insurance classification benchmark** links to the same page. No new service, deep-learning weights or Azure resource is required.
 
 The [corpus manifest](services/credit-api/src/main/resources/classification/manifest.json) identifies **66 authored fictional one-page PDFs**, with MIT-licensed generated content. Four labels are used: *Schadenmeldung, Versicherungsschein, Rechnung, Sonstiges*. Five template families per class produce three variants each: **36 train / 12 validation / 12 test**, plus **6 challenge packets**. The test set has only **four held-out template families, one per class**, with three variants each. An entire family stays in one split, as do exact source/text hashes. These fixtures are separate from the existing DATEV/Kaggle library. They are not customer records, documents from a real insurer or a representative insurance corpus.
 
@@ -524,7 +524,7 @@ Agreement is labelled **not verified**. Reports contain private source text/crop
 
 The lab now includes a [registry of nine prepared PDF references](lib/rag-pdf-sources.json) and [77 authored questions](lib/rag-pdf-questions.json) covering DATEV payroll, invoices, insurance and blank tax forms. CMS and IRS add official examples; publisher-owned references stay private. CFPB links that could not be downloaded are recorded separately and are not counted in measured results.
 
-In **AI experiments**, compare **BM25 / Vector / Hybrid / RRF / Previous Hybrid** with multiple relevant pages, tuning/held-out groups, Hit@5, Recall@5, unique-source Precision@5, nDCG@5, MRR@5 and ranking p50/p95. Unanswerable questions remain explicit; retrieval does not certify a model's refusal or answer correctness. Lexical matching now uses term frequency, compound identifiers and a small explicit EN/DE/VI glossary; it never rewrites stored source amounts.
+In **Quality evaluation**, compare **BM25 / Vector / Hybrid / RRF / Previous Hybrid** with multiple relevant pages, tuning/held-out groups, Hit@5, Recall@5, unique-source Precision@5, nDCG@5, MRR@5 and ranking p50/p95. Unanswerable questions remain explicit; retrieval does not certify a model's refusal or answer correctness. Lexical matching now uses term frequency, compound identifiers and a small explicit EN/DE/VI glossary; it never rewrites stored source amounts.
 
 All nine prepared PDFs passed the local ClamAV/Docling intake. The [measured report](docs/benchmarks/rag-pdf-retrieval.json) compares the same 69 answerable questions; eight unanswerable questions are kept separately:
 

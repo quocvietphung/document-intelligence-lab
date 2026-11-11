@@ -14,7 +14,7 @@ describe('compact workspace presentation',()=>{
     const pages=workspaceNavigation.flatMap(group=>[...group.pages]);
     expect(pages).toHaveLength(workspaceTabs.length);
     expect(new Set(pages)).toEqual(new Set(workspaceTabs));
-    expect(workspaceNavigation.map(group=>group.title)).toEqual(['','intake','review','analysis','governance']);
+    expect(workspaceNavigation.map(group=>group.title)).toEqual(['','intake','review','analysis','research','governance']);
     expect(readFileSync('components/workspace/CreditWorkspace.tsx','utf8')).not.toContain('workspace-section-tabs');
   });
   it('gives each page one name, shared by the sidebar, the page title and the Nova catalog',()=>{

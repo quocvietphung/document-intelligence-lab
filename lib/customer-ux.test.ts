@@ -49,8 +49,8 @@ describe("customer-focused lab usability",()=>{
   });
   it("renders opt-in questions, not a hidden automatic send",()=>{
     const html=renderToStaticMarkup(createElement(NovaSuggestions,{locale:"vi",page:"studio",select:()=>{}}));
-    expect(html).toContain("Không tự động gửi lên AI");expect(html).toContain("AI Studio");
-    expect(novaSuggestions("de","banking").questions[0]).toContain("Bereichsrecherche");
+    expect(html).toContain("Không tự động gửi lên AI");expect(html).toContain("Hỏi tài liệu");
+    expect(novaSuggestions("de","banking").questions[0]).toContain("Bereichsanalyse");
   });
   it("renders reset, count, mobile cards and detail entry points",()=>{
     const html=renderToStaticMarkup(createElement(BankTransactionHistory,{data:sample,locale:"en",account:"all",onAccountChange:()=>{},ask:()=>{}}));

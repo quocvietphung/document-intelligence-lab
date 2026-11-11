@@ -53,7 +53,7 @@ describe("workspace guidance and recovery", () => {
     expect(render()).toContain("not yet confirmed");
     expect(render(undefined, true)).toContain("Read-only sample evidence");
     expect(render("azure")).not.toContain("100% accurate");
-    expect(render("azure")).toContain("Open AI Studio");
+    expect(render("azure")).toContain("Ask documents");
     expect(render("azure")).toContain("Chat with Nova");
   });
 });
