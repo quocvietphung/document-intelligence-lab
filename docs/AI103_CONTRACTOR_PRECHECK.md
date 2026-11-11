@@ -227,52 +227,60 @@ resource or deploys anything.
 
 ## 6. Results (2026-11-11, development machine)
 
-Apple Silicon Mac, Docker Desktop with 8 GiB and 6 CPUs; Docling capped at 2 CPUs, Ollama at 3 CPUs,
-model `qwen3:4b-instruct-2507-q4_K_M`. All numbers are from this one machine and fixture set; they are
-development measurements, not accuracy claims.
+Apple Silicon Mac, Docker Desktop, model `qwen3:4b-instruct-2507-q4_K_M` on Ollama (CPU). Numbers are from this one
+machine and fixture set. They are development measurements, not accuracy claims. Live checks ran on the committed
+tree `b6c3f73`, built in a separate worktree, with the committed defaults (no Nova switches in the environment).
 
 | Check | Result |
 | --- | --- |
-| `ContractorPrecheckTest` (incl. scan of every bundled PDF for false approval-instruction hits) | 9/9 |
-| `mvn verify` (whole Java API) | 375 tests, 0 failures, 5 skipped (opt-in live tests) |
-| `npm run lint` · `npm test` · `tsc --noEmit` | clean · 356/356 · clean |
-| Script tests (`docker-local`, `docker-azure-config`, `check-public-source`, Nova helpers) | 28/28 |
-| `check-public-source.mjs` | 0 risks (new PDFs added to the reviewed fixture allowlist) |
-| Live acceptance `TEST_CONTRACTOR_PRECHECK=1` (final images) | 53/53 |
-| Python lab unit tests · `offline` | 22/22 · 11/11 |
-| Live agent, scripted planner · local-Ollama planner | 6/6 (4 requests: 2 GET, 2 read-only searches) · 6/6 in 210 s, same 4 tools chosen by the model, none denied |
-| Live Nova suggestion (`vi`) | 3/3, accepted for review, 85 s (warm prompt cache) |
-| Trace report | 2/2: agent and API spans share one trace (50 spans) |
+| `mvn verify` (whole Java API, on the committed Java sources) | 384 tests, 0 failures, 5 skipped (opt-in live tests) |
+| Pre-check and isolation tests (`ContractorPrecheckTest`, `PageIsolationTest`, `PageIsolationContextTest`, `CreditAssistantServiceTest`) | 32 tests, 0 failures |
+| `npm run lint` · `npm run typecheck` · `npm test` | clean · clean · 356/356 in 52 files |
+| Python lab unit tests (`python3 -m unittest discover -s tests`) | 73/73 |
+| `python3 -m contractor_lab offline` | 20/20 criteria |
+| Script tests (`check-public-source`, `docker-local`, `docker-azure-config`, Nova helpers, benchmark, retention) | 35/35 |
+| `check-public-source.mjs` | 0 risks, 889 files |
+| `test_foundry_config.py`, `test_practice_document_data.py`, `test_rag_benchmark.py`, model-runtime tests | pass |
+| Live acceptance `TEST_CONTRACTOR_PRECHECK=1` on `b6c3f73` | 53/53 |
+| Live read-only agent, scripted planner (`agent`) | 6/6, 4 read-only requests, none denied |
+| Headless Chrome over DevTools on `b6c3f73` (see below) | login, reconciliation, PDF page, Nova chat: pass |
+| Live Nova suggestion from the lab command (`nova`) | not produced: the API refused the answer's citations with HTTP 422 on 3 of 3 attempts (see findings) |
 
-Measured live values: approved `48780.00` GROSS (change order p. 2, region-linked), invoice `49980.00` GROSS
-(invoice p. 2), difference `1200.00` (net `1008.40`, VAT `191.60`), lines from the Docling table, acceptance
-PARTIAL, payment MISSING, photos F-01/F-02 linked by Docling OCR, F-03 missing; the instruction variant is
-reported on p. 2 and its page is quarantined from retrieval.
+**Measured values (live, `b6c3f73`):** approved `48.780,00 EUR brutto` (change order, page 2), invoice `49.980,00 EUR
+brutto` (invoice, page 2), difference `1.200,00 EUR` on the same gross basis, every claim's citation supported
+(`citationsVerified: true`), no quarantined page on the core dossier, acceptance PARTIAL, payment MISSING. The
+instruction variant reports its sentence on page 2, and that page is quarantined (`isolatedPages`).
 
-Timings: Docling + ClamAV took about 15–20 s per two-page PDF and 9–11 s per photo (queue processes one file
-at a time). Pre-check steps, cold (first Qdrant sync of the dossier): extract 11 ms, search 3.3 s, reconcile
-17 ms, draft 7 ms; warm, from the OpenTelemetry trace: extract 3.4 ms, search 187 ms, reconcile 1.1 ms,
-draft 0.25 ms.
+**Browser path (headless Chrome, throw-away profile, real Keycloak login as the local demo advisor):**
 
-Findings during the runs:
+1. Sign in, then open the case at `#controls` (**Đối chiếu**): the pre-check panel shows both amounts and the difference.
+2. **Chạy kiểm tra (chỉ đọc)**: the result shows `48.780,00`, `49.980,00` and `1.200,00`.
+3. **Mở trang** on the approved amount opens the evidence dialog on `nachtrag-n01-wv-2026-031.pdf`, page 2 of 2,
+   showing `Genehmigte Gesamtvergütung: 48.780,00 EUR brutto`. The dialog was closed with its own close control; the
+   confirm control was not pressed.
+4. Nova chat, German question about the difference with sources: the answer gives `49.980,00 EUR` and
+   `48.780,00 EUR`, cites two stored sources (page 2 of the invoice and of the change order), and states the difference
+   `1.200,00 EUR`. The chat also shows **Nghe câu trả lời** with the label *Giọng đọc của trình duyệt trên thiết bị này.
+   Không dùng Azure Speech.* Audio was not played in this run.
 
-- **Docling timeout on a photo.** The first version of `foto-f-02.png` (five drawn wall panels) made Docling's
-  table stage exceed its 110 s limit on three attempts (`ANALYSIS_HTTP_503`, job `FAILED`), while the similar
-  F-01 took 9 s. The images were redrawn without grid shapes; both now take about 10 s. Real photos with
-  tiles or panels may hit the same limit on CPU.
-- **Local Nova output limit.** A request for a summary plus a full email produced more than the configured
-  420 output tokens; the API correctly refused the cut-off answer with 503 instead of returning partial text.
-  The lab request is now capped at 110 words. The setting itself (`LocalAiConfiguration.numPredict`) was not
-  changed.
-- **Keycloak cookies and Python.** Keycloak marks its login cookies `Secure`; Python's `CookieJar` does not
-  send them over `http://localhost`, so the lab keeps them by hand for the local realm only.
-- **Citation checks are structural.** Nova's citations are checked to exist among the sources it received,
-  not that each cited chunk supports the sentence (one cited the change-order page for "line 3 has no
-  change order"). A person still opens the pages.
+Screenshots of steps 1 to 4 are in the local scratchpad of the session, not in the repository.
 
-UI check: in headless Chrome (throw-away profile), after a real Keycloak login, the Vietnamese
-Reconciliation page showed the panel with both amounts, localized tax basis and findings, and **Mở trang**
-opened the existing evidence dialog on page 2 of the change order next to its extracted fields. The confirm
-button in that dialog was not pressed: confirming is the person's step.
+**Findings during the runs:**
 
-Not verified: no Azure service was called; Azure adapters for these exercises do not exist yet.
+- **Citations per claim.** The old checks only confirmed that a cited ID existed. The Java pre-check now verifies that
+  each stated amount, invoice line and acceptance or payment status is on the page it cites. The Python validator checks
+  the same for Nova's text. Tests cover a page that exists but holds other content, and a missing page.
+- **Quarantine leak fixed.** Model context used to drop a whole document when one page was untrusted in some paths,
+  and the keyword path had no check at all. Now only the quarantined page loses its text, fields, regions and table
+  cells. The keyword path is tested end to end with a local model stub.
+- **Live Nova suggestion refused.** The lab's question (computed figures, bounded to 110 words) gave answers that the
+  API's citation contract refused: the API checks that every bracketed item is a known source ID, and the model wrote
+  bracketed notes too. The lab now reports this as `NOVA_REFUSED_BY_CITATION_CONTRACT` and keeps the deterministic
+  draft. The same figures in the chat, with a German question, passed the contract. A prompt rule against bracketed
+  notes did not change the result. Improving this needs a model or prompt evaluation, which is a next step.
+- **Host load.** A running Docker stack and an open browser make the local model several times slower; the same
+  question took 90 to 320 seconds in these runs.
+- **Docker restart policy.** Starting Docker Desktop restarts stopped containers that have `restart: unless-stopped`,
+  so another stack came up on the same ports. It was stopped only after approval and restored afterwards.
+
+Not verified: no Azure service was called; every Azure row above is **Azure not run**.

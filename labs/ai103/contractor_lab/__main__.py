@@ -20,6 +20,7 @@ import platform as host_platform
 import shutil
 import subprocess
 import sys
+import urllib.error
 from pathlib import Path
 
 from . import DOSSIER, FIXTURES, OUTPUT
@@ -179,12 +180,26 @@ def nova(args: argparse.Namespace) -> bool:
     with tracer.span("tool.run_precheck"):
         precheck = api.get(f"/api/cases/{args.case}/platform/contractor-precheck?locale={args.locale}")
     with tracer.span("nova.draft"):
-        result = draft_with_nova(api, args.case, precheck, args.locale)
+        try:
+            result = draft_with_nova(api, args.case, precheck, args.locale)
+        except urllib.error.HTTPError as refused:
+            if refused.code != 422:
+                raise
+            # The Java API refuses answers whose citations it cannot verify. That is a safe outcome: keep the draft.
+            result = {"status": "NOVA_REFUSED_BY_CITATION_CONTRACT", "problems": ["MODEL_CITATION_CONTRACT_FAILED"],
+                      "mode": "local-ollama", "aiGenerated": False, "humanApproved": False, "emailSent": False,
+                      "durationMs": None, "answer": "", "sources": [], "deterministicDraft": precheck["draft"]["summary"]}
+    if not result["answer"]:
+        print("No Nova suggestion was produced; the deterministic draft below stands.")
+        for line in result["deterministicDraft"]:
+            print(f"- {line}")
     path = write(f"nova-{args.case}.json", result)
     tracer.write(OUTPUT / f"otel/nova-{args.case}.json")
-    print(result["answer"])
+    if result["answer"]:
+        print(result["answer"])
     print(f"\nResult: {path}")
-    rows = [("2b Nova answered through the local provider", result["mode"] == "local-ollama", f"{result['mode']} in {result['durationMs']} ms"),
+    rows = [("2b Nova answered through the local provider", bool(result["answer"]) and result["mode"] == "local-ollama",
+             f"{result['status']} · {result['mode']} in {result['durationMs'] or 0} ms"),
             ("2b suggestion passes the code checks", not result["problems"], "; ".join(result["problems"]) or "amounts, citations, missing evidence, no approval claims"),
             ("2b nothing approved or sent", result["humanApproved"] is False and result["emailSent"] is False, result["status"])]
     return report(rows)

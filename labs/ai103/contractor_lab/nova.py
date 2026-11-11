@@ -46,6 +46,7 @@ def question(precheck: dict, locale: str = "vi") -> str:
            "de": "Schreibe auf Deutsch, höchstens 110 Wörter: (1) Zusammenfassung in 2 Sätzen für die Buchhaltung, (2) E-Mail-Entwurf an den Auftragnehmer, höchstens 4 Sätze. ",
            "en": "Write in English, at most 110 words: (1) a 2-sentence summary for accounting, (2) an email draft to the contractor of at most 4 sentences. "}[locale if locale in ("de", "en") else "vi"]
     rules = ("Chỉ dùng các số đã cho, giữ nguyên định dạng, trích nguồn trang. Nói rõ chứng từ còn thiếu. "
+             "Chỉ dùng dấu ngoặc vuông cho mã nguồn đúng dạng [mã-nguồn] lấy từ dữ liệu; không dùng ngoặc vuông cho số tiền hay ghi chú. "
              "Không tuyên bố hóa đơn đã được duyệt, đã thanh toán hay email đã gửi; đây là bản nháp chờ người duyệt.")
     return (ask + "Dữ kiện đã tính bằng code: " + facts + " " + rules)[:2000]
 
