@@ -166,7 +166,8 @@ export function IntegrationsWorkbench({caseId,caseVersion,locale,documents,navig
     <div className="px-6 py-4">
       <h3 className="section-heading">{t.destinations}</h3>
       <ul className="integration-future">{(overview?.destinations??[]).filter(d=>d.label!=='future').map(d=>{const text=describeAdapter(d,locale);return <li key={d.id}><strong>{text.name}</strong> <Badge provider={d} locale={locale}/>{text.note?<small> — {text.note}</small>:null}</li>;})}</ul>
-      <button type="button" className="button-secondary" disabled={!!busy} onClick={()=>void run('report',async()=>downloadJson(await request(`${casePath}/destinations/report`,{}),`document-report-${caseId}.json`))}>{t.report}</button>
+      <button type="button" className="button-secondary" disabled={!!busy||!reviewed.length} onClick={()=>void run('report',async()=>downloadJson(await request(`${casePath}/destinations/report`,{}),`document-report-${caseId}.json`))}>{t.report}</button>
+      {!reviewed.length?<p className="text-xs text-slate-600">{t.reportNeedsReview}</p>:null}
       {overview?.destinations.some(d=>d.id==='gmail-draft'&&d.enabled)?<div className="integration-draft">
         <h4>{t.draft}</h4><p className="text-xs">{t.draftWarning}</p>
         {reviewed.length?<>

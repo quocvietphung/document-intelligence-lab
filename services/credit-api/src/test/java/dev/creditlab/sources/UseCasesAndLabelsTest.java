@@ -5,12 +5,14 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
+import dev.creditlab.casework.CreditCase;
 import dev.creditlab.casework.CreditCaseService;
 import dev.creditlab.platform.*;
 import dev.creditlab.sources.SourceContracts.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 /** The eight offline use cases and the capability labels shown on the Integrations page. */
@@ -92,7 +94,7 @@ class UseCasesAndLabelsTest {
     server.createContext("/", exchange -> {
       String path = exchange.getRequestURI().getPath();
       byte[] body = switch (path) {
-        case "/health" -> "{\"status\":\"ok\",\"provider\":\"mock\",\"live\":false}".getBytes(StandardCharsets.UTF_8);
+        case "/health" -> "{\"status\":\"ok\",\"provider\":\"mock\",\"auth_mode\":\"local-dev\",\"live\":false}".getBytes(StandardCharsets.UTF_8);
         case "/documents" -> "{\"results\":[{\"document_id\":\"project-status-001\",\"name\":\"Projektstatus\",\"location\":\"mock://fictional\",\"score\":0}]}".getBytes(StandardCharsets.UTF_8);
         case "/documents/project-status-001/content" -> pdf;
         default -> null;
@@ -105,6 +107,7 @@ class UseCasesAndLabelsTest {
     try {
       var m365 = new MicrosoftGraphSource("http://127.0.0.1:" + server.getAddress().getPort(), true);
       assertThat(m365.descriptor().label()).isEqualTo(Label.SIMULATED);
+      assertThat(m365.descriptor().enabled()).isTrue();
       assertThat(m365.descriptor().live()).isFalse();
       var request = new SourceRequest("tenant", "case", "alice", "", 5);
       assertThat(m365.preview(request)).extracting(SourceItem::externalId).containsExactly("project-status-001");
@@ -113,5 +116,49 @@ class UseCasesAndLabelsTest {
       assertThatThrownBy(() -> m365.fetch(request, "../health")).hasMessage("INVALID_SOURCE_ITEM");
     } finally { server.stop(0); }
     assertThatThrownBy(() -> new MicrosoftGraphSource("http://attacker.example:8765", false)).isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test void microsoft365WorkspaceNeverCallsProtectedGraphDocumentRoutes() throws Exception {
+    var calls = new AtomicInteger();
+    var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+    server.createContext("/", exchange -> {
+      if ("/health".equals(exchange.getRequestURI().getPath())) {
+        byte[] body = "{\"status\":\"ok\",\"provider\":\"graph\",\"auth_mode\":\"entra\",\"live\":true}".getBytes(StandardCharsets.UTF_8);
+        exchange.sendResponseHeaders(200, body.length);
+        exchange.getResponseBody().write(body);
+      } else {
+        calls.incrementAndGet();
+        exchange.sendResponseHeaders(401, -1);
+      }
+      exchange.close();
+    });
+    server.start();
+    try {
+      var source = new MicrosoftGraphSource("http://127.0.0.1:" + server.getAddress().getPort(), true);
+      var request = new SourceRequest("tenant", "case", "alice", "", 5);
+      assertThat(source.descriptor().enabled()).isFalse();
+      assertThat(source.descriptor().live()).isFalse();
+      assertThatThrownBy(() -> source.preview(request)).hasMessage("CONNECTOR_NOT_CONFIGURED");
+      assertThatThrownBy(() -> source.fetch(request, "doc")).hasMessage("CONNECTOR_NOT_CONFIGURED");
+      assertThat(calls.get()).isZero();
+    } finally { server.stop(0); }
+  }
+
+  @Test void reportIncludesOnlyHumanReviewedFields() {
+    var cases = mock(CreditCaseService.class);
+    var dossier = mock(CreditCase.class);
+    var store = mock(LabStore.class);
+    var accounts = mock(ConnectorAccounts.class);
+    var confirmed = new CreditCase.Document("approved", "approved.pdf", "invoice", "verified", null,
+        List.of(new CreditCase.Field("total", "150", null, 1, "Approved total")), List.of(), true, null, null, "application/pdf");
+    var pending = new CreditCase.Document("pending", "pending.pdf", "invoice", "review", null,
+        List.of(new CreditCase.Field("total", "700", null, 1, "Pending total")), List.of(), true, null, null, "application/pdf");
+    when(cases.require("tenant", "case")).thenReturn(dossier);
+    when(dossier.documents()).thenReturn(List.of(confirmed, pending), List.of(pending));
+
+    var destination = new Destinations.Report(cases, store, accounts);
+    assertThat(destination.build("tenant", "case", "alice").get("documents").toString())
+        .contains("approved.pdf", "150", "humanReviewed=true").doesNotContain("pending.pdf", "700", "Pending total");
+    assertThatThrownBy(() -> destination.build("tenant", "case", "alice")).hasMessage("HUMAN_REVIEW_REQUIRED");
   }
 }

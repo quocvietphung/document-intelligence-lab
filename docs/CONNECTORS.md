@@ -39,8 +39,8 @@ Labels describe what was actually tested. Configuration alone never upgrades a l
 | Local files and fixtures | `verified-local` | Runs in tests and in Docker without a network call |
 | Gmail attachments | `implemented-not-live-verified` | Code and tests use a mocked Gmail API only. No real mailbox was tested |
 | Google Drive | `implemented-not-live-verified` | Mocked Drive API only. No real Drive was tested |
-| Microsoft 365 | `simulated` with the M365 service's mock provider; `implemented-not-live-verified` when that service uses its Graph provider | Fictional SharePoint-style documents. No tenant was tested |
-| Download report | `verified-local` | Generated locally |
+| Microsoft 365 | `simulated` with the M365 mock provider in local-dev; Graph intake is disabled in the workspace | Fictional SharePoint-style documents. Graph intake requires delegated Entra authentication |
+| Download report | `verified-local` | Generated locally with human-reviewed documents and their fields. Source-import metadata is listed separately |
 | Gmail draft | `implemented-not-live-verified` | Mocked Gmail API only |
 | CSV business data | `verified-local` | Parsed locally for the deterministic assessment |
 | WebDAV, S3/MinIO, PostgreSQL, generic REST, Dynamics 365/Dataverse, webhook, CRM write-back | `future` | Disabled descriptors with no network code |
