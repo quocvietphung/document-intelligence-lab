@@ -62,10 +62,10 @@ export async function auditConnectors({request,check,bearer,web}){
   const draft=await post(`${base}/destinations/gmail-draft/preview`,{documentId:contract.id,fieldLabels:['x'],recipients:[],subject:'Check',note:'',includeEvidenceExcerpts:false});
   check(draft.status===409&&draft.body.error==='HUMAN_REVIEW_REQUIRED','Drafts need a human-reviewed document first');
   const report=await post(`${base}/destinations/report`);
-  check(report.status===200&&report.body.documents.length>=2&&report.body.provenance.length===2&&report.body.documents.every(d=>d.humanReviewed===false),'Report carries provenance and no implied approval');
+  check(report.status===409&&report.body.error==='HUMAN_REVIEW_REQUIRED','Report cannot export fields before a human review');
   const trail=await json(`${base}/sources/imports`);
   const events=new Set(trail.body.audit.map(e=>e.event));
-  check(['SOURCE_PREVIEWED','SOURCE_IMPORTED','USE_CASE_CHECKED','PROJECT_ASSESSED','REPORT_EXPORTED'].every(e=>events.has(e)),'Audit trail records preview, import, checks, assessment and report');
+  check(['SOURCE_PREVIEWED','SOURCE_IMPORTED','USE_CASE_CHECKED','PROJECT_ASSESSED'].every(e=>events.has(e))&&!events.has('REPORT_EXPORTED'),'Audit records completed actions without claiming a report was exported');
   check(trail.body.imports.some(i=>i.sourceId==='microsoft-365'&&i.label==='simulated')&&trail.body.imports.some(i=>i.sourceId==='local'),'Provenance keeps source, revision and label');
   console.log(`Connector acceptance dossier: ${caseId}`);
 }

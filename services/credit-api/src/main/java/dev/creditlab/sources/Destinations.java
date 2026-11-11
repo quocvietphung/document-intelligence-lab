@@ -27,16 +27,19 @@ public final class Destinations {
 
     public Map<String, Object> build(String tenant, String caseId, String actor) {
       var item = cases.require(tenant, caseId);
-      var documents = item.documents().stream().map(doc -> {
+      var documents = item.documents().stream()
+          .filter(doc -> "verified".equals(doc.status()) && !doc.fields().isEmpty())
+          .map(doc -> {
         var row = new LinkedHashMap<String, Object>();
         row.put("id", doc.id()); row.put("name", doc.name()); row.put("type", doc.type());
-        row.put("reviewStatus", doc.status()); row.put("humanReviewed", "verified".equals(doc.status()));
+        row.put("reviewStatus", doc.status()); row.put("humanReviewed", true);
         row.put("provider", Objects.requireNonNullElse(doc.analysisProvider(), "unknown"));
         row.put("fields", doc.fields().stream().map(f -> Map.of("label", f.label(), "value", f.value(), "page", f.page(),
             "confidence", f.confidence() == null ? "unknown" : f.confidence(),
             "evidence", IntakeChecks.displayText(f.evidence(), 200))).toList());
         return row;
       }).toList();
+      if (documents.isEmpty()) throw new ConnectorException("HUMAN_REVIEW_REQUIRED", 409);
       accounts.audit(tenant, caseId, actor, "REPORT_EXPORTED", "download-report", Map.of("documents", documents.size()));
       return Map.of("schemaVersion", "document-report-v1", "caseId", caseId, "generatedAt", Instant.now().toString(), "generatedBy", actor,
           "documents", documents, "provenance", store.list(tenant, caseId, "source-import"), "notice", NOTICE);

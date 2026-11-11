@@ -28,6 +28,7 @@ import {DocumentAnalysisWorkspace} from "./DocumentAnalysisWorkspace";
 import {IntegrationsWorkbench} from "./IntegrationsWorkbench";
 import {DocumentResultCard} from "./DocumentResults";
 import {documentReceiptSchema,type DocumentImportOutcome} from "@/lib/document-results";
+import {pipelinePanelPath} from "@/lib/document-pipeline";
 import {DocumentEvidence} from "./DocumentEvidence";
 import {documentText} from "@/lib/document-language";
 import {caseChatPayload} from "@/lib/credit-chat";
@@ -126,7 +127,12 @@ export function CreditWorkspace({locale}:{locale:string}) {
   const domainCases=filterDomain(cases,domainFilter);
   const [guide,setGuide]=useState<{page:WorkspaceTab;step:number}|null>(null);
   useEffect(()=>{const sync=()=>{const target=workspaceTarget(window.location.hash)||workspaceSectionFromSearch(window.location.search);if(target){setTab(target);setGuide(null);}const id=workspaceCaseFromSearch(window.location.search);if(id)setSelected(id);};const timer=window.setTimeout(sync,0);window.addEventListener("hashchange",sync);window.addEventListener("popstate",sync);return()=>{window.clearTimeout(timer);window.removeEventListener("hashchange",sync);window.removeEventListener("popstate",sync);};},[]);
-  function navigate(id:WorkspaceTab){if(!workspaceTabs.includes(id))return;setTab(id);setMenu(false);setChat(false);setGuide(null);window.history.pushState(null,"",`#${id}`);window.scrollTo({top:0,behavior:"instant"});}
+  function navigate(id:WorkspaceTab,href=`#${id}`){if(!workspaceTabs.includes(id))return;setTab(id);setMenu(false);setChat(false);setGuide(null);window.history.pushState(null,"",href);window.scrollTo({top:0,behavior:"instant"});}
+  function openDocumentIntake() {
+    const url=new URL(window.location.href);
+    url.hash="pipeline";
+    navigate("pipeline",pipelinePanelPath(url.href,"processing"));
+  }
   const [loading,setLoading]=useState(false); const [error,setError]=useState("");const [success,setSuccess]=useState(false);
   const [analysis,setAnalysis]=useState<{mode:string;maxPages:number}|null>(null);
   const [query,setQuery]=useState("");const [casePicker,setCasePicker]=useState(false);const [menu,setMenu]=useState(false);const [chat,setChat]=useState(false);
@@ -139,10 +145,8 @@ export function CreditWorkspace({locale}:{locale:string}) {
   const [evidenceContext,setEvidenceContext]=useState<EvidenceContext>();
   function openCitation(id:string,context?:EvidenceContext){if(!item)return;const target=citationTarget(id,item.documents);const doc=target&&item.documents.find(d=>d.id===target.documentId);if(doc){setTrustOpen(false);inspect(doc,target.page,context||{sourceId:id});}}
   const [editor,setEditor]=useState<"new"|"edit"|null>(null);const [inspected,setInspected]=useState<CreditDocument|null>(null);const [reviewValues,setReviewValues]=useState<string[]>([]);const [busy,setBusy]=useState(false);
-  const inputFile=useRef<HTMLInputElement>(null);
   const sampleInFlight=useRef(false);
   const writeInFlight=useRef(false);
-  const [uploading,setUploading]=useState(false);
   const item=auth.authenticated?(domainCases.find(c=>c.id===selected)||domainCases.find(hasOnlyDatevPayroll)||domainCases.find(c=>c.documents.some(doc=>datevReference(doc.name)))||domainCases[0]):undefined;
   const Chat=auth.mode==="demo"?DemoCopilot:Copilot;
   const canWrite=auth.mode==="keycloak"&&auth.roles.some(r=>r==="ADVISOR"||r==="ADMIN");
@@ -173,24 +177,15 @@ export function CreditWorkspace({locale}:{locale:string}) {
     return()=>{window.clearTimeout(task);controller.abort();};
   },[refresh]);
   function select(id:string) {if(writeInFlight.current||sampleInFlight.current)return;setSelected(id);setCasePicker(false);setQuery("");setGuide(null);setInspected(null);setEditor(null);setChat(false);setChatQuestion(undefined);setChatOptions(undefined);setTrustOpen(false);setSuccess(false);setError("");window.history.replaceState(null,"",`${window.location.pathname}?case=${encodeURIComponent(id)}#${tab}`);}
-  async function request(path:string,method:string,body:BodyInit,isForm=false) {
+  async function request(path:string,method:string,body:string) {
     if(writeInFlight.current)return;writeInFlight.current=true;setBusy(true);setError("");setSuccess(false);
     try {
-      const response=await fetch(path,{method,headers:{Authorization:`Bearer ${auth.token}`,...(isForm?{}:{"Content-Type":"application/json"})},body});
+      const response=await fetch(path,{method,headers:{Authorization:`Bearer ${auth.token}`,"Content-Type":"application/json"},body});
       if(!response.ok) {setError(workspaceErrorKey(response.status));return;}
       const updated=toWorkspaceCase(await response.json());
       setCases(list=>list.some(c=>c.id===updated.id)?list.map(c=>c.id===updated.id?updated:c):[...list,updated]);
       setSelected(updated.id);window.history.replaceState(null,"",`${window.location.pathname}?case=${encodeURIComponent(updated.id)}#${tab}`);setInspected(null);setEditor(null);setSuccess(true);
     } catch {setError("error");} finally {writeInFlight.current=false;setBusy(false);}
-  }
-  async function uploadFile(file:File) {
-    if(!item||writeInFlight.current||!canWrite)return;
-    setChat(false);
-    const supported=analysis&&analysis.mode!=="local"?/\.(pdf|png|jpe?g)$/i:/\.(pdf|png|jpe?g|txt)$/i;
-    if(!file.size||file.size>3_000_000||!supported.test(file.name)){setError("fileRejected");return;}
-    const form=new FormData();form.set("file",file);form.set("version",String(item.version||0));
-    setUploading(true);
-    try {await request(`/api/cases/${item.id}/documents`,"POST",form,true);} finally {setUploading(false);}
   }
   async function uploadSample(fileName:string):Promise<DocumentImportOutcome> {
     if(!item||busy||!canWrite||sampleInFlight.current)throw new Error("importError");
@@ -256,9 +251,11 @@ export function CreditWorkspace({locale}:{locale:string}) {
             {tab!=="overview"&&tab!=="integrations"&&tab!=="trust"?<AIPageBanner page={tab} locale={locale} capabilities={aiCapabilities} demo={auth.mode==="demo"} ask={askNova}/>:null}
             {tab==='integrations'?<IntegrationsWorkbench key={`integrations:${item.id}`} caseId={item.id} caseVersion={item.version||0} locale={locale} documents={item.documents} navigate={navigate} refreshCase={()=>void refresh()}/>:null}
             {tab==='experiments'?<DocumentResearchPanel key={`${item.id}:${item.version}`} caseId={item.id} caseVersion={item.version||0} locale={locale} view="experiments" inspect={(id,page)=>{const doc=item.documents.find(d=>d.id===id);if(doc)inspect(doc,page);}}/>:null}
-            {tab==="documents"?<section className="surface"><header className="section-toolbar"><div><h2 className="section-heading">{presentation.upload}</h2><p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-500">{analysis&&analysis.mode!=="local"?t("uploadHintAzure").replace("Azure Document Intelligence",analysis.mode==="docling"?"Docling · Local AI":"Azure Document Intelligence").replace("{pages}",String(analysis.maxPages)):t("uploadHint")}</p></div><input ref={inputFile} type="file" className="hidden" accept={analysis&&analysis.mode!=="local"?".pdf,.png,.jpg,.jpeg":".pdf,.png,.jpg,.jpeg,.txt"} onChange={event=>{const file=event.target.files?.[0];event.target.value="";if(file)uploadFile(file);}}/><button data-page-tour="documents-upload" className="button-primary" disabled={!canWrite||busy} onClick={()=>inputFile.current?.click()}><Upload size={16}/>{t(busy?"loading":"upload")}</button></header>
-              {uploading?<p className="notice-lab notice-processing" role="status" aria-live="polite">{documentText(locale)("processing")}</p>:null}
-              <p className="px-6 py-3 text-xs leading-relaxed text-slate-600">{documentText(locale)("policy")}</p>
+            {tab==="documents"?<section className="surface">
+              <header className="section-toolbar">
+                <div><h2 className="section-heading">{presentation.sourceInventory}</h2><p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-600">{presentation.uploadHint}</p></div>
+                <button type="button" data-page-tour="documents-upload" className="button-secondary" onClick={openDocumentIntake}><Upload size={16}/>{presentation.upload}<ArrowUpRight size={14}/></button>
+              </header>
               <DocumentAnalysisWorkspace key={`document-analysis:${item.id}`} caseId={item.id} documents={item.documents} locale={locale} busy={busy} canImport={canWrite&&!!analysis} azure={!!analysis&&analysis.mode.startsWith("azure")} importSample={uploadSample} refreshCase={refresh} open={inspect} ask={askNova} technical={()=>navigate("pipeline")} showPayroll={domainOf(item.domain)==='banking'} domain={domainOf(item.domain)} guiding={guide?.page==='documents'}/>
               {legacyDocs.length?<details className="payroll-legacy"><summary>{payrollUx.legacy} · {legacyDocs.length}</summary><p>{payrollUx.kept}</p>{legacyDocs.map(documentRow)}</details>:null}</section>:null}
             {(["studio","pipeline","controls","operations","evaluation"] as string[]).includes(tab)?<PlatformWorkbench key={item.id} domain={item.domain} caseId={item.id} locale={locale} view={tab as "studio"|"pipeline"|"controls"|"operations"|"evaluation"} guiding={guide?.page===tab} caseVersion={item.version||0} documents={item.documents} changed={refresh} ask={askNova} inspect={(id,page)=>{const doc=item.documents.find(d=>d.id===id);if(doc)inspect(doc,page);else navigate("documents");}}/>:null}

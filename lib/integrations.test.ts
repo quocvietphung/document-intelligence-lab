@@ -65,7 +65,8 @@ describe("integrations copy and contracts", () => {
     }
     const m365 = { id: "microsoft-365", provider: "Microsoft 365", permissions: [], note: null, label: "simulated" as const, enabled: true };
     expect(describeAdapter(m365, "vi").note).toContain("mô phỏng");
-    expect(describeAdapter({ ...m365, enabled: false }, "de").note).toContain("nicht erreichbar");
+    expect(describeAdapter({ ...m365, enabled: false }, "de").note).toContain("local-dev");
+    expect(describeAdapter({ ...m365, enabled: false, label: "implemented-not-live-verified" }, "vi").note).toContain("Entra");
     expect(describeAdapter({ id: "new-adapter", provider: "New", permissions: ["p"], note: "n", label: "future", enabled: false }, "de")).toEqual({ name: "New", permissions: ["p"], note: "n" });
   });
 

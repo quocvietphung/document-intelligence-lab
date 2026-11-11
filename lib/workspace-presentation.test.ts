@@ -34,6 +34,14 @@ describe('compact workspace presentation',()=>{
     expect(workspace).toContain("guiding={guide?.page==='documents'}");
     expect(workspace).not.toContain('document.getElementById("datev-library")?.scrollIntoView');
   });
+  it('routes custom uploads from evidence review to the processing queue',()=>{
+    const workspace=readFileSync('components/workspace/CreditWorkspace.tsx','utf8');
+    const pipeline=readFileSync('components/workspace/PlatformWorkbench.tsx','utf8');
+    expect(workspace).toContain('navigate("pipeline",pipelinePanelPath(url.href,"processing"))');
+    expect(workspace).not.toContain('type="file"');
+    expect(pipeline).toContain('void run(()=>queue(file))');
+    expect(pipeline).toContain('await action("/jobs",form,true)');
+  });
   it('keeps all compact labels complete in English, German and Vietnamese',()=>{
     for(const language of Object.values(workspacePresentationLanguages)){
       expect(Object.keys(language).sort()).toEqual(Object.keys(workspacePresentationLanguages.en).sort());

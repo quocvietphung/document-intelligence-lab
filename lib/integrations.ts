@@ -85,7 +85,7 @@ const en={
   evidenceFound:'Evidence found on the cited page',mustAbstain:'No supporting text: the assistant must refuse to guess',fictional:'Fictional fixture',
   assessment:'Project assessment (deterministic)',csv:'CSV (type,name,planned,forecast)',useExample:'Use fictional example',calculate:'Calculate',
   planned:'Planned',forecast:'Forecast',variance:'Variance',perSqm:'Cost per m²',margin:'Margin',delay:'Schedule variance (days)',reviewRequired:'Human review requested',noReview:'No review threshold triggered',
-  report:'Download report (JSON)',draft:'Gmail draft (optional)',draftWarning:'A draft is created only after you approve the exact text. Nothing is sent. Only selected reviewed fields are included.',
+  report:'Download report (JSON)',reportNeedsReview:'Review and confirm a document with extracted fields to enable the report.',draft:'Gmail draft (optional)',draftWarning:'A draft is created only after you approve the exact text. Nothing is sent. Only selected reviewed fields are included.',
   document:'Reviewed document',fields:'Fields to include',recipients:'Recipients (comma-separated, optional)',subject:'Subject',note:'Note',excerpts:'Include evidence excerpts (private document text)',
   previewDraft:'Preview draft',approve:'I approve this exact text for a Gmail draft',createDraft:'Create draft',draftCreated:'Draft created in Gmail. It was not sent.',noReviewed:'No human-reviewed document yet.',
   error:'The request failed.',
@@ -108,7 +108,7 @@ const de:Copy={
   evidenceFound:'Evidenz auf der zitierten Seite gefunden',mustAbstain:'Kein belegender Text: Der Assistent muss die Antwort verweigern',fictional:'Fiktives Testdokument',
   assessment:'Projektbewertung (deterministisch)',csv:'CSV (type,name,planned,forecast)',useExample:'Fiktives Beispiel verwenden',calculate:'Berechnen',
   planned:'Plan',forecast:'Prognose',variance:'Abweichung',perSqm:'Kosten je m²',margin:'Marge',delay:'Terminabweichung (Tage)',reviewRequired:'Menschliche Prüfung angefordert',noReview:'Keine Prüfschwelle ausgelöst',
-  report:'Bericht herunterladen (JSON)',draft:'Gmail-Entwurf (optional)',draftWarning:'Ein Entwurf entsteht erst nach Freigabe des genauen Textes. Nichts wird gesendet. Nur ausgewählte geprüfte Felder werden übernommen.',
+  report:'Bericht herunterladen (JSON)',reportNeedsReview:'Prüfe und bestätige ein Dokument mit extrahierten Feldern, um den Bericht zu aktivieren.',draft:'Gmail-Entwurf (optional)',draftWarning:'Ein Entwurf entsteht erst nach Freigabe des genauen Textes. Nichts wird gesendet. Nur ausgewählte geprüfte Felder werden übernommen.',
   document:'Geprüftes Dokument',fields:'Zu übernehmende Felder',recipients:'Empfänger (kommagetrennt, optional)',subject:'Betreff',note:'Notiz',excerpts:'Evidenzauszüge einfügen (privater Dokumenttext)',
   previewDraft:'Entwurf ansehen',approve:'Ich gebe genau diesen Text für einen Gmail-Entwurf frei',createDraft:'Entwurf erstellen',draftCreated:'Entwurf in Gmail erstellt. Er wurde nicht gesendet.',noReviewed:'Noch kein menschlich geprüftes Dokument.',
   error:'Die Anfrage ist fehlgeschlagen.',
@@ -130,7 +130,7 @@ const vi:Copy={
   evidenceFound:'Đã thấy chứng cứ ở trang được trích dẫn',mustAbstain:'Không có văn bản hỗ trợ: trợ lý phải từ chối suy đoán',fictional:'Tài liệu giả lập',
   assessment:'Đánh giá dự án (xác định)',csv:'CSV (type,name,planned,forecast)',useExample:'Dùng ví dụ giả lập',calculate:'Tính toán',
   planned:'Kế hoạch',forecast:'Dự báo',variance:'Chênh lệch',perSqm:'Chi phí mỗi m²',margin:'Biên lợi nhuận',delay:'Chênh lệch tiến độ (ngày)',reviewRequired:'Cần người kiểm tra',noReview:'Không vượt ngưỡng cần kiểm tra',
-  report:'Tải báo cáo (JSON)',draft:'Bản nháp Gmail (tùy chọn)',draftWarning:'Bản nháp chỉ được tạo sau khi bạn phê duyệt đúng nội dung. Không gửi gì cả. Chỉ đưa vào các trường đã kiểm tra mà bạn chọn.',
+  report:'Tải báo cáo (JSON)',reportNeedsReview:'Kiểm tra và xác nhận một tài liệu có trường đã trích xuất để bật tính năng tải báo cáo.',draft:'Bản nháp Gmail (tùy chọn)',draftWarning:'Bản nháp chỉ được tạo sau khi bạn phê duyệt đúng nội dung. Không gửi gì cả. Chỉ đưa vào các trường đã kiểm tra mà bạn chọn.',
   document:'Tài liệu đã kiểm tra',fields:'Trường đưa vào',recipients:'Người nhận (cách nhau bằng dấu phẩy, tùy chọn)',subject:'Tiêu đề',note:'Ghi chú',excerpts:'Đưa trích đoạn chứng cứ (nội dung tài liệu riêng tư)',
   previewDraft:'Xem trước bản nháp',approve:'Tôi phê duyệt đúng nội dung này cho bản nháp Gmail',createDraft:'Tạo bản nháp',draftCreated:'Đã tạo bản nháp trong Gmail. Chưa được gửi.',noReviewed:'Chưa có tài liệu nào được người kiểm tra.',
   error:'Yêu cầu thất bại.',
@@ -153,7 +153,7 @@ const errors:Record<string,Record<'en'|'de'|'vi',string>>={
   MIME_MISMATCH:{en:'The content is not a PDF.',de:'Der Inhalt ist kein PDF.',vi:'Nội dung không phải PDF.'},
   UNSUPPORTED_FILE_TYPE:{en:'Only PDF files with a safe name are accepted.',de:'Nur PDF-Dateien mit sicherem Namen werden angenommen.',vi:'Chỉ nhận tệp PDF có tên an toàn.'},
   ALREADY_IMPORTED:{en:'This revision was already imported.',de:'Diese Revision wurde bereits importiert.',vi:'Phiên bản này đã được nhập.'},
-  HUMAN_REVIEW_REQUIRED:{en:'Review the document before creating a draft.',de:'Prüfe das Dokument vor dem Entwurf.',vi:'Hãy kiểm tra tài liệu trước khi tạo bản nháp.'},
+  HUMAN_REVIEW_REQUIRED:{en:'Review and confirm the document before exporting its fields.',de:'Prüfe und bestätige das Dokument, bevor du seine Felder exportierst.',vi:'Hãy kiểm tra và xác nhận tài liệu trước khi xuất các trường dữ liệu.'},
   PREVIEW_CHANGED:{en:'The content changed. Preview it again.',de:'Der Inhalt hat sich geändert. Erneut ansehen.',vi:'Nội dung đã thay đổi. Hãy xem trước lại.'},
   PREVIEW_EXPIRED:{en:'The preview expired. Preview it again.',de:'Die Vorschau ist abgelaufen.',vi:'Bản xem trước đã hết hạn.'},
   CONNECTOR_NOT_IMPLEMENTED:{en:'This adapter is planned and disabled.',de:'Dieser Adapter ist geplant und deaktiviert.',vi:'Adapter này đang dự kiến và đã tắt.'},
@@ -176,9 +176,9 @@ export const adapterCopy:Record<string,{name?:Text3;permissions:Text3[];note:Tex
   'google-drive':{permissions:[t3('Read PDF metadata and content in My Drive and shared drives you can access','PDF-Metadaten und -Inhalte in Meine Ablage und zugänglichen geteilten Ablagen lesen','Đọc metadata và nội dung PDF trong My Drive và Shared Drive bạn có quyền'),t3('Never edits, moves, deletes or shares files','Bearbeitet, verschiebt, löscht oder teilt nie Dateien','Không bao giờ sửa, di chuyển, xóa hay chia sẻ tệp')],
     note:t3('Tested with a mocked Drive API only. drive.readonly is broader than drive.file; see the connector guide.','Nur mit einer simulierten Drive-API getestet. drive.readonly ist breiter als drive.file; siehe Connector-Anleitung.','Chỉ kiểm thử với Drive API giả lập. drive.readonly rộng hơn drive.file; xem hướng dẫn connector.')},
   'microsoft-365':{permissions:[t3('Read-only listing and download through the M365 evidence service','Nur lesende Auflistung und Download über den M365-Evidenzdienst','Chỉ liệt kê và tải xuống qua dịch vụ chứng cứ M365'),t3('The service applies its own tenant and ACL checks','Der Dienst prüft Mandant und Berechtigungen selbst','Dịch vụ tự kiểm tra tenant và quyền truy cập')],
-    note:t3('Graph provider configured in the M365 service; not live-verified.','Graph-Provider im M365-Dienst konfiguriert; nicht live geprüft.','Provider Graph đã cấu hình trong dịch vụ M365; chưa kiểm chứng thực tế.'),
+    note:t3('Graph intake requires delegated Entra authentication, which this workspace adapter does not support.','Der Graph-Import erfordert delegierte Entra-Authentifizierung. Dieser Workspace-Adapter unterstützt sie noch nicht.','Nhập qua Graph cần xác thực Entra theo quyền người dùng. Workspace chưa hỗ trợ luồng này.'),
     simulatedNote:t3('Mock provider with fictional documents; not a Microsoft 365 connection.','Mock-Provider mit fiktiven Dokumenten; keine Microsoft-365-Verbindung.','Provider mô phỏng với tài liệu giả lập; không phải kết nối Microsoft 365.'),
-    unreachableNote:t3('M365 service not configured or not reachable.','M365-Dienst nicht konfiguriert oder nicht erreichbar.','Dịch vụ M365 chưa cấu hình hoặc không truy cập được.')},
+    unreachableNote:t3('Simulated intake requires a reachable M365 mock service in local-dev mode.','Der simulierte Import benötigt einen erreichbaren M365-Mock-Dienst im local-dev-Modus.','Để nhập mô phỏng, cần dịch vụ M365 mock đang chạy ở chế độ local-dev.')},
   webdav:{permissions:[],note:t3('Planned read-only PROPFIND/GET with per-user app passwords.','Geplant: nur lesendes PROPFIND/GET mit App-Passwörtern pro Nutzer.','Dự kiến: PROPFIND/GET chỉ đọc với mật khẩu ứng dụng riêng từng người dùng.')},
   s3:{permissions:[],note:t3('Planned read-only GetObject with a scoped bucket policy.','Geplant: nur lesendes GetObject mit eingeschränkter Bucket-Richtlinie.','Dự kiến: GetObject chỉ đọc với chính sách bucket giới hạn.')},
   'csv-excel':{name:t3('CSV (Excel export)','CSV (Excel-Export)','CSV (xuất từ Excel)'),permissions:[t3('Parse an uploaded CSV with cost, area, revenue and milestone rows','Eine CSV mit Kosten-, Flächen-, Erlös- und Meilensteinzeilen auswerten','Đọc tệp CSV có dòng chi phí, diện tích, doanh thu và mốc tiến độ')],
@@ -196,6 +196,6 @@ export const adapterCopy:Record<string,{name?:Text3;permissions:Text3[];note:Tex
 export function describeAdapter(provider:Pick<Provider,'id'|'provider'|'permissions'|'note'|'label'|'enabled'>,locale:string){
   const language=locale==='vi'?'vi':locale==='de'?'de':'en',copy=adapterCopy[provider.id];
   if(!copy)return {name:provider.provider,permissions:provider.permissions,note:provider.note||''};
-  const note=provider.id==='microsoft-365'?(!provider.enabled?copy.unreachableNote:provider.label==='simulated'?copy.simulatedNote:copy.note)??copy.note:copy.note;
+  const note=provider.id==='microsoft-365'&&provider.label==='simulated'?(provider.enabled?copy.simulatedNote:copy.unreachableNote)??copy.note:copy.note;
   return {name:copy.name?.[language]??provider.provider,permissions:copy.permissions.map(p=>p[language]),note:note[language]};
 }
