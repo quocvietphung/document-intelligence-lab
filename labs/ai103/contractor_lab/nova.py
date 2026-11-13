@@ -64,10 +64,8 @@ def question(precheck: dict, locale: str = "vi") -> str:
     ask = {"vi": "Viết bằng tiếng Việt, tổng cộng tối đa 110 từ: (1) tóm tắt 2 câu cho kế toán, (2) email nháp tối đa 4 câu gửi nhà thầu yêu cầu bổ sung chứng từ. ",
            "de": "Schreibe auf Deutsch, höchstens 110 Wörter: (1) Zusammenfassung in 2 Sätzen für die Buchhaltung, (2) E-Mail-Entwurf an den Auftragnehmer, höchstens 4 Sätze. ",
            "en": "Write in English, at most 110 words: (1) a 2-sentence summary for accounting, (2) an email draft to the contractor of at most 4 sentences. "}[locale if locale in ("de", "en") else "vi"]
-    # No square bracket appears in the instruction itself: a model copies bracket text, and Java refuses any bracket
-    # that is not a source ID.
-    rules = ("Viết mã nguồn trong dấu ngoặc vuông ngay sau số liệu, đúng như trong dữ liệu; không dùng dấu ngoặc tròn cho mã nguồn. "
-             "Không dùng ngoặc vuông cho tên, ngày, số trang, tên file hay ghi chú. "
+    # No square bracket appears in the instruction: the model names a source label (S1, S2 ...) and Java writes the citation.
+    rules = ("Mỗi câu chọn nhãn nguồn (S1, S2, ...) của đúng trang chứa số đó; câu nêu chứng từ còn thiếu để nhãn nguồn trống. "
              "Email dùng lời chào chung, không có tên người nhận hay chỗ trống. "
              f"Phải nêu chênh lệch {de(variance['amount'])} EUR. Mỗi số tiền kèm mã nguồn của đúng trang chứa số đó. "
              "Chỉ dùng các số đã cho, giữ nguyên định dạng. Nói rõ chứng từ còn thiếu. "
