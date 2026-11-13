@@ -69,6 +69,8 @@ The Ollama key pair (`id_ed25519`) from the earlier layout stays at the volume r
 
 No hardening measure had to be loosened: the engine started with all of them active, loaded the model from `/models` and answered.
 
+**Image scan.** Trivy, HIGH and CRITICAL, with the vulnerability database of 11 November (not updated): the Ollama image has 2 HIGH findings in its Ubuntu 24.04 packages and 50 HIGH findings in the Go modules of the bundled `ollama` 0.40.6 binary. The engine is repackaged, not rebuilt, so these need a version change; see [USE_CASE_MATRIX.md](USE_CASE_MATRIX.md#open-gaps), item 10.
+
 **Nova (local Ollama, through the Java API and the citation contract).**
 
 - Pre-check case `CR-2de4fdcb-40a`, German, `contractor_lab nova` (first run): the model stopped at the 420-token output limit (`LocalAiConfiguration`, `numPredict`) after 2,366 prompt tokens. The Java API refused the cut-off answer with 503 and an empty body, and the lab stopped with a traceback. The lab now reports `NOVA_NOT_COMPLETED` for that case, with a unit test.

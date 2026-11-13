@@ -57,6 +57,7 @@ Listed in the priority order of the enterprise hardening plan.
 7. **UI simplification.** Not started in this pass.
 8. **Other containers run as their image defaults.** PostgreSQL, Redis, ClamAV and Qdrant are not hardened the way Ollama is. The credit API, Docling and the ETL worker are not checked for capability drops either.
 9. **Azure.** Nothing called. The checklist for Speech, Translator, Voice Live, AI Search, Content Understanding and Prompt Shields is in [AI-103 verification](AI103_VERIFICATION.md#3-azure).
+10. **Known vulnerabilities in the pinned Ollama engine.** Trivy reports 50 HIGH findings in the Go modules of the upstream `ollama` 0.40.6 binary and 2 HIGH in the Ubuntu packages of its image. Fixing them means moving the pinned engine version, which changes model behaviour and needs a verification pass. This is not done.
 
 ## Verification record
 
@@ -78,7 +79,10 @@ Results from one local pass. Commands ran from the repository root unless stated
 | Python inspection | `TEST_PDF_INSPECTION=1 python -m unittest discover -s python/tests -p test_inspection.py` with `[inspection]`, reportlab and Tesseract 5.5.1 | 9/9 passed |
 | Production Compose | `docker compose` config with the seven production files | valid; `ollama` runs as `10010:10010` |
 | Dependencies | `npm audit --omit=dev --audit-level=high` | 0 vulnerabilities |
-| Secrets (history) | `gitleaks git .` | see [AI-103 verification](AI103_VERIFICATION.md) |
+| Secrets (git history, this branch included) | `gitleaks git .` | no leaks found |
+| Image scan, HIGH and CRITICAL | `trivy image --skip-db-update --severity HIGH,CRITICAL` (Trivy 0.76.2; the vulnerability database is from 11 November and was not updated) | Ollama image: 2 HIGH in the Ubuntu 24.04 packages, 50 HIGH in the Go modules of the bundled `ollama` binary (upstream 0.40.6, repackaged, not rebuilt here). Credit API image: no HIGH or CRITICAL in the Ubuntu 22.04 packages or in the application jar. |
 | M365 PoC | `pytest -q` in `services/m365-mcp-poc` (Python 3.12 venv, `requirements-dev.txt`) | 143 passed |
 
 Docker stack on the local machine: `credit-api`, `ollama`, `keycloak`, `etl`, `docling`, `clamav`, `qdrant`, `redis`, `case-db`, `identity-db` and `m365-poc` are healthy. `web` could not start because port 3000 is held by another process. Details of the Ollama container and the Nova runs are in [AI-103 verification](AI103_VERIFICATION.md#2-docker-browser-and-nova).
+
+Resources, idle, after the Nova runs (`docker stats --no-stream`): credit API 467 MiB; Ollama 3.4 GiB of its 5 GiB limit (the model stays loaded for five minutes after the last request); Keycloak 511 MiB; Docling 830 MiB; ClamAV 1.0 GiB; Qdrant 188 MiB; M365 PoC 69 MiB; ETL 57 MiB; the two PostgreSQL databases 31 and 43 MiB; Redis 12 MiB. About 6.5 GiB in total, with CPU near zero except Keycloak at 7.5%. This pass took no sample before the changes, so no before-and-after comparison is claimed. Docker reports 14 GB of reclaimable images and 21 GB of build cache; nothing was pruned.
