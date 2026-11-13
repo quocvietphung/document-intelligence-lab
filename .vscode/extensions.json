@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "redhat.java",
+        "ms-python.python",
+        "ms-python.vscode-python-envs",
+        "charliermarsh.ruff",
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "ms-azuretools.vscode-azureresourcegroups"
+    ]
+}
