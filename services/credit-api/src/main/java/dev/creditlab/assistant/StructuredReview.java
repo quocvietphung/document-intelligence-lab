@@ -1,8 +1,6 @@
 package dev.creditlab.assistant;
 
 import java.util.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 /** Model-proposed, schema-constrained observations. Exact quotes are validated, not trusted as approval. */
 public final class StructuredReview {
@@ -64,5 +62,5 @@ public final class StructuredReview {
     }
     return String.join("\n",lines);
   }
-  private static ResponseStatusException invalid(){return new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,"MODEL_EVIDENCE_CONTRACT_FAILED; inspect original evidence, no replacement answer generated");}
+  private static ModelContractException invalid(){return new ModelContractException("MODEL_EVIDENCE_CONTRACT_FAILED","EVIDENCE_NOT_VERIFIED","inspect original evidence, no replacement answer generated");}
 }

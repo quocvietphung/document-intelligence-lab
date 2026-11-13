@@ -1,0 +1,11 @@
+# Checks for the AI-103 contractor lab. Run from labs/ai103:
+#   python3 -m unittest discover -s tests
+#   ruff check .
+#   mypy contractor_lab
+[tool.ruff]
+line-length = 140
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true

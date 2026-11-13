@@ -24,6 +24,23 @@ final class EvidenceContext {
 
   /** "doc-1:p2:r3" and "doc-1:p2" belong to "doc-1"; fixed sources are their own document. */
   static String documentOf(String id){int at=id.indexOf(":p");return at>0?id.substring(0,at):id;}
+
+  /**
+   * Local CPU model budget: the fixed sources always stay; document excerpts keep their ranking order and are cut
+   * once the next one would exceed the character budget. The best-ranked excerpt is always kept, whole, so no text is
+   * truncated and the citation validator sees only exact source texts.
+   */
+  static List<CreditAssistantService.Source> withinLocalBudget(List<CreditAssistantService.Source> ranked,int maxChars){
+    var kept=new ArrayList<CreditAssistantService.Source>();
+    int used=0;
+    for(var source:ranked){
+      if(FIXED.contains(source.id())){kept.add(source);continue;}
+      int size=source.text().codePointCount(0,source.text().length());
+      if(used>0&&used+size>maxChars)continue;
+      kept.add(source);used+=size;
+    }
+    return List.copyOf(kept);
+  }
   private static String normal(String text){return text.toLowerCase(Locale.ROOT).replaceAll("\\s+"," ").strip();}
   private static final java.util.regex.Pattern TABLE=java.util.regex.Pattern.compile("(.+):p(\\d+):t\\d+:c\\d+"),
       PAGE_TEXT=java.util.regex.Pattern.compile("(.+):p(\\d+)(?::parent\\d+)?(?::c\\d+)?");

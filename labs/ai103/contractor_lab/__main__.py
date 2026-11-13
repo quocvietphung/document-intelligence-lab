@@ -20,7 +20,6 @@ import platform as host_platform
 import shutil
 import subprocess
 import sys
-import urllib.error
 from pathlib import Path
 
 from . import DOSSIER, FIXTURES, OUTPUT
@@ -180,15 +179,8 @@ def nova(args: argparse.Namespace) -> bool:
     with tracer.span("tool.run_precheck"):
         precheck = api.get(f"/api/cases/{args.case}/platform/contractor-precheck?locale={args.locale}")
     with tracer.span("nova.draft"):
-        try:
-            result = draft_with_nova(api, args.case, precheck, args.locale)
-        except urllib.error.HTTPError as refused:
-            if refused.code != 422:
-                raise
-            # The Java API refuses answers whose citations it cannot verify. That is a safe outcome: keep the draft.
-            result = {"status": "NOVA_REFUSED_BY_CITATION_CONTRACT", "problems": ["MODEL_CITATION_CONTRACT_FAILED"],
-                      "mode": "local-ollama", "aiGenerated": False, "humanApproved": False, "emailSent": False,
-                      "durationMs": None, "answer": "", "sources": [], "deterministicDraft": precheck["draft"]["summary"]}
+        # A refused answer (HTTP 422 with a contract code) becomes a status with a reason; the draft stays.
+        result = draft_with_nova(api, args.case, precheck, args.locale)
     if not result["answer"]:
         print("No Nova suggestion was produced; the deterministic draft below stands.")
         for line in result["deterministicDraft"]:
@@ -277,7 +269,16 @@ def _page_texts() -> dict:
 
 
 def speech_cmd(args: argparse.Namespace) -> bool:
-    from .speech import SITE_NOTE_WAV, answer_flow, build_ssml, check_transcript, fast_transcribe, listen_engine, reference_transcript, synthesize
+    from .speech import (
+        SITE_NOTE_WAV,
+        answer_flow,
+        build_ssml,
+        check_transcript,
+        fast_transcribe,
+        listen_engine,
+        reference_transcript,
+        synthesize,
+    )
     env = _env(args)
     tracer = Tracer("ai103-speech")
     if args.asr == "azure":
@@ -303,12 +304,19 @@ def speech_cmd(args: argparse.Namespace) -> bool:
     rows = [("4 transcript keeps the invoice code, gross amount and currency", check["passed"], json.dumps(check)),
             ("5 Nova answer passes the claim checks", flow["status"] == "SUGGESTION_ACCEPTED_FOR_REVIEW", "; ".join(flow["problems"]) or "claims cite their pages"),
             ("4 nothing approved or sent", flow["humanApproved"] is False and flow["emailSent"] is False, flow["status"]),
-            ("4 listening engine is named", listened["engine"].startswith(("Browser", "Azure")), listened["engine"])]
+            ("4 listening engine is named", str(listened["engine"]).startswith(("Browser", "Azure")), listened["engine"])]
     return report(rows)
 
 
 def translate_cmd(args: argparse.Namespace) -> bool:
-    from .translator import load_email, offline_translation, preservation_problems, translate_live, transliterate_live, transliteration_sample
+    from .translator import (
+        load_email,
+        offline_translation,
+        preservation_problems,
+        translate_live,
+        transliterate_live,
+        transliteration_sample,
+    )
     email = load_email()
     if args.mode == "azure":
         token = _azure_token(args)

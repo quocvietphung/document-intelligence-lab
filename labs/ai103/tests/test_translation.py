@@ -7,9 +7,17 @@ from unittest import mock
 
 from contractor_lab import FIXTURES
 from contractor_lab.cloud import LiveCallRefused
-from contractor_lab.translator import (amounts, load_email, offline_translation, parse_translate_response,
-                                       parse_transliterate_response, preservation_problems, run_offline, translate_live,
-                                       transliterate_live)
+from contractor_lab.translator import (
+    amounts,
+    load_email,
+    offline_translation,
+    parse_translate_response,
+    parse_transliterate_response,
+    preservation_problems,
+    run_offline,
+    translate_live,
+    transliterate_live,
+)
 
 SAMPLE = json.loads((FIXTURES / "translation/translate-response.sample.json").read_text(encoding="utf-8"))
 

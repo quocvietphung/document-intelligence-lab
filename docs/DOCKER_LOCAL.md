@@ -64,6 +64,17 @@ There is **no required `.env` file** for this profile. Copying `.env.example` al
 
 The Integrations page (**Sources & integrations**) shows each adapter's label. Without the Google layer, Gmail and Drive are listed as not configured, and the simulated Microsoft 365 adapter reads fictional documents from the M365 service over the private Compose network.
 
+**Local model engine (Ollama).** The `ollama` service runs as the fixed user `10010:10010` (set in its image and in Compose).
+Its root filesystem is read-only, its only writable scratch space is a `tmpfs` at `/tmp` (also its `HOME`), it has no Linux
+capabilities (`cap_drop: ALL`), and `no-new-privileges` is set. The model store is `/models`, which Compose mounts from the
+`models` folder of the persistent volume `credit-intelligence-lab_lab_ollama`, so the existing weights are reused in place.
+Volumes created before this change had root-owned files; `--prepare-model` changes ownership of that folder once, and the
+same step can be run by hand while the engine is stopped:
+
+```bash
+docker run --rm --pull never -v credit-intelligence-lab_lab_ollama:/data busybox:1.37 sh -c 'mkdir -p /data/models && chown -R 10010:10010 /data/models'
+```
+
 ## Production stack and the Spark experiment
 
 The supported stack is defined once in [`scripts/compose-files.mjs`](../scripts/compose-files.mjs) and started by

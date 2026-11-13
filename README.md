@@ -45,6 +45,8 @@ Adapters only list and fetch documents or deliver an approved result. OCR, retri
 
 Each use case runs first with local PDFs. It ships fictional documents labelled `FIKTIVE DATEN`, a list of fields, expected validation results, one answerable question with page evidence and one unanswerable question that must be refused.
 
+The full matrix — where each use case runs, its fixture, entry point, tests, status and the open gaps — is in [docs/USE_CASE_MATRIX.md](docs/USE_CASE_MATRIX.md).
+
 | Use case | Deterministic result |
 | --- | --- |
 | Project and real-estate assessment | Total cost, cost variance, revenue scenarios, margin, cost per m² and schedule variance, all computed in code |
@@ -64,7 +66,10 @@ A fictional four-document contractor dossier (contract, change order, invoice, a
 
 Run the offline part without Docker: `cd labs/ai103 && python3 -m unittest discover -s tests -v && python3 -m contractor_lab offline`.
 The speech, translation, Voice Live and Azure AI Search exercises run offline on fixtures and sample responses;
-their live Azure calls are off by default. Status of every service and the open points: [docs/AI103_CONTRACTOR_PRECHECK.md](docs/AI103_CONTRACTOR_PRECHECK.md).
+their live Azure calls are off by default. Each exercise is marked `local-real`, `local-mock`, `azure-not-run`,
+`azure-verified` or `unsupported`; no Azure service is `azure-verified` yet. The status of every service, the open
+points and the verification record: [docs/AI103_CONTRACTOR_PRECHECK.md](docs/AI103_CONTRACTOR_PRECHECK.md) and
+[docs/AI103_VERIFICATION.md](docs/AI103_VERIFICATION.md).
 
 ## Docker quick start
 

@@ -12,7 +12,6 @@ import {ModalSurface} from "./ModalSurface";
 import {customerUx,reviewAlertPresentation} from "@/lib/customer-ux";
 import {workspaceText} from "@/lib/workspace-language";
 import {DocumentCorpus} from "./DocumentCorpus";
-import {documentFocusText} from "@/lib/document-focus";
 import {DocumentResearchPanel} from './DocumentResearchPanel';
 import {researchText} from '@/lib/document-research';
 import {DocumentPipeline} from './DocumentPipeline';
@@ -106,9 +105,8 @@ export function PlatformWorkbench({caseId,locale,view,ask,inspect,changed,docume
     </>:null}
     {data&&view==="evaluation"?<DocumentCorpus key={`${caseId}:${caseVersion}`} caseId={caseId} locale={locale} inspect={inspect} ask={ask}/>:null}
     {data&&view==="controls"?<>
-      <a data-page-tour="controls-document-sources" className="button-secondary" href={"?case="+encodeURIComponent(caseId)+"#documents"}>{documentFocusText(locale).upload}</a>
       {domain==="real-estate"?<ContractorPrecheckPanel key={`${caseId}:${caseVersion}`} caseId={caseId} locale={locale} inspect={inspect}/>:null}
-      <section data-page-tour="controls-alerts" className="surface lab-section"><h3>{t("alerts")}</h3><p className="lab-caption">{t("roleHint")}</p><div className="lab-alerts">{data.banking.alerts.map(alert=>{const reviewed=data.reviews.find(r=>(r.alertId||r.id)===alert.id),presentation=reviewAlertPresentation(alert,locale,documents);return <article key={alert.id}><div><Badge tone={alert.severity==="HIGH"?"warn":"neutral"}>{presentation.severity}</Badge><h4>{presentation.title===alert.code?fieldText(alert.code):presentation.title}</h4><p>{presentation.detail}</p><details className="lab-technical"><summary>{ux.technical}</summary><code>{alert.code} · {alert.source}</code><p>{alert.detail}</p></details>{reviewed?<p className="lab-review-note"><Check size={14}/>{reviewed.note} · {date(reviewed.time)}</p>:null}</div><button className="button-secondary" disabled={!canReview||busy} onClick={()=>{setReviewId(alert.id);setNote(reviewed?.note||"");}}>{t("acknowledge")}</button></article>;})}</div>
+      <section data-page-tour="controls-alerts" className="surface lab-section"><h3>{t("alerts")}</h3><p className="lab-caption">{t("roleHint")}</p><div className="lab-alerts" data-page-tour="controls-document-sources">{data.banking.alerts.map(alert=>{const reviewed=data.reviews.find(r=>(r.alertId||r.id)===alert.id),presentation=reviewAlertPresentation(alert,locale,documents);return <article key={alert.id}><div><Badge tone={alert.severity==="HIGH"?"warn":"neutral"}>{presentation.severity}</Badge><h4>{presentation.title===alert.code?fieldText(alert.code):presentation.title}</h4><p>{presentation.detail}</p><details className="lab-technical"><summary>{ux.technical}</summary><code>{alert.code} · {alert.source}</code><p>{alert.detail}</p></details>{reviewed?<p className="lab-review-note"><Check size={14}/>{reviewed.note} · {date(reviewed.time)}</p>:null}</div><button className="button-secondary" disabled={!canReview||busy} onClick={()=>{setReviewId(alert.id);setNote(reviewed?.note||"");}}>{t("acknowledge")}</button></article>;})}</div>
         {reviewId?<form onSubmit={review} className="lab-review-form"><label htmlFor="lab-review-note">{t("note")}</label><textarea id="lab-review-note" value={note} onChange={e=>setNote(e.target.value)} maxLength={500} rows={3} required/><div><button type="button" className="button-secondary" onClick={()=>setReviewId(undefined)} disabled={busy}>{t("cancel")}</button><button className="button-primary" disabled={busy||!note.trim()}>{t("save")}</button></div></form>:null}
       </section>
     </>:null}
