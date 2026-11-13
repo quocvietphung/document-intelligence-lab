@@ -8,7 +8,8 @@ every Azure service and the recorded results are in [docs/AI103_CONTRACTOR_PRECH
 Standard library only (Python 3.10+). Run from this folder:
 
 ```bash
-python3 -m unittest discover -s tests -v          # 73 offline tests, no Docker
+python3 -m unittest discover -s tests -v          # offline tests, no Docker
+python3 -m ruff check . && python3 -m mypy contractor_lab   # optional lint and types; settings in pyproject.toml
 python3 -m contractor_lab offline                 # 20 criteria, offline, prints PASS/FAIL
 python3 -m contractor_lab speech                  # 4a audio → transcript → Nova → listen (mock transcript)
 python3 -m contractor_lab translate               # 4b German e-mail → English, identifiers and amounts checked

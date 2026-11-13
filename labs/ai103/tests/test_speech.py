@@ -11,8 +11,17 @@ from unittest import mock
 from contractor_lab import FIXTURES
 from contractor_lab.azure_http import AzureCallError
 from contractor_lab.cloud import LiveCallRefused
-from contractor_lab.speech import (SITE_NOTE_WAV, build_ssml, check_transcript, fast_transcribe, listen_engine, multipart,
-                                   parse_fast_transcription, reference_transcript, synthesize)
+from contractor_lab.speech import (
+    SITE_NOTE_WAV,
+    build_ssml,
+    check_transcript,
+    fast_transcribe,
+    listen_engine,
+    multipart,
+    parse_fast_transcription,
+    reference_transcript,
+    synthesize,
+)
 
 SAMPLE = json.loads((FIXTURES / "speech/azure-fast-transcription.sample.json").read_text(encoding="utf-8"))
 MISHEARD = json.loads((FIXTURES / "speech/azure-fast-transcription.misheard.json").read_text(encoding="utf-8"))
@@ -89,18 +98,16 @@ class RequestAndGateTests(unittest.TestCase):
     def test_opt_in_for_another_service_still_refuses_speech(self):
         env = {"AI103_AZURE_OPT_IN": "billable-calls-approved", "AI103_AZURE_SERVICES": "translator",
                "AZURE_SPEECH_ENDPOINT": "https://x.cognitiveservices.azure.com"}
-        with mock.patch("urllib.request.urlopen", side_effect=AssertionError("network used")):
-            with self.assertRaises(LiveCallRefused):
-                fast_transcribe(SITE_NOTE_WAV, "token", env)
+        with mock.patch("urllib.request.urlopen", side_effect=AssertionError("network used")), self.assertRaises(LiveCallRefused):
+            fast_transcribe(SITE_NOTE_WAV, "token", env)
 
     def test_telemetry_of_a_failed_call_never_contains_the_response_body(self):
         body = io.BytesIO(b'{"error": "secret-response-body"}')
         error = urllib.error.HTTPError("https://x", 429, "Too Many Requests", {"apim-request-id": "req-123"}, body)
         env = {"AI103_AZURE_OPT_IN": "billable-calls-approved", "AI103_AZURE_SERVICES": "speech",
                "AZURE_SPEECH_ENDPOINT": "https://x.cognitiveservices.azure.com", "AZURE_SPEECH_REGION": "westeurope"}
-        with mock.patch("urllib.request.urlopen", side_effect=error):
-            with self.assertRaises(AzureCallError) as raised:
-                fast_transcribe(SITE_NOTE_WAV, "token", env)
+        with mock.patch("urllib.request.urlopen", side_effect=error), self.assertRaises(AzureCallError) as raised:
+            fast_transcribe(SITE_NOTE_WAV, "token", env)
         telemetry = json.dumps(raised.exception.telemetry)
         self.assertIn("req-123", telemetry)
         self.assertIn("429", telemetry)
