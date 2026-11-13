@@ -4,7 +4,7 @@ services:
     environment:
       NOVA_PROVIDER: ollama
   ollama:
-    image: document-lab-ollama-cpu:0.40.6
+    image: document-lab-ollama-cpu:0.40.16
     build:
       context: ./services/ollama-cpu
     restart: unless-stopped

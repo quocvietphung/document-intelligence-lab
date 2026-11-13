@@ -5,7 +5,7 @@ import {analyticsComposeFiles,composeFileArgs,googleConnectorComposeFiles,produc
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const localModel='qwen3:4b-instruct-2507-q4_K_M';
-export const ollamaImage='document-lab-ollama-cpu:0.40.6';
+export const ollamaImage='document-lab-ollama-cpu:0.40.16';
 export function validateModel(value){if(!/^[a-zA-Z0-9][a-zA-Z0-9_.:/-]{0,99}$/.test(value)||value.includes('..')||value.includes('://')||/(?:-cloud|:cloud)(?::.*)?$/i.test(value))throw Error('Select a local model identifier, not a URL or cloud model');return value;}
 // The normal stack is exactly the production file list (Spark is never included; see compose-files.mjs).
 export function localCompose(model=localModel,{analytics=false,google=false}={}){return {args:['compose',...composeFileArgs(productionComposeFiles),...(google?composeFileArgs(googleConnectorComposeFiles):[]),...(analytics?[...composeFileArgs(analyticsComposeFiles),'--profile','analytics']:[])],env:{...process.env,OLLAMA_CHAT_MODEL:validateModel(model)}};}

@@ -20,7 +20,7 @@ test('local profile keeps Docling, uses one explicit local model and no cloud st
 });
 test('CPU runtime is separate from model weights and retains a pinned official engine',()=>{
   const dockerfile=readFileSync(new URL('../services/ollama-cpu/Dockerfile',import.meta.url),'utf8');
-  assert.match(dockerfile,/ollama\/ollama:0\.40\.6@sha256:[a-f0-9]{64}/);
+  assert.match(dockerfile,/ollama\/ollama:0\.40\.16@sha256:[a-f0-9]{64}/);
   assert.match(dockerfile,/-name 'cpu\*'/);assert.match(dockerfile,/OLLAMA_NO_CLOUD=1/);
   assert.doesNotMatch(dockerfile,/ollama pull|COPY.*(?:gguf|safetensors)/);
   const profile=readFileSync(new URL('../docker-compose.nova-local.yml',import.meta.url),'utf8');

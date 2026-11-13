@@ -1,6 +1,6 @@
 # Repackage the official, multi-architecture release; do not compile or replace the engine.
 # The upstream image includes CUDA/JetPack backends that CPU-only Docker does not need.
-FROM ollama/ollama:0.40.6@sha256:265409e1d931028a8f7d5a32bcbafddd7bffbc6cc629d77efe9560adf692a5e7 AS upstream
+FROM ollama/ollama:0.40.16@sha256:910d0d8107b538fb0894e63163eb195de0cc7aefcbc666dc62d3b18f71124592 AS upstream
 RUN mkdir /cpu \
     && find /usr/lib/ollama -mindepth 1 -maxdepth 1 \( -type f -o -type l -o -name 'cpu*' \) -exec cp -a '{}' /cpu/ \;
 
