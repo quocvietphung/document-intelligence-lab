@@ -8,7 +8,16 @@ services:
     build:
       context: ./services/ollama-cpu
     restart: unless-stopped
+    # Non-root, fixed identity (UID/GID 10010, also set in the image). Root filesystem read-only; the only writable
+    # scratch space is a tmpfs; no Linux capabilities and no privilege escalation.
+    user: "10010:10010"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:size=512m,mode=1777
     environment:
+      OLLAMA_MODELS: /models
       OLLAMA_NO_CLOUD: "1"
       OLLAMA_NUM_PARALLEL: "1"
       OLLAMA_MAX_LOADED_MODELS: "1"
@@ -20,7 +29,13 @@ services:
       OLLAMA_CONTEXT_LENGTH: "4096"
       OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:?Choose an explicitly installed local model}
     volumes:
-      - lab_ollama:/root/.ollama
+      # The model store is the `models` folder of the persistent volume. Mounting that subfolder keeps the existing
+      # data where it is; the one-time ownership change for the non-root user is in docs/AI103_VERIFICATION.md.
+      - type: volume
+        source: lab_ollama
+        target: /models
+        volume:
+          subpath: models
     networks: [local_models]
     mem_limit: 5g
     cpus: 3

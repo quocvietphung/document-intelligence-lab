@@ -26,7 +26,10 @@ async function main(){
     // Only this newly created ephemeral container is stopped; its named model volume persists.
     const name='document-lab-model-setup';
     if(output(['ps','-aq','--filter',`name=^/${name}$`]))throw Error('A model-preparation container already exists. Inspect it before retrying; nothing was removed');
-    const id=output(['run','-d','--rm','--name',name,'--network','bridge','--memory','5g','--cpus','3','-e','OLLAMA_NO_CLOUD=1','-v','credit-intelligence-lab_lab_ollama:/root/.ollama',ollamaImage]);
+    // The model store is the `models` folder of the named volume, owned by the image's fixed non-root user (UID 10010).
+    // This idempotent step covers a new volume and the one-time migration of an existing one; it never touches the blobs.
+    run(['run','--rm','--pull','never','--network','none','-v','credit-intelligence-lab_lab_ollama:/data','busybox:1.37','sh','-c','mkdir -p /data/models && chown -R 10010:10010 /data/models']);
+    const id=output(['run','-d','--rm','--name',name,'--network','bridge','--memory','5g','--cpus','3','-e','OLLAMA_NO_CLOUD=1','--mount','type=volume,source=credit-intelligence-lab_lab_ollama,target=/models,volume-subpath=models',ollamaImage]);
     try{
       let ready=false;for(let n=0;n<30;n++){const probe=spawnSync('docker',['exec',id,'ollama','list'],{stdio:'ignore',timeout:5000});if(probe.status===0){ready=true;break;}await new Promise(resolve=>setTimeout(resolve,1000));}
       if(!ready)throw Error('Model-preparation daemon did not become ready');
