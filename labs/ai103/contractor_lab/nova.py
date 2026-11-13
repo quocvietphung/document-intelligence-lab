@@ -267,6 +267,13 @@ def draft_with_nova(api, case_id: str, precheck: dict, locale: str = "vi") -> di
     except urllib.error.HTTPError as refused:
         body = _refusal_body(refused)
         code = body.get("code")
+        if refused.code == 503 and code is None:
+            # The Java API could not finish a local generation (the output budget was reached or no answer came back).
+            # Nothing is sent; the deterministic draft stays and the run is reported, not crashed.
+            return {"status": "NOVA_NOT_COMPLETED", "problems": ["MODEL_GENERATION_NOT_COMPLETED"],
+                    "mode": "local-ollama", "aiGenerated": False, "humanApproved": False, "emailSent": False,
+                    "durationMs": round((time.monotonic() - started) * 1000), "answer": "", "sources": [],
+                    "deterministicDraft": precheck["draft"]["summary"]}
         if code not in OUTPUT_CONTRACT_CODES:
             raise
         # The Java API refused an answer it could not verify. Nothing is sent and the deterministic draft stays.

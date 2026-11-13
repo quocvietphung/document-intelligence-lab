@@ -144,6 +144,12 @@ class RefusingApi:
         raise urllib.error.HTTPError(path, 422, "Unprocessable Entity", {}, io.BytesIO(json.dumps(self.payload).encode("utf-8")))
 
 
+class UnfinishedApi:
+    """Stands in for the Java 503 with an empty body: the local model did not finish a complete answer."""
+    def post(self, path, body, allow_model=False):
+        raise urllib.error.HTTPError(path, 503, "Service Unavailable", {}, io.BytesIO(b""))
+
+
 class RefusalTests(unittest.TestCase):
     def test_citation_refusal_keeps_the_draft_and_names_only_the_reason(self):
         result = draft_with_nova(RefusingApi("MODEL_CITATION_CONTRACT_FAILED", "NON_SOURCE_BRACKET"), "CR-x", copy.deepcopy(PRECHECK), "de")
@@ -158,6 +164,15 @@ class RefusalTests(unittest.TestCase):
         result = draft_with_nova(RefusingApi("MODEL_CITATION_CONTRACT_FAILED", "Herr Müller"), "CR-x", copy.deepcopy(PRECHECK), "de")
         self.assertIn("reason=UNSPECIFIED", result["problems"])
         self.assertNotIn("Müller", json.dumps(result))
+
+    def test_an_unfinished_generation_is_reported_and_the_draft_stays(self):
+        # The Java API answers 503 with an empty body when the local model stops before a complete answer.
+        api = UnfinishedApi()
+        result = draft_with_nova(api, "CR-x", copy.deepcopy(PRECHECK), "de")
+        self.assertEqual("NOVA_NOT_COMPLETED", result["status"])
+        self.assertEqual(["MODEL_GENERATION_NOT_COMPLETED"], result["problems"])
+        self.assertFalse(result["emailSent"])
+        self.assertTrue(result["deterministicDraft"])
 
     def test_other_output_contract_is_refused_with_its_own_status(self):
         result = draft_with_nova(RefusingApi("MODEL_EVIDENCE_CONTRACT_FAILED", "EVIDENCE_NOT_VERIFIED"), "CR-x", copy.deepcopy(PRECHECK), "de")
