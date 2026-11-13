@@ -14,13 +14,18 @@ final class SchemaChat {
   private SchemaChat(){}
   static Map<String,Object> text(int max){return Map.of("type","string","maxLength",max);}
   static Map<String,Object> object(Map<String,Object> properties){return Map.of("type","object","properties",properties,"required",properties.keySet().stream().sorted().toList(),"additionalProperties",false);}
+  /** A validated value and the provider's measured token usage (null when the provider reports none). */
+  record Measured<T>(T value,dev.langchain4j.model.output.TokenUsage usage){}
   static <T>T call(ChatModel model,String system,String prompt,Map<String,Object> schema,Class<T> type){
+    return callMeasured(model,system,prompt,schema,type).value();
+  }
+  static <T>Measured<T> callMeasured(ChatModel model,String system,String prompt,Map<String,Object> schema,Class<T> type){
     try{
       var format=ResponseFormat.builder().type(ResponseFormatType.JSON).jsonSchema(JsonSchema.builder().name("DocumentEvidence").rootElement(JsonRawSchema.from(JSON.writeValueAsString(schema))).build()).build();
       var response=model.chat(ChatRequest.builder().responseFormat(format).messages(SystemMessage.from(system),UserMessage.from(prompt)).build());
       if(response.finishReason()!=dev.langchain4j.model.output.FinishReason.STOP)throw new IllegalStateException("INCOMPLETE_STRUCTURED_OUTPUT");
       var value=JSON.readTree(response.aiMessage().text());validate(value,schema);
-      return JSON.treeToValue(value,type);
+      return new Measured<>(JSON.treeToValue(value,type),response.tokenUsage());
     }catch(RuntimeException e){throw e;}catch(Exception e){throw new IllegalStateException("INVALID_STRUCTURED_OUTPUT",e);}
   }
   @SuppressWarnings("unchecked")

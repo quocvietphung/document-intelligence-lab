@@ -36,7 +36,7 @@ class CreditAssistantServiceTest {
  @Test void providerTokenUsageIsReportedAsMeasuredAndCacheHitsAreNotClaimed(){
   ChatModel model=new ChatModel(){@Override public ChatResponse doChat(ChatRequest request){
    return ChatResponse.builder().finishReason(dev.langchain4j.model.output.FinishReason.STOP).tokenUsage(new dev.langchain4j.model.output.TokenUsage(1830,64))
-     .aiMessage(AiMessage.from("Use the supplied document research guide [app-guide].")).build();
+     .aiMessage(AiMessage.from(guideSegments(request))).build();
   }};
   var metrics=localService(model).answer("praxisbank-demo","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048","en","Explain the app features")).metrics();
   assertThat(metrics).containsEntry("provider","local-ollama").containsEntry("inputTokens",1830).containsEntry("outputTokens",64).containsEntry("tokenSource","provider")
@@ -67,10 +67,17 @@ class CreditAssistantServiceTest {
  @Test void localEvidenceChatUsesSuppliedContextWithoutToolCalls(){
   ChatModel model=new ChatModel(){@Override public ChatResponse doChat(ChatRequest request){
    assertThat(request.toolSpecifications()).isNullOrEmpty();
-   assertThat(((dev.langchain4j.data.message.UserMessage)request.messages().getLast()).singleText()).contains("app-guide","Explain the app features");
-   return ChatResponse.builder().finishReason(dev.langchain4j.model.output.FinishReason.STOP).aiMessage(AiMessage.from("Use the supplied document research guide [app-guide].")).build();
+   assertThat(((dev.langchain4j.data.message.UserMessage)request.messages().getLast()).singleText()).contains("(Application guide)","Explain the app features");
+   return ChatResponse.builder().finishReason(dev.langchain4j.model.output.FinishReason.STOP).aiMessage(AiMessage.from(guideSegments(request))).build();
   }};
   assertThat(localService(model).answer("praxisbank-demo","tester",new CreditAssistantService.AssistantRequest("CR-2026-1048","en","Explain the app features")).mode()).isEqualTo("local-ollama");
+ }
+ /** The model's constrained answer: one segment that cites the application guide by the label the prompt shows for it. */
+ private static String guideSegments(ChatRequest request){
+  String prompt=((dev.langchain4j.data.message.UserMessage)request.messages().getLast()).singleText();
+  var label=java.util.regex.Pattern.compile("(S\\d+) \\(Application guide\\)").matcher(prompt);
+  assertThat(label.find()).isTrue();
+  return "{\"segments\":[{\"text\":\"The supplied document research guide describes the app features.\",\"source\":\""+label.group(1)+"\"}]}";
  }
  @Test void boundedLocalReviewsExposeNoAgentTools(){
   ChatModel model=new ChatModel(){@Override public ChatResponse doChat(ChatRequest request){
