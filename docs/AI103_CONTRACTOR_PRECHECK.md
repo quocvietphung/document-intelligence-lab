@@ -31,36 +31,44 @@ same gross basis = invoice line 3 (1.008,40 netto, no change order) + 19 % VAT (
 **PARTIAL** (line 3 not accepted, one open defect until 15.12.2026), payment evidence is **MISSING**, photo
 F-03 is **MISSING**. If the bases differ, no difference is computed and the result says `TAX_BASIS_MISMATCH`.
 
-**Invoice number.** The dossier invoice is `RG-2026-0457`. The number `RE-2026-0311` in some briefs belongs to a
-different fixture (`use-cases/eingangsrechnung-musterquartier.pdf`), so this lab uses `RG-2026-0457` everywhere.
+**One invoice number.** The AI-103 dossier uses `RG-2026-0457` everywhere: the PDFs, the fixtures, the tests, the
+speech and translation samples and the Nova benchmark question. The number `RE-2026-0311` belongs to a separate
+use-case fixture (`use-cases/eingangsrechnung-musterquartier.pdf`, from `scripts/prepare-use-case-fixtures.py`)
+that is not part of this lab.
 
 Regenerate (deterministic hashes, checked by `ContractorPrecheckTest`):
 `services/m365-mcp-poc/.venv/bin/python scripts/prepare-contractor-dossier.py`.
 
 ## 2. What runs where
 
-Status words, used everywhere in this guide: **local real** (runs here, no cloud), **mock** (a fixture or a rule stands
-in for the service; the lab says so in its output), **Azure not run** (the adapter exists or is documented, nothing was
-sent to Azure), **Azure verified** (a live call was made and checked; none has been made yet).
+Status words, used everywhere in this guide:
+
+| Status | Meaning |
+| --- | --- |
+| `local-real` | Runs on this machine or in the local Docker stack, with no cloud call (for example Tesseract, ClamAV, Qdrant, Ollama). |
+| `local-mock` | A fixture, a reference text or a rule stands in for the service. The lab's output says so. |
+| `azure-not-run` | The adapter exists or the API is documented, but no request has been sent to Azure. |
+| `azure-verified` | One opted-in live call was made, its response was checked and its telemetry was reviewed. **No service has this status yet.** |
+| `unsupported` | The documented API has no such feature, so the lab does not build or claim it. |
 
 | Exercise | Status | Lab part | Command or check | Azure, when opted in |
 | --- | --- | --- | --- | --- |
-| 1 PDF → fields/tables → evidence → reconcile → cited draft | local real (Docker: ClamAV, Docling, Qdrant + BM25, Java `BigDecimal`, Keycloak) | `ContractorPrecheck`, `CitationCheck`, `PageIsolation` | `TEST_CONTRACTOR_PRECHECK=1`, Java tests | AI Search, Document Intelligence (alternatives) |
-| 1a claim-level citations | local real | Java: each stated amount, invoice line and status must be on the page it cites | `ContractorPrecheckTest` | — |
-| 1b page quarantine | local real | Java retrieval, tools, field evidence and keyword evidence leave out only the quarantined page | `PageIsolationTest`, `PageIsolationContextTest` | — |
-| 2a Python agent with read-only tools | local real (scripted or Ollama planner) | `agent.py` | `python3 -m contractor_lab agent` | Foundry Agent Service: **Azure not run** |
-| 2b Nova summary and email draft | local real (Ollama) | `nova.py`: claim-level checks, quarantined sources never sent | `python3 -m contractor_lab nova`; `tests/test_citations.py` | Azure OpenAI: **Azure not run** |
-| 2c Self-approval sentence in a PDF | local real (Java + Python rule mirror) | `guard.py`, `EvidenceGuard` | `offline`; `ContractorPrecheckTest` | Prompt Shields: **Azure not run** |
-| 2d Email classification + PII masking | local real (rules, regex masking) | `emails.py` | `offline` (8/8 categories) | AI Language PII: **Azure not run** |
-| 2e Acceptance photo linking | local real (Tesseract OCR) | `media.py` | `offline`; Docling OCR when photos are uploaded | AI Vision: **Azure not run** |
-| 2f Image/audio → JSON schema | local real for photos; **mock** for speech (reference transcript) | `media.py`, `speech.py` | `offline` | Speech and Content Understanding: **Azure not run** |
-| 2g OpenTelemetry step timings | local real (collector file) | `otel.py`, Java spans | `trace-report` | Application Insights: **Azure not run** |
-| 3 Azure configuration | local real (no network) | `cloud.py` | `cloud-plan` | Every service needs the explicit opt-in |
-| 4a Speech: audio → transcript → Nova → listen | **mock** transcript; local browser voice in the app | `speech.py` (fast transcription, SSML, check) | `speech` | Azure Speech STT and TTS: **Azure not run** |
-| 4b Translator: German e-mail → English | **mock** (English reference); transliteration sample | `translator.py` | `translate` | Azure Translator: **Azure not run** |
-| 4c Voice Live with barge-in | **mock** (scripted documented events) | `voice_live.py` | `voice-live` | Voice Live: **Azure not run**; no live session |
-| 5 Azure AI Search (Blob → indexer → skillset → index → query) | **local real** BM25 over the same PDF pages; configuration files | `search_lab.py`, `azure/search/` | `search` | AI Search: **Azure not run**; hybrid search not verified |
-| 6 Content Understanding and Vision | request shape checked (**mock**); Vision inpainting **not offered** (see below) | `content_understanding.py`, `azure/content-understanding/` | `content-understanding` | **Azure not run** |
+| 1 PDF → fields/tables → evidence → reconcile → cited draft | `local-real` (Docker: ClamAV, Docling, Qdrant + BM25, Java `BigDecimal`, Keycloak) | `ContractorPrecheck`, `CitationCheck`, `PageIsolation` | `TEST_CONTRACTOR_PRECHECK=1`, Java tests | AI Search, Document Intelligence (alternatives) |
+| 1a claim-level citations | `local-real` | Java: each stated amount, invoice line and status must be on the page it cites | `ContractorPrecheckTest` | — |
+| 1b page quarantine | `local-real` | Java retrieval, tools, field evidence and keyword evidence leave out only the quarantined page | `PageIsolationTest`, `PageIsolationContextTest` | — |
+| 2a Python agent with read-only tools | `local-real` (scripted or Ollama planner) | `agent.py` | `python3 -m contractor_lab agent` | Foundry Agent Service: `azure-not-run` |
+| 2b Nova summary and email draft | `local-real` path (Ollama); no accepted answer in the latest pass | `nova.py`: claim-level checks, quarantined sources never sent; a refused answer keeps the deterministic draft | `python3 -m contractor_lab nova`; `tests/test_citations.py`; result in [AI103_VERIFICATION.md](AI103_VERIFICATION.md#2-docker-browser-and-nova) | Azure OpenAI: `azure-not-run` |
+| 2c Self-approval sentence in a PDF | `local-real` (Java + Python rule mirror) | `guard.py`, `EvidenceGuard` | `offline`; `ContractorPrecheckTest` | Prompt Shields: `azure-not-run` |
+| 2d Email classification + PII masking | `local-real` (rules, regex masking) | `emails.py` | `offline` (8/8 categories) | AI Language PII: `azure-not-run` |
+| 2e Acceptance photo linking | `local-real` (Tesseract OCR) | `media.py` | `offline`; Docling OCR when photos are uploaded | AI Vision: `azure-not-run` |
+| 2f Image/audio → JSON schema | `local-real` for photos; `local-mock` for speech (reference transcript) | `media.py`, `speech.py` | `offline` | Speech and Content Understanding: `azure-not-run` |
+| 2g OpenTelemetry step timings | `local-real` (collector file) | `otel.py`, Java spans | `trace-report` | Application Insights: `azure-not-run` |
+| 3 Azure configuration | `local-real` (no network) | `cloud.py` | `cloud-plan` | Every service needs the explicit opt-in |
+| 4a Speech: audio → transcript → Nova → listen | `local-mock` transcript; the listening voice is the browser's, on this device | `speech.py` (fast transcription, SSML, check) | `speech` | Azure Speech STT and TTS: `azure-not-run` |
+| 4b Translator: German e-mail → English | `local-mock` (English reference); transliteration sample | `translator.py` | `translate` | Azure Translator: `azure-not-run` |
+| 4c Voice Live with barge-in | `local-mock` (scripted documented events) | `voice_live.py` | `voice-live` | Voice Live: `azure-not-run`; no live session |
+| 5 Azure AI Search (Blob → indexer → skillset → index → query) | `local-real` BM25 over the same PDF pages (this is **not** Azure AI Search); configuration files | `search_lab.py`, `azure/search/` | `search` | AI Search: `azure-not-run`; hybrid search not verified |
+| 6 Content Understanding and Vision | request shape checked (`local-mock`); Vision inpainting `unsupported` (see below) | `content_understanding.py`, `azure/content-understanding/` | `content-understanding` | `azure-not-run` |
 
 ## 3. Pass/fail criteria
 
@@ -70,7 +78,7 @@ sent to Azure), **Azure verified** (a live call was made and checked; none has b
 | 1a | A cited page that exists but holds other content is `NOT_SUPPORTED`; a missing page or document is `UNKNOWN` and is never guessed | `ContractorPrecheckTest` |
 | 1b | A quarantined page loses its text, fields, regions and table cells from model context; its neighbours stay retrievable; the original PDF stays open for review | `PageIsolationTest`, `PageIsolationContextTest` |
 | 2a | Draft is schema-valid; only GET and the read-only search were sent; forbidden tools are denied and logged; amounts equal the Java result | `python3 -m contractor_lab agent`, `AgentTests` |
-| 2b | Every stated amount is cited to a source whose text contains it; computed amounts cite a source; acceptance and line claims cite their own text; no approval, payment or sent claim. A quarantined source is never sent (`SKIPPED_ISOLATED_SOURCE`) | `python3 -m contractor_lab nova`, `tests/test_citations.py` |
+| 2b | Every stated amount is cited to a source whose text contains it; computed amounts cite a source; an affirmative acceptance, payment or line claim cites a page that is about it; a statement that something is missing needs no citation; no approval, payment or sent claim; a placeholder in square brackets is refused; a quarantined source is never sent (`SKIPPED_ISOLATED_SOURCE`) | `python3 -m contractor_lab nova`, `tests/test_citations.py` |
 | 2c | The sentence is reported with page 2 as a HIGH finding; amounts, approval and email flags do not change; the page is quarantined from retrieval; no false positive on legitimate approval wording | live acceptance, `ContractorPrecheckTest`, `InstructionAndEmailTests` |
 | 2d | 8/8 categories; bank-detail change and approval instruction are HIGH; no residual e-mail, phone, IBAN, VAT ID or known name after masking | `offline`, `InstructionAndEmailTests` |
 | 2e | F-01 and F-02 linked by hash, F-01 linked to defect M-1, F-03 reported missing | `offline`, live pre-check after photo upload |
@@ -97,10 +105,11 @@ TEST_CONTRACTOR_PRECHECK=1 node scripts/test-oauth.mjs
 mvn -q -f services/credit-api/pom.xml test -Dtest='ContractorPrecheckTest,PageIsolation*' -Dsurefire.failIfNoSpecifiedTests=false
 npx vitest run lib/contractor-precheck.test.ts lib/nova-speech.test.ts
 
-# Offline lab (no Docker, no network): 20 criteria
+# Offline lab (no Docker, no network)
 cd labs/ai103
-python3 -m unittest discover -s tests -v          # 73 tests
-python3 -m contractor_lab offline
+python3 -m unittest discover -s tests -v
+python3 -m ruff check . && python3 -m mypy contractor_lab     # both configured in labs/ai103/pyproject.toml
+python3 -m contractor_lab offline                 # 20 criteria
 python3 -m contractor_lab speech                  # 4a, mock transcript; writes .local/ai103/speech-result.json
 python3 -m contractor_lab translate               # 4b, English reference; writes .local/ai103/translate-result.json
 python3 -m contractor_lab voice-live              # 4c, scripted events
@@ -162,37 +171,41 @@ Return to the normal stack with `node scripts/docker-local.mjs --no-build`.
 4. Check the plan: `python3 -m contractor_lab cloud-plan --env-file ../../.local/ai103-azure.env`. It validates endpoint
    shapes and makes no network call.
 5. Only when you decide to run billable tests, set `AI103_AZURE_OPT_IN=billable-calls-approved` and list the services
-   in `AI103_AZURE_SERVICES`. Each live path passes `cloud.require_live(service)` first and refuses otherwise.
+   in `AI103_AZURE_SERVICES`. Each live path passes `cloud.require_live(service)` first and refuses otherwise. Live
+   calls are off by default and opt-in per service; a live run is a separate, confirmed step.
 
 ### Service status
 
 | Service | Used for | Status now |
 | --- | --- | --- |
-| Foundry Agent Service | 2a read-only agent in Python | local real (scripted and Ollama planners); **Azure not run** |
-| Azure OpenAI | 2b Nova summary (local Ollama stand-in) | local real; **Azure not run** |
-| Document Intelligence | extraction alternative; latest GA version `2024-11-30` (verified) | local real (Docling); **Azure not run** |
-| Content Understanding | document, image and audio analysis (6) | mock (request shape checked); **Azure not run** |
-| Vision | photo analysis (2e); Image Analysis 4.0 has no inpainting; the API retires on 2028-09-25 | local real (Tesseract); **Azure not run** |
-| Language | PII detection (2d), GA `2026-05-01` (verified) | local real (rules); **Azure not run** |
-| Content Safety | Prompt Shields `text:shieldPrompt`, `2024-09-01` (verified) | local real (EvidenceGuard rules); **Azure not run** |
-| Application Insights | telemetry (2g) | local real (collector file); **Azure not run** |
-| Speech | fast transcription, text to speech (4a) | mock (reference transcript, macOS voice); **Azure not run** |
-| Translator | German → English e-mail, transliteration (4b) | mock (English reference); **Azure not run** |
-| Voice Live | barge-in session (4c) | mock (scripted events); **Azure not run** |
-| AI Search | Blob → indexer → skillset → index → query (5) | local real (BM25 over the same pages); **Azure not run** |
+| Foundry Agent Service | 2a read-only agent in Python | `local-real` (scripted and Ollama planners); `azure-not-run` |
+| Azure OpenAI | 2b Nova summary (local Ollama stand-in) | `local-real`; `azure-not-run` |
+| Document Intelligence | extraction alternative; latest GA version `2024-11-30` (verified in the docs) | `local-real` (Docling); `azure-not-run` |
+| Content Understanding | document, image and audio analysis (6); GA `2025-11-01`, preview `2026-06-01-preview` | `local-mock` (request shape checked); `azure-not-run` |
+| Vision | photo analysis (2e); Image Analysis 4.0 has no inpainting; the API retires on 2028-09-25 | `local-real` (Tesseract); `azure-not-run` |
+| Language | PII detection (2d), GA `2026-05-01` (verified in the docs) | `local-real` (rules); `azure-not-run` |
+| Content Safety | Prompt Shields `text:shieldPrompt`, `2024-09-01` (verified in the docs) | `local-real` (EvidenceGuard rules); `azure-not-run` |
+| Application Insights | telemetry (2g) | `local-real` (collector file); `azure-not-run` |
+| Speech | fast transcription, text to speech (4a) | `local-mock` (reference transcript); `azure-not-run` |
+| Translator | German → English e-mail, transliteration (4b) | `local-mock` (English reference); `azure-not-run` |
+| Voice Live | barge-in session (4c) | `local-mock` (scripted events); `azure-not-run` |
+| AI Search | Blob → indexer → skillset → index → query (5) | `local-real` (BM25 over the same pages, not Azure AI Search); `azure-not-run` |
 
-No row is **Azure verified** yet. Verification means one opted-in call per service, its response checked, and its
+No row is `azure-verified` yet. Verification means one opted-in call per service, its response checked, and its
 telemetry reviewed.
 
 ### Operations practice
 
 - **Prompt Shields and embedded instructions (2c).** The lab's rule catches the self-approval sentence without a
-  service. Prompt Shields (`contentsafety/text:shieldPrompt`) is the Azure check to run in the same place once opted in.
+  service and records it as a HIGH finding on page 2 for the reviewer. The agent's tools are read-only (GET and the
+  read-only evidence search), so no tool can approve, pay, write or change a workflow. Prompt Shields
+  (`contentsafety/text:shieldPrompt`) is the Azure check to run in the same place once opted in; it has not run.
 - **Entra ID, RBAC, managed identity.** Use the roles above; the AI Search data source uses an identity-based
-  connection string (`ResourceId=…`), not an account key.
+  connection string (`ResourceId=…`), not an account key. Managed identity is the intended identity for hosted code;
+  the lab itself uses a user token from the stdin.
 - **Private networking.** Not designed or tested in this lab. Private endpoints for the AI services are a separate task.
-- **Telemetry.** Azure adapters record only operation, status, duration, error type and correlation id.
-  Request bodies, transcripts, translations, answers and tokens are not recorded.
+- **Telemetry.** Operational only. Azure adapters record only operation, status, duration, error type and correlation
+  id. Request bodies, transcripts, translations, answers, prompts, tokens and keys are not recorded.
 
 ### Custom Speech with fictional data (guide, not created)
 
@@ -210,48 +223,32 @@ telemetry reviewed.
 Install the Azure Resources and Foundry Toolkit extensions, sign in with `az login` or the extension's sign-in, select
 the subscription, and open the resources listed in step 2. Copy only endpoints and deployment names into
 `.local/ai103-azure.env`. Do not copy keys. Run `cloud-plan` to see what is configured. Nothing in this guide creates a
-resource or deploys anything.
+resource or deploys anything. The repository's `.vscode/` folder holds only portable settings and extension
+recommendations; no path of a personal machine, token or endpoint is committed.
 
-### Not built, and why
+### Not built, and why (`unsupported`)
 
-- **Vision inpainting.** The Image Analysis 4.0 documentation read on 2026-11-11 lists no inpainting or object removal,
-  and background removal was retired on 2025-03-31. No inpainting lab was built, so no result is claimed.
-- **`single-task` and `pro` analysis modes (Content Understanding).** The documentation read on 2026-11-11 names neither.
-  `pro mode` is retired (2025-05-01-preview). The current option is agentic mode in the preview API (2026-06-01-preview),
-  which this lab does not use.
-- **Speech translation over REST.** Documented for the Speech SDK; the REST pages have no speech-to-speech guide.
-  The lab translates the transcript with the Translator text API instead.
-- **Hybrid search query.** The Learn page for hybrid search returned 404 when read. The lab sends keyword queries only.
-- **Live Voice Live session.** The lab does not open a WebSocket. Run the official sample (`azure-ai-voicelive` package,
-  quickstart `voice-live-quickstart.py --use-token-credential`) against an existing resource to check it. Status: **not run**.
+- **Vision inpainting.** `unsupported`. The Image Analysis 4.0 documentation read on 2026-11-11 lists no inpainting or
+  object removal, and background removal was retired on 2025-03-31. No inpainting lab was built, so no result is claimed.
+- **`single-task` and `pro` analysis modes (Content Understanding).** `unsupported`. The documentation read on
+  2026-11-11 names neither. `pro mode` is retired (2025-05-01-preview). The current option is agentic mode in the preview
+  API (2026-06-01-preview), which this lab does not use.
+- **Speech-to-speech translation over REST.** `unsupported` over REST. It is documented for the Speech SDK only; the
+  REST pages have no speech-to-speech guide. The lab translates the transcript with the Translator text API instead.
+- **Hybrid search query.** `azure-not-run`, and not verified: the Learn page for hybrid search returned 404 when read.
+  The lab sends keyword queries only.
+- **Live Voice Live session.** `azure-not-run`. The lab does not open a WebSocket. Run the official sample
+  (`azure-ai-voicelive` package, quickstart `voice-live-quickstart.py --use-token-credential`) against an existing
+  resource to check it.
 
-## 6. Results (2026-11-11, development machine)
+## 6. Results
 
-Apple Silicon Mac, Docker Desktop, model `qwen3:4b-instruct-2507-q4_K_M` on Ollama (CPU). Numbers are from this one
-machine and fixture set. They are development measurements, not accuracy claims. Live checks ran on the committed
-tree `b6c3f73`, built in a separate worktree, with the committed defaults (no Nova switches in the environment).
+Results are recorded per run in `docs/AI103_VERIFICATION.md`, with the commit, the date, the command and the number of
+tests, skipped tests and the reason for each skip. The numbers in this file describe the committed fixtures only; they
+are development measurements on one machine, not accuracy claims.
 
-| Check | Result |
-| --- | --- |
-| `mvn verify` (whole Java API, on the committed Java sources) | 384 tests, 0 failures, 5 skipped (opt-in live tests) |
-| Pre-check and isolation tests (`ContractorPrecheckTest`, `PageIsolationTest`, `PageIsolationContextTest`, `CreditAssistantServiceTest`) | 32 tests, 0 failures |
-| `npm run lint` · `npm run typecheck` · `npm test` | clean · clean · 356/356 in 52 files |
-| Python lab unit tests (`python3 -m unittest discover -s tests`) | 73/73 |
-| `python3 -m contractor_lab offline` | 20/20 criteria |
-| Script tests (`check-public-source`, `docker-local`, `docker-azure-config`, Nova helpers, benchmark, retention) | 35/35 |
-| `check-public-source.mjs` | 0 risks, 889 files |
-| `test_foundry_config.py`, `test_practice_document_data.py`, `test_rag_benchmark.py`, model-runtime tests | pass |
-| Live acceptance `TEST_CONTRACTOR_PRECHECK=1` on `b6c3f73` | 53/53 |
-| Live read-only agent, scripted planner (`agent`) | 6/6, 4 read-only requests, none denied |
-| Headless Chrome over DevTools on `b6c3f73` (see below) | login, reconciliation, PDF page, Nova chat: pass |
-| Live Nova suggestion from the lab command (`nova`) | not produced: the API refused the answer's citations with HTTP 422 on 3 of 3 attempts (see findings) |
-
-**Measured values (live, `b6c3f73`):** approved `48.780,00 EUR brutto` (change order, page 2), invoice `49.980,00 EUR
-brutto` (invoice, page 2), difference `1.200,00 EUR` on the same gross basis, every claim's citation supported
-(`citationsVerified: true`), no quarantined page on the core dossier, acceptance PARTIAL, payment MISSING. The
-instruction variant reports its sentence on page 2, and that page is quarantined (`isolatedPages`).
-
-**Browser path (headless Chrome, throw-away profile, real Keycloak login as the local demo advisor):**
+Browser path (headless Chrome, throw-away profile, real Keycloak login as the local demo advisor), as checked on
+2026-11-11:
 
 1. Sign in, then open the case at `#controls` (**Đối chiếu**): the pre-check panel shows both amounts and the difference.
 2. **Chạy kiểm tra (chỉ đọc)**: the result shows `48.780,00`, `49.980,00` and `1.200,00`.
@@ -259,11 +256,8 @@ instruction variant reports its sentence on page 2, and that page is quarantined
    showing `Genehmigte Gesamtvergütung: 48.780,00 EUR brutto`. The dialog was closed with its own close control; the
    confirm control was not pressed.
 4. Nova chat, German question about the difference with sources: the answer gives `49.980,00 EUR` and
-   `48.780,00 EUR`, cites two stored sources (page 2 of the invoice and of the change order), and states the difference
-   `1.200,00 EUR`. The chat also shows **Nghe câu trả lời** with the label *Giọng đọc của trình duyệt trên thiết bị này.
-   Không dùng Azure Speech.* Audio was not played in this run.
-
-Screenshots of steps 1 to 4 are in the local scratchpad of the session, not in the repository.
+   `48.780,00 EUR`, cites stored sources, and states the difference `1.200,00 EUR`. The chat also shows **Nghe câu trả
+   lời** with the label *Giọng đọc của trình duyệt trên thiết bị này. Không dùng Azure Speech.* Audio was not played.
 
 **Findings during the runs:**
 
@@ -273,14 +267,21 @@ Screenshots of steps 1 to 4 are in the local scratchpad of the session, not in t
 - **Quarantine leak fixed.** Model context used to drop a whole document when one page was untrusted in some paths,
   and the keyword path had no check at all. Now only the quarantined page loses its text, fields, regions and table
   cells. The keyword path is tested end to end with a local model stub.
-- **Live Nova suggestion refused.** The lab's question (computed figures, bounded to 110 words) gave answers that the
-  API's citation contract refused: the API checks that every bracketed item is a known source ID, and the model wrote
-  bracketed notes too. The lab now reports this as `NOVA_REFUSED_BY_CITATION_CONTRACT` and keeps the deterministic
-  draft. The same figures in the chat, with a German question, passed the contract. A prompt rule against bracketed
-  notes did not change the result. Improving this needs a model or prompt evaluation, which is a next step.
+- **Nova HTTP 422: cause and fix.** The Java API refuses a model answer whose square-bracket text is not a source ID.
+  Three things in the lab's own prompt caused it, reproduced against the local model:
+  1. The model copied a salutation placeholder, `Herr [Name],`, into its email draft.
+  2. The prompt printed a Python list as `[3]` for an unaccepted line.
+  3. The prompt's rule text contained the bracket token `[mã-nguồn]`, which a model can copy.
+  The Java API now refuses with a reason code (`NON_SOURCE_BRACKET`, `NO_CITATION`, `STRAY_BRACKET`, `EMPTY_ANSWER`)
+  and nothing else. The prompt no longer contains bracket text, and the system prompt says square brackets are reserved
+  for source IDs. The lab reports `NOVA_REFUSED_BY_CITATION_CONTRACT` with the reason and keeps the deterministic draft.
+  The chat UI shows a message for that case instead of the safety-filter message it showed before.
+- **Round-bracket citation.** A small local model often writes an authorized source ID in round brackets. The Java
+  API now treats the exact authorized ID in round brackets as the same citation and writes it in square brackets. Any
+  other text in round brackets is still not a citation. The claim checks are unchanged.
 - **Host load.** A running Docker stack and an open browser make the local model several times slower; the same
   question took 90 to 320 seconds in these runs.
 - **Docker restart policy.** Starting Docker Desktop restarts stopped containers that have `restart: unless-stopped`,
   so another stack came up on the same ports. It was stopped only after approval and restored afterwards.
 
-Not verified: no Azure service was called; every Azure row above is **Azure not run**.
+Not verified: no Azure service was called; every Azure row above is `azure-not-run`.
