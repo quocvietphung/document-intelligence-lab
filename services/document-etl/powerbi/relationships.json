@@ -1,0 +1,29 @@
+{
+  "model": "evidence-control-tower",
+  "version": "control-tower-v1",
+  "note": "Star schema for Power BI Desktop. Every fact is filtered by tenant_key and project_id; dim_document is SCD Type 2 (use is_current for the latest version).",
+  "relationships": [
+    {"from": "fact_field_observation[document_id]", "to": "dim_document[document_id]", "cardinality": "many-to-many", "filter": "single", "note": "filter dim_document[is_current] = TRUE or relate through document_key on fact_document_extraction"},
+    {"from": "fact_document_extraction[document_key]", "to": "dim_document[document_key]", "cardinality": "many-to-one", "filter": "single"},
+    {"from": "fact_document_extraction[document_type]", "to": "dim_document_type[document_type]", "cardinality": "many-to-one", "filter": "single"},
+    {"from": "fact_field_observation[provider]", "to": "dim_provider[provider]", "cardinality": "many-to-one", "filter": "single"},
+    {"from": "fact_ai_run[provider]", "to": "dim_provider[provider]", "cardinality": "many-to-one", "filter": "single"},
+    {"from": "fact_ai_cost[provider]", "to": "dim_provider[provider]", "cardinality": "many-to-one", "filter": "single"},
+    {"from": "fact_ai_run[pipeline_version]", "to": "dim_pipeline_version[pipeline_version]", "cardinality": "many-to-one", "filter": "single"},
+    {"from": "fact_ai_run[prompt_version]", "to": "dim_prompt_version[prompt_version]", "cardinality": "many-to-one", "filter": "single"},
+    {"from": "fact_ai_run[date_key]", "to": "dim_date[date_key]", "cardinality": "many-to-one", "filter": "single"},
+    {"from": "fact_ai_run[tenant_key]", "to": "dim_tenant[tenant_key]", "cardinality": "many-to-one", "filter": "single"},
+    {"from": "fact_ai_run[project_id]", "to": "dim_project[project_id]", "cardinality": "many-to-one", "filter": "single"},
+    {"from": "fact_pipeline_stage[run_id]", "to": "fact_ai_run[run_id]", "cardinality": "many-to-many", "filter": "single", "note": "one run can have several provider rows; filter by run_id"},
+    {"from": "fact_human_correction[document_id]", "to": "dim_document[document_id]", "cardinality": "many-to-many", "filter": "single"},
+    {"from": "fact_retrieval_evaluation[run_id]", "to": "fact_ai_run[run_id]", "cardinality": "many-to-many", "filter": "single"},
+    {"from": "fact_citation_evaluation[run_id]", "to": "fact_ai_run[run_id]", "cardinality": "many-to-many", "filter": "single"}
+  ],
+  "rowLevelSecurity": "Create a role that filters dim_tenant[tenant_key] (and dim_project[project_id]) to the viewer's tenant; facts inherit the filter through tenant_key.",
+  "measurementModes": {
+    "measured": "observed in the run",
+    "deterministic": "fixed rule on the run's extracted text",
+    "configured": "configured price or setting, not an observation",
+    "simulated": "fixture data; exclude from production pages with a filter on measurement_mode"
+  }
+}

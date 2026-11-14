@@ -21,7 +21,7 @@ def load_snapshot(directory, expected_hash=None):
     if expected_hash is not None and sha != expected_hash:
         raise ValueError("MANIFEST_CHANGED")
     manifest = json.loads(raw)
-    if manifest.get("method") != "document-medallion-v3" or manifest.get("runId") != directory.name:
+    if manifest.get("method") != "document-medallion-v4" or manifest.get("runId") != directory.name:
         raise ValueError("BUILD_CURRENT_ETL_FIRST")
     if not re.fullmatch(r"[a-f0-9]{64}", manifest.get("scope", "")) or directory.parent.name != manifest["scope"]:
         raise ValueError("SCOPE_MISMATCH")

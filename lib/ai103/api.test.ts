@@ -43,7 +43,7 @@ describe("AI-103 API", () => {
     vi.stubGlobal("fetch", fetchSpy);
     const refused = await runAzure(post("/api/ai103/capabilities/speech/run-azure"), context("speech"));
     expect(refused.status).toBe(403);
-    expect(await refused.json()).toMatchObject({reason: "opt-in-off", requestSent: false, status: "azure-not-run"});
+    expect(await refused.json()).toMatchObject({reason: "opt-in-off", requestSent: false, status: "azure-ready"});
     vi.stubEnv("AI103_AZURE_OPT_IN", AZURE_OPT_IN_VALUE);
     const optedIn = await runAzure(post("/api/ai103/capabilities/speech/run-azure"), context("speech"));
     expect(optedIn.status).toBe(501);
@@ -54,26 +54,24 @@ describe("AI-103 API", () => {
 });
 
 describe("AI-103 lab page", () => {
-  it("renders the four counts, the note, eighteen rows and labelled controls", () => {
+  it("renders four header counts, five groups and only the selected group's tiles", () => {
     const html = renderToStaticMarkup(createElement(Ai103Lab, {locale: "en", capabilities: manifest.capabilities}));
-    for (const label of ["Verified locally", "Verified on Azure", "Configured or mocked", "Blocked or unsupported"]) expect(html).toContain(label);
+    for (const label of ["Local real/deterministic", "Local mock/configured", "Azure ready", "Azure verified"]) expect(html).toContain(label);
     expect(html).toContain("Capability count, not the number of live Azure services or model calls.");
-    expect(html.match(/<tr class|<tr>/g)?.length).toBeGreaterThanOrEqual(19);
-    expect(html.match(/aria-label="Open lab: /g)).toHaveLength(18);
+    expect(html.match(/role="tab"/g)).toHaveLength(5);
+    expect(html.match(/aria-label="Open lab: /g)).toHaveLength(manifest.capabilities.filter((c) => c.group === "ingest").length);
     expect(html).toContain('<span class="ai103-visually-hidden">Search capabilities</span>');
-    expect(html).toContain("<select");
-    expect(html).toContain('aria-controls="ai103-detail"');
-    // No Azure button is rendered while Azure is not configured and opted in.
-    expect(html).not.toContain("Run Azure test");
+    expect(html).toContain("<dialog");
+    expect(html).not.toContain("<table");
   });
 
   it("speaks German and Vietnamese with the same structure", () => {
     const de = renderToStaticMarkup(createElement(Ai103Lab, {locale: "de", capabilities: manifest.capabilities}));
     const vi = renderToStaticMarkup(createElement(Ai103Lab, {locale: "vi", capabilities: manifest.capabilities}));
     expect(de).toContain("Anzahl der Fähigkeiten, nicht die Zahl der Live-Azure-Dienste oder Modellaufrufe.");
-    expect(de.match(/aria-label="Labor öffnen: /g)).toHaveLength(18);
+    expect(de).toContain("Erfassen &amp; Verstehen");
     expect(vi).toContain("Đây là số năng lực, không phải số dịch vụ Azure chạy thật hay số lần gọi model.");
-    expect(vi.match(/aria-label="Mở bài lab: /g)).toHaveLength(18);
+    expect(vi).toContain("Tiếp nhận &amp; hiểu");
     expect(vi).toContain('href="/vi/ai103"');
   });
 
@@ -81,6 +79,6 @@ describe("AI-103 lab page", () => {
     const html = renderToStaticMarkup(createElement(Ai103Summary, {locale: "de", openCatalog: () => {}}));
     expect(html).toContain('href="/de/ai103"');
     expect(html).toContain("KI-Funktionen und Modelle: KI-Transparenz");
-    expect(html).not.toContain("ai103-table");
+    expect(html).toContain("Azure bereit");
   });
 });

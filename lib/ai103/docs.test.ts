@@ -8,13 +8,15 @@ it("keeps the capability table and counts in docs/AI103_CAPABILITY_LAB.md in lin
   manifest.capabilities.forEach((capability, index) => {
     const row = lines.find((line) => line.startsWith(`| ${index + 1} | ${ai103Texts.en.capabilities[capability.id].name} |`));
     expect(row, capability.id).toBeTruthy();
+    expect(row).toContain(`| ${ai103Texts.en.groups[capability.group]} |`);
     expect(row).toContain(`\`${capability.local.status}\``);
-    expect(row).toContain(capability.azure ? `\`${capability.azure.status}\`` : "not applicable");
+    expect(row).toContain(capability.azure ? `\`${capability.azure.status}\`` : "no adapter");
     expect(row).toContain(capability.local.lastTested ?? "—");
     expect(row).toContain(capability.check ? `\`${capability.check}\`` : "command only");
   });
   const summary = summarize(manifest.capabilities);
   expect(lines.join("\n")).toContain(
-    `Counts: ${summary["verified-local"]} verified locally, ${summary["verified-azure"]} verified on Azure, ${summary["configured-mocked"]} configured or mocked`,
+    `Counts: ${summary["local-real-deterministic"]} local real or deterministic`,
   );
+  expect(lines.join("\n")).toContain(`${summary["local-mock-configured"]} local mock, ${summary["azure-ready"]} Azure ready, ${summary["azure-verified"]} Azure verified`);
 });

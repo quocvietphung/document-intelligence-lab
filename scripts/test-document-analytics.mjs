@@ -16,7 +16,7 @@ export async function auditDocumentAnalytics({request,check,bearer,web,api}){
   const requestId=randomUUID();const created=await send(etl,{requestId,caseVersion:before.version,consent:true});check(created.status===202,'Current ETL snapshot queued');const receipt=await created.json();
   let run;const deadline=Date.now()+180000;
   while(Date.now()<deadline){const state=await get(etl);run=state.runs.find(r=>r.id===receipt.id);assert.ok(!['FAILED','STALE'].includes(run?.status),run?.errorCode);if(run?.status==='COMPLETE')break;await new Promise(resolve=>setTimeout(resolve,1500));}
-  check(run?.status==='COMPLETE'&&run.result.method==='document-medallion-v3','Versioned analytical tables completed through real Docker ETL/dbt');
+  check(run?.status==='COMPLETE'&&run.result.method==='document-medallion-v4','Versioned analytical tables completed through real Docker ETL/dbt');
   for(const name of ['document-facts','field-observations','invoice-lines','quality-findings']){
     const exported=await request(etl+`/${run.id}/${name}`,{headers:bearer});check(exported.ok&&Buffer.from(await exported.arrayBuffer()).subarray(0,4).toString()==='PAR1',`${name}: protected export contains actual Parquet bytes`);
   }

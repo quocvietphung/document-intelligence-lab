@@ -19,7 +19,7 @@ describe("AI-103 lab texts", () => {
     for (const text of Object.values(ai103Texts)) {
       for (const id of capabilityIds) {
         const copy = text.capabilities[id];
-        expect([copy.name, copy.useCase, copy.pipeline, copy.localEquivalent].every((value) => value.trim().length > 0), id).toBe(true);
+        expect([copy.name, copy.useCase, copy.pipeline, copy.localEquivalent, copy.input, copy.azureImplementation].every((value) => value.trim().length > 0), id).toBe(true);
         expect(copy.limits.length, id).toBeGreaterThan(0);
       }
       for (const status of statuses) expect(text.statuses[status]).toBeTruthy();
@@ -33,16 +33,16 @@ describe("AI-103 lab texts", () => {
   it("state that the counts are capabilities, not live services", () => {
     expect(ai103Texts.en.kpiNote).toBe("Capability count, not the number of live Azure services or model calls.");
     expect(ai103Texts.en.kpi).toEqual({
-      "verified-local": "Verified locally",
-      "verified-azure": "Verified on Azure",
-      "configured-mocked": "Configured or mocked",
-      "blocked-unsupported": "Blocked or unsupported",
+      "local-real-deterministic": "Local real/deterministic",
+      "local-mock-configured": "Local mock/configured",
+      "azure-ready": "Azure ready",
+      "azure-verified": "Azure verified",
     });
   });
 
   it("make no unproven claims", () => {
     const all = JSON.stringify(ai103Texts);
-    for (const banned of [/production[- ]ready/i, /hoàn hảo/i, /\bperfect\b/i, /AI-powered/i, /KI-gestützt/i]) expect(all).not.toMatch(banned);
+    for (const banned of [/production[- ]ready/i, /hoàn hảo/i, /\bperfect\b/i, /AI-powered/i, /KI-gestützt/i, /fully verified/i]) expect(all).not.toMatch(banned);
     // Confidence and retrieval ranks are never called accuracy.
     expect(all).not.toMatch(/accuracy (of|for) (OCR|hit@|citation)/i);
   });

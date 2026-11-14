@@ -1,0 +1,19 @@
+{
+  "version": "contractor-dossier-evaluation-v1",
+  "_comment": "FIKTIVE DATEN. Labelled cases for the fictional contractor dossier (services/credit-api/src/main/resources/contractor-dossier/manifest.json). A case runs only when its documents are in the run; otherwise the KPI is reported as not run.",
+  "retrieval": [
+    {"id": "approved", "query": "Genehmigte Gesamtvergütung brutto Nachtrag genehmigt", "k": 5,
+     "requires": ["nachtrag-n01-wv-2026-031.pdf"], "expected": {"document": "nachtrag-n01-wv-2026-031.pdf", "page": 2}},
+    {"id": "invoice", "query": "Rechnungsbetrag brutto Rechnungssumme Umsatzsteuer", "k": 5,
+     "requires": ["baurechnung-rg-2026-0457.pdf"], "expected": {"document": "baurechnung-rg-2026-0457.pdf", "page": 2}},
+    {"id": "acceptance", "query": "Abnahmeprotokoll Abnahmeergebnis abgenommen Umfang Mängel", "k": 5,
+     "requires": ["abnahmeprotokoll-ap-2026-019.pdf"], "expected": {"document": "abnahmeprotokoll-ap-2026-019.pdf", "page": 1}},
+    {"id": "payment", "query": "Zahlungsnachweis Zahlung bezahlt überwiesen Zahlungseingang", "k": 5,
+     "requires": ["baurechnung-rg-2026-0457.pdf"], "expected": null,
+     "confirmationPattern": "(bezahlt|überwiesen|zahlungseingang)\\s+am\\s+\\d"}
+  ],
+  "citations": [
+    {"id": "approved-amount", "value": "48.780,00", "document": "nachtrag-n01-wv-2026-031.pdf", "page": 2},
+    {"id": "invoice-amount", "value": "49.980,00", "document": "baurechnung-rg-2026-0457.pdf", "page": 2}
+  ]
+}

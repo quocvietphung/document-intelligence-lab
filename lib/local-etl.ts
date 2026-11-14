@@ -25,5 +25,6 @@ const issueLabels={
   DUPLICATE_FIELD:['Conflicting field candidates — excluded from Gold','Widersprüchliche Feldkandidaten — nicht in Gold','Trường có nhiều giá trị — không đưa vào Gold'],
   EMPTY_VALUE:['Empty extracted value','Leerer extrahierter Wert','Giá trị trích xuất trống'],
   SOURCE_PAGE_MISSING:['Source page unavailable','Quellseite nicht verfügbar','Chưa có trang nguồn'],
+  UNTRUSTED_INSTRUCTION_PAGE:['Page contains an instruction to an AI — kept out of Gold','Seite enthält eine Anweisung an eine KI — nicht in Gold','Trang chứa chỉ dẫn cho AI — không đưa vào Gold'],
 };
 export function etlIssueMessage(code:string,locale:string){return issueLabels[code as keyof typeof issueLabels]?.[locale==='vi'?2:locale==='de'?1:0]||code;}

@@ -200,6 +200,10 @@ if(process.env.TEST_INTEGRATIONS==='1') {
   const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
   check(ended.status===204,'Integration verification session logged out');console.log(`${checks} local integration acceptance checks passed.`);process.exit(0);
 }
+if(process.env.TEST_CONTROL_TOWER==='1') {
+  const {auditControlTower}=await import('./test-control-tower.mjs');await auditControlTower({request:localRequest,check,bearer,web,api});
+  console.log(`${checks} Control Tower checks passed.`);process.exit(0);
+}
 if(process.env.TEST_CONTRACTOR_PRECHECK==='1') {
   const {auditContractorPrecheck}=await import('./test-contractor-precheck.mjs');await auditContractorPrecheck({request:localRequest,check,bearer,web,api});
   const ended=await request(metadata.end_session_endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,refresh_token:tokens.refresh_token})});
