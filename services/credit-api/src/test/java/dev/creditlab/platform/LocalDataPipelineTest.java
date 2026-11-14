@@ -14,7 +14,8 @@ class LocalDataPipelineTest {
   @Test void oldMoneyNormalizationReceiptsAreNotReusedAsCurrent(){
     assertThat(LocalDataPipeline.currentMethod(Map.of("result",Map.of("method","document-medallion-v1")))).isFalse();
     assertThat(LocalDataPipeline.currentMethod(Map.of("result",Map.of("method","document-medallion-v2")))).isFalse();
-    assertThat(LocalDataPipeline.currentMethod(Map.of("result",Map.of("method","document-medallion-v3")))).isTrue();
+    assertThat(LocalDataPipeline.currentMethod(Map.of("result",Map.of("method","document-medallion-v3")))).isFalse();
+    assertThat(LocalDataPipeline.currentMethod(Map.of("result",Map.of("method","document-medallion-v4")))).isTrue();
     assertThat(LocalDataPipeline.currentMethod(Map.of())).isFalse();
   }
   @Test void disabledPipelineCannotQueueAndNeverCreatesSampleScores(){

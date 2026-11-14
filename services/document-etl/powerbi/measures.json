@@ -1,0 +1,30 @@
+{
+  "version": "control-tower-v1",
+  "note": "DAX for Power BI Desktop. Production pages should filter measurement_mode <> \"simulated\". Names match the Next.js Control Tower KPI keys.",
+  "measures": [
+    {"key": "success_rate", "name": "Success rate", "table": "fact_ai_run", "mode": "measured",
+     "dax": "DIVIDE(CALCULATE(COUNTROWS(fact_ai_run), fact_ai_run[status] = \"COMPLETE\"), COUNTROWS(fact_ai_run))"},
+    {"key": "average_stage_latency_ms", "name": "Average stage latency (ms)", "table": "fact_pipeline_stage", "mode": "measured",
+     "dax": "AVERAGE(fact_pipeline_stage[latency_ms])"},
+    {"key": "human_correction_rate", "name": "Human correction rate", "table": "fact_human_correction", "mode": "measured",
+     "dax": "DIVIDE(CALCULATE(COUNTROWS(fact_human_correction), fact_human_correction[measurement_mode] = \"measured\"), CALCULATE(COUNTROWS(fact_field_observation), fact_field_observation[measurement_mode] = \"measured\"))"},
+    {"key": "ocr_disagreement_rate", "name": "OCR disagreement rate", "table": "fact_field_observation", "mode": "measured",
+     "dax": "DIVIDE(CALCULATE(COUNTROWS(fact_field_observation), NOT ISBLANK(fact_field_observation[reviewed_value]), fact_field_observation[reviewed_value] <> fact_field_observation[raw_value]), CALCULATE(COUNTROWS(fact_field_observation), NOT ISBLANK(fact_field_observation[reviewed_value])))"},
+    {"key": "citation_document_accuracy", "name": "Citation document accuracy", "table": "fact_citation_evaluation", "mode": "deterministic",
+     "dax": "DIVIDE(CALCULATE(COUNTROWS(fact_citation_evaluation), fact_citation_evaluation[document_match] = TRUE()), COUNTROWS(fact_citation_evaluation))"},
+    {"key": "citation_page_accuracy", "name": "Citation page accuracy", "table": "fact_citation_evaluation", "mode": "deterministic",
+     "dax": "DIVIDE(CALCULATE(COUNTROWS(fact_citation_evaluation), fact_citation_evaluation[page_match] = TRUE()), COUNTROWS(fact_citation_evaluation))"},
+    {"key": "citation_bbox_accuracy", "name": "Citation bounding-box accuracy", "table": "fact_citation_evaluation", "mode": "deterministic",
+     "dax": "DIVIDE(CALCULATE(COUNTROWS(fact_citation_evaluation), fact_citation_evaluation[bbox_match] = TRUE()), COUNTROWS(fact_citation_evaluation))"},
+    {"key": "recall_at_k", "name": "Recall@K", "table": "fact_retrieval_evaluation", "mode": "deterministic",
+     "dax": "CALCULATE(AVERAGE(fact_retrieval_evaluation[recall_at_k]), fact_retrieval_evaluation[expected_abstain] = FALSE())"},
+    {"key": "hit_at_k", "name": "Hit@K", "table": "fact_retrieval_evaluation", "mode": "deterministic",
+     "dax": "DIVIDE(CALCULATE(COUNTROWS(fact_retrieval_evaluation), fact_retrieval_evaluation[hit_at_k] = TRUE()), CALCULATE(COUNTROWS(fact_retrieval_evaluation), fact_retrieval_evaluation[expected_abstain] = FALSE()))"},
+    {"key": "mrr", "name": "MRR", "table": "fact_retrieval_evaluation", "mode": "deterministic",
+     "dax": "CALCULATE(AVERAGE(fact_retrieval_evaluation[reciprocal_rank]), fact_retrieval_evaluation[expected_abstain] = FALSE())"},
+    {"key": "estimated_cost_per_document_eur", "name": "Estimated cost per document (EUR)", "table": "fact_ai_cost", "mode": "configured",
+     "dax": "DIVIDE(SUM(fact_ai_cost[estimated_cost]), DISTINCTCOUNT(fact_document_extraction[document_id]))"},
+    {"key": "prompt_injection_blocked_rate", "name": "Prompt-injection blocked rate", "table": "fact_document_extraction", "mode": "deterministic",
+     "dax": "Computed in the ETL summary from silver_fields: share of fields on pages with an embedded instruction that are kept out of reviewed Gold. Import fact_document_extraction[instruction_pages] to show where instructions were found."}
+  ]
+}

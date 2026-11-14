@@ -1,4 +1,4 @@
-import type {Bucket, CapabilityId, Status} from "./model";
+import type {Bucket, CapabilityId, GroupId, Status} from "./model";
 
 export type Ai103Locale = "en" | "de" | "vi";
 export function ai103Locale(value: string): Ai103Locale {
@@ -8,7 +8,7 @@ export function ai103Locale(value: string): Ai103Locale {
 export const decisionCriteria = ["data", "latency", "cost", "governance", "local"] as const;
 export type DecisionCriterion = (typeof decisionCriteria)[number];
 export type DecisionRow = {choice: string; use: string} & Record<DecisionCriterion, string>;
-export type CapabilityCopy = {name: string; useCase: string; pipeline: string; localEquivalent: string; limits: string[]};
+export type CapabilityCopy = {name: string; useCase: string; pipeline: string; localEquivalent: string; input: string; azureImplementation: string; limits: string[]};
 
 export type Ai103Text = {
   pageTitle: string;
@@ -45,6 +45,14 @@ export type Ai103Text = {
     failed: string; notRun: string; heading: string; cases: string; at: string; caseName: string; result: string;
   };
   statuses: Record<Status, string>;
+  groups: Record<GroupId, string>;
+  groupsLabel: string;
+  allResults: string;
+  noAzure: string;
+  input: string;
+  azureImplementation: string;
+  learn: string;
+  azureDisabled: string;
   parts: Record<string, string>;
   decision: {title: string; intro: string; columns: Record<"choice" | "use" | DecisionCriterion, string>; rows: DecisionRow[]};
   capabilities: Record<CapabilityId, CapabilityCopy>;
@@ -62,13 +70,13 @@ const en: Ai103Text = {
   summaryOpen: "Open AI-103 Lab",
   summaryCatalog: "AI features and engines: {page}",
   kpi: {
-    "verified-local": "Verified locally",
-    "verified-azure": "Verified on Azure",
-    "configured-mocked": "Configured or mocked",
-    "blocked-unsupported": "Blocked or unsupported",
+    "local-real-deterministic": "Local real/deterministic",
+    "local-mock-configured": "Local mock/configured",
+    "azure-ready": "Azure ready",
+    "azure-verified": "Azure verified",
   },
   kpiNote: "Capability count, not the number of live Azure services or model calls.",
-  kpiRule: "Each capability is counted once, under its strongest evidence.",
+  kpiRule: "Local and Azure counts overlap: a capability can run locally and also have an Azure adapter. Azure ready means tested at a mocked HTTP boundary, not live-tested.",
   search: "Search capabilities",
   status: "Status",
   allStatuses: "All statuses",
@@ -119,14 +127,21 @@ const en: Ai103Text = {
     result: "Result",
   },
   statuses: {
-    "verified-local": "Verified locally",
-    "verified-azure": "Verified on Azure",
-    configured: "Configured",
-    mock: "Mock",
-    "azure-not-run": "Azure not run",
-    blocked: "Blocked",
-    "not-supported": "Not supported",
+    "local-real": "Local real",
+    "local-deterministic": "Local deterministic",
+    "local-mock": "Local mock",
+    "not-supported-locally": "Not supported locally",
+    "azure-ready": "Azure ready · not live-tested",
+    "azure-live-verified": "Azure live-verified",
   },
+  groups: {ingest: "Ingest & Understand", search: "Search & Reason", agents: "Agents & Generative AI", safety: "Safety & Governance", operate: "Operate & Evaluate"},
+  groupsLabel: "Capability groups",
+  allResults: "Matches in all groups",
+  noAzure: "No Azure adapter",
+  input: "Input",
+  azureImplementation: "Azure implementation",
+  learn: "Microsoft Learn",
+  azureDisabled: "Disabled: Azure opt-in is off. Not live-tested.",
   parts: {
     "text-to-image": "Text to image",
     "image-to-image": "Image to image",
@@ -201,6 +216,8 @@ const en: Ai103Text = {
       useCase: "Find the contract, read the change-order value and compute the difference for the controller, with read-only tools.",
       pipeline: "Find contract → read change order → compute variance → check evidence → draft for review",
       localEquivalent: "Lab agent with read-only tools (scripted or local Ollama planner)",
+      input: "Case with contract WV-2026-031 and change order N-01; read-only tool calls",
+      azureImplementation: "Foundry agent with an MCP tool server exposing the same read-only tools (not built)",
       limits: ["No timeout or retry test yet.", "Foundry is not called; the tool schema is checked only through the local agent."],
     },
     security: {
@@ -208,6 +225,8 @@ const en: Ai103Text = {
       useCase: "A user sees only their own tenant and case; instructions inside a PDF never grant access or tools.",
       pipeline: "Keycloak sign-in → token audience and tenant check → role check → case access → read or write",
       localEquivalent: "Keycloak, Spring Security and the tenant and case checks in the credit API",
+      input: "Bearer tokens with a wrong audience, no tenant or a foreign tenant; a foreign case id",
+      azureImplementation: "Microsoft Entra ID tokens, managed identity and RBAC per resource (documented, not built)",
       limits: ["Entra ID, Managed Identity, RBAC and private networking are documented, not tested in Azure.", "Browser sign-in was checked on port 3001 only."],
     },
     "image-generation": {
@@ -215,6 +234,8 @@ const en: Ai103Text = {
       useCase: "Prepare an illustration or a masked edit for a review file, never as evidence.",
       pipeline: "Prompt or source image and mask → request check (mode, MIME type, size, mask) → deterministic stub",
       localEquivalent: "Request contract and stub; no image model is installed",
+      input: "A prompt and foto-f-01.png (1200×800 PNG) with a mask",
+      azureImplementation: "Azure OpenAI image generation (no adapter in this pass)",
       limits: [
         "No model is installed; the stub never returns an image.",
         "Video generation is not supported on this hardware.",
@@ -226,6 +247,8 @@ const en: Ai103Text = {
       useCase: "Find the page that answers a pre-check question across the dossier.",
       pipeline: "Query → BM25 ranking over page texts → expected page first → document and page kept for the citation",
       localEquivalent: "BM25 over the fixture pages here; Qdrant, BM25 and reranking in the credit API",
+      input: "Pre-check queries over the four dossier PDFs, for example \"Genehmigte Gesamtvergütung brutto\"",
+      azureImplementation: "Azure AI Search index with the same documents; searchQuery adapter",
       limits: [
         "The hybrid query body is not verified against the current API reference.",
         "The page-number field of Azure normalized images is not verified.",
@@ -237,6 +260,8 @@ const en: Ai103Text = {
       useCase: "See how long each step took without logging tokens, document text, full prompts or personal data.",
       pipeline: "Upload → ClamAV → OCR → indexing → retrieval → Nova (request ids and lab spans today)",
       localEquivalent: "Request trace filter in the credit API; OpenTelemetry spans and a local collector in the lab",
+      input: "One pre-check run and one ETL run of the dossier",
+      azureImplementation: "Application Insights through the OpenTelemetry exporter (configured, nothing exported)",
       limits: [
         "No single trace yet from upload through ClamAV, OCR, indexing, retrieval and Nova.",
         "Step latency on this page comes from a recorded pre-check run, not from every upload.",
@@ -248,6 +273,8 @@ const en: Ai103Text = {
       useCase: "Take a dossier through retrieve, validate, calculate, draft and human review, for a complete dossier and one with missing evidence.",
       pipeline: "Retrieve → validate → calculate → draft → human review; no tool approves, pays or sends",
       localEquivalent: "Lab agent workflow and the read-only pre-check API",
+      input: "The complete dossier and the dossier without payment evidence",
+      azureImplementation: "Foundry Agent Service with the same tools and approval rule (not built)",
       limits: [
         "Foundry Agent Service is not created or called.",
         "The lab has no state-changing tool, so confirmation is enforced by the absence of write tools, not by a live approval dialog.",
@@ -258,6 +285,8 @@ const en: Ai103Text = {
       useCase: "Hear a site note, check the invoice number and amount, and read the answer aloud.",
       pipeline: "Audio → transcript → check invoice code, amount and currency → Nova → voice",
       localEquivalent: "Synthetic WAV with a reference transcript; the browser voice on the device",
+      input: "site-note-invoice.wav (synthetic German site note) and its reference transcript",
+      azureImplementation: "Azure AI Speech fast transcription and SSML synthesis; lab adapter",
       limits: [
         "German only; English and Vietnamese audio are not tested.",
         "The transcript is a fixture, not speech recognition output.",
@@ -269,6 +298,8 @@ const en: Ai103Text = {
       useCase: "Answer from the dossier with the page and passage that support it, or say that the evidence is missing.",
       pipeline: "Question → retrieval → constrained answer with source labels → the server writes the authorised source id",
       localEquivalent: "Qdrant, BM25 and reranking in the credit API with local Nova",
+      input: "A question with an answer (approved value) and the payment question without evidence",
+      azureImplementation: "Azure AI Search retrieval and Azure OpenAI under the same answer contract",
       limits: [
         "The benchmark uses native text of nine public PDFs, not OCR or Docling output.",
         "Labels were prepared by an agent from the PDF text, not by independent human annotators.",
@@ -280,6 +311,8 @@ const en: Ai103Text = {
       useCase: "Choose the Azure or local service for each part of the dossier work, with the trade-offs written down.",
       pipeline: "Compare data, latency, cost, governance and local capability → choose per workload",
       localEquivalent: "The decision matrix on this page; no service is called",
+      input: "Six workload choices with five criteria each",
+      azureImplementation: "Not an Azure service: a decision aid",
       limits: ["The matrix is a decision aid; it calls no service.", "Prices change; the cost column states relative order, not a quote."],
     },
     "content-understanding": {
@@ -287,6 +320,8 @@ const en: Ai103Text = {
       useCase: "Turn a dossier with a PDF, photos and audio metadata into one checked JSON record.",
       pipeline: "Documented request → analyzer → structured JSON → schema check",
       localEquivalent: "Request-shape check here; the lab's media and speech checks for the photo and audio parts",
+      input: "Request for bauauftrag-wv-2026-031.pdf with mimeType application/pdf",
+      azureImplementation: "Azure AI Content Understanding analyzer; contentUnderstandingSubmit adapter",
       limits: [
         "The sample is a request shape, not an analyzer result.",
         "The multimodal case runs through the lab's media and speech checks, not through Content Understanding.",
@@ -297,6 +332,8 @@ const en: Ai103Text = {
       useCase: "Start the lab with only the services a task needs, and keep CI from deploying.",
       pipeline: "Compose files → health checks → CI build and test; no deployment",
       localEquivalent: "Docker Compose with a hardened Ollama container and a health check on every service",
+      input: "The default Compose stack and its health checks",
+      azureImplementation: "Azure VM or container deployment scripts (not run in this pass)",
       limits: [
         "No optimisation was made in this pass, so the before and after resource figures are the same.",
         "There is no image-generation profile; it would be added only with your consent.",
@@ -307,6 +344,8 @@ const en: Ai103Text = {
       useCase: "Answer a question about a dossier in a constrained format that a person can check.",
       pipeline: "Evidence excerpts → schema-constrained JSON → render with authorised citations → refusal when the contract fails",
       localEquivalent: "Nova through Ollama (qwen3 4B) with the same contract as the Azure OpenAI provider",
+      input: "A dossier question plus the PDF with a self-approval instruction",
+      azureImplementation: "Azure OpenAI with the same JSON-schema contract; openAiStructuredChat adapter",
       limits: [
         "Claim-level amount check in the lab: 2 of 3 criteria pass (one source label per segment).",
         "Azure OpenAI is not called; there is no automatic fallback from local to cloud.",
@@ -317,6 +356,8 @@ const en: Ai103Text = {
       useCase: "Link each acceptance photo to the acceptance report and the page that mentions it.",
       pipeline: "Photo → header metadata → caption → link to the dossier → human review",
       localEquivalent: "PNG header reading and caption mapping; no image model",
+      input: "foto-f-01.png, foto-f-02.png and the acceptance report pages",
+      azureImplementation: "Azure AI Vision image analysis (no adapter in this pass)",
       limits: ["Metadata and source mapping only; no object detection or image analysis is claimed.", "Each photo still needs human review."],
     },
     "language-pii": {
@@ -324,6 +365,8 @@ const en: Ai103Text = {
       useCase: "Sort contractor e-mails and mask personal data before any model sees them, keeping invoice, project and amount values.",
       pipeline: "E-mail → classify → mask → check that no identifier remains → human review",
       localEquivalent: "Regular expressions and a list of known names",
+      input: "Eight fictional contractor e-mails (emails.json)",
+      azureImplementation: "Azure AI Language PII detection and classification (no adapter in this pass)",
       limits: [
         "Regex and name list, not Azure AI Language.",
         "Names outside the fixture list may be missed.",
@@ -335,6 +378,8 @@ const en: Ai103Text = {
       useCase: "Translate a German contractor e-mail for an English reader without changing RG-2026-0457, amounts, dates or project codes.",
       pipeline: "German source → translation → identifiers, amounts and currency compared → review",
       localEquivalent: "Human reference translation with the preservation check",
+      input: "German e-mail about RG-2026-0457 and its English reference",
+      azureImplementation: "Azure AI Translator; translateAndCheck adapter with the same preservation rule",
       limits: ["Only the human reference is checked; no translation model ran.", "German to Vietnamese and transliteration are not covered."],
     },
     "document-intelligence": {
@@ -342,6 +387,8 @@ const en: Ai103Text = {
       useCase: "Extract fields, tables and page positions from the dossier PDFs and send doubtful values to review.",
       pipeline: "PDF → Docling layout, tables and OCR → field mapping → OCR text compared with the source → review",
       localEquivalent: "Docling in the internal document-parser container",
+      input: "Change order page 2 and an OCR sample that reads 48.730,00",
+      azureImplementation: "Azure AI Document Intelligence prebuilt-layout; documentIntelligenceSubmit adapter",
       limits: [
         "Field, table-cell and bounding-box match are not measured against labelled ground truth.",
         "OCR confidence is never shown as accuracy.",
@@ -352,6 +399,8 @@ const en: Ai103Text = {
       useCase: "Treat instructions found in PDFs, photos or e-mails as data: no self-approval and no new permissions.",
       pipeline: "Document text → detect instruction → quarantine from model context → no tool call → audit event",
       localEquivalent: "Page quarantine in the credit API and the lab's instruction guard",
+      input: "baurechnung-rg-2026-0457-mit-anweisung.pdf page 2 and two instruction e-mails",
+      azureImplementation: "Azure AI Content Safety Prompt Shields (no adapter in this pass)",
       limits: [
         "Prompt Shields and Azure AI Content Safety are not called.",
         "Instructions inside images are not detected; only extracted text is checked.",
@@ -363,6 +412,8 @@ const en: Ai103Text = {
       useCase: "Measure extraction, retrieval, citation and abstention separately, and say which metrics are deterministic.",
       pipeline: "Fixtures → deterministic metrics → model-based metrics marked as not run",
       localEquivalent: "Deterministic metric functions over the fixture dossier and a recorded pre-check run",
+      input: "A recorded pre-check run and the labelled dossier values",
+      azureImplementation: "Azure AI Foundry evaluators on the same labelled cases (not built)",
       limits: [
         "Classification precision, recall and F1 were not run in this pass.",
         "Groundedness judged by a model was not run.",
@@ -384,13 +435,13 @@ const de: Ai103Text = {
   summaryOpen: "AI-103 Lab öffnen",
   summaryCatalog: "KI-Funktionen und Modelle: {page}",
   kpi: {
-    "verified-local": "Lokal verifiziert",
-    "verified-azure": "Auf Azure verifiziert",
-    "configured-mocked": "Konfiguriert oder Mock",
-    "blocked-unsupported": "Blockiert oder nicht unterstützt",
+    "local-real-deterministic": "Lokal echt/deterministisch",
+    "local-mock-configured": "Lokal Mock/konfiguriert",
+    "azure-ready": "Azure bereit",
+    "azure-verified": "Azure verifiziert",
   },
   kpiNote: "Anzahl der Fähigkeiten, nicht die Zahl der Live-Azure-Dienste oder Modellaufrufe.",
-  kpiRule: "Jede Fähigkeit zählt einmal, beim stärksten Nachweis.",
+  kpiRule: "Lokale und Azure-Zahlen überschneiden sich: Eine Fähigkeit kann lokal laufen und zugleich einen Azure-Adapter haben. „Azure bereit“ heißt: an einer simulierten HTTP-Grenze getestet, nicht live getestet.",
   search: "Fähigkeiten suchen",
   status: "Status",
   allStatuses: "Alle Status",
@@ -441,14 +492,21 @@ const de: Ai103Text = {
     result: "Ergebnis",
   },
   statuses: {
-    "verified-local": "Lokal verifiziert",
-    "verified-azure": "Auf Azure verifiziert",
-    configured: "Konfiguriert",
-    mock: "Mock",
-    "azure-not-run": "Azure nicht ausgeführt",
-    blocked: "Blockiert",
-    "not-supported": "Nicht unterstützt",
+    "local-real": "Lokal echt",
+    "local-deterministic": "Lokal deterministisch",
+    "local-mock": "Lokal Mock",
+    "not-supported-locally": "Lokal nicht unterstützt",
+    "azure-ready": "Azure bereit · nicht live getestet",
+    "azure-live-verified": "Azure live verifiziert",
   },
+  groups: {ingest: "Erfassen & Verstehen", search: "Suchen & Schließen", agents: "Agenten & generative KI", safety: "Sicherheit & Governance", operate: "Betreiben & Bewerten"},
+  groupsLabel: "Fähigkeitsgruppen",
+  allResults: "Treffer in allen Gruppen",
+  noAzure: "Kein Azure-Adapter",
+  input: "Eingabe",
+  azureImplementation: "Azure-Umsetzung",
+  learn: "Microsoft Learn",
+  azureDisabled: "Deaktiviert: Azure-Opt-in ist aus. Nicht live getestet.",
   parts: {
     "text-to-image": "Text zu Bild",
     "image-to-image": "Bild zu Bild",
@@ -523,6 +581,8 @@ const de: Ai103Text = {
       useCase: "Vertrag finden, Nachtragswert lesen und die Differenz für das Controlling berechnen, nur mit lesenden Werkzeugen.",
       pipeline: "Vertrag finden → Nachtrag lesen → Differenz berechnen → Belege prüfen → Entwurf zur Prüfung",
       localEquivalent: "Labor-Agent mit lesenden Werkzeugen (geskriptet oder lokaler Ollama-Planer)",
+      input: "Vorgang mit Bauauftrag WV-2026-031 und Nachtrag N-01; nur lesende Werkzeugaufrufe",
+      azureImplementation: "Foundry-Agent mit MCP-Werkzeugserver und denselben lesenden Werkzeugen (nicht gebaut)",
       limits: ["Noch kein Test für Timeout oder Wiederholung.", "Foundry wird nicht aufgerufen; das Werkzeugschema wird nur über den lokalen Agenten geprüft."],
     },
     security: {
@@ -530,6 +590,8 @@ const de: Ai103Text = {
       useCase: "Ein Nutzer sieht nur den eigenen Mandanten und Vorgang; Anweisungen in einem PDF geben nie Zugriff oder Werkzeuge frei.",
       pipeline: "Keycloak-Anmeldung → Audience- und Mandantenprüfung → Rollenprüfung → Vorgangszugriff → Lesen oder Schreiben",
       localEquivalent: "Keycloak, Spring Security und die Mandanten- und Vorgangsprüfungen der Credit-API",
+      input: "Bearer-Tokens mit falscher Audience, ohne Mandant oder mit fremdem Mandanten; eine fremde Vorgangs-ID",
+      azureImplementation: "Microsoft-Entra-ID-Tokens, Managed Identity und RBAC je Ressource (dokumentiert, nicht gebaut)",
       limits: ["Entra ID, Managed Identity, RBAC und private Netzwerke sind dokumentiert, aber nicht in Azure geprüft.", "Die Browseranmeldung wurde nur auf Port 3001 geprüft."],
     },
     "image-generation": {
@@ -537,6 +599,8 @@ const de: Ai103Text = {
       useCase: "Eine Illustration oder maskierte Bearbeitung für eine Prüfakte vorbereiten, nie als Beleg.",
       pipeline: "Prompt oder Quellbild und Maske → Anfrageprüfung (Modus, MIME-Typ, Größe, Maske) → deterministischer Stub",
       localEquivalent: "Anfragevertrag und Stub; kein Bildmodell installiert",
+      input: "Ein Prompt und foto-f-01.png (1200×800 PNG) mit Maske",
+      azureImplementation: "Bildgenerierung mit Azure OpenAI (kein Adapter in diesem Durchgang)",
       limits: [
         "Kein Modell installiert; der Stub liefert nie ein Bild.",
         "Videoerzeugung wird auf dieser Hardware nicht unterstützt.",
@@ -548,6 +612,8 @@ const de: Ai103Text = {
       useCase: "Die Seite finden, die eine Vorprüfungsfrage im ganzen Vorgang beantwortet.",
       pipeline: "Anfrage → BM25-Ranking über Seitentexte → erwartete Seite zuerst → Dokument und Seite für die Quelle",
       localEquivalent: "BM25 über die Fixture-Seiten hier; Qdrant, BM25 und Reranking in der Credit-API",
+      input: "Vorprüfungsanfragen über die vier Vorgangs-PDFs, zum Beispiel „Genehmigte Gesamtvergütung brutto“",
+      azureImplementation: "Azure-AI-Search-Index mit denselben Dokumenten; Adapter searchQuery",
       limits: [
         "Der Body der Hybridabfrage ist nicht gegen die aktuelle API-Referenz geprüft.",
         "Das Seitenzahlfeld normalisierter Azure-Bilder ist nicht geprüft.",
@@ -559,6 +625,8 @@ const de: Ai103Text = {
       useCase: "Sehen, wie lange jeder Schritt dauerte, ohne Tokens, Dokumenttext, vollständige Prompts oder personenbezogene Daten zu protokollieren.",
       pipeline: "Upload → ClamAV → OCR → Indexierung → Suche → Nova (heute Request-IDs und Labor-Spans)",
       localEquivalent: "Request-Trace-Filter in der Credit-API; OpenTelemetry-Spans und lokaler Collector im Labor",
+      input: "Ein Vorprüfungslauf und ein ETL-Lauf des Vorgangs",
+      azureImplementation: "Application Insights über den OpenTelemetry-Exporter (konfiguriert, nichts exportiert)",
       limits: [
         "Noch kein durchgehender Trace von Upload über ClamAV, OCR, Indexierung und Suche bis Nova.",
         "Die Schrittlatenz auf dieser Seite stammt aus einem erfassten Vorprüfungslauf, nicht aus jedem Upload.",
@@ -570,6 +638,8 @@ const de: Ai103Text = {
       useCase: "Einen Vorgang durch Suchen, Prüfen, Rechnen, Entwerfen und manuelle Prüfung führen, vollständig und mit fehlendem Nachweis.",
       pipeline: "Suchen → prüfen → rechnen → entwerfen → manuelle Prüfung; kein Werkzeug gibt frei, zahlt oder sendet",
       localEquivalent: "Ablauf des Labor-Agenten und die lesende Vorprüfungs-API",
+      input: "Der vollständige Vorgang und der Vorgang ohne Zahlungsnachweis",
+      azureImplementation: "Foundry Agent Service mit denselben Werkzeugen und derselben Freigaberegel (nicht gebaut)",
       limits: [
         "Foundry Agent Service ist weder angelegt noch aufgerufen.",
         "Das Labor hat kein zustandsänderndes Werkzeug; die Bestätigung wird durch fehlende Schreibwerkzeuge erzwungen, nicht durch einen Live-Freigabedialog.",
@@ -580,6 +650,8 @@ const de: Ai103Text = {
       useCase: "Eine Baustellennotiz anhören, Rechnungsnummer und Betrag prüfen und die Antwort vorlesen.",
       pipeline: "Audio → Transkript → Rechnungsnummer, Betrag und Währung prüfen → Nova → Stimme",
       localEquivalent: "Synthetische WAV-Datei mit Referenztranskript; die Browserstimme auf dem Gerät",
+      input: "site-note-invoice.wav (synthetische deutsche Baustellennotiz) und ihr Referenztranskript",
+      azureImplementation: "Azure AI Speech: schnelle Transkription und SSML-Synthese; Labor-Adapter",
       limits: [
         "Nur Deutsch; englisches und vietnamesisches Audio ist nicht geprüft.",
         "Das Transkript ist ein Fixture, keine Spracherkennung.",
@@ -591,6 +663,8 @@ const de: Ai103Text = {
       useCase: "Aus dem Vorgang mit der stützenden Seite und Passage antworten oder sagen, dass der Nachweis fehlt.",
       pipeline: "Frage → Suche → eingeschränkte Antwort mit Quellenlabels → der Server schreibt die freigegebene Quellen-ID",
       localEquivalent: "Qdrant, BM25 und Reranking in der Credit-API mit lokalem Nova",
+      input: "Eine beantwortbare Frage (genehmigter Wert) und die Zahlungsfrage ohne Nachweis",
+      azureImplementation: "Azure-AI-Search-Abruf und Azure OpenAI mit demselben Antwortvertrag",
       limits: [
         "Der Benchmark nutzt nativen Text von neun öffentlichen PDFs, keine OCR- oder Docling-Ausgabe.",
         "Die Labels hat ein Agent aus dem PDF-Text vorbereitet, keine unabhängigen menschlichen Annotatoren.",
@@ -602,6 +676,8 @@ const de: Ai103Text = {
       useCase: "Für jeden Teil der Vorgangsarbeit den Azure- oder lokalen Dienst wählen und die Abwägung festhalten.",
       pipeline: "Daten, Latenz, Kosten, Governance und lokale Fähigkeit vergleichen → je Aufgabe wählen",
       localEquivalent: "Die Entscheidungsmatrix auf dieser Seite; kein Dienst wird aufgerufen",
+      input: "Sechs Entscheidungen mit je fünf Kriterien",
+      azureImplementation: "Kein Azure-Dienst: eine Entscheidungshilfe",
       limits: ["Die Matrix ist eine Entscheidungshilfe; sie ruft keinen Dienst auf.", "Preise ändern sich; die Kostenspalte nennt die Reihenfolge, kein Angebot."],
     },
     "content-understanding": {
@@ -609,6 +685,8 @@ const de: Ai103Text = {
       useCase: "Einen Vorgang mit PDF, Fotos und Audio-Metadaten in einen geprüften JSON-Datensatz überführen.",
       pipeline: "Dokumentierte Anfrage → Analyzer → strukturiertes JSON → Schemaprüfung",
       localEquivalent: "Prüfung der Anfrageform hier; die Medien- und Sprachprüfungen des Labors für Foto und Audio",
+      input: "Anfrage für bauauftrag-wv-2026-031.pdf mit mimeType application/pdf",
+      azureImplementation: "Azure-AI-Content-Understanding-Analyzer; Adapter contentUnderstandingSubmit",
       limits: [
         "Das Beispiel ist eine Anfrageform, kein Analyzer-Ergebnis.",
         "Der multimodale Fall läuft über die Medien- und Sprachprüfungen des Labors, nicht über Content Understanding.",
@@ -619,6 +697,8 @@ const de: Ai103Text = {
       useCase: "Das Labor nur mit den Diensten starten, die eine Aufgabe braucht, und CI nicht bereitstellen lassen.",
       pipeline: "Compose-Dateien → Health Checks → Build und Test in CI; keine Bereitstellung",
       localEquivalent: "Docker Compose mit gehärtetem Ollama-Container und Health Check für jeden Dienst",
+      input: "Der Standard-Compose-Stack und seine Health Checks",
+      azureImplementation: "Azure-VM- oder Container-Skripte (in diesem Durchgang nicht ausgeführt)",
       limits: [
         "In diesem Durchgang wurde nichts optimiert; die Ressourcenwerte vorher und nachher sind gleich.",
         "Es gibt kein Profil für Bildgenerierung; es käme nur mit deiner Zustimmung hinzu.",
@@ -629,6 +709,8 @@ const de: Ai103Text = {
       useCase: "Eine Frage zu einem Vorgang in einem eingeschränkten Format beantworten, das eine Person prüfen kann.",
       pipeline: "Belegauszüge → schemagebundenes JSON → Darstellung mit freigegebenen Quellen → Ablehnung, wenn der Vertrag verletzt ist",
       localEquivalent: "Nova über Ollama (qwen3 4B) mit demselben Vertrag wie der Azure-OpenAI-Anbieter",
+      input: "Eine Frage zum Vorgang und das PDF mit einer Selbstfreigabe-Anweisung",
+      azureImplementation: "Azure OpenAI mit demselben JSON-Schema-Vertrag; Adapter openAiStructuredChat",
       limits: [
         "Betragsprüfung je Aussage im Labor: 2 von 3 Kriterien bestanden (ein Quellenlabel pro Segment).",
         "Azure OpenAI wird nicht aufgerufen; es gibt keinen automatischen Wechsel von lokal zur Cloud.",
@@ -639,6 +721,8 @@ const de: Ai103Text = {
       useCase: "Jedes Abnahmefoto dem Abnahmeprotokoll und der Seite zuordnen, die es nennt.",
       pipeline: "Foto → Header-Metadaten → Bildunterschrift → Zuordnung zum Vorgang → manuelle Prüfung",
       localEquivalent: "Lesen des PNG-Headers und Zuordnung der Bildunterschrift; kein Bildmodell",
+      input: "foto-f-01.png, foto-f-02.png und die Seiten des Abnahmeprotokolls",
+      azureImplementation: "Bildanalyse mit Azure AI Vision (kein Adapter in diesem Durchgang)",
       limits: ["Nur Metadaten und Quellenzuordnung; keine Objekterkennung oder Bildanalyse.", "Jedes Foto braucht weiterhin eine manuelle Prüfung."],
     },
     "language-pii": {
@@ -646,6 +730,8 @@ const de: Ai103Text = {
       useCase: "Auftragnehmer-E-Mails sortieren und personenbezogene Daten maskieren, bevor ein Modell sie sieht; Rechnungs-, Projekt- und Betragswerte bleiben.",
       pipeline: "E-Mail → klassifizieren → maskieren → prüfen, dass keine Kennung bleibt → manuelle Prüfung",
       localEquivalent: "Reguläre Ausdrücke und eine Liste bekannter Namen",
+      input: "Acht fiktive Auftragnehmer-E-Mails (emails.json)",
+      azureImplementation: "PII-Erkennung und Klassifikation mit Azure AI Language (kein Adapter in diesem Durchgang)",
       limits: [
         "Regex und Namensliste, nicht Azure AI Language.",
         "Namen außerhalb der Fixture-Liste können übersehen werden.",
@@ -657,6 +743,8 @@ const de: Ai103Text = {
       useCase: "Eine deutsche Auftragnehmer-E-Mail für eine englischsprachige Person übersetzen, ohne RG-2026-0457, Beträge, Daten oder Projektcodes zu ändern.",
       pipeline: "Deutscher Text → Übersetzung → Kennungen, Beträge und Währung vergleichen → Prüfung",
       localEquivalent: "Menschliche Referenzübersetzung mit Erhaltungsprüfung",
+      input: "Deutsche E-Mail zu RG-2026-0457 und ihre englische Referenz",
+      azureImplementation: "Azure AI Translator; Adapter translateAndCheck mit derselben Erhaltungsregel",
       limits: ["Nur die menschliche Referenz wird geprüft; kein Übersetzungsmodell lief.", "Deutsch nach Vietnamesisch und Transliteration sind nicht abgedeckt."],
     },
     "document-intelligence": {
@@ -664,6 +752,8 @@ const de: Ai103Text = {
       useCase: "Felder, Tabellen und Seitenpositionen aus den Vorgangs-PDFs lesen und unsichere Werte zur Prüfung geben.",
       pipeline: "PDF → Docling-Layout, Tabellen und OCR → Feldzuordnung → OCR-Text mit der Quelle vergleichen → Prüfung",
       localEquivalent: "Docling im internen Document-Parser-Container",
+      input: "Nachtrag Seite 2 und ein OCR-Beispiel, das 48.730,00 liest",
+      azureImplementation: "Azure AI Document Intelligence prebuilt-layout; Adapter documentIntelligenceSubmit",
       limits: [
         "Feld-, Tabellenzellen- und Bounding-Box-Treffer sind nicht gegen gelabelte Referenzen gemessen.",
         "OCR-Konfidenz wird nie als Genauigkeit angezeigt.",
@@ -674,6 +764,8 @@ const de: Ai103Text = {
       useCase: "Anweisungen in PDFs, Fotos oder E-Mails als Daten behandeln: keine Selbstfreigabe und keine neuen Rechte.",
       pipeline: "Dokumenttext → Anweisung erkennen → aus dem Modellkontext isolieren → kein Werkzeugaufruf → Audit-Eintrag",
       localEquivalent: "Seitenquarantäne in der Credit-API und der Anweisungsschutz des Labors",
+      input: "baurechnung-rg-2026-0457-mit-anweisung.pdf Seite 2 und zwei E-Mails mit Anweisungen",
+      azureImplementation: "Prompt Shields von Azure AI Content Safety (kein Adapter in diesem Durchgang)",
       limits: [
         "Prompt Shields und Azure AI Content Safety werden nicht aufgerufen.",
         "Anweisungen in Bildern werden nicht erkannt; nur extrahierter Text wird geprüft.",
@@ -685,6 +777,8 @@ const de: Ai103Text = {
       useCase: "Extraktion, Suche, Quellen und Enthaltung getrennt messen und angeben, welche Metriken deterministisch sind.",
       pipeline: "Fixtures → deterministische Metriken → modellbasierte Metriken als nicht ausgeführt markiert",
       localEquivalent: "Deterministische Metrikfunktionen über den Fixture-Vorgang und einen erfassten Vorprüfungslauf",
+      input: "Ein erfasster Vorprüfungslauf und die gelabelten Vorgangswerte",
+      azureImplementation: "Azure-AI-Foundry-Evaluatoren auf denselben gelabelten Fällen (nicht gebaut)",
       limits: [
         "Precision, Recall und F1 der Klassifikation wurden in diesem Durchgang nicht ausgeführt.",
         "Eine modellbasierte Bewertung der Belegtreue wurde nicht ausgeführt.",
@@ -706,13 +800,13 @@ const vi: Ai103Text = {
   summaryOpen: "Mở AI-103 Lab",
   summaryCatalog: "Tính năng AI và model: {page}",
   kpi: {
-    "verified-local": "Đã xác minh cục bộ",
-    "verified-azure": "Đã xác minh trên Azure",
-    "configured-mocked": "Đã cấu hình hoặc giả lập",
-    "blocked-unsupported": "Bị chặn hoặc không hỗ trợ",
+    "local-real-deterministic": "Cục bộ thật/xác định",
+    "local-mock-configured": "Cục bộ giả lập/cấu hình",
+    "azure-ready": "Sẵn sàng cho Azure",
+    "azure-verified": "Đã xác minh trên Azure",
   },
   kpiNote: "Đây là số năng lực, không phải số dịch vụ Azure chạy thật hay số lần gọi model.",
-  kpiRule: "Mỗi năng lực chỉ được đếm một lần, theo bằng chứng mạnh nhất.",
+  kpiRule: "Số cục bộ và số Azure có thể trùng nhau: một năng lực có thể chạy cục bộ và đồng thời có adapter Azure. “Sẵn sàng cho Azure” nghĩa là đã test tại ranh giới HTTP giả lập, chưa test thật.",
   search: "Tìm năng lực",
   status: "Trạng thái",
   allStatuses: "Mọi trạng thái",
@@ -763,14 +857,21 @@ const vi: Ai103Text = {
     result: "Kết quả",
   },
   statuses: {
-    "verified-local": "Đã xác minh cục bộ",
-    "verified-azure": "Đã xác minh trên Azure",
-    configured: "Đã cấu hình",
-    mock: "Giả lập",
-    "azure-not-run": "Azure chưa chạy",
-    blocked: "Bị chặn",
-    "not-supported": "Không hỗ trợ",
+    "local-real": "Cục bộ thật",
+    "local-deterministic": "Cục bộ xác định",
+    "local-mock": "Cục bộ giả lập",
+    "not-supported-locally": "Không hỗ trợ cục bộ",
+    "azure-ready": "Sẵn sàng Azure · chưa test thật",
+    "azure-live-verified": "Đã xác minh Azure thật",
   },
+  groups: {ingest: "Tiếp nhận & hiểu", search: "Tìm kiếm & suy luận", agents: "Agent & AI tạo sinh", safety: "An toàn & quản trị", operate: "Vận hành & đánh giá"},
+  groupsLabel: "Nhóm năng lực",
+  allResults: "Kết quả trong mọi nhóm",
+  noAzure: "Chưa có adapter Azure",
+  input: "Đầu vào",
+  azureImplementation: "Triển khai trên Azure",
+  learn: "Microsoft Learn",
+  azureDisabled: "Đã tắt: chưa bật opt-in Azure. Chưa test thật.",
   parts: {
     "text-to-image": "Văn bản sang ảnh",
     "image-to-image": "Ảnh sang ảnh",
@@ -845,6 +946,8 @@ const vi: Ai103Text = {
       useCase: "Tìm hợp đồng, đọc giá trị phụ lục và tính chênh lệch cho bộ phận kiểm soát, chỉ bằng công cụ chỉ đọc.",
       pipeline: "Tìm hợp đồng → đọc phụ lục → tính chênh lệch → kiểm tra chứng cứ → bản nháp chờ duyệt",
       localEquivalent: "Agent của lab với công cụ chỉ đọc (kịch bản cố định hoặc planner Ollama cục bộ)",
+      input: "Hồ sơ có hợp đồng WV-2026-031 và phụ lục N-01; chỉ gọi công cụ chỉ đọc",
+      azureImplementation: "Foundry agent với MCP tool server cung cấp cùng các công cụ chỉ đọc (chưa xây)",
       limits: ["Chưa có test timeout hoặc retry.", "Không gọi Foundry; schema công cụ chỉ được kiểm qua agent cục bộ."],
     },
     security: {
@@ -852,6 +955,8 @@ const vi: Ai103Text = {
       useCase: "Người dùng chỉ thấy tenant và hồ sơ của mình; chỉ dẫn trong PDF không bao giờ cấp quyền hay công cụ.",
       pipeline: "Đăng nhập Keycloak → kiểm tra audience và tenant của token → kiểm tra vai trò → quyền với hồ sơ → đọc hoặc ghi",
       localEquivalent: "Keycloak, Spring Security và các kiểm tra tenant, hồ sơ trong credit API",
+      input: "Bearer token sai audience, thiếu tenant hoặc thuộc tenant khác; một mã hồ sơ của tenant khác",
+      azureImplementation: "Token Microsoft Entra ID, managed identity và RBAC cho từng tài nguyên (có tài liệu, chưa xây)",
       limits: ["Entra ID, Managed Identity, RBAC và private networking mới có tài liệu, chưa kiểm thử trên Azure.", "Đăng nhập trên trình duyệt mới được kiểm ở cổng 3001."],
     },
     "image-generation": {
@@ -859,6 +964,8 @@ const vi: Ai103Text = {
       useCase: "Chuẩn bị hình minh họa hoặc ảnh sửa theo mask cho hồ sơ duyệt, không bao giờ dùng làm chứng cứ.",
       pipeline: "Prompt hoặc ảnh nguồn và mask → kiểm tra request (chế độ, MIME type, kích thước, mask) → stub xác định",
       localEquivalent: "Contract request và stub; chưa cài model sinh ảnh",
+      input: "Một prompt và foto-f-01.png (PNG 1200×800) kèm mask",
+      azureImplementation: "Sinh ảnh bằng Azure OpenAI (lượt này chưa có adapter)",
       limits: [
         "Chưa cài model; stub không bao giờ trả về ảnh.",
         "Không hỗ trợ sinh video trên phần cứng hiện tại.",
@@ -870,6 +977,8 @@ const vi: Ai103Text = {
       useCase: "Tìm trang trả lời câu hỏi pre-check trong toàn bộ hồ sơ.",
       pipeline: "Truy vấn → xếp hạng BM25 trên văn bản trang → trang mong đợi đứng đầu → giữ tài liệu và số trang để trích dẫn",
       localEquivalent: "BM25 trên các trang fixture ở đây; Qdrant, BM25 và xếp hạng lại trong credit API",
+      input: "Các truy vấn pre-check trên bốn PDF của hồ sơ, ví dụ \"Genehmigte Gesamtvergütung brutto\"",
+      azureImplementation: "Chỉ mục Azure AI Search với cùng tài liệu; adapter searchQuery",
       limits: [
         "Body của truy vấn hybrid chưa được đối chiếu với API reference hiện hành.",
         "Trường số trang của ảnh chuẩn hóa trên Azure chưa được kiểm.",
@@ -881,6 +990,8 @@ const vi: Ai103Text = {
       useCase: "Biết mỗi bước mất bao lâu mà không ghi token, nội dung tài liệu, prompt đầy đủ hay dữ liệu cá nhân.",
       pipeline: "Upload → ClamAV → OCR → lập chỉ mục → truy xuất → Nova (hiện có request id và span của lab)",
       localEquivalent: "Request trace filter trong credit API; span OpenTelemetry và collector cục bộ trong lab",
+      input: "Một lần chạy pre-check và một lần chạy ETL của hồ sơ",
+      azureImplementation: "Application Insights qua OpenTelemetry exporter (đã cấu hình, chưa xuất dữ liệu)",
       limits: [
         "Chưa có một trace xuyên suốt từ upload qua ClamAV, OCR, lập chỉ mục, truy xuất tới Nova.",
         "Độ trễ từng bước trên trang này lấy từ một lần chạy pre-check đã ghi, không phải mọi lần upload.",
@@ -892,6 +1003,8 @@ const vi: Ai103Text = {
       useCase: "Đưa hồ sơ qua các bước tìm, kiểm tra, tính toán, soạn nháp và người duyệt, với hồ sơ đủ và hồ sơ thiếu chứng từ.",
       pipeline: "Tìm → kiểm tra → tính toán → soạn nháp → người duyệt; không công cụ nào phê duyệt, thanh toán hay gửi",
       localEquivalent: "Quy trình agent của lab và pre-check API chỉ đọc",
+      input: "Hồ sơ đầy đủ và hồ sơ thiếu chứng từ thanh toán",
+      azureImplementation: "Foundry Agent Service với cùng công cụ và quy tắc duyệt (chưa xây)",
       limits: [
         "Chưa tạo và chưa gọi Foundry Agent Service.",
         "Lab không có công cụ thay đổi trạng thái; việc xác nhận được bảo đảm bằng cách không có công cụ ghi, chưa có hộp thoại duyệt thật.",
@@ -902,6 +1015,8 @@ const vi: Ai103Text = {
       useCase: "Nghe ghi chú công trường, kiểm tra số hóa đơn và số tiền, rồi đọc câu trả lời.",
       pipeline: "Âm thanh → transcript → kiểm tra mã hóa đơn, số tiền và tiền tệ → Nova → giọng đọc",
       localEquivalent: "Tệp WAV tổng hợp với transcript tham chiếu; giọng đọc của trình duyệt trên thiết bị",
+      input: "site-note-invoice.wav (ghi chú công trường tiếng Đức tổng hợp) và transcript tham chiếu",
+      azureImplementation: "Azure AI Speech: phiên âm nhanh và tổng hợp SSML; adapter của lab",
       limits: [
         "Chỉ tiếng Đức; âm thanh tiếng Anh và tiếng Việt chưa được kiểm thử.",
         "Transcript là fixture, không phải kết quả nhận dạng giọng nói.",
@@ -913,6 +1028,8 @@ const vi: Ai103Text = {
       useCase: "Trả lời từ hồ sơ kèm trang và đoạn chứng minh, hoặc nói rõ là thiếu chứng cứ.",
       pipeline: "Câu hỏi → truy xuất → câu trả lời có ràng buộc với nhãn nguồn → máy chủ ghi ID nguồn được phép",
       localEquivalent: "Qdrant, BM25 và xếp hạng lại trong credit API với Nova cục bộ",
+      input: "Một câu hỏi có đáp án (giá trị được duyệt) và câu hỏi thanh toán không có chứng cứ",
+      azureImplementation: "Truy xuất bằng Azure AI Search và Azure OpenAI với cùng contract câu trả lời",
       limits: [
         "Benchmark dùng văn bản gốc của chín PDF công khai, không dùng kết quả OCR hay Docling.",
         "Nhãn do agent chuẩn bị từ văn bản PDF, không phải do người gán nhãn độc lập.",
@@ -924,6 +1041,8 @@ const vi: Ai103Text = {
       useCase: "Chọn dịch vụ Azure hay cục bộ cho từng phần việc của hồ sơ, có ghi rõ đánh đổi.",
       pipeline: "So sánh dữ liệu, độ trễ, chi phí, quản trị và khả năng cục bộ → chọn theo từng việc",
       localEquivalent: "Ma trận quyết định trên trang này; không gọi dịch vụ nào",
+      input: "Sáu lựa chọn, mỗi lựa chọn năm tiêu chí",
+      azureImplementation: "Không phải dịch vụ Azure: công cụ hỗ trợ quyết định",
       limits: ["Ma trận chỉ hỗ trợ quyết định; không gọi dịch vụ nào.", "Giá có thể thay đổi; cột chi phí chỉ nêu thứ tự tương đối, không phải báo giá."],
     },
     "content-understanding": {
@@ -931,6 +1050,8 @@ const vi: Ai103Text = {
       useCase: "Chuyển một hồ sơ gồm PDF, ảnh và metadata âm thanh thành một bản ghi JSON đã kiểm tra.",
       pipeline: "Request theo tài liệu → analyzer → JSON có cấu trúc → kiểm tra schema",
       localEquivalent: "Kiểm tra dạng request ở đây; phần ảnh và âm thanh dùng các kiểm tra media và speech của lab",
+      input: "Request cho bauauftrag-wv-2026-031.pdf với mimeType application/pdf",
+      azureImplementation: "Analyzer Azure AI Content Understanding; adapter contentUnderstandingSubmit",
       limits: [
         "Mẫu là dạng request, không phải kết quả của analyzer.",
         "Tình huống đa phương thức chạy qua kiểm tra media và speech của lab, không qua Content Understanding.",
@@ -941,6 +1062,8 @@ const vi: Ai103Text = {
       useCase: "Khởi động lab chỉ với các dịch vụ cần cho việc đang làm, và giữ CI không triển khai.",
       pipeline: "Tệp Compose → health check → CI build và test; không triển khai",
       localEquivalent: "Docker Compose với container Ollama đã gia cố và health check cho mọi dịch vụ",
+      input: "Stack Compose mặc định và các health check",
+      azureImplementation: "Script triển khai VM hoặc container trên Azure (lượt này không chạy)",
       limits: [
         "Lượt này chưa tối ưu gì, nên số liệu tài nguyên trước và sau là như nhau.",
         "Chưa có profile sinh ảnh; chỉ thêm khi bạn đồng ý.",
@@ -951,6 +1074,8 @@ const vi: Ai103Text = {
       useCase: "Trả lời câu hỏi về hồ sơ theo định dạng có ràng buộc mà người duyệt kiểm tra được.",
       pipeline: "Trích đoạn chứng cứ → JSON theo schema → hiển thị với trích dẫn được phép → từ chối khi vi phạm contract",
       localEquivalent: "Nova qua Ollama (qwen3 4B) với cùng contract như provider Azure OpenAI",
+      input: "Một câu hỏi về hồ sơ cùng PDF có chỉ dẫn tự phê duyệt",
+      azureImplementation: "Azure OpenAI với cùng contract JSON schema; adapter openAiStructuredChat",
       limits: [
         "Kiểm tra số tiền theo từng nhận định trong lab: đạt 2/3 tiêu chí (mỗi segment chỉ một nhãn nguồn).",
         "Không gọi Azure OpenAI; không tự chuyển từ cục bộ sang cloud.",
@@ -961,6 +1086,8 @@ const vi: Ai103Text = {
       useCase: "Liên kết mỗi ảnh nghiệm thu với biên bản nghiệm thu và trang có nhắc tới ảnh.",
       pipeline: "Ảnh → metadata từ header → chú thích → liên kết với hồ sơ → người duyệt",
       localEquivalent: "Đọc header PNG và ánh xạ chú thích; không dùng model hình ảnh",
+      input: "foto-f-01.png, foto-f-02.png và các trang biên bản nghiệm thu",
+      azureImplementation: "Phân tích ảnh Azure AI Vision (lượt này chưa có adapter)",
       limits: ["Chỉ metadata và ánh xạ nguồn; không tuyên bố nhận diện vật thể hay phân tích ảnh.", "Mỗi ảnh vẫn cần người duyệt."],
     },
     "language-pii": {
@@ -968,6 +1095,8 @@ const vi: Ai103Text = {
       useCase: "Phân loại email nhà thầu và che dữ liệu cá nhân trước khi model đọc, giữ nguyên mã hóa đơn, mã dự án và số tiền.",
       pipeline: "Email → phân loại → che dữ liệu → kiểm tra không còn định danh → người duyệt",
       localEquivalent: "Biểu thức chính quy và danh sách tên đã biết",
+      input: "Tám email nhà thầu hư cấu (emails.json)",
+      azureImplementation: "Nhận diện PII và phân loại bằng Azure AI Language (lượt này chưa có adapter)",
       limits: [
         "Dùng regex và danh sách tên, không phải Azure AI Language.",
         "Có thể bỏ sót tên không có trong danh sách fixture.",
@@ -979,6 +1108,8 @@ const vi: Ai103Text = {
       useCase: "Dịch email tiếng Đức của nhà thầu cho người đọc tiếng Anh mà không đổi RG-2026-0457, số tiền, ngày hoặc mã dự án.",
       pipeline: "Văn bản tiếng Đức → bản dịch → so sánh mã định danh, số tiền và tiền tệ → người duyệt",
       localEquivalent: "Bản dịch tham chiếu do người viết, kèm kiểm tra giữ nguyên giá trị",
+      input: "Email tiếng Đức về RG-2026-0457 và bản tham chiếu tiếng Anh",
+      azureImplementation: "Azure AI Translator; adapter translateAndCheck với cùng quy tắc giữ nguyên",
       limits: ["Chỉ kiểm bản tham chiếu do người viết; chưa chạy model dịch nào.", "Chưa có Đức → Việt và chuyển tự (transliteration)."],
     },
     "document-intelligence": {
@@ -986,6 +1117,8 @@ const vi: Ai103Text = {
       useCase: "Trích trường, bảng và vị trí trang từ PDF hồ sơ, chuyển giá trị đáng ngờ sang người duyệt.",
       pipeline: "PDF → bố cục, bảng và OCR bằng Docling → ánh xạ trường → so văn bản OCR với nguồn → người duyệt",
       localEquivalent: "Docling trong container document-parser nội bộ",
+      input: "Trang 2 của phụ lục và một mẫu OCR đọc thành 48.730,00",
+      azureImplementation: "Azure AI Document Intelligence prebuilt-layout; adapter documentIntelligenceSubmit",
       limits: [
         "Chưa đo field match, table cell match và bounding-box match với dữ liệu gán nhãn.",
         "Độ tin cậy OCR không bao giờ được hiển thị như độ chính xác.",
@@ -996,6 +1129,8 @@ const vi: Ai103Text = {
       useCase: "Coi chỉ dẫn trong PDF, ảnh hoặc email là dữ liệu: không tự phê duyệt, không mở rộng quyền.",
       pipeline: "Văn bản tài liệu → phát hiện chỉ dẫn → cách ly khỏi ngữ cảnh model → không gọi công cụ → ghi audit",
       localEquivalent: "Cách ly trang trong credit API và bộ chặn chỉ dẫn của lab",
+      input: "Trang 2 của baurechnung-rg-2026-0457-mit-anweisung.pdf và hai email chứa chỉ dẫn",
+      azureImplementation: "Prompt Shields của Azure AI Content Safety (lượt này chưa có adapter)",
       limits: [
         "Không gọi Prompt Shields và Azure AI Content Safety.",
         "Chưa phát hiện chỉ dẫn nằm trong ảnh; chỉ kiểm văn bản đã trích xuất.",
@@ -1007,6 +1142,8 @@ const vi: Ai103Text = {
       useCase: "Đo riêng trích xuất, truy xuất, trích dẫn và việc từ chối trả lời, nói rõ chỉ số nào là xác định.",
       pipeline: "Fixture → chỉ số xác định → chỉ số dựa trên model được đánh dấu chưa chạy",
       localEquivalent: "Các hàm chỉ số xác định trên hồ sơ fixture và một lần chạy pre-check đã ghi",
+      input: "Một lần chạy pre-check đã ghi và các giá trị đã gán nhãn của hồ sơ",
+      azureImplementation: "Bộ đánh giá Azure AI Foundry trên cùng các ca đã gán nhãn (chưa xây)",
       limits: [
         "Precision, recall và F1 của phân loại chưa chạy trong lượt này.",
         "Chưa chạy đánh giá groundedness bằng model.",

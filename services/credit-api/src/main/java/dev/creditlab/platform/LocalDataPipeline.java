@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus;
 /** Authenticated snapshot -> private Docker spool -> immutable analytics receipt. No cloud or OCR call. */
 @Service
 public class LocalDataPipeline {
-  static final String METHOD="document-medallion-v3";
+  static final String METHOD="document-medallion-v4";
   public record Request(@Min(0) long caseVersion,@NotNull UUID requestId,@AssertTrue boolean consent) {}
   private final CreditCaseService cases;private final LabStore store;private final DocumentResearch research;
   private final Path root;private final boolean enabled;private final DistributedLimits limits;

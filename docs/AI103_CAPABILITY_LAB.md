@@ -16,46 +16,61 @@ Everything the page shows comes from one manifest, [`lib/ai103/capabilities.json
 
 ## Status words
 
-| Status | Meaning |
-| --- | --- |
-| `verified-local` | Ran locally and passed with a real fixture. The entry carries the date, the command, the expected and the actual result. |
-| `verified-azure` | Called Azure and stored a redacted result. No capability has this status: nothing was called. |
-| `configured` | Adapter and configuration exist, but there was no live call. |
-| `mock` | Uses a fixture or a stub response only. |
-| `azure-not-run` | An Azure exercise exists but was not allowed to run. |
-| `blocked` | Missing permission, resource, dependency or hardware. |
-| `not-supported` | Deliberately not supported; the entry says why. |
+| Side | Status | Meaning |
+| --- | --- | --- |
+| Local | `local-real` | A real local engine or service ran on the fixture (Docling, Qdrant and BM25, Ollama, Keycloak, Docker). |
+| Local | `local-deterministic` | A fixed rule or check ran on fixtures; no model is involved. |
+| Local | `local-mock` | Only a fixture or a stub exists; nothing was generated or recognised. |
+| Local | `not-supported-locally` | The hardware cannot run it (video generation, the optional image engine). |
+| Azure | `azure-ready` | The adapter compiles and passed tests at a mocked HTTP boundary. **Not live-tested.** |
+| Azure | `azure-live-verified` | Azure was called and a redacted result is stored. No capability has this status. |
+| Azure | no adapter | No Azure adapter exists in this repository. |
 
-The four numbers at the top count capabilities, not live services or model calls. Each capability is counted once, under its strongest evidence: Azure verified, then local verified, then blocked or unsupported locally, otherwise configured or mocked. The manifest validator (`manifestProblems`) refuses a status that claims evidence it does not carry, for example `verified-local` without a date and command, or `azure-not-run` with a test date.
+The header shows four counts: local real or deterministic, local mock or configured, Azure ready and Azure verified. Local and Azure counts overlap, because a capability can run locally and also have an Azure adapter. Mock capabilities are never counted as local real. The validator (`manifestProblems`) refuses a status that claims evidence it does not carry, for example `azure-ready` with a live test date or without its adapter test.
 
 OCR confidence, citation matches and hit@K are never called accuracy.
 
 ## Capabilities
 
-| # | Capability | Local | Azure | Fixture | Last tested | In-app check |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Foundry tools / MCP | `verified-local` | `azure-not-run` | `precheck-sample.json` (+1) | 2026-11-14 | command only |
-| 2 | Security | `verified-local` | `azure-not-run` | `manifest.json` | 2026-11-14 | command only |
-| 3 | Computer Vision generation | `mock` | `not-supported` | `images.json` (+2) | 2026-11-14 | `image-request-contract` |
-| 4 | AI Search | `verified-local` | `azure-not-run` | `dossier-pages.json` (+4) | 2026-11-14 | `search-pages` |
-| 5 | Observability | `verified-local` | `azure-not-run` | `precheck-sample.json` (+2) | 2026-11-14 | `trace-steps` |
-| 6 | Foundry Agents | `verified-local` | `azure-not-run` | `precheck-sample.json` (+1) | 2026-11-14 | command only |
-| 7 | Speech | `mock` | `azure-not-run` | `site-note-invoice.wav` (+2) | 2026-11-14 | `speech-transcript` |
-| 8 | RAG | `verified-local` | `azure-not-run` | `rag-pdf-sources.json` (+1) | 2026-11-13 | command only |
-| 9 | Azure services selection | `verified-local` | not applicable | `AI103_CAPABILITY_LAB.md` (+1) | 2026-11-14 | `decision-matrix` |
-| 10 | Content Understanding | `mock` | `azure-not-run` | `analyze-document.request.json` | 2026-11-14 | `cu-request-shape` |
-| 11 | Deployment | `verified-local` | `azure-not-run` | `docker-compose.yml` (+2) | 2026-11-14 | command only |
-| 12 | GenAI application | `verified-local` | `azure-not-run` | `precheck-sample.json` (+1) | 2026-11-13 | command only |
-| 13 | Vision understanding | `verified-local` | `azure-not-run` | `images.json` (+3) | 2026-11-14 | `photo-metadata` |
-| 14 | Language and PII | `verified-local` | `azure-not-run` | `emails.json` | 2026-11-14 | `pii-masking` |
-| 15 | Translator | `mock` | `azure-not-run` | `contractor-email.json` (+1) | 2026-11-14 | `translator-preservation` |
-| 16 | Document Intelligence | `verified-local` | `azure-not-run` | `ocr-misread.sample.json` (+3) | 2026-11-14 | `ocr-cross-check` |
-| 17 | Vision and content safety | `verified-local` | `azure-not-run` | `baurechnung-rg-2026-0457-mit-anweisung.pdf` (+1) | 2026-11-14 | `injection-guard` |
-| 18 | Evaluation | `verified-local` | `azure-not-run` | `precheck-sample.json` (+2) | 2026-11-14 | `evaluation-deterministic` |
+The page groups the eighteen capabilities into five groups (Ingest & Understand, Search & Reason, Agents & Generative AI, Safety & Governance, Operate & Evaluate), shows one group at a time as a compact grid, and opens each capability in a drawer with its business problem, input, fixtures, expected result, local and Azure implementation, status, run button, result, limits and a Microsoft Learn link. `?capability=<id>` opens the drawer directly.
 
-Counts: 14 verified locally, 0 verified on Azure, 4 configured or mocked (Computer Vision generation, Speech, Content Understanding, Translator), 0 blocked or unsupported. A test (`lib/ai103/docs.test.ts`) keeps this table in line with the manifest.
+| # | Capability | Group | Local | Azure | Fixture | Last tested | In-app check |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Foundry tools / MCP | Agents & Generative AI | `local-deterministic` | no adapter | `precheck-sample.json (+1)` | 2026-11-14 | command only |
+| 2 | Security | Safety & Governance | `local-real` | no adapter | `manifest.json` | 2026-11-14 | command only |
+| 3 | Computer Vision generation | Agents & Generative AI | `local-mock` | no adapter | `images.json (+2)` | 2026-11-14 | `image-request-contract` |
+| 4 | AI Search | Search & Reason | `local-real` | `azure-ready` | `dossier-pages.json (+4)` | 2026-11-14 | `search-pages` |
+| 5 | Observability | Operate & Evaluate | `local-real` | no adapter | `precheck-sample.json (+2)` | 2026-11-14 | `trace-steps` |
+| 6 | Foundry Agents | Agents & Generative AI | `local-deterministic` | no adapter | `precheck-sample.json (+1)` | 2026-11-14 | command only |
+| 7 | Speech | Ingest & Understand | `local-mock` | `azure-ready` | `site-note-invoice.wav (+2)` | 2026-11-14 | `speech-transcript` |
+| 8 | RAG | Search & Reason | `local-real` | `azure-ready` | `rag-pdf-sources.json (+1)` | 2026-11-13 | command only |
+| 9 | Azure services selection | Search & Reason | `local-deterministic` | no adapter | `AI103_CAPABILITY_LAB.md (+1)` | 2026-11-14 | `decision-matrix` |
+| 10 | Content Understanding | Ingest & Understand | `local-mock` | `azure-ready` | `analyze-document.request.json` | 2026-11-14 | `cu-request-shape` |
+| 11 | Deployment | Operate & Evaluate | `local-real` | no adapter | `docker-compose.yml (+2)` | 2026-11-14 | command only |
+| 12 | GenAI application | Agents & Generative AI | `local-real` | `azure-ready` | `precheck-sample.json (+1)` | 2026-11-13 | command only |
+| 13 | Vision understanding | Ingest & Understand | `local-deterministic` | no adapter | `images.json (+3)` | 2026-11-14 | `photo-metadata` |
+| 14 | Language and PII | Ingest & Understand | `local-deterministic` | no adapter | `emails.json` | 2026-11-14 | `pii-masking` |
+| 15 | Translator | Ingest & Understand | `local-deterministic` | `azure-ready` | `contractor-email.json (+1)` | 2026-11-14 | `translator-preservation` |
+| 16 | Document Intelligence | Ingest & Understand | `local-real` | `azure-ready` | `ocr-misread.sample.json (+3)` | 2026-11-14 | `ocr-cross-check` |
+| 17 | Vision and content safety | Safety & Governance | `local-deterministic` | no adapter | `baurechnung-rg-2026-0457-mit-anweisung.pdf (+1)` | 2026-11-14 | `injection-guard` |
+| 18 | Evaluation | Operate & Evaluate | `local-deterministic` | no adapter | `precheck-sample.json (+2)` | 2026-11-14 | `evaluation-deterministic` |
 
-"Verified locally" is scoped to what the entry's expected result says. Each entry lists what is not verified; the most important gaps are in [Limits](#limits).
+Counts: 15 local real or deterministic (7 real, 8 deterministic), 3 local mock, 7 Azure ready, 0 Azure verified. A test (`lib/ai103/docs.test.ts`) keeps this table in line with the manifest.
+
+## Azure adapters
+
+`lib/ai103/azure-adapters.ts` holds the Azure side of the shared execution contract. Each adapter uses the same environment variables and opt-in as the lab CLI (`AI103_AZURE_OPT_IN=billable-calls-approved`, `AI103_AZURE_SERVICES`), takes a short-lived bearer token from the caller, accepts only an https endpoint on an Azure host, and maps the answer to the local contract. There is no fallback between local and Azure. `lib/ai103/azure-adapters.test.ts` tests them at a mocked HTTP boundary; none was called live, and the page shows the Azure button disabled.
+
+| Local | Azure adapter | Shared contract |
+| --- | --- | --- |
+| Qdrant + BM25 + reranker (credit API) | `searchQuery` (Azure AI Search) | hit list: document, page, score, source id |
+| Docling | `documentIntelligenceSubmit`, `parseLayoutResult` (Document Intelligence prebuilt-layout) | page text and word confidence on the same labelled pages |
+| Ollama (Nova) | `openAiStructuredChat` (Azure OpenAI) | the same JSON-schema answer with source labels |
+| Content Understanding request check | `contentUnderstandingSubmit` | analyzer id in the URL, inputs in the body |
+| Translation preservation check | `translateAndCheck` (Azure AI Translator) | identifier, amount and currency rule |
+| Lab speech adapter | `labs/ai103/contractor_lab/speech.py` | transcript check of invoice code, amount and currency |
+| Local OpenTelemetry collector | Application Insights exporter (configured only) | spans with the redaction allowlist |
+| Control Tower marts | Power BI semantic model (documented only) | `services/document-etl/powerbi/` relationships and measures |
 
 ## Fixtures
 
@@ -143,38 +158,37 @@ Azure tests are off. The page shows no Azure button while nothing is configured 
 
 ## Verification record
 
-One local pass on 14 November 2026, branch `feature/ai103-capability-lab`, Apple Silicon Mac with Docker Desktop, Node 24, Java 21, Python 3.12 for the lab tools. Commands ran from the repository root unless stated otherwise.
+One local pass on 14 November 2026, branch `feature/evidence-control-tower`, Apple Silicon Mac with Docker Desktop, Node 20, Java 21, Python 3.12 for the lab tools. Commands ran from the repository root unless stated otherwise. No Azure call, no cloud resource and no deployment.
 
 | Area | Command | Result |
 | --- | --- | --- |
 | Web lint | `npm run lint` | 0 warnings |
 | Web types | `npx tsc --noEmit` | clean |
-| Web unit tests | `npx vitest run` | 392 of 392 in 58 files (the lab adds 35 tests in 6 files) |
-| Web build | `npm run build` | passed; `/en/ai103`, `/de/ai103` and `/vi/ai103` prerendered |
+| Web unit tests | `npx vitest run` | 404 of 404 in 60 files (includes the Azure adapters at a mocked HTTP boundary and the Control Tower data) |
+| Web build | `npm run build` | passed; `/en|de|vi/ai103` and `/en|de|vi/control-tower` prerendered |
 | Java API | `mvn -B clean test` in `services/credit-api` | 398 run, 0 failures, 0 errors, 5 skipped (live or opt-in tests) |
 | Lab tests | `python -B -m unittest discover -s tests` in `labs/ai103` | 87 of 87 |
-| Lab lint and types | `ruff check .` (0.17.4), `mypy contractor_lab` (2.4.1) | clean; no issues in 17 files |
-| Lab exercises | `offline`, `speech`, `translate`, `voice-live`, `search`, `content-understanding` | 20/20, 4/4, 2/2, 3/3, 2/2, 1/1 |
-| Azure plan | `python -m contractor_lab cloud-plan` | opted in: false, network calls: 0 |
+| Lab lint and types | `ruff check .`, `mypy contractor_lab` (2.4.1) | clean; no issues in 17 files |
+| ETL tests | `python -B -m unittest test_worker test_analytics test_control_tower test_evidence_worker test_production_flow` in `services/document-etl` | 33 run, 3 skipped on the host (no dbt); 2 of these 3 passed inside the ETL container, the third needs a repository PDF that the container does not mount |
+| ML tests | `python -B -m unittest test_classification test_engine` in `services/document-ml` | 14 of 14 (scratch venv with `requirements.txt` plus `pytz`) |
 | Docker helper | `node --test scripts/docker-local.test.mjs` | 10 of 10 |
-| Compose | production files `config --quiet`; `node scripts/check-production-compose.mjs` | valid; no Spark service, image or build |
-| Secrets | `gitleaks git --pre-commit --staged`; `gitleaks git .` | no leaks |
-| Dependencies | `npm audit --omit=dev --audit-level=high` | 0 vulnerabilities |
-| Web image | `trivy image --skip-db-update --severity HIGH,CRITICAL` on the rebuilt web image (database of 11 November) | 0 HIGH, 0 CRITICAL (Alpine 3.24.4 and Node packages) |
-| Stack health | Docker Desktop restarted (it had stopped while the session was paused); default services started without `web` | eleven backend containers healthy; `web` built from this branch and published on 127.0.0.1:3001 only |
-| Lab API | `GET /api/ai103/capabilities`; `POST …/run-local` for each capability with a check; `POST …/run-azure` | 18 capabilities, counts 14 / 0 / 4 / 0; 12 of 12 checks passed on the server (0.2 to 32 ms); a capability without a check answers with its command; run-azure 403 with `requestSent: false` |
-| Contractor acceptance | `TEST_CONTRACTOR_PRECHECK=1 TEST_WEB_URL=http://localhost:3001 node scripts/test-oauth.mjs` | 53 checks passed, exit 0 (the runner adds one more check only when the access token has to be refreshed during the run); creates two fictional dossiers in the local database |
-| Browser | Chrome-based browser pane, port 3001 | English, German and Vietnamese pages; status filter (Mock: 4 of 18) and search ("ocr": Document Intelligence); keyboard: Tab reaches the filter and each "Open lab" button with a visible 3 px focus outline, Enter opens the panel and moves focus to its heading, closing returns focus to the button; deep link `?capability=…`; "Run local test" shows expected, actual, latency and cost from the server; 375 px phone width without horizontal scrolling; signed-in Tasks page shows the AI-103 summary and no catalogue; AI transparency shows the catalogue once; menu link opens the lab; no console errors in a fresh tab; network requests only to localhost:3001 and the local Keycloak |
+| Compose | `config --quiet` on the default files; `node scripts/check-production-compose.mjs`; `node scripts/check-public-source.mjs` | valid; no Spark; 0 filename risks |
+| Secrets | `gitleaks` on the changed and new files | no leaks |
+| Stack | `credit-api` and `etl` rebuilt for `document-medallion-v4`, `web` rebuilt and published on 127.0.0.1:3001 only | twelve containers healthy; no new container |
+| Lab API | `GET /api/ai103/capabilities`; `POST …/run-local` for all 18; `POST …/run-azure` | counts 15 / 3 / 7 / 0; 12 of 12 server checks passed (0.4 to 36 ms), six answer with their command; run-azure 403 `opt-in-off`, `requestSent: false` |
+| Control Tower acceptance | `TEST_CONTROL_TOWER=1 TEST_WEB_URL=http://localhost:3001 node scripts/test-oauth.mjs` | 29 checks passed: Bronze 6, Silver 17, reviewed Gold 3; 7 data-quality checks; retrieval rank 1 for the three labelled pages; payment question abstained; citations 48.780,00 and 49.980,00 on page 2; 19 tables as CSV and Parquet (41 files); instruction page blocked (rate 1); simulated OCR row raw 48.730,00, reviewed 48.780,00, written as an evaluation case |
+| Contractor acceptance | `TEST_CONTRACTOR_PRECHECK=1 TEST_WEB_URL=http://localhost:3001 node scripts/test-oauth.mjs` | 53 checks passed, exit 0; creates two fictional dossiers in the local database |
+| Browser | built-in browser pane, port 3001 | English, German and Vietnamese lab pages fit 1024 × 768 without scrolling; group tabs, search ("ocr": 1 of 18), status filter (Local mock: 3 of 18); deep link `?capability=…` opens the drawer; "Run local test" passed from the server; Azure button disabled; 375 px phone width without horizontal page scroll; Control Tower four areas and drill-through from KPI to reviewed value in all three languages; no console errors; 257 requests, all to localhost:3001 and the local Keycloak |
 | Keycloak | the client allowed `http://localhost:3001` during the run, through the admin API | restored afterwards: only `http://localhost:3000` |
 
 ## Limits
 
-- No capability is verified on Azure; every Azure side is `azure-not-run` or `not-supported`.
+- No capability is verified on Azure: seven have an adapter tested at a mocked HTTP boundary (`azure-ready`), the others have no adapter.
 - Nova's claim-level amount check in the lab passes 2 of 3 criteria (one source label per segment).
 - No single trace yet from upload through ClamAV, OCR, indexing, retrieval and Nova; the page shows step latency from a recorded pre-check run.
 - Speech is tested in German only; the transcript is a fixture. English and Vietnamese audio are not tested.
 - Translation is checked against a human reference only; German to Vietnamese and transliteration are not covered.
 - The e-mail fixtures have no complaint or missing-documents category yet.
-- Field, table-cell and bounding-box match are not measured.
+- Citation bounding boxes are located by matching the value in the provider's regions (Control Tower); table-cell match is not measured.
 - Foundry tools have no timeout or retry test.
 - The deployment profiles are mapped, not restructured; no image-generation profile exists.

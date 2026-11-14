@@ -14,8 +14,8 @@ from pathlib import Path
 
 import duckdb
 
-VERSION = "document-medallion-v3"
-MONEY_FIELDS = {"invoiceTotal", "netIncome", "payoutAmount", "premium", "deductible"}
+VERSION = "document-medallion-v4"
+MONEY_FIELDS = {"invoiceTotal", "approvedTotal", "orderTotal", "changeOrderTotal", "netIncome", "payoutAmount", "premium", "deductible"}
 
 
 def now():
@@ -33,7 +33,9 @@ def normalize_money(raw, context):
     currencies.update(code for symbol, code in aliases.items() if symbol in raw + " " + context)
     if len(currencies) != 1:
         return None, None, "CURRENCY_UNKNOWN_OR_AMBIGUOUS"
-    value = re.sub(r"EUR|INR|USD|GBP|[€₹£\s]", "", raw).strip()
+    # A tax-basis word ("49.980,00 EUR brutto") qualifies the amount; it is not part of the number. The raw value is kept.
+    value = re.sub(r"(?i)\b(?:brutto|netto|gross|net)\b", "", raw)
+    value = re.sub(r"EUR|INR|USD|GBP|[€₹£\s]", "", value).strip()
     if re.fullmatch(r"-?(?:\d+|\d{1,3}(?:\.\d{3})+),\d{2}", value):
         value = value.replace(".", "").replace(",", ".")
     elif re.fullmatch(r"-?\d{1,3}(?:,\d{3})+\.\d{2}", value):
@@ -65,8 +67,19 @@ def validate(payload):
             raise ValueError("INVALID_PAGE")
 
 
-def transform(payload, folder, use_dbt=True):
+def transform(payload, folder, use_dbt=True, simulate_ocr=None):
+    from control_tower import build as build_control_tower, instruction_lines
+    started = clock = time.perf_counter()
+    stages = []
+
+    def stage(name, rows_out):
+        nonlocal clock
+        current = time.perf_counter()
+        stages.append((name, current - clock, rows_out))
+        clock = current
+
     validate(payload)
+    stage("validate", len(payload["documents"]))
     folder.mkdir(parents=True, exist_ok=True)
     database = folder.parent / "history.duckdb"
     db = duckdb.connect(str(database), config={"memory_limit": "128MB", "threads": "1"})
@@ -101,6 +114,8 @@ def transform(payload, folder, use_dbt=True):
                 db.execute("UPDATE document_versions SET valid_to=?,is_current=false WHERE document_id=? AND is_current", [payload["time"], doc["id"]])
                 db.execute("INSERT INTO document_versions VALUES(?,?,?,NULL,true,?)", [doc["id"], content_hash, payload["time"], source_hash])
             pages = {p["number"]: p["text"] for p in doc["pages"]}
+            # A page that tells an AI to approve, pay or send stays untrusted: its fields never reach reviewed Gold.
+            instruction_pages = {number for number, text in pages.items() if instruction_lines(text)}
             duplicate = Counter((f["page"], f["label"]) for f in doc.get("fields", []))
             before = len(issues)
             for field in doc.get("fields", []):
@@ -108,6 +123,8 @@ def transform(payload, folder, use_dbt=True):
                 page = field["page"]
                 if page not in pages:
                     quality = "SOURCE_PAGE_MISSING"
+                elif page in instruction_pages:
+                    quality = "UNTRUSTED_INSTRUCTION_PAGE"
                 elif duplicate[(page, field["label"])] > 1:
                     quality = "DUPLICATE_FIELD"
                 elif not field["value"].strip():
@@ -132,6 +149,7 @@ def transform(payload, folder, use_dbt=True):
         db.close()
         raise
     db.close()
+    stage("bronze_silver", len(field_rows))
     if use_dbt:
         profiles = folder / "profiles"
         profiles.mkdir(exist_ok=True)
@@ -139,6 +157,7 @@ def transform(payload, folder, use_dbt=True):
         result = subprocess.run(["dbt", "build", "--project-dir", str(Path(__file__).parent / "dbt"), "--profiles-dir", str(profiles), "--target-path", str(folder / "dbt-target"), "--log-path", str(folder / "dbt-logs"), "--vars", json.dumps({"run_id": run_id})], capture_output=True, timeout=120, env={**os.environ, "DBT_SEND_ANONYMOUS_USAGE_STATS": "false"})
         if result.returncode:
             raise ValueError("DBT_CHECKS_FAILED")
+        stage("dbt_tests", 0)
     db = duckdb.connect(str(database), config={"memory_limit": "128MB", "threads": "1"})
     if not use_dbt:
         db.execute("CREATE OR REPLACE TABLE gold_currency_totals AS SELECT field_key,currency,count(*) observations,sum(amount) total FROM silver_fields WHERE run_id=? AND reviewed AND quality='VALID' AND amount IS NOT NULL AND currency IS NOT NULL GROUP BY field_key,currency", [run_id])
@@ -147,12 +166,16 @@ def transform(payload, folder, use_dbt=True):
         # Paths are generated from a validated UUID/scope, never supplied by a user/model.
         destination = str(folder / (name + ".parquet")).replace("'", "''")
         db.execute("COPY (" + query + ") TO '" + destination + "' (FORMAT PARQUET)", [] if name == "gold" else [run_id])
+    stage("reviewed_gold", len(totals))
     from analytics import export
     analytics = export(db, folder, payload, field_rows, issues, normalize_money)
+    stage("analytics", analytics["fields"])
+    control = build_control_tower(db, folder, payload, field_rows, normalize_money, VERSION, time.perf_counter() - started, stages, simulate_ocr=simulate_ocr)
     history_count = db.execute("SELECT count(*) FROM document_versions").fetchone()[0]
     db.execute("INSERT INTO etl_runs VALUES(?,?,?)", [run_id, source_hash, VERSION])
     db.close()
-    manifest = {"method": VERSION, "scope": payload["scope"], "runId": run_id, "sourceHash": source_hash, "bronze": len(documents), "silver": len(field_rows), "gold": len(totals), "historyVersions": history_count, "analytics": analytics,
+    manifest = {"method": VERSION, "scope": payload["scope"], "runId": run_id, "sourceHash": source_hash, "time": payload["time"],
+                "caseId": payload.get("caseId"), "domain": payload.get("domain", "general"), "controlTower": control, "bronze": len(documents), "silver": len(field_rows), "gold": len(totals), "historyVersions": history_count, "analytics": analytics,
                 "qualityIssues": issues, "documents": documents, "totals": totals, "dbtVerified": use_dbt,
                 "artifacts": [{"name": name + ".parquet", "sha256": hashlib.sha256((folder / (name + ".parquet")).read_bytes()).hexdigest()} for name in ("bronze", "silver", "gold", "document_facts", "field_observations", "invoice_lines", "quality_findings")],
                 "limitations": ["Gold requires explicit human verification, not AI confidence.", "Ambiguous dates remain unnormalized.", "Artifacts contain private document data; original PDF expiry does not delete exported analytics."]}

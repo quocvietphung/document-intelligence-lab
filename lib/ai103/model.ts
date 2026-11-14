@@ -1,11 +1,22 @@
 import {z} from "zod";
 import manifestJson from "./capabilities.json";
 
-/** Seven status words. Local and Azure sides accept different subsets; see the validator below. */
-export const statuses = ["verified-local", "verified-azure", "configured", "mock", "azure-not-run", "blocked", "not-supported"] as const;
-export type Status = (typeof statuses)[number];
-export const localStatuses: readonly Status[] = ["verified-local", "configured", "mock", "blocked", "not-supported"];
-export const azureStatuses: readonly Status[] = ["verified-azure", "configured", "azure-not-run", "blocked", "not-supported"];
+/**
+ * Local status: a real local engine or service ran (local-real), a fixed rule or check ran on fixtures without a model
+ * (local-deterministic), only a fixture or stub exists (local-mock), or the hardware cannot run it (not-supported-locally).
+ * Azure status: the adapter passed tests at a mocked HTTP boundary but was never called (azure-ready), or Azure was
+ * called and a redacted result is stored (azure-live-verified). No Azure object means no adapter exists.
+ */
+export const localStatuses = ["local-real", "local-deterministic", "local-mock", "not-supported-locally"] as const;
+export const azureStatuses = ["azure-ready", "azure-live-verified"] as const;
+export const statuses = [...localStatuses, ...azureStatuses] as const;
+export type LocalStatus = (typeof localStatuses)[number];
+export type AzureStatus = (typeof azureStatuses)[number];
+export type Status = LocalStatus | AzureStatus;
+
+/** Five groups, in the order the lab shows them. */
+export const groupIds = ["ingest", "search", "agents", "safety", "operate"] as const;
+export type GroupId = (typeof groupIds)[number];
 
 /** The eighteen capability groups, in the order the lab shows them. */
 export const capabilityIds = [
@@ -24,8 +35,7 @@ export const checkIds = [
 export type CheckId = (typeof checkIds)[number];
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
-const side = z.object({
-  status: z.enum(statuses),
+const record = {
   lastTested: isoDate.nullable(),
   command: z.string().nullable(),
   expected: z.string().min(1),
@@ -33,24 +43,28 @@ const side = z.object({
   latencyMs: z.number().nonnegative().nullable(),
   cost: z.string().min(1),
   log: z.string().min(1),
-});
+};
+const localSide = z.object({status: z.enum(localStatuses), ...record});
+const azureSide = z.object({status: z.enum(azureStatuses), ...record});
 
 export const capabilitySchema = z.object({
   id: z.enum(capabilityIds),
+  group: z.enum(groupIds),
   azureService: z.string().nullable(),
+  learnUrl: z.string().regex(/^https:\/\/learn\.microsoft\.com\//),
   check: z.enum(checkIds).nullable(),
   fixtures: z.array(z.string().min(1)).min(1),
-  parts: z.array(z.object({name: z.string().min(1), status: z.enum(statuses)})).optional(),
-  local: side,
-  azure: side.nullable(),
+  parts: z.array(z.object({name: z.string().min(1), status: z.enum(localStatuses)})).optional(),
+  local: localSide,
+  azure: azureSide.nullable(),
 });
 export const manifestSchema = z.object({
-  format: z.literal("ai103-capability-manifest-v1"),
+  format: z.literal("ai103-capability-manifest-v2"),
   note: z.string().min(1),
   capabilities: z.array(capabilitySchema),
 });
 export type Capability = z.infer<typeof capabilitySchema>;
-export type Side = z.infer<typeof side>;
+export type Side = z.infer<typeof localSide> | z.infer<typeof azureSide>;
 export type Manifest = z.infer<typeof manifestSchema>;
 
 /**
@@ -66,57 +80,49 @@ export function manifestProblems(manifest: Manifest): string[] {
   for (const capability of manifest.capabilities) {
     const label = capability.id;
     const local = capability.local;
-    if (!localStatuses.includes(local.status)) problems.push(`${label}: local status ${local.status} is not allowed on the local side`);
-    if (local.status === "verified-local" && (!local.lastTested || !local.command)) {
-      problems.push(`${label}: verified-local needs lastTested and a command`);
+    if ((local.status === "local-real" || local.status === "local-deterministic") && (!local.lastTested || !local.command)) {
+      problems.push(`${label}: ${local.status} needs lastTested and a command`);
     }
-    if (capability.azure) {
-      const azure = capability.azure;
-      if (!azureStatuses.includes(azure.status)) problems.push(`${label}: azure status ${azure.status} is not allowed on the Azure side`);
-      if (azure.status === "verified-azure" && (!azure.lastTested || !azure.command || azure.latencyMs === null)) {
-        problems.push(`${label}: verified-azure needs lastTested, a command and a measured latency`);
-      }
-      if (azure.status === "azure-not-run" && (!azure.command || azure.lastTested !== null)) {
-        problems.push(`${label}: azure-not-run needs the opt-in command and no lastTested date`);
-      }
-      if (azure.status === "not-supported" && azure.lastTested !== null) problems.push(`${label}: not-supported cannot have a test date`);
+    if (local.status === "local-real" && capability.check === null && !local.command) problems.push(`${label}: local-real needs the command that ran`);
+    const azure = capability.azure;
+    if (!azure) continue;
+    if (azure.status === "azure-live-verified" && (!azure.lastTested || !azure.command || azure.latencyMs === null)) {
+      problems.push(`${label}: azure-live-verified needs lastTested, a command and a measured latency`);
+    }
+    if (azure.status === "azure-ready" && (azure.lastTested !== null || !azure.command || !/not live-tested/i.test(azure.actual))) {
+      problems.push(`${label}: azure-ready must name its adapter test, say "Not live-tested" and carry no live test date`);
     }
   }
+  if (groupIds.some((group) => !manifest.capabilities.some((capability) => capability.group === group))) problems.push("every group needs a capability");
   return problems;
 }
 
 export const manifest: Manifest = manifestSchema.parse(manifestJson);
 
-export type Bucket = "verified-local" | "verified-azure" | "configured-mocked" | "blocked-unsupported";
-export const buckets: readonly Bucket[] = ["verified-local", "verified-azure", "configured-mocked", "blocked-unsupported"];
+export type Bucket = "local-real-deterministic" | "local-mock-configured" | "azure-ready" | "azure-verified";
+export const buckets: readonly Bucket[] = ["local-real-deterministic", "local-mock-configured", "azure-ready", "azure-verified"];
 
-/**
- * Each capability is counted once, under its strongest evidence: Azure verified, then local verified,
- * then blocked or unsupported locally, otherwise configured or mocked.
- */
-export function bucketOf(capability: Pick<Capability, "local" | "azure">): Bucket {
-  if (capability.azure?.status === "verified-azure") return "verified-azure";
-  if (capability.local.status === "verified-local") return "verified-local";
-  if (capability.local.status === "blocked" || capability.local.status === "not-supported") return "blocked-unsupported";
-  return "configured-mocked";
-}
-
+/** Header counts. Local and Azure counts overlap: a capability can run locally and also have an Azure adapter. */
 export function summarize(list: readonly Capability[]): Record<Bucket, number> & {total: number} {
-  const counts: Record<Bucket, number> & {total: number} = {
-    "verified-local": 0, "verified-azure": 0, "configured-mocked": 0, "blocked-unsupported": 0, total: list.length,
+  return {
+    "local-real-deterministic": list.filter((c) => c.local.status === "local-real" || c.local.status === "local-deterministic").length,
+    "local-mock-configured": list.filter((c) => c.local.status === "local-mock").length,
+    "azure-ready": list.filter((c) => c.azure?.status === "azure-ready").length,
+    "azure-verified": list.filter((c) => c.azure?.status === "azure-live-verified").length,
+    total: list.length,
   };
-  for (const capability of list) counts[bucketOf(capability)] += 1;
-  return counts;
 }
 
 /** Status filter matches either side; search matches the id, the localised name, the Azure service and the fixtures. */
 export function filterCapabilities(
   list: readonly Capability[],
-  options: {status: Status | "all"; query: string; nameOf: (id: CapabilityId) => string},
+  options: {status: Status | "all" | "no-azure-adapter"; query: string; nameOf: (id: CapabilityId) => string; group?: GroupId},
 ): Capability[] {
   const query = options.query.trim().toLocaleLowerCase();
   return list.filter((capability) => {
-    if (options.status !== "all" && capability.local.status !== options.status && capability.azure?.status !== options.status) return false;
+    if (options.group && capability.group !== options.group) return false;
+    if (options.status === "no-azure-adapter") { if (capability.azure) return false; }
+    else if (options.status !== "all" && capability.local.status !== options.status && capability.azure?.status !== options.status) return false;
     if (!query) return true;
     const haystack = [capability.id, options.nameOf(capability.id), capability.azureService ?? "", ...capability.fixtures].join(" ");
     return haystack.toLocaleLowerCase().includes(query);
