@@ -23,6 +23,14 @@ jobs:
       - run: node --test scripts/check-public-source.test.mjs
       - run: node scripts/check-public-source.mjs
       - run: npm run build
+  vercel-bundle:
+    # Builds the app from exactly the files a Vercel CLI deployment uploads (tracked files minus .vercelignore).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: node scripts/check-vercel-bundle.mjs --build
   document-etl:
     runs-on: ubuntu-latest
     steps:
