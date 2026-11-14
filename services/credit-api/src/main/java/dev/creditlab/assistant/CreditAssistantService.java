@@ -18,6 +18,8 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class CreditAssistantService {
   private static final org.slf4j.Logger log=org.slf4j.LoggerFactory.getLogger(CreditAssistantService.class);
+  /** Document excerpt characters sent to the local CPU model (about 1,500 tokens); a larger prompt cannot finish in time. */
+  static final int LOCAL_EVIDENCE_CHARS=5_000;
   private final CreditCaseService cases;
   private final ObjectMapper mapper;
   private final Optional<ChatModel> model;
@@ -69,6 +71,8 @@ public class CreditAssistantService {
       var pinned=sources.stream().map(Source::id).filter(id->id.matches(".*:p\\d+:r\\d+$")).collect(java.util.stream.Collectors.toSet());
       selection=EvidenceContext.select(sources,scores,pinned,contextOptions());sources=selection.sources();
     }
+    // The local CPU model cannot read unbounded context inside its time limit: fixed sources and the best excerpts stay.
+    if(localChat)sources=EvidenceContext.withinLocalBudget(sources,LOCAL_EVIDENCE_CHARS);
     String requestId=UUID.randomUUID().toString();
     if(model.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Nova model is not configured; no demonstration answer is substituted");
@@ -94,10 +98,9 @@ public class CreditAssistantService {
         }else{
         localPrompt=DocumentReviewModel.prompt(item.domain(),"bilingual-summary".equals(request.taskId())?"paired German and Vietnamese paragraphs":language(request.locale()),question,sources);
         if(request.revisionOf()!=null&&!request.revisionOf().isBlank())localPrompt+="\nRevised draft: independently recheck the current evidence, not the previous answer.";
-        var generated=AiServices.builder(DocumentReviewModel.class).chatModel(model.get()).build().review(localPrompt);
-        if(generated.finishReason()!=dev.langchain4j.model.output.FinishReason.STOP)
-          throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Local generation did not complete; partial output is not an answer");
-        answer=generated.content();usage=generated.tokenUsage();
+        // Constrained segments: the model picks a source label, Java binds the authorized ID. An incomplete output is refused.
+        var generated=NovaAnswer.generate(model.get(),sources,localPrompt);
+        answer=NovaAnswer.render(generated.value(),sources);usage=generated.usage();
         }
       }else{var result=assistant.chat(prompt);answer=result.content();usage=result.tokenUsage();toolCalls=result.toolExecutions()==null?0:result.toolExecutions().size();}
     }

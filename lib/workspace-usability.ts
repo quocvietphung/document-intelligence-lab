@@ -108,7 +108,7 @@ export function trustHref(href:string,section:TrustSection,answer?:string){
   url.hash='trust';return `${url.pathname}${url.search}${url.hash}`;
 }
 
-/** AI catalog deep links: `?feature=<id>#overview` opens the catalog at the group that holds the feature. */
+/** AI catalog deep links: `?feature=<id>#trust` opens the catalog (on AI transparency) at the group that holds the feature. */
 export function featureFromSearch(search:string){
   const value=new URLSearchParams(search).get('feature');
   return dashboardFeatures.find(feature=>feature.id===value)?.id;

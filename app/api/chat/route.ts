@@ -2,7 +2,7 @@ import { createUIMessageStream,createUIMessageStreamResponse,type UIMessage } fr
 import { conversationSchema,messageText } from "@/lib/credit-chat";
 import { boundedBody } from "@/lib/request-body";
 import { hasAllowedOrigin } from "@/lib/request-origin";
-import {novaLimit,novaModelFailure} from "@/lib/nova-limits";
+import {novaContractFailure,novaLimit,novaModelFailure} from "@/lib/nova-limits";
 import {trustAnswerSchema} from "@/lib/nova-trust";
 import {localChatDispatcher,localChatTimeoutMs} from "@/lib/nova-transport";
 export const runtime="nodejs";
@@ -32,7 +32,11 @@ export async function POST(request:Request) {
       cache:"no-store",signal:AbortSignal.any([request.signal,AbortSignal.timeout(local?localChatTimeoutMs:45_000)]),
     });
     if(!response.ok) {
-      if(response.status===422)return Response.json({error:"AI_SAFETY_FILTER"},{status:422,headers:{"Cache-Control":"no-store"}});
+      if(response.status===422){
+        // A citation or evidence contract refusal carries a code only. It is not a provider safety refusal.
+        const contract=novaContractFailure(await response.json().catch(()=>undefined));
+        return Response.json({error:contract??"AI_SAFETY_FILTER"},{status:422,headers:{"Cache-Control":"no-store"}});
+      }
       const failure=[429,504].includes(response.status)?await response.json().catch(()=>undefined):undefined;
       const code=novaModelFailure(failure);
       if(response.status===429&&code==='LOCAL_MODEL_BUSY'||response.status===504&&code==='LOCAL_MODEL_TIMEOUT')

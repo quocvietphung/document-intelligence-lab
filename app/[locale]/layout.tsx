@@ -6,6 +6,7 @@ import { routing } from "@/routing";
 import { KeycloakProvider } from "@/components/auth/KeycloakProvider";
 
 import "../globals.css";
+import "../ai103-lab.css";
 
 export const metadata: Metadata = {
   title: "Document Intelligence Lab",

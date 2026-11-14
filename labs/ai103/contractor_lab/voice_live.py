@@ -86,6 +86,8 @@ class VoiceSession:
         return {"status": "ANSWERED", "dropped": dropped, "sources": [s["id"] for s in allowed_sources]}
 
     def show_source(self) -> dict:
+        if self.last_answer is None:
+            return {"status": "NO_SOURCE"}
         sources = self.last_answer["sources"]
         if not sources:
             return {"status": "NO_SOURCE"}

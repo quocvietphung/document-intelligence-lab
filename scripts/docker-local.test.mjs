@@ -20,13 +20,23 @@ test('local profile keeps Docling, uses one explicit local model and no cloud st
 });
 test('CPU runtime is separate from model weights and retains a pinned official engine',()=>{
   const dockerfile=readFileSync(new URL('../services/ollama-cpu/Dockerfile',import.meta.url),'utf8');
-  assert.match(dockerfile,/ollama\/ollama:0\.40\.6@sha256:[a-f0-9]{64}/);
+  assert.match(dockerfile,/ollama\/ollama:0\.40\.16@sha256:[a-f0-9]{64}/);
   assert.match(dockerfile,/-name 'cpu\*'/);assert.match(dockerfile,/OLLAMA_NO_CLOUD=1/);
   assert.doesNotMatch(dockerfile,/ollama pull|COPY.*(?:gguf|safetensors)/);
   const profile=readFileSync(new URL('../docker-compose.nova-local.yml',import.meta.url),'utf8');
   assert.match(profile,/external: true\s+name: credit-intelligence-lab_lab_ollama/);
   assert.match(profile,/LLAMA_ARG_CACHE_RAM: "0"/);
   assert.match(profile,/LLAMA_ARG_THREADS: "3"/);
+});
+test('Ollama runs as a fixed non-root identity with a read-only root filesystem and no capabilities',()=>{
+  const dockerfile=readFileSync(new URL('../services/ollama-cpu/Dockerfile',import.meta.url),'utf8');
+  assert.match(dockerfile,/--gid 10010 ollama/);assert.match(dockerfile,/--uid 10010/);
+  assert.match(dockerfile,/^USER 10010:10010$/m);assert.match(dockerfile,/OLLAMA_MODELS=\/models/);
+  const profile=readFileSync(new URL('../docker-compose.nova-local.yml',import.meta.url),'utf8');
+  assert.match(profile,/user: "10010:10010"/);assert.match(profile,/read_only: true/);assert.match(profile,/cap_drop: \[ALL\]/);
+  assert.match(profile,/no-new-privileges:true/);assert.match(profile,/target: \/models\s+volume:\s+subpath: models/);
+  const helper=readFileSync(new URL('./docker-local.mjs',import.meta.url),'utf8');
+  assert.doesNotMatch(helper,/\/root\/\.ollama/);assert.match(helper,/volume-subpath=models/);
 });
 test('rejects cloud model IDs and URLs',()=>{for(const value of ['', 'https://example.com/model','model:cloud','model-cloud','../model'])assert.throws(()=>validateModel(value));assert.equal(validateModel('qwen3:1.7b'),'qwen3:1.7b');});
 test('Docker disk guard checks Docker filesystem capacity, not host free space',()=>{

@@ -8,7 +8,8 @@ every Azure service and the recorded results are in [docs/AI103_CONTRACTOR_PRECH
 Standard library only (Python 3.10+). Run from this folder:
 
 ```bash
-python3 -m unittest discover -s tests -v          # 73 offline tests, no Docker
+python3 -m unittest discover -s tests -v          # offline tests, no Docker
+python3 -m ruff check . && python3 -m mypy contractor_lab   # optional lint and types; settings in pyproject.toml
 python3 -m contractor_lab offline                 # 20 criteria, offline, prints PASS/FAIL
 python3 -m contractor_lab speech                  # 4a audio → transcript → Nova → listen (mock transcript)
 python3 -m contractor_lab translate               # 4b German e-mail → English, identifiers and amounts checked
@@ -40,5 +41,10 @@ Fixtures: `fixtures/speech/` (synthetic site note WAV, reference transcript, sam
 `fixtures/translation/` (fictional e-mail and English reference), `fixtures/search/dossier-pages.json` (page texts),
 `azure/search/` (Blob → indexer → skillset → index samples) and `azure/content-understanding/` (request sample).
 Every fixture is labelled `FIKTIVE DATEN`; sample responses are marked as samples, not live output.
+
+`fixtures/capability/` holds the generated fixtures of the AI-103 Capability Lab (rotated page, a value repeated four times,
+an OCR digit error, photo metadata); rebuild them with `scripts/prepare-ai103-capability-fixtures.py`. The lab page runs
+TypeScript versions of the e-mail, translation, transcript, search and Content Understanding rules on the same fixtures
+([docs/AI103_CAPABILITY_LAB.md](../../docs/AI103_CAPABILITY_LAB.md)).
 
 Outputs go to the git-ignored `.local/ai103/`. Nothing in this lab approves, pays or sends anything.

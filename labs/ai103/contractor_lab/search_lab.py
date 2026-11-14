@@ -18,7 +18,6 @@ import json
 import math
 import re
 from collections import Counter
-from pathlib import Path
 
 from . import FIXTURES, LAB_ROOT
 from .azure_http import post

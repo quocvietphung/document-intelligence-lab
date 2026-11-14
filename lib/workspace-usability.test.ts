@@ -9,6 +9,7 @@ import {catalogGroupOf,documentTypeLabel,featureFromSearch,fill,overviewTasks,pr
 import {DocumentResults} from '@/components/workspace/DocumentResults';
 import {CaseReportButton} from '@/components/workspace/CaseOutputs';
 import {WorkspaceAIOverview} from '@/components/workspace/WorkspaceAIOverview';
+import {WorkspaceAICatalog} from '@/components/workspace/WorkspaceAICatalog';
 
 const review:CreditDocument={id:'doc-review',name:'eingangsrechnung-musterquartier.pdf',type:'invoice',status:'review',originalAvailable:true,analysisProvider:'docling',modelId:'docling-layout-tableformer',confidence:null,fields:[{label:'invoiceNumber',value:'RE-2026-014',confidence:null}],pages:[{number:1,text:'Rechnung',method:'docling'}]} as CreditDocument;
 const verified:CreditDocument={...review,id:'doc-verified',name:'bauvertrag-musterquartier.pdf',status:'verified'};
@@ -60,12 +61,13 @@ describe('task page priorities',()=>{
     expect(waiting.map(item=>item.id)).toEqual(['doc-review']);
     expect(recentDocuments([review,{...verified,status:'missing'}],[]).map(item=>item.id)).toEqual(['doc-review']);
   });
-  it('renders work for a person first, then recent documents, entry points and the collapsed catalog',()=>{
+  it('renders work for a person first, then recent documents, entry points and the AI-103 summary, without the catalogue',()=>{
     const html=renderToStaticMarkup(createElement(WorkspaceAIOverview,{locale:'vi',demo:false,documentMode:'docling',navigate:()=>{},openNova:()=>{},documents:[review,verified],caseId:'CR-1'}));
-    const order=['overview-attention','overview-recent','data-page-tour="overview-ai"','ai-directory'].map(marker=>html.indexOf(marker));
+    const order=['overview-attention','overview-recent','data-page-tour="overview-ai"','data-page-tour="overview-ai103"'].map(marker=>html.indexOf(marker));
     expect(order.every(index=>index>=0)).toBe(true);expect([...order].sort((a,b)=>a-b)).toEqual(order);
     expect(html).toContain('Kiểm duyệt ngay');expect(html).toContain('Hỏi tài liệu');expect(html).toContain('Đánh giá chất lượng');
-    expect(html).toContain('id="ai-directory-groups" hidden=""');
+    // The feature catalogue moved to AI transparency; the Tasks page links to the lab and states what the counts mean.
+    expect(html).not.toContain('ai-directory');expect(html).toContain('href="/vi/ai103"');expect(html).toContain('không phải số dịch vụ Azure chạy thật');
     expect(renderToStaticMarkup(createElement(WorkspaceAIOverview,{locale:'en',demo:false,navigate:()=>{},openNova:()=>{}}))).toContain('Nothing waits for you');
   });
   it('counts dossier checks, failed files and reviews together, like the menu badge',()=>{
@@ -73,8 +75,8 @@ describe('task page priorities',()=>{
     expect(html).toContain('Needs attention <span>4</span>');expect(html).not.toContain('Nothing waits for you');
     const workspace=readFileSync('components/workspace/CreditWorkspace.tsx','utf8');
     expect(workspace).toContain("id==='overview'?item.issues.length+reviewCount");
-    // Catalogue actions name the page they open.
-    expect(html).toContain('Open AI transparency');
+    // Catalogue actions name the page they open; the catalogue itself now lives on AI transparency.
+    expect(renderToStaticMarkup(createElement(WorkspaceAICatalog,{locale:'en',demo:false,navigate:()=>{},openNova:()=>{}}))).toContain('Open AI transparency');
   });
   it('names document types for people',()=>{
     expect(documentTypeLabel('invoice','vi')).not.toBe('invoice');

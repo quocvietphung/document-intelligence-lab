@@ -45,7 +45,8 @@ class LocalInferenceModelTest {
   @Test void compactPromptPreservesEverySelectedExcerptAndHasOneQuestion(){
     var sources=List.of(new CreditAssistantService.Source("doc-1:p1:fields","Invoice","invoiceNumber: 51109301; evidence=Invoice no: 51109301"),new CreditAssistantService.Source("doc-1:p1:c1","Invoice","Total INR 1,844,673.60"));
     String question="What is the invoice number?",prompt=DocumentReviewModel.prompt("general","English",question,sources);
-    for(var source:sources)assertThat(prompt).contains("["+source.id()+"] "+source.text());
+    assertThat(prompt).contains("S1 (Invoice): invoiceNumber: 51109301; evidence=Invoice no: 51109301","S2 (Invoice): Total INR 1,844,673.60");
+    for(var source:sources)assertThat(prompt).doesNotContain(source.id());
     assertThat(prompt.indexOf(question)).isEqualTo(prompt.lastIndexOf(question));assertThat(prompt).contains("End of untrusted evidence","English","missing evidence");
     assertThat(prompt.length()).isLessThan(650);
   }

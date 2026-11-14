@@ -1,0 +1,12 @@
+{
+  "_comment": "FIKTIVE DATEN. Simulated OCR output of nachtrag-n01-wv-2026-031.pdf page 2 with one misread digit (48.730,00 for 48.780,00). The source page text is in fixtures/search/dossier-pages.json.",
+  "source": {
+    "documentName": "nachtrag-n01-wv-2026-031.pdf",
+    "page": 2
+  },
+  "ocrText": "DOCUMENT INTELLIGENCE LAB · AI-103 CONTRACTOR DOSSIER · FIKTIVE DATEN\nNachtragsvergütung und Genehmigung\nNachtragsvergütung netto:   4.991,60 EUR netto\nUmsatzsteuer 19 %:   948,40 EUR\nNachtragssumme:   5.940,00 EUR brutto\nGenehmigungsstatus:   schriftlich genehmigt durch den Auftraggeber am 16.10.2026\nGenehmigte Gesamtvergütung:   48.730,00 EUR brutto\nDie genehmigte Gesamtvergütung ergibt sich aus Auftragssumme 42.840,00 EUR brutto und Nachtrag\nN-01 5.940,00 EUR brutto. Weitere Leistungen sind nicht genehmigt.\nFIKTIVES FORSCHUNGSDOKUMENT · FIKTIVE DATEN · Keine reale Firma, Baustelle, Rechnung, Abnahme oder\nZahlungsfreigabe. Alle Namen, Nummern, Beträge und Daten sind frei erfunden.",
+  "expectedMismatch": {
+    "ocr": "48.730,00",
+    "source": "48.780,00"
+  }
+}

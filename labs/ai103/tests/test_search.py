@@ -10,7 +10,7 @@ from unittest import mock
 
 from contractor_lab import search_lab
 from contractor_lab.cloud import LiveCallRefused
-from contractor_lab.search_lab import bm25, load_pages, local_check, live_query, parse_search_response, validate_config
+from contractor_lab.search_lab import bm25, live_query, local_check, parse_search_response, validate_config
 
 
 class SearchTests(unittest.TestCase):
@@ -60,9 +60,8 @@ class SearchTests(unittest.TestCase):
                          parse_search_response(sample))
 
     def test_live_search_refuses_without_opt_in(self):
-        with mock.patch("urllib.request.urlopen", side_effect=AssertionError("network used")):
-            with self.assertRaises(LiveCallRefused):
-                live_query("Genehmigte Gesamtvergütung", "token", {"AZURE_SEARCH_ENDPOINT": "https://x.search.windows.net", "AZURE_SEARCH_INDEX": "i"})
+        with mock.patch("urllib.request.urlopen", side_effect=AssertionError("network used")), self.assertRaises(LiveCallRefused):
+            live_query("Genehmigte Gesamtvergütung", "token", {"AZURE_SEARCH_ENDPOINT": "https://x.search.windows.net", "AZURE_SEARCH_INDEX": "i"})
 
 
 if __name__ == "__main__":

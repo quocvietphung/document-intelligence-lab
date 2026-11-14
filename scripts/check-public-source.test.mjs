@@ -31,3 +31,8 @@ test('allows only the named authored use-case fixtures, not arbitrary PDFs next 
   for(const path of ['services/credit-api/src/main/resources/use-cases/customer-contract.pdf','services/credit-api/src/main/resources/use-cases/bauvertrag-musterquartier.pdf.pdf','services/credit-api/src/main/resources/use-cases/sub/bauvertrag-musterquartier.pdf'])
     assert.ok(publicationRisk(path),path);
 });
+test('allows only the generated AI-103 capability PDF, not other PDFs in the lab folders',()=>{
+  assert.equal(publicationRisk('labs/ai103/fixtures/capability/rotated-repeated-value.pdf'),null);
+  for(const path of ['labs/ai103/fixtures/capability/customer.pdf','labs/ai103/fixtures/rotated-repeated-value.pdf','labs/ai103/fixtures/capability/sub/rotated-repeated-value.pdf'])
+    assert.ok(publicationRisk(path),path);
+});

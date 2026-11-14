@@ -12,8 +12,9 @@ import json
 import re
 import time
 import urllib.request
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Protocol
+from typing import Any, ClassVar, Protocol
 from urllib.parse import urlparse
 
 from .otel import Tracer
@@ -36,7 +37,7 @@ class Final:
 
 class Planner(Protocol):
     name: str
-    def next(self, state: "AgentState") -> ToolCall | Final: ...
+    def next(self, state: AgentState) -> ToolCall | Final: ...
 
 
 @dataclass
@@ -57,7 +58,7 @@ def _compact_dossier(case: dict) -> dict:
 class ReadOnlyTools:
     """The complete tool surface. Each tool is a GET or the read-only evidence search."""
 
-    SPECS = {
+    SPECS: ClassVar[dict[str, tuple[str, dict]]] = {
         "get_dossier": ("List the dossier's documents, types and review status.", {}),
         "run_precheck": ("Run the deterministic contractor pre-check (amounts, tax basis, evidence, draft).", {}),
         "search_evidence": ("Search the dossier's evidence (Qdrant + BM25) for a short German query.", {"question": {"type": "string"}}),
@@ -82,11 +83,11 @@ class ReadOnlyTools:
             found = self.api.post(f"/api/cases/{self.case_id}/platform/search", {"question": question})["search"]
             return {"backend": found["backend"], "quarantined": len(found.get("quarantined", [])),
                     "hits": [{"documentId": h["documentId"], "page": h["page"], "score": h["score"]} for h in found["hits"]]}
-        if self._case is None:
-            self._case = self.api.get(f"/api/cases/{self.case_id}")
-        document = next((d for d in self._case["documents"] if d["id"] == arguments.get("documentId")), None)
+        case = self._case if self._case is not None else self.api.get(f"/api/cases/{self.case_id}")
+        self._case = case
+        document = next((d for d in case["documents"] if d["id"] == arguments.get("documentId")), None)
         page = next((p for p in (document or {}).get("pages", []) if p["number"] == arguments.get("page")), None)
-        if page is None:
+        if document is None or page is None:
             return {"error": "PAGE_NOT_FOUND"}
         return {"documentId": document["id"], "page": page["number"], "untrusted": True, "text": page["text"][:600]}
 

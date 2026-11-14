@@ -1,5 +1,5 @@
 import {afterEach,describe,expect,it,vi} from "vitest";
-import {novaLimit,novaLimitMessage,novaSafetyMessage,novaModelFailure,novaModelMessage} from "./nova-limits";
+import {novaContractFailure,novaLimit,novaLimitMessage,novaSafetyMessage,novaModelFailure,novaModelMessage} from "./nova-limits";
 import {POST} from "../app/api/chat/route";
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
 describe("Nova limit feedback",()=>{
@@ -20,6 +20,17 @@ describe("Nova limit feedback",()=>{
    const response=await POST(new Request("http://localhost:3000/api/chat",{method:"POST",headers:{Authorization:"Bearer test",Origin:"http://localhost:3000","Content-Type":"application/json"},body:JSON.stringify({caseId:"CR-1",locale:"vi",messages:[{id:"u",role:"user",parts:[{type:"text",text:"Explain my payslip"}]}]})}));
    expect(response.status).toBe(422);expect(await response.json()).toEqual({error:"AI_SAFETY_FILTER"});expect(fetchMock).toHaveBeenCalledTimes(1);
    for(const locale of ["en","de","vi"])expect(novaSafetyMessage(locale)).toContain("Azure AI");
+ });
+ it("explains a citation or evidence refusal in every locale and never as a safety filter",async()=>{
+   for(const locale of ['en','de','vi']){
+     const citation=novaModelMessage('{"code":"MODEL_CITATION_CONTRACT_FAILED","reason":"NON_SOURCE_BRACKET"}',locale),evidence=novaModelMessage('MODEL_EVIDENCE_CONTRACT_FAILED',locale);
+     expect(citation).toBeTruthy();expect(evidence).toBeTruthy();expect(citation).not.toBe(evidence);expect(citation).not.toBe(novaSafetyMessage(locale));
+   }
+   expect(novaContractFailure({code:'MODEL_CITATION_CONTRACT_FAILED',reason:'NON_SOURCE_BRACKET'})).toBe('MODEL_CITATION_CONTRACT_FAILED');expect(novaContractFailure({code:'AI_SAFETY_FILTER'})).toBeUndefined();
+   vi.stubEnv("NEXT_PUBLIC_DEMO_MODE","false");vi.stubEnv("CREDIT_API_URL","http://java:8080");
+   const fetchMock=vi.fn().mockResolvedValue(Response.json({code:"MODEL_CITATION_CONTRACT_FAILED",reason:"NON_SOURCE_BRACKET",answer:"Herr [Name] private text"},{status:422}));vi.stubGlobal("fetch",fetchMock);
+   const response=await POST(new Request("http://localhost:3000/api/chat",{method:"POST",headers:{Authorization:"Bearer test",Origin:"http://localhost:3000","Content-Type":"application/json"},body:JSON.stringify({caseId:"CR-1",locale:"de",messages:[{id:"u",role:"user",parts:[{type:"text",text:"Schreibe eine E-Mail an den Auftragnehmer"}]}]})}));
+   expect(response.status).toBe(422);expect(await response.json()).toEqual({error:"MODEL_CITATION_CONTRACT_FAILED"});expect(fetchMock).toHaveBeenCalledTimes(1);
  });
  it("accepts only safe known metadata",()=>{expect(novaLimit({code:"AZURE_SECRET",resetAt:"oops"})).toBeUndefined();expect(novaLimit({code:"AI_MINUTE_LIMIT",resetAt:"invalid"})).toBeUndefined();expect(novaLimit({code:"AI_MINUTE_LIMIT",secret:"must-not-appear"})).toEqual({code:"AI_MINUTE_LIMIT"});});
  it("distinguishes minute, account and tenant limits in every locale",()=>{for(const locale of ["en","de","vi"]){const a=novaLimitMessage({code:"AI_MINUTE_LIMIT"},locale),b=novaLimitMessage({code:"AI_DAILY_ACCOUNT_LIMIT"},locale),c=novaLimitMessage({code:"AI_DAILY_TENANT_LIMIT"},locale);expect(new Set([a,b,c]).size).toBe(3);expect(novaLimitMessage({code:"AI_DAILY_ACCOUNT_LIMIT",resetAt:"2026-10-13T00:00:00Z"},locale)).not.toEqual(b);}});

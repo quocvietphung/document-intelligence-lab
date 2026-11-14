@@ -5,7 +5,7 @@ import {useOptionalAuth} from '@/components/auth/KeycloakProvider';
 import {workspaceUxText} from "@/lib/workspace-ux";
 import type {WorkspaceTab} from "@/lib/nova-guide";
 import {aiText,chatEngine,documentAI,type AICapabilities} from "@/lib/ai-capabilities";
-import {WorkspaceAICatalog} from './WorkspaceAICatalog';
+import {Ai103Summary} from './Ai103Summary';
 import type {CreditDocument} from '@/lib/credit-data';
 import type {TrustSection} from '@/lib/nova-trust';
 import {platformSchema} from '@/lib/platform';
@@ -87,6 +87,6 @@ export function WorkspaceAIOverview({locale, demo, documentMode, capabilities, n
         <div><dt>{t.nova}</dt><dd>{chat.engine} · <code>{chat.model}</code></dd></div>
       </dl><p className="ai-configuration-note"><ShieldCheck size={13}/>{ai.notLive}</p></details>
     </section>
-    <WorkspaceAICatalog caseId={caseId} locale={locale} demo={demo} capabilities={capabilities} navigate={navigate} openNova={openNova} openTrust={openTrust}/>
+    <Ai103Summary locale={locale} openCatalog={openTrust?()=>openTrust('library'):undefined}/>
   </>;
 }

@@ -55,8 +55,8 @@ class SelectedFieldEvidenceTest {
       @Override public dev.langchain4j.model.chat.response.ChatResponse doChat(dev.langchain4j.model.chat.request.ChatRequest request){
         assertThat(request.toolSpecifications()).isNullOrEmpty();
         String prompt=((dev.langchain4j.data.message.UserMessage)request.messages().getLast()).singleText();
-        assertThat(prompt).contains("[R:p1:r2]","Total: $500").doesNotContain("[R:p1:r0]","Other repeated values");
-        return dev.langchain4j.model.chat.response.ChatResponse.builder().finishReason(dev.langchain4j.model.output.FinishReason.STOP).aiMessage(dev.langchain4j.data.message.AiMessage.from("The recorded amount is $500 [R:p1:r2].")).build();
+        assertThat(prompt).contains("Total: $500").doesNotContain("R:p1:r0","Other repeated values");
+        return dev.langchain4j.model.chat.response.ChatResponse.builder().finishReason(dev.langchain4j.model.output.FinishReason.STOP).aiMessage(dev.langchain4j.data.message.AiMessage.from(NovaStubs.segmentCiting(prompt,"Total: $500"))).build();
       }
     };
     var service=new CreditAssistantService(cases,new com.fasterxml.jackson.databind.ObjectMapper(),java.util.Optional.of(model),null,platform,null);

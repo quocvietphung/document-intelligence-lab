@@ -1,0 +1,16 @@
+{
+  "_comment": "FIKTIVE DATEN. Text of rotated-repeated-value.pdf, read back from the generated pages.",
+  "file": "rotated-repeated-value.pdf",
+  "pages": [
+    {
+      "number": 1,
+      "rotation": 0,
+      "text": "FIKTIVE DATEN · AI-103 Capability Lab · Fixture gleicher Wert\nProjekt-ID: LH-2026-C07 · Auftrag WV-2026-031\nPosition 1 · Gesamtvergütung · 48.780,00 EUR brutto\nZwischensumme · 48.780,00 EUR brutto\nPrüfvermerk · genehmigter Betrag 48.780,00 EUR brutto\nSchlusssumme · 48.780,00 EUR brutto"
+    },
+    {
+      "number": 2,
+      "rotation": 90,
+      "text": "Seite 2 · gedrehte Seite (90 Grad) · Nachtrag N-01\nNachtrag genehmigt: 48.780,00 EUR brutto"
+    }
+  ]
+}

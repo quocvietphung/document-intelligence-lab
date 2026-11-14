@@ -10,14 +10,16 @@ import threading
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import ClassVar
 
 from contractor_lab import FIXTURES
 from contractor_lab.agent import OllamaPlanner, ReadOnlyTools, ScriptedPlanner, run_agent
-from contractor_lab.cloud import LiveCallRefused, OPT_IN_VALUE, plan, require_live
+from contractor_lab.cloud import OPT_IN_VALUE, LiveCallRefused, plan, require_live
 from contractor_lab.emails import Masker, classify, triage
 from contractor_lab.guard import approval_instructions
 from contractor_lab.media import analyze_audio, link_photos, run_media
-from contractor_lab.nova import question, validate as validate_nova
+from contractor_lab.nova import question
+from contractor_lab.nova import validate as validate_nova
 from contractor_lab.otel import Tracer, summarize_collector_file
 from contractor_lab.platform import PolicyError, ReadOnlyApi
 from contractor_lab.schema import load, validate
@@ -27,7 +29,7 @@ CASE = PRECHECK["caseId"]
 
 
 class FakeApi(BaseHTTPRequestHandler):
-    seen: list = []
+    seen: ClassVar[list] = []
 
     def log_message(self, *args):  # keep test output clean
         pass
@@ -129,7 +131,7 @@ class AgentTests(unittest.TestCase):
 
 class NovaTests(unittest.TestCase):
     """2b – Nova suggestions are checked in code."""
-    sources = ["doc-a:p2:c1", "doc-b:p2:c1"]
+    sources: ClassVar[tuple[str, ...]] = ("doc-a:p2:c1", "doc-b:p2:c1")
 
     def test_question_is_bounded_and_uses_computed_figures(self):
         text = question(PRECHECK, "vi")
@@ -204,7 +206,7 @@ class MediaTests(unittest.TestCase):
 
 class CloudTests(unittest.TestCase):
     """3 – Azure stays off unless explicitly opted in."""
-    env = {"AI103_AZURE_OPT_IN": OPT_IN_VALUE, "AI103_AZURE_SERVICES": "search",
+    env: ClassVar[dict[str, str]] = {"AI103_AZURE_OPT_IN": OPT_IN_VALUE, "AI103_AZURE_SERVICES": "search",
            "AZURE_SEARCH_ENDPOINT": "https://lab-search.search.windows.net", "AZURE_SEARCH_INDEX": "contractor-dossier-ai103"}
 
     def test_default_is_local_and_offline(self):
@@ -243,9 +245,8 @@ class TracingTests(unittest.TestCase):
 
     def test_spans_nest_and_propagate_trace_context(self):
         tracer = Tracer("t")
-        with tracer.span("agent.run"):
-            with tracer.span("tool.run_precheck") as child:
-                header = tracer.traceparent()
+        with tracer.span("agent.run"), tracer.span("tool.run_precheck") as child:
+            header = tracer.traceparent()
         self.assertRegex(header, r"^00-[a-f0-9]{32}-[a-f0-9]{16}-01$")
         self.assertEqual(child.span_id, header.split("-")[2])
         parent = next(s for s in tracer.spans if s.name == "agent.run")

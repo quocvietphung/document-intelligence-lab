@@ -46,8 +46,9 @@ class PageIsolationContextTest {
     var prompts = new ArrayList<String>();
     ChatModel model = new ChatModel() {
       @Override public ChatResponse doChat(ChatRequest request) {
-        prompts.add(((UserMessage) request.messages().getLast()).singleText());
-        return ChatResponse.builder().finishReason(FinishReason.STOP).aiMessage(AiMessage.from("Der Lieferschein Nr. 12 ist vollständig [doc-inv:p3].")).build();
+        String prompt = ((UserMessage) request.messages().getLast()).singleText();
+        prompts.add(prompt);
+        return ChatResponse.builder().finishReason(FinishReason.STOP).aiMessage(AiMessage.from(NovaStubs.segmentCiting(prompt, "Lieferschein Nr. 12"))).build();
       }
     };
     var service = new CreditAssistantService(cases, new ObjectMapper(), Optional.of(model));
