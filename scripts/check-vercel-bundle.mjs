@@ -24,6 +24,7 @@ const forbidden = [
   [/\.(dump|sql|sqlite|db|tfstate|tfvars|pem|key)$/i, "database dumps, state or keys"],
   [/^(infra|docs)\//, "infrastructure and docs"],
   [/^docker-compose[^/]*\.yml$/, "compose files"],
+  [/\.test\.(ts|tsx|mjs|js)$/, "test files"],
   [/^services\//, "backend files the frontend does not import", (file) => !allowedServices.test(file)],
 ];
 
