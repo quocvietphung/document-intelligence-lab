@@ -18,6 +18,9 @@ services/credit-api/src/main/resources/*
 !services/credit-api/src/main/resources/kaggle-reference-hashes.json
 !services/credit-api/src/main/resources/real-estate
 !services/credit-api/src/main/resources/real-estate/**
+!services/credit-api/src/main/resources/contractor-dossier
+services/credit-api/src/main/resources/contractor-dossier/*
+!services/credit-api/src/main/resources/contractor-dossier/manifest.json
 infra
 docker-compose*.yml
 docs
