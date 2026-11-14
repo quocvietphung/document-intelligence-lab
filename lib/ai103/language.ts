@@ -1,0 +1,1026 @@
+import type {Bucket, CapabilityId, Status} from "./model";
+
+export type Ai103Locale = "en" | "de" | "vi";
+export function ai103Locale(value: string): Ai103Locale {
+  return value === "de" || value === "vi" ? value : "en";
+}
+
+export const decisionCriteria = ["data", "latency", "cost", "governance", "local"] as const;
+export type DecisionCriterion = (typeof decisionCriteria)[number];
+export type DecisionRow = {choice: string; use: string} & Record<DecisionCriterion, string>;
+export type CapabilityCopy = {name: string; useCase: string; pipeline: string; localEquivalent: string; limits: string[]};
+
+export type Ai103Text = {
+  pageTitle: string;
+  eyebrow: string;
+  intro: string;
+  back: string;
+  language: string;
+  listTitle: string;
+  kpiTitle: string;
+  summaryOpen: string;
+  summaryCatalog: string;
+  kpi: Record<Bucket, string>;
+  kpiNote: string;
+  kpiRule: string;
+  search: string;
+  status: string;
+  allStatuses: string;
+  shown: string;
+  noMatches: string;
+  reset: string;
+  columns: {capability: string; local: string; azure: string; fixture: string; lastTested: string; action: string};
+  openLab: string;
+  close: string;
+  notTested: string;
+  notApplicable: string;
+  moreFixtures: string;
+  detail: {
+    business: string; samples: string; pipeline: string; expected: string; actual: string; localEquivalent: string;
+    azureService: string; latest: string; latency: string; cost: string; evidence: string; limits: string; command: string;
+    lastTested: string; parts: string; localSide: string; azureSide: string; notMeasured: string; recordedEnglish: string;
+  };
+  run: {
+    local: string; azure: string; running: string; azureOff: string; noCheck: string; error: string; passed: string;
+    failed: string; notRun: string; heading: string; cases: string; at: string; caseName: string; result: string;
+  };
+  statuses: Record<Status, string>;
+  parts: Record<string, string>;
+  decision: {title: string; intro: string; columns: Record<"choice" | "use" | DecisionCriterion, string>; rows: DecisionRow[]};
+  capabilities: Record<CapabilityId, CapabilityCopy>;
+  footnote: string;
+};
+
+const en: Ai103Text = {
+  pageTitle: "AI-103 Lab",
+  eyebrow: "AI-103 capability lab",
+  intro: "Eighteen capability groups, each tied to a fictional document from the contractor dossier. Statuses come from one manifest and from server-side checks; nothing here calls Azure.",
+  back: "Back to the workspace",
+  language: "Language",
+  listTitle: "Capabilities",
+  kpiTitle: "Status summary",
+  summaryOpen: "Open AI-103 Lab",
+  summaryCatalog: "AI features and engines: {page}",
+  kpi: {
+    "verified-local": "Verified locally",
+    "verified-azure": "Verified on Azure",
+    "configured-mocked": "Configured or mocked",
+    "blocked-unsupported": "Blocked or unsupported",
+  },
+  kpiNote: "Capability count, not the number of live Azure services or model calls.",
+  kpiRule: "Each capability is counted once, under its strongest evidence.",
+  search: "Search capabilities",
+  status: "Status",
+  allStatuses: "All statuses",
+  shown: "{shown} of {total} shown",
+  noMatches: "No capability matches these filters.",
+  reset: "Reset filters",
+  columns: {capability: "Capability", local: "Local", azure: "Azure", fixture: "Fixture", lastTested: "Last tested", action: "Lab"},
+  openLab: "Open lab",
+  close: "Close",
+  notTested: "Not tested",
+  notApplicable: "Not applicable",
+  moreFixtures: "+{count} more",
+  detail: {
+    business: "Business use case",
+    samples: "Sample documents",
+    pipeline: "Pipeline",
+    expected: "Expected result",
+    actual: "Actual result",
+    localEquivalent: "Local equivalent",
+    azureService: "Azure service",
+    latest: "Latest recorded result",
+    latency: "Latency",
+    cost: "Cost",
+    evidence: "Evidence",
+    limits: "Limits and what is not verified",
+    command: "Command",
+    lastTested: "Last tested",
+    parts: "Parts",
+    localSide: "Local",
+    azureSide: "Azure",
+    notMeasured: "Not measured",
+    recordedEnglish: "Recorded test output is kept in English.",
+  },
+  run: {
+    local: "Run local test",
+    azure: "Run Azure test",
+    running: "Running…",
+    azureOff: "Azure tests are off. They need an explicit opt-in, a configured resource and a cost estimate shown first. None is set here, so no request is sent.",
+    noCheck: "No in-app check for this capability. Run the command above in a terminal; the recorded result is shown here.",
+    error: "The check could not run. Nothing was recorded.",
+    passed: "Passed",
+    failed: "Failed",
+    notRun: "Not run",
+    heading: "Result of this run (from the server)",
+    cases: "What was compared",
+    at: "Ran at",
+    caseName: "Case",
+    result: "Result",
+  },
+  statuses: {
+    "verified-local": "Verified locally",
+    "verified-azure": "Verified on Azure",
+    configured: "Configured",
+    mock: "Mock",
+    "azure-not-run": "Azure not run",
+    blocked: "Blocked",
+    "not-supported": "Not supported",
+  },
+  parts: {
+    "text-to-image": "Text to image",
+    "image-to-image": "Image to image",
+    inpainting: "Inpainting",
+    "video-generation": "Video generation",
+    "optional-local-engine": "Optional local engine",
+  },
+  decision: {
+    title: "Azure or local: decision matrix",
+    intro: "Six choices with the same five criteria. The matrix is a decision aid; it calls no service.",
+    columns: {choice: "Choice", data: "Data", latency: "Latency", cost: "Cost", governance: "Governance", local: "Local capability", use: "Use"},
+    rows: [
+      {
+        choice: "Document Intelligence or Content Understanding",
+        data: "Both send the file to an Azure resource; use fictional files until region and processing terms are approved.",
+        latency: "Measure per document type; neither was called in this lab.",
+        cost: "Billed per page or analysed unit; count the dossier pages first.",
+        governance: "Pin the API and analyzer version and store it with each result.",
+        local: "Docling covers layout, tables and OCR locally; Content Understanding has no local equivalent here.",
+        use: "Docling for the lab; Azure only for a measured gap, with opt-in.",
+      },
+      {
+        choice: "Azure AI Search or Qdrant and BM25",
+        data: "Azure keeps the index in its region; Qdrant and BM25 stay on this machine.",
+        latency: "Local ranking avoids a network round trip; Azure was not measured.",
+        cost: "Azure bills search units while the service runs; local uses Docker memory that is already reserved.",
+        governance: "Azure: RBAC and private endpoints; local: the tenant check in the application.",
+        local: "Qdrant, BM25 and reranking run locally (hit@5 100 % with BM25 on the nine-PDF benchmark).",
+        use: "Local for development; Azure when an index must be shared, with opt-in.",
+      },
+      {
+        choice: "Azure OpenAI or Ollama",
+        data: "Azure OpenAI sends prompts to Azure; Ollama keeps them on this host with cloud models disabled.",
+        latency: "Ollama on CPU took 172.8 s for one pre-check answer; Azure was not measured here.",
+        cost: "Azure bills tokens; Ollama has no token fee but needs RAM and a model download.",
+        governance: "Same JSON contract, fixtures and tests for both; no automatic fallback from local to cloud.",
+        local: "Ollama 0.40.16 runs as non-root on a read-only root filesystem.",
+        use: "Ollama for the lab; Azure only when a stronger model is approved.",
+      },
+      {
+        choice: "Foundry Agent or local workflow",
+        data: "A Foundry agent sends tool inputs to Azure; the local workflow keeps them in the lab.",
+        latency: "The local workflow has fixed steps; an agent adds model turns.",
+        cost: "Agents bill model and tool calls; the local workflow uses local CPU.",
+        governance: "Local: no write tool and human review in the app; an agent needs its own approval and audit design.",
+        local: "The lab agent retrieves, validates, calculates and drafts locally.",
+        use: "Local workflow until an agent is needed and approved.",
+      },
+      {
+        choice: "Azure Speech or browser voice",
+        data: "Azure Speech receives the audio or text; the browser voice reads text on the device.",
+        latency: "The browser voice starts at once; Azure adds network time (not measured).",
+        cost: "Azure bills audio time or characters; the browser voice costs nothing.",
+        governance: "Azure voices and retention need approval; browser voices depend on the operating system.",
+        local: "The browser voice works offline with installed voices; the transcript is a fixture today.",
+        use: "Browser voice to read answers; Azure Speech only for recognition or SSML needs.",
+      },
+      {
+        choice: "Application Insights or local OpenTelemetry",
+        data: "Application Insights stores telemetry in Azure; the local collector keeps it on this machine.",
+        latency: "Local export is immediate; Application Insights ingests asynchronously (not measured).",
+        cost: "Application Insights bills ingested data; the local collector uses local memory.",
+        governance: "The redaction allowlist applies to both; retention is set in Azure or by the lab.",
+        local: "The OTLP collector runs locally; tracing stays off unless enabled.",
+        use: "Local OpenTelemetry now; Application Insights only after the redaction test passes.",
+      },
+    ],
+  },
+  capabilities: {
+    "foundry-tools": {
+      name: "Foundry tools / MCP",
+      useCase: "Find the contract, read the change-order value and compute the difference for the controller, with read-only tools.",
+      pipeline: "Find contract → read change order → compute variance → check evidence → draft for review",
+      localEquivalent: "Lab agent with read-only tools (scripted or local Ollama planner)",
+      limits: ["No timeout or retry test yet.", "Foundry is not called; the tool schema is checked only through the local agent."],
+    },
+    security: {
+      name: "Security",
+      useCase: "A user sees only their own tenant and case; instructions inside a PDF never grant access or tools.",
+      pipeline: "Keycloak sign-in → token audience and tenant check → role check → case access → read or write",
+      localEquivalent: "Keycloak, Spring Security and the tenant and case checks in the credit API",
+      limits: ["Entra ID, Managed Identity, RBAC and private networking are documented, not tested in Azure.", "Browser sign-in was checked on port 3001 only."],
+    },
+    "image-generation": {
+      name: "Computer Vision generation",
+      useCase: "Prepare an illustration or a masked edit for a review file, never as evidence.",
+      pipeline: "Prompt or source image and mask → request check (mode, MIME type, size, mask) → deterministic stub",
+      localEquivalent: "Request contract and stub; no image model is installed",
+      limits: [
+        "No model is installed; the stub never returns an image.",
+        "Video generation is not supported on this hardware.",
+        "An optional local engine needs your consent to download several GB and would share the 5 GiB memory limit with Ollama.",
+      ],
+    },
+    "ai-search": {
+      name: "AI Search",
+      useCase: "Find the page that answers a pre-check question across the dossier.",
+      pipeline: "Query → BM25 ranking over page texts → expected page first → document and page kept for the citation",
+      localEquivalent: "BM25 over the fixture pages here; Qdrant, BM25 and reranking in the credit API",
+      limits: [
+        "The hybrid query body is not verified against the current API reference.",
+        "The page-number field of Azure normalized images is not verified.",
+        "Fixture pages are native PDF text, not OCR output.",
+      ],
+    },
+    observability: {
+      name: "Observability",
+      useCase: "See how long each step took without logging tokens, document text, full prompts or personal data.",
+      pipeline: "Upload → ClamAV → OCR → indexing → retrieval → Nova (request ids and lab spans today)",
+      localEquivalent: "Request trace filter in the credit API; OpenTelemetry spans and a local collector in the lab",
+      limits: [
+        "No single trace yet from upload through ClamAV, OCR, indexing, retrieval and Nova.",
+        "Step latency on this page comes from a recorded pre-check run, not from every upload.",
+        "Application Insights export and its redaction are not tested.",
+      ],
+    },
+    "foundry-agents": {
+      name: "Foundry Agents",
+      useCase: "Take a dossier through retrieve, validate, calculate, draft and human review, for a complete dossier and one with missing evidence.",
+      pipeline: "Retrieve → validate → calculate → draft → human review; no tool approves, pays or sends",
+      localEquivalent: "Lab agent workflow and the read-only pre-check API",
+      limits: [
+        "Foundry Agent Service is not created or called.",
+        "The lab has no state-changing tool, so confirmation is enforced by the absence of write tools, not by a live approval dialog.",
+      ],
+    },
+    speech: {
+      name: "Speech",
+      useCase: "Hear a site note, check the invoice number and amount, and read the answer aloud.",
+      pipeline: "Audio → transcript → check invoice code, amount and currency → Nova → voice",
+      localEquivalent: "Synthetic WAV with a reference transcript; the browser voice on the device",
+      limits: [
+        "German only; English and Vietnamese audio are not tested.",
+        "The transcript is a fixture, not speech recognition output.",
+        "The browser voice on the device is not Azure Speech.",
+      ],
+    },
+    rag: {
+      name: "RAG",
+      useCase: "Answer from the dossier with the page and passage that support it, or say that the evidence is missing.",
+      pipeline: "Question → retrieval → constrained answer with source labels → the server writes the authorised source id",
+      localEquivalent: "Qdrant, BM25 and reranking in the credit API with local Nova",
+      limits: [
+        "The benchmark uses native text of nine public PDFs, not OCR or Docling output.",
+        "Labels were prepared by an agent from the PDF text, not by independent human annotators.",
+        "Page hit and citation hit are not reported separately yet.",
+      ],
+    },
+    "service-selection": {
+      name: "Azure services selection",
+      useCase: "Choose the Azure or local service for each part of the dossier work, with the trade-offs written down.",
+      pipeline: "Compare data, latency, cost, governance and local capability → choose per workload",
+      localEquivalent: "The decision matrix on this page; no service is called",
+      limits: ["The matrix is a decision aid; it calls no service.", "Prices change; the cost column states relative order, not a quote."],
+    },
+    "content-understanding": {
+      name: "Content Understanding",
+      useCase: "Turn a dossier with a PDF, photos and audio metadata into one checked JSON record.",
+      pipeline: "Documented request → analyzer → structured JSON → schema check",
+      localEquivalent: "Request-shape check here; the lab's media and speech checks for the photo and audio parts",
+      limits: [
+        "The sample is a request shape, not an analyzer result.",
+        "The multimodal case runs through the lab's media and speech checks, not through Content Understanding.",
+      ],
+    },
+    deployment: {
+      name: "Deployment",
+      useCase: "Start the lab with only the services a task needs, and keep CI from deploying.",
+      pipeline: "Compose files → health checks → CI build and test; no deployment",
+      localEquivalent: "Docker Compose with a hardened Ollama container and a health check on every service",
+      limits: [
+        "No optimisation was made in this pass, so the before and after resource figures are the same.",
+        "There is no image-generation profile; it would be added only with your consent.",
+      ],
+    },
+    "genai-app": {
+      name: "GenAI application",
+      useCase: "Answer a question about a dossier in a constrained format that a person can check.",
+      pipeline: "Evidence excerpts → schema-constrained JSON → render with authorised citations → refusal when the contract fails",
+      localEquivalent: "Nova through Ollama (qwen3 4B) with the same contract as the Azure OpenAI provider",
+      limits: [
+        "Claim-level amount check in the lab: 2 of 3 criteria pass (one source label per segment).",
+        "Azure OpenAI is not called; there is no automatic fallback from local to cloud.",
+      ],
+    },
+    "vision-understanding": {
+      name: "Vision understanding",
+      useCase: "Link each acceptance photo to the acceptance report and the page that mentions it.",
+      pipeline: "Photo → header metadata → caption → link to the dossier → human review",
+      localEquivalent: "PNG header reading and caption mapping; no image model",
+      limits: ["Metadata and source mapping only; no object detection or image analysis is claimed.", "Each photo still needs human review."],
+    },
+    "language-pii": {
+      name: "Language and PII",
+      useCase: "Sort contractor e-mails and mask personal data before any model sees them, keeping invoice, project and amount values.",
+      pipeline: "E-mail → classify → mask → check that no identifier remains → human review",
+      localEquivalent: "Regular expressions and a list of known names",
+      limits: [
+        "Regex and name list, not Azure AI Language.",
+        "Names outside the fixture list may be missed.",
+        "The categories complaint and missing documents are not in the fixture set yet.",
+      ],
+    },
+    translator: {
+      name: "Translator",
+      useCase: "Translate a German contractor e-mail for an English reader without changing RG-2026-0457, amounts, dates or project codes.",
+      pipeline: "German source → translation → identifiers, amounts and currency compared → review",
+      localEquivalent: "Human reference translation with the preservation check",
+      limits: ["Only the human reference is checked; no translation model ran.", "German to Vietnamese and transliteration are not covered."],
+    },
+    "document-intelligence": {
+      name: "Document Intelligence",
+      useCase: "Extract fields, tables and page positions from the dossier PDFs and send doubtful values to review.",
+      pipeline: "PDF → Docling layout, tables and OCR → field mapping → OCR text compared with the source → review",
+      localEquivalent: "Docling in the internal document-parser container",
+      limits: [
+        "Field, table-cell and bounding-box match are not measured against labelled ground truth.",
+        "OCR confidence is never shown as accuracy.",
+      ],
+    },
+    "content-safety": {
+      name: "Vision and content safety",
+      useCase: "Treat instructions found in PDFs, photos or e-mails as data: no self-approval and no new permissions.",
+      pipeline: "Document text → detect instruction → quarantine from model context → no tool call → audit event",
+      localEquivalent: "Page quarantine in the credit API and the lab's instruction guard",
+      limits: [
+        "Prompt Shields and Azure AI Content Safety are not called.",
+        "Instructions inside images are not detected; only extracted text is checked.",
+        "The quarantine audit event is not verified end to end.",
+      ],
+    },
+    evaluation: {
+      name: "Evaluation",
+      useCase: "Measure extraction, retrieval, citation and abstention separately, and say which metrics are deterministic.",
+      pipeline: "Fixtures → deterministic metrics → model-based metrics marked as not run",
+      localEquivalent: "Deterministic metric functions over the fixture dossier and a recorded pre-check run",
+      limits: [
+        "Classification precision, recall and F1 were not run in this pass.",
+        "Groundedness judged by a model was not run.",
+        "Human correction rate: no review data.",
+      ],
+    },
+  },
+  footnote: "Statuses come from lib/ai103/capabilities.json and from server-side checks. The page never marks a result as passed by itself.",
+};
+
+const de: Ai103Text = {
+  pageTitle: "AI-103 Lab",
+  eyebrow: "AI-103 Fähigkeiten-Labor",
+  intro: "Achtzehn Fähigkeitsgruppen, jede mit einem fiktiven Dokument aus dem Auftragnehmer-Vorgang. Der Status stammt aus einem Manifest und aus serverseitigen Prüfungen; hier wird Azure nicht aufgerufen.",
+  back: "Zurück zum Arbeitsbereich",
+  language: "Sprache",
+  listTitle: "Fähigkeiten",
+  kpiTitle: "Statusübersicht",
+  summaryOpen: "AI-103 Lab öffnen",
+  summaryCatalog: "KI-Funktionen und Modelle: {page}",
+  kpi: {
+    "verified-local": "Lokal verifiziert",
+    "verified-azure": "Auf Azure verifiziert",
+    "configured-mocked": "Konfiguriert oder Mock",
+    "blocked-unsupported": "Blockiert oder nicht unterstützt",
+  },
+  kpiNote: "Anzahl der Fähigkeiten, nicht die Zahl der Live-Azure-Dienste oder Modellaufrufe.",
+  kpiRule: "Jede Fähigkeit zählt einmal, beim stärksten Nachweis.",
+  search: "Fähigkeiten suchen",
+  status: "Status",
+  allStatuses: "Alle Status",
+  shown: "{shown} von {total} angezeigt",
+  noMatches: "Keine Fähigkeit entspricht diesen Filtern.",
+  reset: "Filter zurücksetzen",
+  columns: {capability: "Fähigkeit", local: "Lokal", azure: "Azure", fixture: "Fixture", lastTested: "Zuletzt geprüft", action: "Labor"},
+  openLab: "Labor öffnen",
+  close: "Schließen",
+  notTested: "Nicht geprüft",
+  notApplicable: "Nicht zutreffend",
+  moreFixtures: "+{count} weitere",
+  detail: {
+    business: "Geschäftlicher Anwendungsfall",
+    samples: "Beispieldokumente",
+    pipeline: "Ablauf",
+    expected: "Erwartetes Ergebnis",
+    actual: "Tatsächliches Ergebnis",
+    localEquivalent: "Lokale Entsprechung",
+    azureService: "Azure-Dienst",
+    latest: "Zuletzt erfasstes Ergebnis",
+    latency: "Latenz",
+    cost: "Kosten",
+    evidence: "Nachweis",
+    limits: "Grenzen und nicht Verifiziertes",
+    command: "Befehl",
+    lastTested: "Zuletzt geprüft",
+    parts: "Teile",
+    localSide: "Lokal",
+    azureSide: "Azure",
+    notMeasured: "Nicht gemessen",
+    recordedEnglish: "Erfasste Testausgaben bleiben auf Englisch.",
+  },
+  run: {
+    local: "Lokalen Test ausführen",
+    azure: "Azure-Test ausführen",
+    running: "Läuft…",
+    azureOff: "Azure-Tests sind aus. Sie brauchen ein ausdrückliches Opt-in, eine konfigurierte Ressource und eine vorher angezeigte Kostenschätzung. Nichts davon ist gesetzt, daher wird keine Anfrage gesendet.",
+    noCheck: "Für diese Fähigkeit gibt es keine Prüfung in der App. Führe den Befehl oben im Terminal aus; das erfasste Ergebnis steht hier.",
+    error: "Die Prüfung konnte nicht laufen. Es wurde nichts erfasst.",
+    passed: "Bestanden",
+    failed: "Nicht bestanden",
+    notRun: "Nicht ausgeführt",
+    heading: "Ergebnis dieses Laufs (vom Server)",
+    cases: "Was verglichen wurde",
+    at: "Ausgeführt um",
+    caseName: "Fall",
+    result: "Ergebnis",
+  },
+  statuses: {
+    "verified-local": "Lokal verifiziert",
+    "verified-azure": "Auf Azure verifiziert",
+    configured: "Konfiguriert",
+    mock: "Mock",
+    "azure-not-run": "Azure nicht ausgeführt",
+    blocked: "Blockiert",
+    "not-supported": "Nicht unterstützt",
+  },
+  parts: {
+    "text-to-image": "Text zu Bild",
+    "image-to-image": "Bild zu Bild",
+    inpainting: "Inpainting",
+    "video-generation": "Videoerzeugung",
+    "optional-local-engine": "Optionale lokale Engine",
+  },
+  decision: {
+    title: "Azure oder lokal: Entscheidungsmatrix",
+    intro: "Sechs Entscheidungen mit denselben fünf Kriterien. Die Matrix ist eine Entscheidungshilfe; sie ruft keinen Dienst auf.",
+    columns: {choice: "Entscheidung", data: "Daten", latency: "Latenz", cost: "Kosten", governance: "Governance", local: "Lokale Fähigkeit", use: "Einsatz"},
+    rows: [
+      {
+        choice: "Document Intelligence oder Content Understanding",
+        data: "Beide senden die Datei an eine Azure-Ressource; nur fiktive Dateien, bis Region und Verarbeitungsbedingungen freigegeben sind.",
+        latency: "Pro Dokumenttyp messen; keiner der beiden wurde in diesem Labor aufgerufen.",
+        cost: "Abrechnung pro Seite oder analysierter Einheit; zuerst die Seiten des Vorgangs zählen.",
+        governance: "API- und Analyzer-Version festlegen und mit jedem Ergebnis speichern.",
+        local: "Docling deckt Layout, Tabellen und OCR lokal ab; für Content Understanding gibt es hier keine lokale Entsprechung.",
+        use: "Docling für das Labor; Azure nur für eine gemessene Lücke, mit Opt-in.",
+      },
+      {
+        choice: "Azure AI Search oder Qdrant und BM25",
+        data: "Azure hält den Index in seiner Region; Qdrant und BM25 bleiben auf diesem Rechner.",
+        latency: "Lokales Ranking spart den Netzwerkweg; Azure wurde nicht gemessen.",
+        cost: "Azure rechnet Sucheinheiten ab, solange der Dienst läuft; lokal wird bereits reservierter Docker-Speicher genutzt.",
+        governance: "Azure: RBAC und private Endpunkte; lokal: die Mandantenprüfung in der Anwendung.",
+        local: "Qdrant, BM25 und Reranking laufen lokal (hit@5 100 % mit BM25 im Benchmark mit neun PDFs).",
+        use: "Lokal für die Entwicklung; Azure, wenn ein Index geteilt werden muss, mit Opt-in.",
+      },
+      {
+        choice: "Azure OpenAI oder Ollama",
+        data: "Azure OpenAI sendet Prompts an Azure; Ollama behält sie auf diesem Host, Cloud-Modelle sind abgeschaltet.",
+        latency: "Ollama auf der CPU brauchte 172,8 s für eine Vorprüfungsantwort; Azure wurde hier nicht gemessen.",
+        cost: "Azure rechnet Tokens ab; Ollama hat keine Tokengebühr, braucht aber RAM und einen Modell-Download.",
+        governance: "Gleicher JSON-Vertrag, gleiche Fixtures und Tests für beide; kein automatischer Wechsel von lokal zur Cloud.",
+        local: "Ollama 0.40.16 läuft ohne Root-Rechte auf einem schreibgeschützten Root-Dateisystem.",
+        use: "Ollama für das Labor; Azure nur, wenn ein stärkeres Modell freigegeben ist.",
+      },
+      {
+        choice: "Foundry-Agent oder lokaler Ablauf",
+        data: "Ein Foundry-Agent sendet Werkzeugeingaben an Azure; der lokale Ablauf behält sie im Labor.",
+        latency: "Der lokale Ablauf hat feste Schritte; ein Agent fügt Modellrunden hinzu.",
+        cost: "Agenten rechnen Modell- und Werkzeugaufrufe ab; der lokale Ablauf nutzt die lokale CPU.",
+        governance: "Lokal: kein Schreibwerkzeug und manuelle Prüfung in der App; ein Agent braucht ein eigenes Freigabe- und Audit-Konzept.",
+        local: "Der Labor-Agent sucht, prüft, rechnet und entwirft lokal.",
+        use: "Lokaler Ablauf, bis ein Agent nötig und freigegeben ist.",
+      },
+      {
+        choice: "Azure Speech oder Browserstimme",
+        data: "Azure Speech erhält Audio oder Text; die Browserstimme liest Text auf dem Gerät.",
+        latency: "Die Browserstimme startet sofort; Azure braucht Netzwerkzeit (nicht gemessen).",
+        cost: "Azure rechnet Audiozeit oder Zeichen ab; die Browserstimme kostet nichts.",
+        governance: "Azure-Stimmen und Aufbewahrung brauchen eine Freigabe; Browserstimmen hängen vom Betriebssystem ab.",
+        local: "Die Browserstimme funktioniert offline mit installierten Stimmen; das Transkript ist derzeit ein Fixture.",
+        use: "Browserstimme zum Vorlesen; Azure Speech nur für Erkennung oder SSML.",
+      },
+      {
+        choice: "Application Insights oder lokales OpenTelemetry",
+        data: "Application Insights speichert Telemetrie in Azure; der lokale Collector behält sie auf diesem Rechner.",
+        latency: "Lokaler Export ist sofort; Application Insights nimmt asynchron auf (nicht gemessen).",
+        cost: "Application Insights rechnet aufgenommene Daten ab; der lokale Collector nutzt lokalen Speicher.",
+        governance: "Die Schwärzungsliste gilt für beide; die Aufbewahrung wird in Azure oder vom Labor festgelegt.",
+        local: "Der OTLP-Collector läuft lokal; Tracing bleibt aus, bis es aktiviert wird.",
+        use: "Jetzt lokales OpenTelemetry; Application Insights erst nach bestandenem Schwärzungstest.",
+      },
+    ],
+  },
+  capabilities: {
+    "foundry-tools": {
+      name: "Foundry-Werkzeuge / MCP",
+      useCase: "Vertrag finden, Nachtragswert lesen und die Differenz für das Controlling berechnen, nur mit lesenden Werkzeugen.",
+      pipeline: "Vertrag finden → Nachtrag lesen → Differenz berechnen → Belege prüfen → Entwurf zur Prüfung",
+      localEquivalent: "Labor-Agent mit lesenden Werkzeugen (geskriptet oder lokaler Ollama-Planer)",
+      limits: ["Noch kein Test für Timeout oder Wiederholung.", "Foundry wird nicht aufgerufen; das Werkzeugschema wird nur über den lokalen Agenten geprüft."],
+    },
+    security: {
+      name: "Sicherheit",
+      useCase: "Ein Nutzer sieht nur den eigenen Mandanten und Vorgang; Anweisungen in einem PDF geben nie Zugriff oder Werkzeuge frei.",
+      pipeline: "Keycloak-Anmeldung → Audience- und Mandantenprüfung → Rollenprüfung → Vorgangszugriff → Lesen oder Schreiben",
+      localEquivalent: "Keycloak, Spring Security und die Mandanten- und Vorgangsprüfungen der Credit-API",
+      limits: ["Entra ID, Managed Identity, RBAC und private Netzwerke sind dokumentiert, aber nicht in Azure geprüft.", "Die Browseranmeldung wurde nur auf Port 3001 geprüft."],
+    },
+    "image-generation": {
+      name: "Bildgenerierung (Computer Vision)",
+      useCase: "Eine Illustration oder maskierte Bearbeitung für eine Prüfakte vorbereiten, nie als Beleg.",
+      pipeline: "Prompt oder Quellbild und Maske → Anfrageprüfung (Modus, MIME-Typ, Größe, Maske) → deterministischer Stub",
+      localEquivalent: "Anfragevertrag und Stub; kein Bildmodell installiert",
+      limits: [
+        "Kein Modell installiert; der Stub liefert nie ein Bild.",
+        "Videoerzeugung wird auf dieser Hardware nicht unterstützt.",
+        "Eine optionale lokale Engine braucht deine Zustimmung für einen Download von mehreren GB und würde sich die 5-GiB-Grenze mit Ollama teilen.",
+      ],
+    },
+    "ai-search": {
+      name: "KI-Suche",
+      useCase: "Die Seite finden, die eine Vorprüfungsfrage im ganzen Vorgang beantwortet.",
+      pipeline: "Anfrage → BM25-Ranking über Seitentexte → erwartete Seite zuerst → Dokument und Seite für die Quelle",
+      localEquivalent: "BM25 über die Fixture-Seiten hier; Qdrant, BM25 und Reranking in der Credit-API",
+      limits: [
+        "Der Body der Hybridabfrage ist nicht gegen die aktuelle API-Referenz geprüft.",
+        "Das Seitenzahlfeld normalisierter Azure-Bilder ist nicht geprüft.",
+        "Die Fixture-Seiten sind nativer PDF-Text, keine OCR-Ausgabe.",
+      ],
+    },
+    observability: {
+      name: "Observability",
+      useCase: "Sehen, wie lange jeder Schritt dauerte, ohne Tokens, Dokumenttext, vollständige Prompts oder personenbezogene Daten zu protokollieren.",
+      pipeline: "Upload → ClamAV → OCR → Indexierung → Suche → Nova (heute Request-IDs und Labor-Spans)",
+      localEquivalent: "Request-Trace-Filter in der Credit-API; OpenTelemetry-Spans und lokaler Collector im Labor",
+      limits: [
+        "Noch kein durchgehender Trace von Upload über ClamAV, OCR, Indexierung und Suche bis Nova.",
+        "Die Schrittlatenz auf dieser Seite stammt aus einem erfassten Vorprüfungslauf, nicht aus jedem Upload.",
+        "Export nach Application Insights und dessen Schwärzung sind nicht geprüft.",
+      ],
+    },
+    "foundry-agents": {
+      name: "Foundry-Agenten",
+      useCase: "Einen Vorgang durch Suchen, Prüfen, Rechnen, Entwerfen und manuelle Prüfung führen, vollständig und mit fehlendem Nachweis.",
+      pipeline: "Suchen → prüfen → rechnen → entwerfen → manuelle Prüfung; kein Werkzeug gibt frei, zahlt oder sendet",
+      localEquivalent: "Ablauf des Labor-Agenten und die lesende Vorprüfungs-API",
+      limits: [
+        "Foundry Agent Service ist weder angelegt noch aufgerufen.",
+        "Das Labor hat kein zustandsänderndes Werkzeug; die Bestätigung wird durch fehlende Schreibwerkzeuge erzwungen, nicht durch einen Live-Freigabedialog.",
+      ],
+    },
+    speech: {
+      name: "Sprache",
+      useCase: "Eine Baustellennotiz anhören, Rechnungsnummer und Betrag prüfen und die Antwort vorlesen.",
+      pipeline: "Audio → Transkript → Rechnungsnummer, Betrag und Währung prüfen → Nova → Stimme",
+      localEquivalent: "Synthetische WAV-Datei mit Referenztranskript; die Browserstimme auf dem Gerät",
+      limits: [
+        "Nur Deutsch; englisches und vietnamesisches Audio ist nicht geprüft.",
+        "Das Transkript ist ein Fixture, keine Spracherkennung.",
+        "Die Browserstimme auf dem Gerät ist nicht Azure Speech.",
+      ],
+    },
+    rag: {
+      name: "RAG",
+      useCase: "Aus dem Vorgang mit der stützenden Seite und Passage antworten oder sagen, dass der Nachweis fehlt.",
+      pipeline: "Frage → Suche → eingeschränkte Antwort mit Quellenlabels → der Server schreibt die freigegebene Quellen-ID",
+      localEquivalent: "Qdrant, BM25 und Reranking in der Credit-API mit lokalem Nova",
+      limits: [
+        "Der Benchmark nutzt nativen Text von neun öffentlichen PDFs, keine OCR- oder Docling-Ausgabe.",
+        "Die Labels hat ein Agent aus dem PDF-Text vorbereitet, keine unabhängigen menschlichen Annotatoren.",
+        "Seiten- und Quellentreffer werden noch nicht getrennt ausgewiesen.",
+      ],
+    },
+    "service-selection": {
+      name: "Auswahl der Azure-Dienste",
+      useCase: "Für jeden Teil der Vorgangsarbeit den Azure- oder lokalen Dienst wählen und die Abwägung festhalten.",
+      pipeline: "Daten, Latenz, Kosten, Governance und lokale Fähigkeit vergleichen → je Aufgabe wählen",
+      localEquivalent: "Die Entscheidungsmatrix auf dieser Seite; kein Dienst wird aufgerufen",
+      limits: ["Die Matrix ist eine Entscheidungshilfe; sie ruft keinen Dienst auf.", "Preise ändern sich; die Kostenspalte nennt die Reihenfolge, kein Angebot."],
+    },
+    "content-understanding": {
+      name: "Content Understanding",
+      useCase: "Einen Vorgang mit PDF, Fotos und Audio-Metadaten in einen geprüften JSON-Datensatz überführen.",
+      pipeline: "Dokumentierte Anfrage → Analyzer → strukturiertes JSON → Schemaprüfung",
+      localEquivalent: "Prüfung der Anfrageform hier; die Medien- und Sprachprüfungen des Labors für Foto und Audio",
+      limits: [
+        "Das Beispiel ist eine Anfrageform, kein Analyzer-Ergebnis.",
+        "Der multimodale Fall läuft über die Medien- und Sprachprüfungen des Labors, nicht über Content Understanding.",
+      ],
+    },
+    deployment: {
+      name: "Bereitstellung",
+      useCase: "Das Labor nur mit den Diensten starten, die eine Aufgabe braucht, und CI nicht bereitstellen lassen.",
+      pipeline: "Compose-Dateien → Health Checks → Build und Test in CI; keine Bereitstellung",
+      localEquivalent: "Docker Compose mit gehärtetem Ollama-Container und Health Check für jeden Dienst",
+      limits: [
+        "In diesem Durchgang wurde nichts optimiert; die Ressourcenwerte vorher und nachher sind gleich.",
+        "Es gibt kein Profil für Bildgenerierung; es käme nur mit deiner Zustimmung hinzu.",
+      ],
+    },
+    "genai-app": {
+      name: "GenAI-Anwendung",
+      useCase: "Eine Frage zu einem Vorgang in einem eingeschränkten Format beantworten, das eine Person prüfen kann.",
+      pipeline: "Belegauszüge → schemagebundenes JSON → Darstellung mit freigegebenen Quellen → Ablehnung, wenn der Vertrag verletzt ist",
+      localEquivalent: "Nova über Ollama (qwen3 4B) mit demselben Vertrag wie der Azure-OpenAI-Anbieter",
+      limits: [
+        "Betragsprüfung je Aussage im Labor: 2 von 3 Kriterien bestanden (ein Quellenlabel pro Segment).",
+        "Azure OpenAI wird nicht aufgerufen; es gibt keinen automatischen Wechsel von lokal zur Cloud.",
+      ],
+    },
+    "vision-understanding": {
+      name: "Bildverständnis",
+      useCase: "Jedes Abnahmefoto dem Abnahmeprotokoll und der Seite zuordnen, die es nennt.",
+      pipeline: "Foto → Header-Metadaten → Bildunterschrift → Zuordnung zum Vorgang → manuelle Prüfung",
+      localEquivalent: "Lesen des PNG-Headers und Zuordnung der Bildunterschrift; kein Bildmodell",
+      limits: ["Nur Metadaten und Quellenzuordnung; keine Objekterkennung oder Bildanalyse.", "Jedes Foto braucht weiterhin eine manuelle Prüfung."],
+    },
+    "language-pii": {
+      name: "Sprache und PII",
+      useCase: "Auftragnehmer-E-Mails sortieren und personenbezogene Daten maskieren, bevor ein Modell sie sieht; Rechnungs-, Projekt- und Betragswerte bleiben.",
+      pipeline: "E-Mail → klassifizieren → maskieren → prüfen, dass keine Kennung bleibt → manuelle Prüfung",
+      localEquivalent: "Reguläre Ausdrücke und eine Liste bekannter Namen",
+      limits: [
+        "Regex und Namensliste, nicht Azure AI Language.",
+        "Namen außerhalb der Fixture-Liste können übersehen werden.",
+        "Die Kategorien Beschwerde und fehlende Unterlagen fehlen noch in den Fixtures.",
+      ],
+    },
+    translator: {
+      name: "Übersetzer",
+      useCase: "Eine deutsche Auftragnehmer-E-Mail für eine englischsprachige Person übersetzen, ohne RG-2026-0457, Beträge, Daten oder Projektcodes zu ändern.",
+      pipeline: "Deutscher Text → Übersetzung → Kennungen, Beträge und Währung vergleichen → Prüfung",
+      localEquivalent: "Menschliche Referenzübersetzung mit Erhaltungsprüfung",
+      limits: ["Nur die menschliche Referenz wird geprüft; kein Übersetzungsmodell lief.", "Deutsch nach Vietnamesisch und Transliteration sind nicht abgedeckt."],
+    },
+    "document-intelligence": {
+      name: "Document Intelligence",
+      useCase: "Felder, Tabellen und Seitenpositionen aus den Vorgangs-PDFs lesen und unsichere Werte zur Prüfung geben.",
+      pipeline: "PDF → Docling-Layout, Tabellen und OCR → Feldzuordnung → OCR-Text mit der Quelle vergleichen → Prüfung",
+      localEquivalent: "Docling im internen Document-Parser-Container",
+      limits: [
+        "Feld-, Tabellenzellen- und Bounding-Box-Treffer sind nicht gegen gelabelte Referenzen gemessen.",
+        "OCR-Konfidenz wird nie als Genauigkeit angezeigt.",
+      ],
+    },
+    "content-safety": {
+      name: "Bild- und Inhaltssicherheit",
+      useCase: "Anweisungen in PDFs, Fotos oder E-Mails als Daten behandeln: keine Selbstfreigabe und keine neuen Rechte.",
+      pipeline: "Dokumenttext → Anweisung erkennen → aus dem Modellkontext isolieren → kein Werkzeugaufruf → Audit-Eintrag",
+      localEquivalent: "Seitenquarantäne in der Credit-API und der Anweisungsschutz des Labors",
+      limits: [
+        "Prompt Shields und Azure AI Content Safety werden nicht aufgerufen.",
+        "Anweisungen in Bildern werden nicht erkannt; nur extrahierter Text wird geprüft.",
+        "Der Audit-Eintrag zur Quarantäne ist nicht durchgehend geprüft.",
+      ],
+    },
+    evaluation: {
+      name: "Bewertung",
+      useCase: "Extraktion, Suche, Quellen und Enthaltung getrennt messen und angeben, welche Metriken deterministisch sind.",
+      pipeline: "Fixtures → deterministische Metriken → modellbasierte Metriken als nicht ausgeführt markiert",
+      localEquivalent: "Deterministische Metrikfunktionen über den Fixture-Vorgang und einen erfassten Vorprüfungslauf",
+      limits: [
+        "Precision, Recall und F1 der Klassifikation wurden in diesem Durchgang nicht ausgeführt.",
+        "Eine modellbasierte Bewertung der Belegtreue wurde nicht ausgeführt.",
+        "Korrekturquote durch Menschen: keine Prüfdaten.",
+      ],
+    },
+  },
+  footnote: "Der Status stammt aus lib/ai103/capabilities.json und aus serverseitigen Prüfungen. Die Seite markiert ein Ergebnis nie selbst als bestanden.",
+};
+
+const vi: Ai103Text = {
+  pageTitle: "AI-103 Lab",
+  eyebrow: "Phòng thực hành năng lực AI-103",
+  intro: "Mười tám nhóm năng lực, mỗi nhóm gắn với một tài liệu hư cấu trong hồ sơ nhà thầu. Trạng thái lấy từ một manifest và từ các kiểm tra phía máy chủ; trang này không gọi Azure.",
+  back: "Quay lại khu làm việc",
+  language: "Ngôn ngữ",
+  listTitle: "Các năng lực",
+  kpiTitle: "Tóm tắt trạng thái",
+  summaryOpen: "Mở AI-103 Lab",
+  summaryCatalog: "Tính năng AI và model: {page}",
+  kpi: {
+    "verified-local": "Đã xác minh cục bộ",
+    "verified-azure": "Đã xác minh trên Azure",
+    "configured-mocked": "Đã cấu hình hoặc giả lập",
+    "blocked-unsupported": "Bị chặn hoặc không hỗ trợ",
+  },
+  kpiNote: "Đây là số năng lực, không phải số dịch vụ Azure chạy thật hay số lần gọi model.",
+  kpiRule: "Mỗi năng lực chỉ được đếm một lần, theo bằng chứng mạnh nhất.",
+  search: "Tìm năng lực",
+  status: "Trạng thái",
+  allStatuses: "Mọi trạng thái",
+  shown: "Đang hiện {shown}/{total}",
+  noMatches: "Không có năng lực nào khớp bộ lọc.",
+  reset: "Đặt lại bộ lọc",
+  columns: {capability: "Năng lực", local: "Cục bộ", azure: "Azure", fixture: "Fixture", lastTested: "Kiểm thử gần nhất", action: "Bài lab"},
+  openLab: "Mở bài lab",
+  close: "Đóng",
+  notTested: "Chưa kiểm thử",
+  notApplicable: "Không áp dụng",
+  moreFixtures: "+{count} tệp khác",
+  detail: {
+    business: "Tình huống nghiệp vụ",
+    samples: "Tài liệu mẫu",
+    pipeline: "Quy trình",
+    expected: "Kết quả mong đợi",
+    actual: "Kết quả thực tế",
+    localEquivalent: "Tương đương cục bộ",
+    azureService: "Dịch vụ Azure",
+    latest: "Kết quả gần nhất đã ghi",
+    latency: "Độ trễ",
+    cost: "Chi phí",
+    evidence: "Bằng chứng",
+    limits: "Giới hạn và phần chưa xác minh",
+    command: "Lệnh",
+    lastTested: "Kiểm thử gần nhất",
+    parts: "Các phần",
+    localSide: "Cục bộ",
+    azureSide: "Azure",
+    notMeasured: "Chưa đo",
+    recordedEnglish: "Kết quả kiểm thử đã ghi được giữ bằng tiếng Anh.",
+  },
+  run: {
+    local: "Chạy kiểm thử cục bộ",
+    azure: "Chạy kiểm thử Azure",
+    running: "Đang chạy…",
+    azureOff: "Kiểm thử Azure đang tắt. Cần bật opt-in rõ ràng, có tài nguyên đã cấu hình và hiển thị ước tính chi phí trước. Ở đây chưa có điều nào, nên không có request nào được gửi.",
+    noCheck: "Năng lực này không có kiểm tra trong app. Hãy chạy lệnh ở trên trong terminal; kết quả đã ghi hiển thị tại đây.",
+    error: "Không chạy được kiểm tra. Không có gì được ghi lại.",
+    passed: "Đạt",
+    failed: "Không đạt",
+    notRun: "Chưa chạy",
+    heading: "Kết quả lần chạy này (từ máy chủ)",
+    cases: "Những gì đã so sánh",
+    at: "Chạy lúc",
+    caseName: "Trường hợp",
+    result: "Kết quả",
+  },
+  statuses: {
+    "verified-local": "Đã xác minh cục bộ",
+    "verified-azure": "Đã xác minh trên Azure",
+    configured: "Đã cấu hình",
+    mock: "Giả lập",
+    "azure-not-run": "Azure chưa chạy",
+    blocked: "Bị chặn",
+    "not-supported": "Không hỗ trợ",
+  },
+  parts: {
+    "text-to-image": "Văn bản sang ảnh",
+    "image-to-image": "Ảnh sang ảnh",
+    inpainting: "Vẽ lại vùng (inpainting)",
+    "video-generation": "Sinh video",
+    "optional-local-engine": "Engine cục bộ tùy chọn",
+  },
+  decision: {
+    title: "Azure hay cục bộ: ma trận quyết định",
+    intro: "Sáu lựa chọn với cùng năm tiêu chí. Ma trận chỉ hỗ trợ quyết định; nó không gọi dịch vụ nào.",
+    columns: {choice: "Lựa chọn", data: "Dữ liệu", latency: "Độ trễ", cost: "Chi phí", governance: "Quản trị", local: "Khả năng cục bộ", use: "Dùng khi"},
+    rows: [
+      {
+        choice: "Document Intelligence hay Content Understanding",
+        data: "Cả hai gửi tệp tới tài nguyên Azure; chỉ dùng tệp hư cấu cho đến khi region và điều khoản xử lý được duyệt.",
+        latency: "Đo theo từng loại tài liệu; lab này chưa gọi dịch vụ nào trong hai.",
+        cost: "Tính phí theo trang hoặc đơn vị phân tích; hãy đếm số trang của hồ sơ trước.",
+        governance: "Cố định phiên bản API và analyzer, lưu cùng mỗi kết quả.",
+        local: "Docling xử lý bố cục, bảng và OCR cục bộ; Content Understanding chưa có tương đương cục bộ ở đây.",
+        use: "Docling cho lab; Azure chỉ cho khoảng trống đã đo, có opt-in.",
+      },
+      {
+        choice: "Azure AI Search hay Qdrant và BM25",
+        data: "Azure giữ chỉ mục trong region của nó; Qdrant và BM25 ở lại máy này.",
+        latency: "Xếp hạng cục bộ không có vòng mạng; Azure chưa được đo.",
+        cost: "Azure tính phí đơn vị tìm kiếm khi dịch vụ chạy; cục bộ dùng bộ nhớ Docker đã dành sẵn.",
+        governance: "Azure: RBAC và private endpoint; cục bộ: kiểm tra tenant trong ứng dụng.",
+        local: "Qdrant, BM25 và xếp hạng lại chạy cục bộ (hit@5 100 % với BM25 trên benchmark chín PDF).",
+        use: "Cục bộ khi phát triển; Azure khi cần chia sẻ chỉ mục, có opt-in.",
+      },
+      {
+        choice: "Azure OpenAI hay Ollama",
+        data: "Azure OpenAI gửi prompt tới Azure; Ollama giữ prompt trên máy này và đã tắt model cloud.",
+        latency: "Ollama trên CPU mất 172,8 giây cho một câu trả lời pre-check; Azure chưa được đo ở đây.",
+        cost: "Azure tính phí theo token; Ollama không tính phí token nhưng cần RAM và tải model.",
+        governance: "Cùng contract JSON, fixture và test cho cả hai; không tự chuyển từ cục bộ sang cloud.",
+        local: "Ollama 0.40.16 chạy không phải root trên root filesystem chỉ đọc.",
+        use: "Ollama cho lab; Azure chỉ khi model mạnh hơn được duyệt.",
+      },
+      {
+        choice: "Foundry Agent hay quy trình cục bộ",
+        data: "Foundry agent gửi dữ liệu đầu vào của công cụ tới Azure; quy trình cục bộ giữ chúng trong lab.",
+        latency: "Quy trình cục bộ có các bước cố định; agent thêm các lượt gọi model.",
+        cost: "Agent tính phí gọi model và công cụ; quy trình cục bộ dùng CPU máy.",
+        governance: "Cục bộ: không có công cụ ghi và có người duyệt trong app; agent cần thiết kế duyệt và audit riêng.",
+        local: "Agent của lab tìm, kiểm tra, tính toán và soạn bản nháp cục bộ.",
+        use: "Quy trình cục bộ cho đến khi cần agent và được duyệt.",
+      },
+      {
+        choice: "Azure Speech hay giọng đọc của trình duyệt",
+        data: "Azure Speech nhận âm thanh hoặc văn bản; giọng trình duyệt đọc văn bản ngay trên thiết bị.",
+        latency: "Giọng trình duyệt phát ngay; Azure thêm thời gian mạng (chưa đo).",
+        cost: "Azure tính phí theo thời lượng âm thanh hoặc ký tự; giọng trình duyệt miễn phí.",
+        governance: "Giọng Azure và thời gian lưu trữ cần được duyệt; giọng trình duyệt phụ thuộc hệ điều hành.",
+        local: "Giọng trình duyệt chạy offline với giọng đã cài; transcript hiện là fixture.",
+        use: "Giọng trình duyệt để đọc câu trả lời; Azure Speech chỉ khi cần nhận dạng hoặc SSML.",
+      },
+      {
+        choice: "Application Insights hay OpenTelemetry cục bộ",
+        data: "Application Insights lưu telemetry trên Azure; collector cục bộ giữ nó trên máy này.",
+        latency: "Xuất cục bộ diễn ra ngay; Application Insights nhận dữ liệu bất đồng bộ (chưa đo).",
+        cost: "Application Insights tính phí theo dữ liệu nhận vào; collector cục bộ dùng bộ nhớ máy.",
+        governance: "Danh sách che dữ liệu áp dụng cho cả hai; thời gian lưu do Azure hoặc lab quy định.",
+        local: "Collector OTLP chạy cục bộ; tracing tắt cho đến khi được bật.",
+        use: "Dùng OpenTelemetry cục bộ bây giờ; Application Insights chỉ sau khi test che dữ liệu đạt.",
+      },
+    ],
+  },
+  capabilities: {
+    "foundry-tools": {
+      name: "Công cụ Foundry / MCP",
+      useCase: "Tìm hợp đồng, đọc giá trị phụ lục và tính chênh lệch cho bộ phận kiểm soát, chỉ bằng công cụ chỉ đọc.",
+      pipeline: "Tìm hợp đồng → đọc phụ lục → tính chênh lệch → kiểm tra chứng cứ → bản nháp chờ duyệt",
+      localEquivalent: "Agent của lab với công cụ chỉ đọc (kịch bản cố định hoặc planner Ollama cục bộ)",
+      limits: ["Chưa có test timeout hoặc retry.", "Không gọi Foundry; schema công cụ chỉ được kiểm qua agent cục bộ."],
+    },
+    security: {
+      name: "Bảo mật",
+      useCase: "Người dùng chỉ thấy tenant và hồ sơ của mình; chỉ dẫn trong PDF không bao giờ cấp quyền hay công cụ.",
+      pipeline: "Đăng nhập Keycloak → kiểm tra audience và tenant của token → kiểm tra vai trò → quyền với hồ sơ → đọc hoặc ghi",
+      localEquivalent: "Keycloak, Spring Security và các kiểm tra tenant, hồ sơ trong credit API",
+      limits: ["Entra ID, Managed Identity, RBAC và private networking mới có tài liệu, chưa kiểm thử trên Azure.", "Đăng nhập trên trình duyệt mới được kiểm ở cổng 3001."],
+    },
+    "image-generation": {
+      name: "Sinh ảnh (Computer Vision)",
+      useCase: "Chuẩn bị hình minh họa hoặc ảnh sửa theo mask cho hồ sơ duyệt, không bao giờ dùng làm chứng cứ.",
+      pipeline: "Prompt hoặc ảnh nguồn và mask → kiểm tra request (chế độ, MIME type, kích thước, mask) → stub xác định",
+      localEquivalent: "Contract request và stub; chưa cài model sinh ảnh",
+      limits: [
+        "Chưa cài model; stub không bao giờ trả về ảnh.",
+        "Không hỗ trợ sinh video trên phần cứng hiện tại.",
+        "Engine cục bộ tùy chọn cần bạn đồng ý tải nhiều GB và sẽ dùng chung giới hạn 5 GiB với Ollama.",
+      ],
+    },
+    "ai-search": {
+      name: "AI Search",
+      useCase: "Tìm trang trả lời câu hỏi pre-check trong toàn bộ hồ sơ.",
+      pipeline: "Truy vấn → xếp hạng BM25 trên văn bản trang → trang mong đợi đứng đầu → giữ tài liệu và số trang để trích dẫn",
+      localEquivalent: "BM25 trên các trang fixture ở đây; Qdrant, BM25 và xếp hạng lại trong credit API",
+      limits: [
+        "Body của truy vấn hybrid chưa được đối chiếu với API reference hiện hành.",
+        "Trường số trang của ảnh chuẩn hóa trên Azure chưa được kiểm.",
+        "Các trang fixture là văn bản PDF gốc, không phải kết quả OCR.",
+      ],
+    },
+    observability: {
+      name: "Quan sát hệ thống",
+      useCase: "Biết mỗi bước mất bao lâu mà không ghi token, nội dung tài liệu, prompt đầy đủ hay dữ liệu cá nhân.",
+      pipeline: "Upload → ClamAV → OCR → lập chỉ mục → truy xuất → Nova (hiện có request id và span của lab)",
+      localEquivalent: "Request trace filter trong credit API; span OpenTelemetry và collector cục bộ trong lab",
+      limits: [
+        "Chưa có một trace xuyên suốt từ upload qua ClamAV, OCR, lập chỉ mục, truy xuất tới Nova.",
+        "Độ trễ từng bước trên trang này lấy từ một lần chạy pre-check đã ghi, không phải mọi lần upload.",
+        "Chưa kiểm thử xuất sang Application Insights và việc che dữ liệu.",
+      ],
+    },
+    "foundry-agents": {
+      name: "Foundry Agents",
+      useCase: "Đưa hồ sơ qua các bước tìm, kiểm tra, tính toán, soạn nháp và người duyệt, với hồ sơ đủ và hồ sơ thiếu chứng từ.",
+      pipeline: "Tìm → kiểm tra → tính toán → soạn nháp → người duyệt; không công cụ nào phê duyệt, thanh toán hay gửi",
+      localEquivalent: "Quy trình agent của lab và pre-check API chỉ đọc",
+      limits: [
+        "Chưa tạo và chưa gọi Foundry Agent Service.",
+        "Lab không có công cụ thay đổi trạng thái; việc xác nhận được bảo đảm bằng cách không có công cụ ghi, chưa có hộp thoại duyệt thật.",
+      ],
+    },
+    speech: {
+      name: "Giọng nói",
+      useCase: "Nghe ghi chú công trường, kiểm tra số hóa đơn và số tiền, rồi đọc câu trả lời.",
+      pipeline: "Âm thanh → transcript → kiểm tra mã hóa đơn, số tiền và tiền tệ → Nova → giọng đọc",
+      localEquivalent: "Tệp WAV tổng hợp với transcript tham chiếu; giọng đọc của trình duyệt trên thiết bị",
+      limits: [
+        "Chỉ tiếng Đức; âm thanh tiếng Anh và tiếng Việt chưa được kiểm thử.",
+        "Transcript là fixture, không phải kết quả nhận dạng giọng nói.",
+        "Giọng đọc của trình duyệt không phải Azure Speech.",
+      ],
+    },
+    rag: {
+      name: "RAG",
+      useCase: "Trả lời từ hồ sơ kèm trang và đoạn chứng minh, hoặc nói rõ là thiếu chứng cứ.",
+      pipeline: "Câu hỏi → truy xuất → câu trả lời có ràng buộc với nhãn nguồn → máy chủ ghi ID nguồn được phép",
+      localEquivalent: "Qdrant, BM25 và xếp hạng lại trong credit API với Nova cục bộ",
+      limits: [
+        "Benchmark dùng văn bản gốc của chín PDF công khai, không dùng kết quả OCR hay Docling.",
+        "Nhãn do agent chuẩn bị từ văn bản PDF, không phải do người gán nhãn độc lập.",
+        "Chưa báo cáo riêng page hit và citation hit.",
+      ],
+    },
+    "service-selection": {
+      name: "Chọn dịch vụ Azure",
+      useCase: "Chọn dịch vụ Azure hay cục bộ cho từng phần việc của hồ sơ, có ghi rõ đánh đổi.",
+      pipeline: "So sánh dữ liệu, độ trễ, chi phí, quản trị và khả năng cục bộ → chọn theo từng việc",
+      localEquivalent: "Ma trận quyết định trên trang này; không gọi dịch vụ nào",
+      limits: ["Ma trận chỉ hỗ trợ quyết định; không gọi dịch vụ nào.", "Giá có thể thay đổi; cột chi phí chỉ nêu thứ tự tương đối, không phải báo giá."],
+    },
+    "content-understanding": {
+      name: "Content Understanding",
+      useCase: "Chuyển một hồ sơ gồm PDF, ảnh và metadata âm thanh thành một bản ghi JSON đã kiểm tra.",
+      pipeline: "Request theo tài liệu → analyzer → JSON có cấu trúc → kiểm tra schema",
+      localEquivalent: "Kiểm tra dạng request ở đây; phần ảnh và âm thanh dùng các kiểm tra media và speech của lab",
+      limits: [
+        "Mẫu là dạng request, không phải kết quả của analyzer.",
+        "Tình huống đa phương thức chạy qua kiểm tra media và speech của lab, không qua Content Understanding.",
+      ],
+    },
+    deployment: {
+      name: "Triển khai",
+      useCase: "Khởi động lab chỉ với các dịch vụ cần cho việc đang làm, và giữ CI không triển khai.",
+      pipeline: "Tệp Compose → health check → CI build và test; không triển khai",
+      localEquivalent: "Docker Compose với container Ollama đã gia cố và health check cho mọi dịch vụ",
+      limits: [
+        "Lượt này chưa tối ưu gì, nên số liệu tài nguyên trước và sau là như nhau.",
+        "Chưa có profile sinh ảnh; chỉ thêm khi bạn đồng ý.",
+      ],
+    },
+    "genai-app": {
+      name: "Ứng dụng GenAI",
+      useCase: "Trả lời câu hỏi về hồ sơ theo định dạng có ràng buộc mà người duyệt kiểm tra được.",
+      pipeline: "Trích đoạn chứng cứ → JSON theo schema → hiển thị với trích dẫn được phép → từ chối khi vi phạm contract",
+      localEquivalent: "Nova qua Ollama (qwen3 4B) với cùng contract như provider Azure OpenAI",
+      limits: [
+        "Kiểm tra số tiền theo từng nhận định trong lab: đạt 2/3 tiêu chí (mỗi segment chỉ một nhãn nguồn).",
+        "Không gọi Azure OpenAI; không tự chuyển từ cục bộ sang cloud.",
+      ],
+    },
+    "vision-understanding": {
+      name: "Hiểu hình ảnh",
+      useCase: "Liên kết mỗi ảnh nghiệm thu với biên bản nghiệm thu và trang có nhắc tới ảnh.",
+      pipeline: "Ảnh → metadata từ header → chú thích → liên kết với hồ sơ → người duyệt",
+      localEquivalent: "Đọc header PNG và ánh xạ chú thích; không dùng model hình ảnh",
+      limits: ["Chỉ metadata và ánh xạ nguồn; không tuyên bố nhận diện vật thể hay phân tích ảnh.", "Mỗi ảnh vẫn cần người duyệt."],
+    },
+    "language-pii": {
+      name: "Ngôn ngữ và PII",
+      useCase: "Phân loại email nhà thầu và che dữ liệu cá nhân trước khi model đọc, giữ nguyên mã hóa đơn, mã dự án và số tiền.",
+      pipeline: "Email → phân loại → che dữ liệu → kiểm tra không còn định danh → người duyệt",
+      localEquivalent: "Biểu thức chính quy và danh sách tên đã biết",
+      limits: [
+        "Dùng regex và danh sách tên, không phải Azure AI Language.",
+        "Có thể bỏ sót tên không có trong danh sách fixture.",
+        "Chưa có fixture cho nhóm khiếu nại và thiếu chứng từ.",
+      ],
+    },
+    translator: {
+      name: "Dịch thuật",
+      useCase: "Dịch email tiếng Đức của nhà thầu cho người đọc tiếng Anh mà không đổi RG-2026-0457, số tiền, ngày hoặc mã dự án.",
+      pipeline: "Văn bản tiếng Đức → bản dịch → so sánh mã định danh, số tiền và tiền tệ → người duyệt",
+      localEquivalent: "Bản dịch tham chiếu do người viết, kèm kiểm tra giữ nguyên giá trị",
+      limits: ["Chỉ kiểm bản tham chiếu do người viết; chưa chạy model dịch nào.", "Chưa có Đức → Việt và chuyển tự (transliteration)."],
+    },
+    "document-intelligence": {
+      name: "Document Intelligence",
+      useCase: "Trích trường, bảng và vị trí trang từ PDF hồ sơ, chuyển giá trị đáng ngờ sang người duyệt.",
+      pipeline: "PDF → bố cục, bảng và OCR bằng Docling → ánh xạ trường → so văn bản OCR với nguồn → người duyệt",
+      localEquivalent: "Docling trong container document-parser nội bộ",
+      limits: [
+        "Chưa đo field match, table cell match và bounding-box match với dữ liệu gán nhãn.",
+        "Độ tin cậy OCR không bao giờ được hiển thị như độ chính xác.",
+      ],
+    },
+    "content-safety": {
+      name: "An toàn nội dung và hình ảnh",
+      useCase: "Coi chỉ dẫn trong PDF, ảnh hoặc email là dữ liệu: không tự phê duyệt, không mở rộng quyền.",
+      pipeline: "Văn bản tài liệu → phát hiện chỉ dẫn → cách ly khỏi ngữ cảnh model → không gọi công cụ → ghi audit",
+      localEquivalent: "Cách ly trang trong credit API và bộ chặn chỉ dẫn của lab",
+      limits: [
+        "Không gọi Prompt Shields và Azure AI Content Safety.",
+        "Chưa phát hiện chỉ dẫn nằm trong ảnh; chỉ kiểm văn bản đã trích xuất.",
+        "Sự kiện audit khi cách ly chưa được kiểm xuyên suốt.",
+      ],
+    },
+    evaluation: {
+      name: "Đánh giá",
+      useCase: "Đo riêng trích xuất, truy xuất, trích dẫn và việc từ chối trả lời, nói rõ chỉ số nào là xác định.",
+      pipeline: "Fixture → chỉ số xác định → chỉ số dựa trên model được đánh dấu chưa chạy",
+      localEquivalent: "Các hàm chỉ số xác định trên hồ sơ fixture và một lần chạy pre-check đã ghi",
+      limits: [
+        "Precision, recall và F1 của phân loại chưa chạy trong lượt này.",
+        "Chưa chạy đánh giá groundedness bằng model.",
+        "Tỷ lệ người sửa: chưa có dữ liệu duyệt.",
+      ],
+    },
+  },
+  footnote: "Trạng thái lấy từ lib/ai103/capabilities.json và từ các kiểm tra phía máy chủ. Trang không bao giờ tự đánh dấu kết quả là đạt.",
+};
+
+export const ai103Texts: Record<Ai103Locale, Ai103Text> = {en, de, vi};
+export function ai103Text(locale: string): Ai103Text {
+  return ai103Texts[ai103Locale(locale)];
+}
+export function fill(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) => (key in values ? String(values[key]) : match));
+}
