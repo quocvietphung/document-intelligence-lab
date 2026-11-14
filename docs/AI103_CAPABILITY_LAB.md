@@ -128,11 +128,44 @@ The stack keeps its Compose file groups (`scripts/compose-files.mjs`). They map 
 | azure-adapters | `docker-compose.azure.yml`, `docker-compose.azure-host.yml` | no, opt-in |
 | image-generation | not created; needs your consent to download a model | no |
 
-Resources with the default stack idle (`docker stats --no-stream`, 14 November 2026): about 2.7 GiB in total, including Docling 1.31 GiB, the credit API 490 MiB, Keycloak 488 MiB, ClamAV 146 MiB, Qdrant 106 MiB and Ollama 40 MiB with no model loaded. Nothing was optimised in this pass, so the figure after the change is the same.
+Resources (`docker stats --no-stream`, 14 November 2026), eleven backend containers, no model loaded in Ollama:
+
+| Moment | Total | Largest containers |
+| --- | --- | --- |
+| Before the work, idle | about 2.7 GiB | Docling 1.31 GiB, credit API 490 MiB, Keycloak 488 MiB, ClamAV 146 MiB, Qdrant 106 MiB |
+| After the acceptance run (plus `web` 57 MiB) | about 4.0 GiB | Docling 1.62 GiB, ClamAV 1.0 GiB, Keycloak 490 MiB, credit API 479 MiB, Qdrant 193 MiB |
+
+Nothing was optimised in this pass. The difference comes from state, not from the change: ClamAV reloads its signature database after a restart, and Docling keeps memory after parsing the dossier. CPU was below 5 % per container in both samples.
 
 ## Azure tests
 
 Azure tests are off. The page shows no Azure button while nothing is configured and opted in. The web API answers 403 without `AI103_AZURE_OPT_IN=billable-calls-approved` and 501 with it, because no live adapter is wired into the web app; in both cases no request leaves the server and no resource is created. Live calls run only from the lab CLI behind `require_live` (`labs/ai103/contractor_lab/cloud.py`), after `python3 -m contractor_lab cloud-plan` has shown the services, region and cost plan. CI never calls Azure.
+
+## Verification record
+
+One local pass on 14 November 2026, branch `feature/ai103-capability-lab`, Apple Silicon Mac with Docker Desktop, Node 24, Java 21, Python 3.12 for the lab tools. Commands ran from the repository root unless stated otherwise.
+
+| Area | Command | Result |
+| --- | --- | --- |
+| Web lint | `npm run lint` | 0 warnings |
+| Web types | `npx tsc --noEmit` | clean |
+| Web unit tests | `npx vitest run` | 392 of 392 in 58 files (the lab adds 35 tests in 6 files) |
+| Web build | `npm run build` | passed; `/en/ai103`, `/de/ai103` and `/vi/ai103` prerendered |
+| Java API | `mvn -B clean test` in `services/credit-api` | 398 run, 0 failures, 0 errors, 5 skipped (live or opt-in tests) |
+| Lab tests | `python -B -m unittest discover -s tests` in `labs/ai103` | 87 of 87 |
+| Lab lint and types | `ruff check .` (0.17.4), `mypy contractor_lab` (2.4.1) | clean; no issues in 17 files |
+| Lab exercises | `offline`, `speech`, `translate`, `voice-live`, `search`, `content-understanding` | 20/20, 4/4, 2/2, 3/3, 2/2, 1/1 |
+| Azure plan | `python -m contractor_lab cloud-plan` | opted in: false, network calls: 0 |
+| Docker helper | `node --test scripts/docker-local.test.mjs` | 10 of 10 |
+| Compose | production files `config --quiet`; `node scripts/check-production-compose.mjs` | valid; no Spark service, image or build |
+| Secrets | `gitleaks git --pre-commit --staged`; `gitleaks git .` | no leaks |
+| Dependencies | `npm audit --omit=dev --audit-level=high` | 0 vulnerabilities |
+| Web image | `trivy image --skip-db-update --severity HIGH,CRITICAL` on the rebuilt web image (database of 11 November) | 0 HIGH, 0 CRITICAL (Alpine 3.24.4 and Node packages) |
+| Stack health | Docker Desktop restarted (it had stopped while the session was paused); default services started without `web` | eleven backend containers healthy; `web` built from this branch and published on 127.0.0.1:3001 only |
+| Lab API | `GET /api/ai103/capabilities`; `POST …/run-local` for each capability with a check; `POST …/run-azure` | 18 capabilities, counts 14 / 0 / 4 / 0; 12 of 12 checks passed on the server (0.2 to 32 ms); a capability without a check answers with its command; run-azure 403 with `requestSent: false` |
+| Contractor acceptance | `TEST_CONTRACTOR_PRECHECK=1 TEST_WEB_URL=http://localhost:3001 node scripts/test-oauth.mjs` | 53 checks passed, exit 0 (the runner adds one more check only when the access token has to be refreshed during the run); creates two fictional dossiers in the local database |
+| Browser | Chrome-based browser pane, port 3001 | English, German and Vietnamese pages; status filter (Mock: 4 of 18) and search ("ocr": Document Intelligence); keyboard: Tab reaches the filter and each "Open lab" button with a visible 3 px focus outline, Enter opens the panel and moves focus to its heading, closing returns focus to the button; deep link `?capability=…`; "Run local test" shows expected, actual, latency and cost from the server; 375 px phone width without horizontal scrolling; signed-in Tasks page shows the AI-103 summary and no catalogue; AI transparency shows the catalogue once; menu link opens the lab; no console errors in a fresh tab; network requests only to localhost:3001 and the local Keycloak |
+| Keycloak | the client allowed `http://localhost:3001` during the run, through the admin API | restored afterwards: only `http://localhost:3000` |
 
 ## Limits
 

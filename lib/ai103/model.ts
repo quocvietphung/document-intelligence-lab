@@ -30,7 +30,7 @@ const side = z.object({
   command: z.string().nullable(),
   expected: z.string().min(1),
   actual: z.string().min(1),
-  latencyMs: z.number().int().nonnegative().nullable(),
+  latencyMs: z.number().nonnegative().nullable(),
   cost: z.string().min(1),
   log: z.string().min(1),
 });

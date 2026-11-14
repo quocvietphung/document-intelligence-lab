@@ -6,16 +6,19 @@
       "id": "foundry-tools",
       "azureService": "Azure AI Foundry tools and MCP",
       "check": null,
-      "fixtures": ["labs/ai103/fixtures/precheck-sample.json", "labs/ai103/fixtures/search/dossier-pages.json"],
+      "fixtures": [
+        "labs/ai103/fixtures/precheck-sample.json",
+        "labs/ai103/fixtures/search/dossier-pages.json"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-14",
         "command": "cd labs/ai103 && python3 -B -m unittest discover -s tests -p test_lab.py -v",
         "expected": "The scripted agent calls read-only tools only and returns a valid, unapproved draft; the model planner cannot send e-mail or approve.",
-        "actual": "test_scripted_agent_uses_only_read_only_calls_and_returns_a_valid_draft and test_model_planner_cannot_send_email_or_approve passed",
+        "actual": "test_scripted_agent_uses_only_read_only_calls_and_returns_a_valid_draft and test_model_planner_cannot_send_email_or_approve passed (lab 87 of 87)",
         "latencyMs": null,
         "cost": "0 EUR, no network call",
-        "log": "docs/AI103_CONTRACTOR_PRECHECK.md#6-results"
+        "log": "docs/AI103_CAPABILITY_LAB.md#verification-record"
       },
       "azure": {
         "status": "azure-not-run",
@@ -32,16 +35,18 @@
       "id": "security",
       "azureService": "Microsoft Entra ID, Managed Identity, RBAC, private networking",
       "check": null,
-      "fixtures": ["services/credit-api/src/main/resources/contractor-dossier/manifest.json"],
+      "fixtures": [
+        "services/credit-api/src/main/resources/contractor-dossier/manifest.json"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-14",
         "command": "cd services/credit-api && mvn -B -Dtest='JwtValidationTest,JwtIdentityTest,PlatformTest,ConnectorSecurityTest,CreditSecurityTest' test",
         "expected": "A token with the wrong audience, without a verified tenant or with a foreign tenant is rejected; another tenant's case is not returned.",
-        "actual": "Java tests for each case passed in the full suite run on this date (see the verification record)",
+        "actual": "Passed in the full Java suite (398 run, 0 failures): JwtValidationTest rejects the wrong audience, JwtIdentityTest a missing or non-string tenant, PlatformTest and ConnectorSecurityTest a foreign tenant, CreditSecurityTest a foreign case",
         "latencyMs": null,
         "cost": "0 EUR, no network call",
-        "log": "docs/USE_CASE_MATRIX.md#verification-record"
+        "log": "docs/AI103_CAPABILITY_LAB.md#verification-record"
       },
       "azure": {
         "status": "azure-not-run",
@@ -58,21 +63,40 @@
       "id": "image-generation",
       "azureService": "Azure image generation (not built in this pass)",
       "check": "image-request-contract",
-      "fixtures": ["labs/ai103/fixtures/capability/images.json", "services/credit-api/src/main/resources/contractor-dossier/foto-f-01.png", "services/credit-api/src/main/resources/contractor-dossier/foto-f-02.png"],
+      "fixtures": [
+        "labs/ai103/fixtures/capability/images.json",
+        "services/credit-api/src/main/resources/contractor-dossier/foto-f-01.png",
+        "services/credit-api/src/main/resources/contractor-dossier/foto-f-02.png"
+      ],
       "parts": [
-        {"name": "text-to-image", "status": "mock"},
-        {"name": "image-to-image", "status": "mock"},
-        {"name": "inpainting", "status": "mock"},
-        {"name": "video-generation", "status": "not-supported"},
-        {"name": "optional-local-engine", "status": "blocked"}
+        {
+          "name": "text-to-image",
+          "status": "mock"
+        },
+        {
+          "name": "image-to-image",
+          "status": "mock"
+        },
+        {
+          "name": "inpainting",
+          "status": "mock"
+        },
+        {
+          "name": "video-generation",
+          "status": "not-supported"
+        },
+        {
+          "name": "optional-local-engine",
+          "status": "blocked"
+        }
       ],
       "local": {
         "status": "mock",
         "lastTested": "2026-11-14",
         "command": "Run local test in the lab page (check image-request-contract)",
         "expected": "Requests are checked for mode, MIME type, size and mask size; a deterministic stub returns a fixed result, never a generated image.",
-        "actual": "Recorded by the check on this date; see the latest result on the lab page",
-        "latencyMs": null,
+        "actual": "6 of 6 cases: three valid requests answered by the stub without an image; a half-size mask and image/gif rejected; the same request gives the same stub hash",
+        "latencyMs": 0.64,
         "cost": "0 EUR, stub only",
         "log": "docs/AI103_CAPABILITY_LAB.md#image-generation"
       },
@@ -91,16 +115,22 @@
       "id": "ai-search",
       "azureService": "Azure AI Search (index, indexer, skillset, hybrid query)",
       "check": "search-pages",
-      "fixtures": ["labs/ai103/fixtures/search/dossier-pages.json", "labs/ai103/azure/search/index.json", "labs/ai103/azure/search/indexer.json", "labs/ai103/azure/search/skillset.json", "labs/ai103/azure/search/datasource.json"],
+      "fixtures": [
+        "labs/ai103/fixtures/search/dossier-pages.json",
+        "labs/ai103/azure/search/index.json",
+        "labs/ai103/azure/search/indexer.json",
+        "labs/ai103/azure/search/skillset.json",
+        "labs/ai103/azure/search/datasource.json"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-14",
         "command": "Run local test in the lab page (check search-pages); lab: cd labs/ai103 && python3 -m contractor_lab search",
         "expected": "Each of the three pre-check queries ranks its expected page first; the Azure JSON files pass the structural checks; a payment keyword alone is not a confirmation.",
-        "actual": "Recorded by the check on this date; see the latest result on the lab page",
-        "latencyMs": null,
+        "actual": "3 of 3 queries rank the expected page first (BM25); no dated payment confirmation found; the Azure index, indexer and skillset JSON pass the structural checks",
+        "latencyMs": 3.38,
         "cost": "0 EUR, local BM25 over the fixture pages",
-        "log": "docs/USE_CASE_MATRIX.md#verification-record"
+        "log": "docs/AI103_CAPABILITY_LAB.md#verification-record"
       },
       "azure": {
         "status": "azure-not-run",
@@ -117,16 +147,20 @@
       "id": "observability",
       "azureService": "Application Insights and OpenTelemetry collector",
       "check": "trace-steps",
-      "fixtures": ["labs/ai103/fixtures/precheck-sample.json", "labs/ai103/fixtures/speech/azure-fast-transcription.sample.json", "docker-compose.ai103-otel.yml"],
+      "fixtures": [
+        "labs/ai103/fixtures/precheck-sample.json",
+        "labs/ai103/fixtures/speech/azure-fast-transcription.sample.json",
+        "docker-compose.ai103-otel.yml"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-14",
         "command": "cd labs/ai103 && python3 -B -m unittest discover -s tests -p test_lab.py -v && python3 -B -m unittest discover -s tests -p test_speech.py -v",
         "expected": "Spans nest and share one trace id; telemetry of a failed call never contains the response body; export goes only to the local collector; tracing is off by default.",
-        "actual": "test_spans_nest_and_propagate_trace_context, test_collector_file_summary_joins_services_by_trace and test_telemetry_of_a_failed_call_never_contains_the_response_body passed",
-        "latencyMs": null,
+        "actual": "test_spans_nest_and_propagate_trace_context, test_collector_file_summary_joins_services_by_trace and test_telemetry_of_a_failed_call_never_contains_the_response_body passed; recorded pre-check run: extract 13.8 ms, search 2954.7 ms, reconcile 9.5 ms, draft 2.1 ms, one trace id",
+        "latencyMs": 0.22,
         "cost": "0 EUR, local collector only",
-        "log": "docs/AI_INTEGRATIONS.md"
+        "log": "docs/AI103_CAPABILITY_LAB.md#verification-record"
       },
       "azure": {
         "status": "azure-not-run",
@@ -143,16 +177,19 @@
       "id": "foundry-agents",
       "azureService": "Azure AI Foundry Agent Service",
       "check": null,
-      "fixtures": ["labs/ai103/fixtures/precheck-sample.json", "labs/ai103/fixtures/search/dossier-pages.json"],
+      "fixtures": [
+        "labs/ai103/fixtures/precheck-sample.json",
+        "labs/ai103/fixtures/search/dossier-pages.json"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-14",
         "command": "cd labs/ai103 && python3 -B -m unittest discover -s tests -p test_lab.py -v",
         "expected": "Retrieve, validate, calculate, draft and human review; a planner without the pre-check is forced to ground the draft; missing evidence is stated, not invented.",
-        "actual": "test_planner_without_precheck_is_forced_to_ground_the_draft and test_triage_meets_the_pass_criteria passed",
+        "actual": "test_planner_without_precheck_is_forced_to_ground_the_draft and test_triage_meets_the_pass_criteria passed (lab 87 of 87)",
         "latencyMs": null,
         "cost": "0 EUR, no network call",
-        "log": "docs/AI103_CONTRACTOR_PRECHECK.md#3-passfail-criteria"
+        "log": "docs/AI103_CAPABILITY_LAB.md#verification-record"
       },
       "azure": {
         "status": "azure-not-run",
@@ -169,16 +206,20 @@
       "id": "speech",
       "azureService": "Azure AI Speech (fast transcription, text to speech)",
       "check": "speech-transcript",
-      "fixtures": ["labs/ai103/fixtures/speech/site-note-invoice.wav", "labs/ai103/fixtures/speech/site-note-invoice.transcript.json", "labs/ai103/fixtures/speech/azure-fast-transcription.misheard.json"],
+      "fixtures": [
+        "labs/ai103/fixtures/speech/site-note-invoice.wav",
+        "labs/ai103/fixtures/speech/site-note-invoice.transcript.json",
+        "labs/ai103/fixtures/speech/azure-fast-transcription.misheard.json"
+      ],
       "local": {
         "status": "mock",
         "lastTested": "2026-11-14",
         "command": "Run local test in the lab page (check speech-transcript); lab: cd labs/ai103 && python3 -m contractor_lab speech",
         "expected": "The invoice code, the gross amount and its currency are heard exactly; a misheard invoice number and a missing currency are rejected.",
-        "actual": "Recorded by the check on this date; see the latest result on the lab page",
-        "latencyMs": null,
+        "actual": "Reference transcript: invoice code, gross amount and currency heard. Misheard sample: rejected (invoice code wrong, currency missing).",
+        "latencyMs": 1.08,
         "cost": "0 EUR, fixture transcript",
-        "log": "docs/AI103_VERIFICATION.md#1-commands-and-results"
+        "log": "docs/AI103_CAPABILITY_LAB.md#verification-record"
       },
       "azure": {
         "status": "azure-not-run",
@@ -195,7 +236,10 @@
       "id": "rag",
       "azureService": "Azure AI Search hybrid query (see AI Search)",
       "check": null,
-      "fixtures": ["lib/rag-pdf-sources.json", "lib/rag-pdf-questions.json"],
+      "fixtures": [
+        "lib/rag-pdf-sources.json",
+        "lib/rag-pdf-questions.json"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-13",
@@ -221,14 +265,17 @@
       "id": "service-selection",
       "azureService": null,
       "check": "decision-matrix",
-      "fixtures": ["docs/AI103_CAPABILITY_LAB.md", "lib/ai103/language.ts"],
+      "fixtures": [
+        "docs/AI103_CAPABILITY_LAB.md",
+        "lib/ai103/language.ts"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-14",
         "command": "Run local test in the lab page (check decision-matrix); npx vitest run lib/ai103",
         "expected": "Six decisions, each with criteria for data, latency, cost, governance and local capability, in EN, DE and VI.",
-        "actual": "Recorded by the check on this date; see the latest result on the lab page",
-        "latencyMs": null,
+        "actual": "6 decisions with all 5 criteria filled in English, German and Vietnamese",
+        "latencyMs": 0.4,
         "cost": "0 EUR",
         "log": "docs/AI103_CAPABILITY_LAB.md#decision-matrix"
       },
@@ -238,16 +285,18 @@
       "id": "content-understanding",
       "azureService": "Azure AI Content Understanding",
       "check": "cu-request-shape",
-      "fixtures": ["labs/ai103/azure/content-understanding/analyze-document.request.json"],
+      "fixtures": [
+        "labs/ai103/azure/content-understanding/analyze-document.request.json"
+      ],
       "local": {
         "status": "mock",
         "lastTested": "2026-11-14",
         "command": "Run local test in the lab page (check cu-request-shape); lab: cd labs/ai103 && python3 -m contractor_lab content-understanding",
         "expected": "The request matches the documented analyzer call: the analyzer id is in the URL, each input has mimeType and exactly one of url or data; the old analyzer name and contentType are rejected.",
-        "actual": "Recorded by the check on this date; see the latest result on the lab page",
-        "latencyMs": null,
+        "actual": "The shipped request sample passes; the old analyzer name, contentType instead of mimeType, and url with data are each rejected",
+        "latencyMs": 0.54,
         "cost": "0 EUR, request shape only",
-        "log": "docs/AI103_VERIFICATION.md#1-commands-and-results"
+        "log": "docs/AI103_CAPABILITY_LAB.md#verification-record"
       },
       "azure": {
         "status": "azure-not-run",
@@ -264,16 +313,20 @@
       "id": "deployment",
       "azureService": "Azure VM deployment scripts (not run)",
       "check": null,
-      "fixtures": ["docker-compose.yml", "docker-compose.nova-local.yml", "scripts/docker-local.test.mjs"],
+      "fixtures": [
+        "docker-compose.yml",
+        "docker-compose.nova-local.yml",
+        "scripts/docker-local.test.mjs"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-14",
         "command": "node --test scripts/docker-local.test.mjs && docker compose -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.nova-local.yml config --quiet",
         "expected": "The default stack contains no Spark, Google or Azure service; Ollama runs as 10010:10010 on a read-only root filesystem; every service reports healthy.",
-        "actual": "docker-local tests passed; compose config valid; eleven containers healthy (see the verification record)",
+        "actual": "docker-local tests 10 of 10; production Compose valid with no Spark component; eleven backend containers healthy and web on 127.0.0.1:3001",
         "latencyMs": null,
         "cost": "0 EUR, local Docker",
-        "log": "docs/USE_CASE_MATRIX.md#verification-record"
+        "log": "docs/AI103_CAPABILITY_LAB.md#verification-record"
       },
       "azure": {
         "status": "azure-not-run",
@@ -290,7 +343,10 @@
       "id": "genai-app",
       "azureService": "Azure OpenAI (optional provider)",
       "check": null,
-      "fixtures": ["labs/ai103/fixtures/precheck-sample.json", "services/credit-api/src/main/resources/contractor-dossier/baurechnung-rg-2026-0457-mit-anweisung.pdf"],
+      "fixtures": [
+        "labs/ai103/fixtures/precheck-sample.json",
+        "services/credit-api/src/main/resources/contractor-dossier/baurechnung-rg-2026-0457-mit-anweisung.pdf"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-13",
@@ -316,14 +372,19 @@
       "id": "vision-understanding",
       "azureService": "Azure AI Vision and Content Understanding (image analysis)",
       "check": "photo-metadata",
-      "fixtures": ["labs/ai103/fixtures/capability/images.json", "labs/ai103/fixtures/photo-captions.json", "services/credit-api/src/main/resources/contractor-dossier/foto-f-01.png", "services/credit-api/src/main/resources/contractor-dossier/foto-f-02.png"],
+      "fixtures": [
+        "labs/ai103/fixtures/capability/images.json",
+        "labs/ai103/fixtures/photo-captions.json",
+        "services/credit-api/src/main/resources/contractor-dossier/foto-f-01.png",
+        "services/credit-api/src/main/resources/contractor-dossier/foto-f-02.png"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-14",
         "command": "Run local test in the lab page (check photo-metadata); lab: cd labs/ai103 && python3 -B -m unittest discover -s tests -p test_lab.py -v",
         "expected": "Each photo has MIME type image/png, its size and orientation, a caption with its photo id and date, and a link to the dossier. Only metadata is read; no object detection is claimed.",
-        "actual": "Recorded by the check on this date; see the latest result on the lab page",
-        "latencyMs": null,
+        "actual": "foto-f-01.png and foto-f-02.png: image/png, 1200×800 landscape, captions name F-01 and F-02 with a date, both linked to acceptance-report pages; F-03 is referenced but missing",
+        "latencyMs": 0.66,
         "cost": "0 EUR, local",
         "log": "docs/AI103_CAPABILITY_LAB.md#vision-understanding"
       },
@@ -342,16 +403,18 @@
       "id": "language-pii",
       "azureService": "Azure AI Language (PII detection, classification)",
       "check": "pii-masking",
-      "fixtures": ["labs/ai103/fixtures/emails.json"],
+      "fixtures": [
+        "labs/ai103/fixtures/emails.json"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-14",
         "command": "Run local test in the lab page (check pii-masking); lab: cd labs/ai103 && python3 -B -m unittest discover -s tests -p test_lab.py -v",
         "expected": "Eight fictional e-mails fall into their expected category; each masks at least the expected count of e-mail, phone, IBAN, tax-ID and name items; no address, phone or IBAN remains; invoice, project and amount values are kept.",
-        "actual": "Recorded by the check on this date; see the latest result on the lab page",
-        "latencyMs": null,
+        "actual": "8 of 8 e-mails: expected category, minimum masks reached, no address, phone or IBAN left, invoice, project and amount values kept",
+        "latencyMs": 31.77,
         "cost": "0 EUR, regex and name list",
-        "log": "docs/AI103_VERIFICATION.md#1-commands-and-results"
+        "log": "docs/AI103_CAPABILITY_LAB.md#verification-record"
       },
       "azure": {
         "status": "azure-not-run",
@@ -368,16 +431,19 @@
       "id": "translator",
       "azureService": "Azure AI Translator (translation, transliteration)",
       "check": "translator-preservation",
-      "fixtures": ["labs/ai103/fixtures/translation/contractor-email.json", "labs/ai103/fixtures/translation/translate-response.sample.json"],
+      "fixtures": [
+        "labs/ai103/fixtures/translation/contractor-email.json",
+        "labs/ai103/fixtures/translation/translate-response.sample.json"
+      ],
       "local": {
         "status": "mock",
         "lastTested": "2026-11-14",
         "command": "Run local test in the lab page (check translator-preservation); lab: cd labs/ai103 && python3 -m contractor_lab translate",
         "expected": "The human English reference keeps RG-2026-0457, 49.980,00 EUR and 42.000,00 EUR; a lost identifier, a wrong amount and a changed currency are each reported.",
-        "actual": "Recorded by the check on this date; see the latest result on the lab page",
-        "latencyMs": null,
+        "actual": "The reference keeps identifiers, amounts and currency; a lost identifier, a wrong amount and a changed currency are each reported",
+        "latencyMs": 1.85,
         "cost": "0 EUR, human reference",
-        "log": "docs/AI103_VERIFICATION.md#1-commands-and-results"
+        "log": "docs/AI103_CAPABILITY_LAB.md#verification-record"
       },
       "azure": {
         "status": "azure-not-run",
@@ -394,14 +460,19 @@
       "id": "document-intelligence",
       "azureService": "Azure AI Document Intelligence",
       "check": "ocr-cross-check",
-      "fixtures": ["labs/ai103/fixtures/capability/ocr-misread.sample.json", "labs/ai103/fixtures/capability/rotated-repeated-value.text.json", "labs/ai103/fixtures/capability/rotated-repeated-value.pdf", "services/credit-api/src/main/resources/contractor-dossier/abnahmeprotokoll-ap-2026-019.pdf"],
+      "fixtures": [
+        "labs/ai103/fixtures/capability/ocr-misread.sample.json",
+        "labs/ai103/fixtures/capability/rotated-repeated-value.text.json",
+        "labs/ai103/fixtures/capability/rotated-repeated-value.pdf",
+        "services/credit-api/src/main/resources/contractor-dossier/abnahmeprotokoll-ap-2026-019.pdf"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-14",
         "command": "Run local test in the lab page (check ocr-cross-check); Docling live: DOCLING_LIVE_URL=http://docling:5001 mvn -Dtest=DoclingDocumentIntelligenceLiveTest test in a Maven container on the document_parser network",
         "expected": "Docling parses the dossier (live test 1/1); a misread digit in OCR text is flagged against the source page with no false flags; a value repeated four times on one page is counted four times; the rotated page is page 2 at 90 degrees.",
-        "actual": "Recorded by the check on this date; Docling live test passed on 13 November 2026",
-        "latencyMs": null,
+        "actual": "OCR value 48.730,00 flagged against 48.780,00 with no false flag on the clean text; 48.780,00 counted four times on page 1; page 2 rotated by 90 degrees. Docling live test passed on 13 November 2026.",
+        "latencyMs": 0.44,
         "cost": "0 EUR, local Docling",
         "log": "docs/AI103_CAPABILITY_LAB.md#document-intelligence"
       },
@@ -420,16 +491,19 @@
       "id": "content-safety",
       "azureService": "Azure AI Content Safety and Prompt Shields",
       "check": "injection-guard",
-      "fixtures": ["services/credit-api/src/main/resources/contractor-dossier/baurechnung-rg-2026-0457-mit-anweisung.pdf", "labs/ai103/fixtures/emails.json"],
+      "fixtures": [
+        "services/credit-api/src/main/resources/contractor-dossier/baurechnung-rg-2026-0457-mit-anweisung.pdf",
+        "labs/ai103/fixtures/emails.json"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-14",
         "command": "cd labs/ai103 && python3 -B -m unittest discover -s tests -p test_lab.py -v; cd services/credit-api && mvn -B -Dtest='PageIsolationTest,PageIsolationContextTest' test",
         "expected": "Instruction text inside a PDF or e-mail is quarantined from model context and never executed; clean text yields no detection.",
-        "actual": "test_instruction_in_pdf_text_and_email_is_detected_without_false_positives and test_classifier_never_proposes_an_action passed; PageIsolation tests passed",
-        "latencyMs": null,
+        "actual": "test_instruction_in_pdf_text_and_email_is_detected_without_false_positives and test_classifier_never_proposes_an_action passed; PageIsolation tests passed; in-app guard: 3 of 3 probes detected, no false positive, mail-04 and mail-08 flagged",
+        "latencyMs": 0.51,
         "cost": "0 EUR, local",
-        "log": "docs/USE_CASE_MATRIX.md#verification-record"
+        "log": "docs/AI103_CAPABILITY_LAB.md#verification-record"
       },
       "azure": {
         "status": "azure-not-run",
@@ -446,14 +520,18 @@
       "id": "evaluation",
       "azureService": "Azure AI evaluation (not run)",
       "check": "evaluation-deterministic",
-      "fixtures": ["labs/ai103/fixtures/precheck-sample.json", "labs/ai103/fixtures/search/dossier-pages.json", "services/credit-api/src/main/resources/contractor-dossier/manifest.json"],
+      "fixtures": [
+        "labs/ai103/fixtures/precheck-sample.json",
+        "labs/ai103/fixtures/search/dossier-pages.json",
+        "services/credit-api/src/main/resources/contractor-dossier/manifest.json"
+      ],
       "local": {
         "status": "verified-local",
         "lastTested": "2026-11-14",
         "command": "Run local test in the lab page (check evaluation-deterministic)",
         "expected": "Deterministic metrics only: field match against the dossier values, citation page match against the quoted text, abstention on missing evidence, and retrieval rank of the pre-check queries.",
-        "actual": "Recorded by the check on this date; see the latest result on the lab page",
-        "latencyMs": null,
+        "actual": "Field match 3 of 3; citation page match 4 of 4; recorded Qdrant run hit@1 3/3, hit@5 3/3, MRR 1.00; abstention on missing payment evidence passed; model-based metrics not run",
+        "latencyMs": 0.65,
         "cost": "0 EUR, deterministic",
         "log": "docs/AI103_CAPABILITY_LAB.md#evaluation"
       },
