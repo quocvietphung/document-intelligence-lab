@@ -45,7 +45,7 @@ Adapters only list and fetch documents or deliver an approved result. OCR, retri
 
 Each use case runs first with local PDFs. It ships fictional documents labelled `FIKTIVE DATEN`, a list of fields, expected validation results, one answerable question with page evidence and one unanswerable question that must be refused.
 
-The full matrix — where each use case runs, its fixture, entry point, tests, status and the open gaps — is in [docs/USE_CASE_MATRIX.md](docs/USE_CASE_MATRIX.md).
+The full matrix — where each use case runs, its fixture, entry point, tests, status and the open gaps — is in [docs/USE_CASE_MATRIX.md](docs/USE_CASE_MATRIX.md). The eighteen AI-103 capability groups, their local and Azure status and the in-app checks are on the **AI-103 Lab** page (`/en/ai103`) and in [docs/AI103_CAPABILITY_LAB.md](docs/AI103_CAPABILITY_LAB.md).
 
 | Use case | Deterministic result |
 | --- | --- |
