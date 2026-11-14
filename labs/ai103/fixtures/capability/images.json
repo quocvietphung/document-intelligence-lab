@@ -1,0 +1,21 @@
+{
+  "_comment": "FIKTIVE DATEN. Metadata read from the PNG headers of the two acceptance photos.",
+  "images": [
+    {
+      "file": "foto-f-01.png",
+      "mimeType": "image/png",
+      "width": 1200,
+      "height": 800,
+      "bytes": 22585,
+      "sha256": "9f9a22374260db5dde0ae175285c71ac4007f73097df32902bc1922cb03a5b60"
+    },
+    {
+      "file": "foto-f-02.png",
+      "mimeType": "image/png",
+      "width": 1200,
+      "height": 800,
+      "bytes": 23940,
+      "sha256": "9db391f95cb399d4187b4ad2f3bf373a9a1a153fb484dd624368c87b59b2cbae"
+    }
+  ]
+}

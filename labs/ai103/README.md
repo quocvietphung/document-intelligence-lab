@@ -42,4 +42,9 @@ Fixtures: `fixtures/speech/` (synthetic site note WAV, reference transcript, sam
 `azure/search/` (Blob → indexer → skillset → index samples) and `azure/content-understanding/` (request sample).
 Every fixture is labelled `FIKTIVE DATEN`; sample responses are marked as samples, not live output.
 
+`fixtures/capability/` holds the generated fixtures of the AI-103 Capability Lab (rotated page, a value repeated four times,
+an OCR digit error, photo metadata); rebuild them with `scripts/prepare-ai103-capability-fixtures.py`. The lab page runs
+TypeScript versions of the e-mail, translation, transcript, search and Content Understanding rules on the same fixtures
+([docs/AI103_CAPABILITY_LAB.md](../../docs/AI103_CAPABILITY_LAB.md)).
+
 Outputs go to the git-ignored `.local/ai103/`. Nothing in this lab approves, pays or sends anything.
