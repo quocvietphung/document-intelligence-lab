@@ -13,7 +13,7 @@
 
 .ai103-kpis{display:grid;gap:10px}
 .ai103-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.ai103-kpi{border:1px solid var(--border);border-radius:16px;background:var(--surface-card);padding:16px 18px;display:flex;flex-direction:column-reverse;gap:6px;min-width:0}
+.ai103-kpi{border:1px solid var(--border);border-radius:16px;background:var(--surface-card);padding:16px 18px;display:flex;flex-direction:column-reverse;justify-content:flex-end;gap:6px;min-width:0}
 .ai103-kpi dt{font-size:12px;font-weight:650;color:var(--text-muted)}
 .ai103-kpi dd{font-size:30px;font-weight:760;letter-spacing:-.04em;color:var(--brand);font-variant-numeric:tabular-nums}
 .ai103-kpi-verified-local{border-top:4px solid var(--success-solid)}
@@ -42,6 +42,7 @@
 .ai103-table tbody th{font-weight:680;color:var(--brand);white-space:nowrap}
 .ai103-table code{font-size:12px;overflow-wrap:anywhere}
 .ai103-table small{font-size:11px;color:var(--text-muted)}
+.ai103-fixture-cell{display:inline-flex;flex-wrap:wrap;align-items:baseline;justify-content:flex-end;gap:4px;min-width:0;text-align:right}
 .ai103-row-number{display:inline-block;min-width:26px;color:var(--text-muted);font-variant-numeric:tabular-nums;font-weight:600}
 .ai103-row-selected{background:var(--brand-subtle)}
 .ai103-action-cell{text-align:right;white-space:nowrap}
@@ -105,7 +106,7 @@
 .ai103-summary header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .ai103-summary h2{font-size:16px;font-weight:720;color:var(--brand)}
 .ai103-summary dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.ai103-summary dl>div{border:1px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column-reverse;gap:2px}
+.ai103-summary dl>div{border:1px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column-reverse;justify-content:flex-end;gap:2px}
 .ai103-summary dt{font-size:11px;color:var(--text-muted);font-weight:650}
 .ai103-summary dd{font-size:22px;font-weight:760;color:var(--brand);font-variant-numeric:tabular-nums}
 .ai103-summary p{font-size:12px;color:var(--text-muted)}

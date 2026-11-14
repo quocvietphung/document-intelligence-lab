@@ -111,14 +111,14 @@ export function Ai103Lab({locale, capabilities}: {locale: string; capabilities: 
     setRuns((current) => ({...current, [target.id]: {state: "running"}}));
     try {
       const response = await fetch(`/api/ai103/capabilities/${encodeURIComponent(target.id)}/run-local`, {method: "POST", cache: "no-store"});
-      if (response.status === 409) {
-        const body: unknown = await response.json();
-        const command = typeof body === "object" && body !== null && "command" in body && typeof body.command === "string" ? body.command : null;
+      if (!response.ok) throw new Error(`status ${response.status}`);
+      const body: unknown = await response.json();
+      if (typeof body === "object" && body !== null && "mode" in body && body.mode === "command") {
+        const command = "command" in body && typeof body.command === "string" ? body.command : null;
         setRuns((current) => ({...current, [target.id]: {state: "command", command}}));
         return;
       }
-      if (!response.ok) throw new Error(`status ${response.status}`);
-      const result = checkResultSchema.parse(await response.json());
+      const result = checkResultSchema.parse(body);
       setRuns((current) => ({...current, [target.id]: {state: "done", result}}));
     } catch {
       setRuns((current) => ({...current, [target.id]: {state: "error"}}));
@@ -182,7 +182,7 @@ export function Ai103Lab({locale, capabilities}: {locale: string; capabilities: 
                 <th scope="row" data-label={t.columns.capability}><span className="ai103-row-number" aria-hidden="true">{String(position).padStart(2, "0")}</span>{name}</th>
                 <td data-label={t.columns.local}><StatusPill status={entry.local.status} t={t}/></td>
                 <td data-label={t.columns.azure}>{entry.azure ? <StatusPill status={entry.azure.status} t={t}/> : <span className="ai103-muted">{t.notApplicable}</span>}</td>
-                <td data-label={t.columns.fixture}><code title={entry.fixtures[0]}>{fileName(entry.fixtures[0])}</code>{entry.fixtures.length > 1 ? <small> {fill(t.moreFixtures, {count: entry.fixtures.length - 1})}</small> : null}</td>
+                <td data-label={t.columns.fixture}><span className="ai103-fixture-cell"><code title={entry.fixtures[0]}>{fileName(entry.fixtures[0])}</code>{entry.fixtures.length > 1 ? <small> {fill(t.moreFixtures, {count: entry.fixtures.length - 1})}</small> : null}</span></td>
                 <td data-label={t.columns.lastTested}>{entry.local.lastTested ? <time dateTime={entry.local.lastTested}>{formatDate(entry.local.lastTested, locale)}</time> : t.notTested}</td>
                 <td className="ai103-action-cell">
                   <button type="button" className="button-secondary ai103-open" aria-label={`${t.openLab}: ${name}`} aria-expanded={selected === entry.id} aria-controls="ai103-detail" onClick={(event) => open(entry.id, event.currentTarget)}>

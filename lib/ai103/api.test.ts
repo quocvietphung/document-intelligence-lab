@@ -26,14 +26,15 @@ describe("AI-103 API", () => {
   it("runs an in-app check on the server and returns what it compared", async () => {
     const response = await runLocal(post("/api/ai103/capabilities/ai-search/run-local"), context("ai-search"));
     expect(response.status).toBe(200);
-    const result = checkResultSchema.parse(await response.json());
-    expect(result).toMatchObject({capability: "ai-search", id: "search-pages", passed: true});
+    const body = await response.json();
+    expect(body.mode).toBe("check");
+    expect(checkResultSchema.parse(body)).toMatchObject({capability: "ai-search", id: "search-pages", passed: true});
   });
 
   it("answers with the command when the evidence comes from another suite, and 404 for an unknown id", async () => {
     const command = await runLocal(post("/api/ai103/capabilities/security/run-local"), context("security"));
-    expect(command.status).toBe(409);
-    expect((await command.json()).command).toContain("JwtValidationTest");
+    expect(command.status).toBe(200);
+    expect(await command.json()).toMatchObject({mode: "command", capability: "security", command: expect.stringContaining("JwtValidationTest")});
     expect((await runLocal(post("/api/ai103/capabilities/nope/run-local"), context("nope"))).status).toBe(404);
   });
 
