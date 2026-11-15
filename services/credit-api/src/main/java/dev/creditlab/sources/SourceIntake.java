@@ -39,7 +39,7 @@ public class SourceIntake {
 
   private static int order(DocumentSource source) {
     return switch (source.descriptor().id()) {
-      case LocalFileSource.ID -> 0; case GmailSource.ID -> 1; case GoogleDriveSource.ID -> 2; case MicrosoftGraphSource.ID -> 3; default -> 9;
+      case LocalFileSource.ID -> 0; case GmailSource.ID -> 1; case GoogleDriveSource.ID -> 2; default -> 9;
     };
   }
 

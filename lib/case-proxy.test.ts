@@ -18,6 +18,14 @@ describe("document analysis status transport", () => {
     const path=['C','platform','inspection',`insp-${uuid}`,'report'];
     expect((await proxyCase(new Request('http://localhost:3000/api/cases/'+path.join('/'),{headers,method:'POST'}),path)).status).toBe(405);
   });
+  it('lists dossiers with Control Tower marts through an authenticated read-only route',async()=>{
+    vi.stubEnv('CREDIT_API_URL','http://java:8080');const fetchMock=vi.fn().mockResolvedValue(Response.json([]));vi.stubGlobal('fetch',fetchMock);
+    const path=['control-tower-runs'],url='http://localhost:3000/api/cases/control-tower-runs',headers={Authorization:'Bearer fixture'};
+    expect((await proxyCase(new Request(url,{headers}),path)).status).toBe(200);
+    expect(String(fetchMock.mock.calls[0][0])).toBe('http://java:8080/api/cases/control-tower-runs');
+    expect((await proxyCase(new Request(url,{headers,method:'POST'}),path)).status).toBe(405);
+    expect((await proxyCase(new Request(url),path)).status).toBe(401);
+  });
   it('allows only authenticated POST cancellation without exposing arbitrary job operations',async()=>{
     vi.stubEnv('CREDIT_API_URL','http://java:8080');vi.stubGlobal('fetch',vi.fn().mockResolvedValue(Response.json({status:'CANCELLED'})));
     const path=['C','platform','jobs','job-test','cancel'],url='http://localhost:3000/api/cases/'+path.join('/'),headers={Authorization:'Bearer fixture'};

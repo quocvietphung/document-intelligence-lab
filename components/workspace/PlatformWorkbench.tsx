@@ -3,7 +3,7 @@
 import {useCallback,useEffect,useRef,useState,type FormEvent} from "react";
 import {ArrowUpRight,Check,Database,FileSearch,FlaskConical,GitBranch,Layers3,RefreshCw,Search,ShieldCheck,Sparkles,Upload} from "lucide-react";
 import {useAuth} from "@/components/auth/KeycloakProvider";
-import {platformSchema,searchSchema,percent,noticeIsVisible,currentEvidenceSearch,type PlatformData,type SearchData,type PlatformView} from "@/lib/platform";
+import {platformErrorKey,platformFailureKey,platformSchema,searchSchema,percent,noticeIsVisible,currentEvidenceSearch,type PlatformData,type SearchData,type PlatformView} from "@/lib/platform";
 import {platformText} from "@/lib/platform-language";
 import {demoPlatform,demoSearch} from "@/lib/public-demo";
 import {publicDemoText} from "@/lib/public-demo-language";
@@ -51,8 +51,8 @@ export function PlatformWorkbench({caseId,locale,view,ask,inspect,changed,docume
   const load=useCallback(async(signal?:AbortSignal)=>{
     const sequence=++loadSequence.current;
     if(demo){setData(demoPlatform(caseId));setLoading(false);setError("");return;}
-    try{const r=await fetch(root,{headers:{Authorization:`Bearer ${auth.token}`},cache:"no-store",signal});if(!r.ok)throw new Error();const next=platformSchema.parse(await r.json());if(next.caseId!==caseId)throw new Error();if(!signal?.aborted&&sequence===loadSequence.current)setData(next);}
-    catch{if(!signal?.aborted&&sequence===loadSequence.current){setData(previous=>previous?.caseId===caseId?previous:undefined);setNoticeView(view);setError("error");}}finally{if(!signal?.aborted&&sequence===loadSequence.current)setLoading(false);}
+    try{const r=await fetch(root,{headers:{Authorization:`Bearer ${auth.token}`},cache:"no-store",signal});if(!r.ok)throw new Error(platformFailureKey(r.status));const next=platformSchema.parse(await r.json());if(next.caseId!==caseId)throw new Error();if(!signal?.aborted&&sequence===loadSequence.current)setData(next);}
+    catch(loadError){if(!signal?.aborted&&sequence===loadSequence.current){setData(previous=>previous?.caseId===caseId?previous:undefined);setNoticeView(view);setError(platformErrorKey(loadError));}}finally{if(!signal?.aborted&&sequence===loadSequence.current)setLoading(false);}
   },[root,auth.token,view,demo,caseId]);
   useEffect(()=>{const controller=new AbortController();const timer=setTimeout(()=>void load(controller.signal),0);return()=>{clearTimeout(timer);controller.abort();};},[load,caseVersion]);
   const active=data?.jobs.some(activeDocumentJob);
@@ -60,9 +60,9 @@ export function PlatformWorkbench({caseId,locale,view,ask,inspect,changed,docume
   useEffect(()=>{if(!data)return;const complete=data.jobs.filter(j=>j.status==="COMPLETE");if(complete.some(j=>!finished.current.has(j.id))){complete.forEach(j=>finished.current.add(j.id));void changed();}},[data,changed]);
   async function action(path:string,body?:BodyInit,form=false){
     const r=await fetch(root+path,{method:"POST",headers:{Authorization:`Bearer ${auth.token}`,...(form?{}:{"Content-Type":"application/json"})},body});
-    if(!r.ok)throw new Error(r.status===429?"limit":r.status===409?(path.endsWith('/cancel')?'cancelRace':"duplicate"):r.status===422?"rejected":"error");return r.json();
+    if(!r.ok)throw new Error(r.status===429?"limit":r.status===409?(path.endsWith('/cancel')?'cancelRace':"duplicate"):r.status===422?"rejected":platformFailureKey(r.status));return r.json();
   }
-  async function run(task:()=>Promise<void>){if(inFlight.current)return;inFlight.current=true;setBusy(true);setNoticeView(view);setError("");setSuccess(undefined);try{await task();}catch(e){setError(e instanceof Error?e.message:"error");}finally{setBusy(false);inFlight.current=false;}}
+  async function run(task:()=>Promise<void>){if(inFlight.current)return;inFlight.current=true;setBusy(true);setNoticeView(view);setError("");setSuccess(undefined);try{await task();}catch(e){setError(platformErrorKey(e));}finally{setBusy(false);inFlight.current=false;}}
   function retrieve(event?:FormEvent,question=query){event?.preventDefault();if(!question.trim())return;setQuery(question);const version=caseVersion;if(demo){setSearchResult({version,data:demoSearch(question)});return;}void run(async()=>setSearchResult({version,data:searchSchema.parse(await action("/search",JSON.stringify({question:question.trim()})))}));}
   async function queue(file:File){if(!file.size||file.size>3_000_000)throw new Error("rejected");const form=new FormData();form.set("file",file);await action("/jobs",form,true);setSuccess("queued");await load();}
   function sample(){window.location.hash="documents";}

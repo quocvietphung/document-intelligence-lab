@@ -53,8 +53,10 @@ import {TrustWorkbench} from "./TrustWorkbench";
 import {UseCaseLibrary} from "./UseCaseLibrary";
 import {ProjectAssessmentPanel} from "./ProjectAssessmentPanel";
 import {CaseReportButton,GmailDraftDialog} from "./CaseOutputs";
+import {useConnectorApi} from "./connector-api";
 import {trustAnswerFromSearch,trustHref,trustSectionFromSearch} from "@/lib/workspace-usability";
 import {NovaAnswerActions} from "./NovaEvidence";
+import {overviewSchema} from "@/lib/integrations";
 import {trustAnswerSchema,citationTarget,type DraftOptions,type TrustSection} from "@/lib/nova-trust";
 import {trustText} from "@/lib/nova-trust-language";
 import {workspaceNavigation,workspacePageName,workspacePresentation} from "@/lib/workspace-presentation";
@@ -138,6 +140,13 @@ export function CreditWorkspace({locale}:{locale:string}) {
   const domainCases=filterDomain(cases,domainFilter);
   const [guide,setGuide]=useState<{page:WorkspaceTab;step:number}|null>(null);
   const [trustSection,setTrustSection]=useState<TrustSection>('tasks');const [trustAnswer,setTrustAnswer]=useState<string>();const [draftDoc,setDraftDoc]=useState<CreditDocument|null>(null);
+  // The Gmail draft action is offered only when a draft connection is enabled; the workspace has no connect step.
+  const {auth:connectorAuth,request:connectorRequest,run:connectorRun}=useConnectorApi(locale);const [draftsReady,setDraftsReady]=useState(false);
+  useEffect(()=>{
+    if(!connectorAuth.token)return;
+    const timer=window.setTimeout(()=>void connectorRun('drafts',async()=>setDraftsReady(overviewSchema.parse(await connectorRequest('/api/connectors')).destinations.some(d=>d.id==='gmail-draft'&&d.enabled))),0);
+    return()=>window.clearTimeout(timer);
+  },[connectorAuth.token,connectorRequest,connectorRun]);
   useEffect(()=>{const sync=()=>{const target=workspaceTarget(window.location.hash)||workspaceSectionFromSearch(window.location.search);if(target){setTab(target);setGuide(null);}const id=workspaceCaseFromSearch(window.location.search);if(id)setSelected(id);const trust=trustSectionFromSearch(window.location.search);if(trust)setTrustSection(trust);setTrustAnswer(trustAnswerFromSearch(window.location.search));};const timer=window.setTimeout(sync,0);window.addEventListener("hashchange",sync);window.addEventListener("popstate",sync);return()=>{window.clearTimeout(timer);window.removeEventListener("hashchange",sync);window.removeEventListener("popstate",sync);};},[]);
   function navigate(id:WorkspaceTab,href=`#${id}`){if(!workspaceTabs.includes(id))return;setTab(id);setMenu(false);setChat(false);setGuide(null);window.history.pushState(null,"",href);window.scrollTo({top:0,behavior:"instant"});}
   function openDocumentIntake() {
@@ -270,7 +279,7 @@ export function CreditWorkspace({locale}:{locale:string}) {
                 <div><h2 className="section-heading">{presentation.sourceInventory}</h2><p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-600">{presentation.uploadHint}</p></div>
                 <button type="button" data-page-tour="documents-upload" className="button-secondary" onClick={openDocumentIntake}><Upload size={16}/>{presentation.upload}<ArrowUpRight size={14}/></button>
               </header>
-              <DocumentAnalysisWorkspace key={`document-analysis:${item.id}`} caseId={item.id} documents={item.documents} locale={locale} busy={busy} canImport={canWrite&&!!analysis} azure={!!analysis&&analysis.mode.startsWith("azure")} importSample={uploadSample} refreshCase={refresh} open={inspect} ask={askNova} technical={()=>navigate("pipeline")} showPayroll={domainOf(item.domain)==='banking'} domain={domainOf(item.domain)} guiding={guide?.page==='documents'} draft={doc=>setDraftDoc(doc)} report={<CaseReportButton caseId={item.id} locale={locale} documents={item.documents}/>}/>
+              <DocumentAnalysisWorkspace key={`document-analysis:${item.id}`} caseId={item.id} documents={item.documents} locale={locale} busy={busy} canImport={canWrite&&!!analysis} azure={!!analysis&&analysis.mode.startsWith("azure")} importSample={uploadSample} refreshCase={refresh} open={inspect} ask={askNova} technical={()=>navigate("pipeline")} showPayroll={domainOf(item.domain)==='banking'} domain={domainOf(item.domain)} guiding={guide?.page==='documents'} draft={draftsReady?doc=>setDraftDoc(doc):undefined} report={<CaseReportButton caseId={item.id} locale={locale} documents={item.documents}/>}/>
               {legacyDocs.length?<details className="payroll-legacy"><summary>{payrollUx.legacy} · {legacyDocs.length}</summary><p>{payrollUx.kept}</p>{legacyDocs.map(documentRow)}</details>:null}</section>:null}
             {(["studio","pipeline","controls","operations","evaluation"] as string[]).includes(tab)?<PlatformWorkbench key={item.id} domain={item.domain} caseId={item.id} locale={locale} view={tab as "studio"|"pipeline"|"controls"|"operations"|"evaluation"} guiding={guide?.page===tab} caseVersion={item.version||0} documents={item.documents} changed={refresh} ask={askNova} inspect={(id,page)=>{const doc=item.documents.find(d=>d.id===id);if(doc)inspect(doc,page);else navigate("documents");}}/>:null}
             {tab==='evaluation'?<UseCaseLibrary key={`use-cases:${item.id}`} caseId={item.id} locale={locale} navigate={navigate}/>:null}

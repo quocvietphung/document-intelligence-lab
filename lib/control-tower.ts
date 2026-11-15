@@ -42,6 +42,24 @@ export function latestControlTower(body: unknown): {state: "ready"; run: {id: st
   return {state: complete.length ? "older" : "none"};
 }
 
+/** Dossiers that already have Control Tower marts (newest run first) and the rest, for the page's dossier list. */
+const towerRunsSchema = z.array(z.object({caseId: z.string(), runId: z.string(), time: z.string()}));
+export type DossierOption = {id: string; label: string};
+export type DossierChoices = {known: boolean; ready: DossierOption[]; others: DossierOption[]};
+export function dossierChoices(cases: readonly DossierOption[], runs: unknown): DossierChoices {
+  const parsed = towerRunsSchema.safeParse(runs);
+  if (!parsed.success) return {known: false, ready: [], others: [...cases]};
+  const byId = new Map(cases.map((entry) => [entry.id, entry]));
+  const ready = [...new Set(parsed.data.map((run) => run.caseId))].map((id) => byId.get(id)).filter((entry): entry is DossierOption => Boolean(entry));
+  const readyIds = new Set(ready.map((entry) => entry.id));
+  return {known: true, ready, others: cases.filter((entry) => !readyIds.has(entry.id))};
+}
+/** A dossier named in the link wins; otherwise the one with the newest Control Tower run, then the first dossier. */
+export function defaultDossier(requested: string | null, choices: Pick<DossierChoices, "ready" | "others">) {
+  if (requested && [...choices.ready, ...choices.others].some((entry) => entry.id === requested)) return requested;
+  return choices.ready[0]?.id ?? choices.others[0]?.id ?? "";
+}
+
 export function parseBox(value: string | null): [number, number, number, number] | null {
   if (!value) return null;
   try {
@@ -98,10 +116,23 @@ const en = {
   signIn: "Sign in with your lab account to read your tenant's dossiers.",
   loading: "Loading…",
   error: "The dossier data could not be loaded. Nothing was changed.",
-  noRun: "No ETL run with Control Tower marts for this dossier yet. Build the data layers under Processing & data, then refresh.",
-  older: "The latest completed run was built before the Control Tower marts existed. Build the data layers again.",
-  openPipeline: "Open Processing & data",
+  noRun: "This dossier has no ETL run with Control Tower marts yet, so there is nothing to show. Review its documents first (only reviewed values reach Gold), then build the data layers and refresh this page. Local stack only.",
+  older: "The latest completed run was built before the Control Tower marts existed. Build the data layers again, then refresh this page.",
+  openPipeline: "Open Data layers & exports",
+  withData: "With Control Tower data ({count})",
+  withoutData: "No ETL run yet ({count})",
+  openWithData: "Or open a dossier that already has data:",
   refresh: "Refresh",
+  charts: {
+    stages: "Latency per step", stagesNote: "Milliseconds per ETL step of this run. ClamAV and OCR time are measured upstream.",
+    flow: "Rows from Bronze to reviewed Gold", flowNote: "Each arrow shows rows in → rows out of that lineage step.",
+    layers: {bronze: "Bronze", silver: "Silver", gold: "Reviewed Gold"},
+    checks: "Data-quality checks", checksNote: "Passed and failed checks of this run. A failed check stops the run before any mart is published.",
+    ragKpis: "Retrieval and citation accuracy", ragNote: "Labelled evaluation cases. A dash means the case has not run yet.",
+    cost: "Estimated cost per model", costNote: "Configured cost. Local engines carry no per-token fee.",
+    valid: "Valid observations per model", validNote: "Share of this run's field observations that passed validation.",
+    empty: "This run has no data for this chart.",
+  },
   kpis: {
     success_rate: "Success rate", average_stage_latency_ms: "Average stage latency", human_correction_rate: "Human correction rate",
     ocr_disagreement_rate: "OCR disagreement rate", citation_document_accuracy: "Citation document accuracy", citation_page_accuracy: "Citation page accuracy",
@@ -141,9 +172,8 @@ const en = {
     "no full page text in the mart": "no full page text in the mart",
     "measurement mode is set": "measurement mode is set",
   } as Record<string, string>,
-  azure: "Azure path (documented only): Blob or SharePoint → Data Factory → ADLS or SQL → Power BI semantic model. Not built or called.",
 };
-type Copy = typeof en;
+export type Copy = typeof en;
 const de: Copy = {
   title: "Data & AI Control Tower",
   intro: "Pipeline, Datenqualität, Suche und Kosten für einen Vorgang, gelesen aus den geprüften Gold-Marts des letzten ETL-Laufs. Power BI nutzt dieselben exportierten Tabellen.",
@@ -159,10 +189,23 @@ const de: Copy = {
   signIn: "Melde dich mit deinem Lab-Konto an, um die Vorgänge deines Mandanten zu lesen.",
   loading: "Wird geladen…",
   error: "Die Vorgangsdaten konnten nicht geladen werden. Es wurde nichts geändert.",
-  noRun: "Für diesen Vorgang gibt es noch keinen ETL-Lauf mit Control-Tower-Marts. Erstelle die Datenebenen unter Verarbeitung & Daten und aktualisiere dann.",
-  older: "Der letzte abgeschlossene Lauf stammt aus der Zeit vor den Control-Tower-Marts. Erstelle die Datenebenen erneut.",
-  openPipeline: "Verarbeitung & Daten öffnen",
+  noRun: "Für diesen Vorgang gibt es noch keinen ETL-Lauf mit Control-Tower-Marts, daher gibt es nichts anzuzeigen. Prüfe zuerst die Dokumente (nur geprüfte Werte gelangen nach Gold), erstelle dann die Datenebenen und aktualisiere diese Seite. Nur im lokalen Stack.",
+  older: "Der letzte abgeschlossene Lauf stammt aus der Zeit vor den Control-Tower-Marts. Erstelle die Datenebenen erneut und aktualisiere dann diese Seite.",
+  openPipeline: "Datenebenen & Exporte öffnen",
+  withData: "Mit Control-Tower-Daten ({count})",
+  withoutData: "Noch kein ETL-Lauf ({count})",
+  openWithData: "Oder einen Vorgang öffnen, der schon Daten hat:",
   refresh: "Aktualisieren",
+  charts: {
+    stages: "Latenz je Schritt", stagesNote: "Millisekunden je ETL-Schritt in diesem Lauf. ClamAV- und OCR-Zeit werden vorher gemessen.",
+    flow: "Zeilen von Bronze bis geprüftes Gold", flowNote: "Jeder Pfeil zeigt Zeilen ein → Zeilen aus diesem Herkunftsschritt.",
+    layers: {bronze: "Bronze", silver: "Silver", gold: "Geprüftes Gold"},
+    checks: "Datenqualitätsprüfungen", checksNote: "Bestandene und nicht bestandene Prüfungen dieses Laufs. Eine fehlgeschlagene Prüfung stoppt den Lauf, bevor ein Mart veröffentlicht wird.",
+    ragKpis: "Genauigkeit von Suche und Quellen", ragNote: "Gelabelte Testfälle. Ein Strich bedeutet: noch nicht ausgeführt.",
+    cost: "Geschätzte Kosten je Modell", costNote: "Konfigurierte Kosten. Lokale Engines haben keine Token-Gebühr.",
+    valid: "Gültige Beobachtungen je Modell", validNote: "Anteil der Feldbeobachtungen dieses Laufs, die die Validierung bestanden haben.",
+    empty: "Dieser Lauf enthält keine Daten für dieses Diagramm.",
+  },
   kpis: {
     success_rate: "Erfolgsquote", average_stage_latency_ms: "Mittlere Schrittlatenz", human_correction_rate: "Korrekturquote durch Menschen",
     ocr_disagreement_rate: "OCR-Abweichungsquote", citation_document_accuracy: "Quellen: Dokument richtig", citation_page_accuracy: "Quellen: Seite richtig",
@@ -202,7 +245,6 @@ const de: Copy = {
     "no full page text in the mart": "kein vollständiger Seitentext im Mart",
     "measurement mode is set": "Messmodus ist gesetzt",
   } as Record<string, string>,
-  azure: "Azure-Weg (nur dokumentiert): Blob oder SharePoint → Data Factory → ADLS oder SQL → semantisches Power-BI-Modell. Nicht gebaut oder aufgerufen.",
 };
 const vi: Copy = {
   title: "Data & AI Control Tower",
@@ -219,10 +261,23 @@ const vi: Copy = {
   signIn: "Đăng nhập bằng tài khoản lab để đọc các hồ sơ của tenant.",
   loading: "Đang tải…",
   error: "Không tải được dữ liệu hồ sơ. Không có gì bị thay đổi.",
-  noRun: "Hồ sơ này chưa có lần chạy ETL nào có mart Control Tower. Hãy tạo các lớp dữ liệu ở mục Xử lý & dữ liệu rồi tải lại.",
-  older: "Lần chạy hoàn tất gần nhất được tạo trước khi có mart Control Tower. Hãy tạo lại các lớp dữ liệu.",
-  openPipeline: "Mở Xử lý & dữ liệu",
+  noRun: "Hồ sơ này chưa có lần chạy ETL nào có mart Control Tower nên chưa có gì để hiển thị. Hãy kiểm duyệt tài liệu trước (chỉ giá trị đã duyệt mới vào Gold), rồi tạo các lớp dữ liệu và tải lại trang này. Chỉ chạy trên stack local.",
+  older: "Lần chạy hoàn tất gần nhất được tạo trước khi có mart Control Tower. Hãy tạo lại các lớp dữ liệu rồi tải lại trang này.",
+  openPipeline: "Mở Các lớp dữ liệu & bản xuất",
+  withData: "Đã có dữ liệu Control Tower ({count})",
+  withoutData: "Chưa chạy ETL ({count})",
+  openWithData: "Hoặc mở hồ sơ đã có dữ liệu:",
   refresh: "Tải lại",
+  charts: {
+    stages: "Độ trễ từng bước", stagesNote: "Mili-giây cho mỗi bước ETL của lần chạy này. Thời gian ClamAV và OCR được đo ở bước trước.",
+    flow: "Số dòng từ Bronze đến Gold đã duyệt", flowNote: "Mỗi mũi tên hiển thị dòng vào → dòng ra của bước lineage đó.",
+    layers: {bronze: "Bronze", silver: "Silver", gold: "Gold đã duyệt"},
+    checks: "Kiểm tra chất lượng dữ liệu", checksNote: "Số kiểm tra đạt và không đạt của lần chạy này. Kiểm tra không đạt sẽ dừng lần chạy trước khi publish mart.",
+    ragKpis: "Độ đúng truy xuất và trích dẫn", ragNote: "Các ca đánh giá có nhãn. Dấu “—” nghĩa là ca chưa chạy.",
+    cost: "Chi phí ước tính theo model", costNote: "Chi phí cấu hình. Engine cục bộ không tính phí theo token.",
+    valid: "Quan sát hợp lệ theo model", validNote: "Tỷ lệ quan sát trường của lần chạy này vượt qua kiểm tra hợp lệ.",
+    empty: "Lần chạy này chưa có dữ liệu cho biểu đồ này.",
+  },
   kpis: {
     success_rate: "Tỷ lệ thành công", average_stage_latency_ms: "Độ trễ trung bình mỗi bước", human_correction_rate: "Tỷ lệ người sửa",
     ocr_disagreement_rate: "Tỷ lệ OCR lệch", citation_document_accuracy: "Trích dẫn đúng tài liệu", citation_page_accuracy: "Trích dẫn đúng trang",
@@ -262,7 +317,6 @@ const vi: Copy = {
     "no full page text in the mart": "không có toàn văn trang trong mart",
     "measurement mode is set": "chế độ đo đã được ghi",
   } as Record<string, string>,
-  azure: "Hướng Azure (chỉ có tài liệu): Blob hoặc SharePoint → Data Factory → ADLS hoặc SQL → semantic model Power BI. Chưa xây, chưa gọi.",
 };
 export const controlTowerTexts = {en, de, vi};
 export function controlTowerText(locale: string): Copy {

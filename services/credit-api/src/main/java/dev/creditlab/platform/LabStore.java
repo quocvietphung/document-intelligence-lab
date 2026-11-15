@@ -43,6 +43,14 @@ public class LabStore {
     if(db==null) { memory.put(tenant+"|"+caseId+"|"+kind+"|"+id,Map.copyOf(value));return; }
     db.update("INSERT INTO lab_records(tenant,case_id,kind,id,created_at,payload) VALUES(?,?,?,?,?,?) ON CONFLICT(tenant,case_id,kind,id) DO UPDATE SET payload=EXCLUDED.payload",tenant,caseId,kind,id,java.sql.Timestamp.from(Instant.now()),encode(value));
   }
+  /** Newest records of one kind across the tenant's dossiers, each with its case id; callers expose only what they need. */
+  public List<Map.Entry<String,Map<String,Object>>> listByKind(String tenant,String kind,int limit) {
+    if(db==null) return memory.entrySet().stream().map(e->Map.entry(e.getKey().split("\\|",-1),e.getValue()))
+        .filter(e->e.getKey().length==4&&e.getKey()[0].equals(tenant)&&e.getKey()[2].equals(kind))
+        .sorted(Comparator.comparing((Map.Entry<String[],Map<String,Object>> e)->e.getValue().getOrDefault("time","").toString()).reversed())
+        .limit(limit).map(e->Map.entry(e.getKey()[1],e.getValue())).toList();
+    return db.query("SELECT case_id,payload FROM lab_records WHERE tenant=? AND kind=? ORDER BY created_at DESC LIMIT ?",(r,i)->Map.entry(r.getString(1),decode(r.getString(2))),tenant,kind,limit);
+  }
   public List<Map<String,Object>> list(String tenant,String caseId,String kind) {
     if(db==null) return memory.entrySet().stream().filter(e->e.getKey().startsWith(tenant+"|"+caseId+"|"+kind+"|")).map(Map.Entry::getValue).sorted(Comparator.comparing((Map<String,Object> row)->row.getOrDefault("time","").toString()).reversed()).limit(60).toList();
     return db.query("SELECT payload FROM lab_records WHERE tenant=? AND case_id=? AND kind=? ORDER BY created_at DESC LIMIT 60",(r,i)->decode(r.getString(1)),tenant,caseId,kind);

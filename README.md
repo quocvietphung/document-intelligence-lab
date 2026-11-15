@@ -1,6 +1,6 @@
 # Document Intelligence Lab
 
-**An open-source, provider-neutral Document AI research platform.** It studies how business PDFs become structured data, traceable answers and reviewable findings, with page evidence, deterministic checks and a person in control. Microsoft 365, Dynamics 365, Google and Azure are optional adapters. The local workflow needs no cloud credential.
+**An open-source, provider-neutral Document AI research platform.** It studies how business PDFs become structured data, traceable answers and reviewable findings, with page evidence, deterministic checks and a person in control. Azure is an optional provider. The local workflow runs on your own PDFs and needs no cloud credential.
 
 > Research support only. Results are not legal, financial, investment, payment, valuation, compliance or ESG certification decisions.
 
@@ -9,16 +9,21 @@
 - Text, layout, table and OCR extraction, with source locations kept for every value.
 - Classification, BM25, vector and hybrid retrieval, and answers that cite pages or refuse.
 - Deterministic validation, cross-document reconciliation and project metrics computed in code.
-- Human review, an audit trail and provider-neutral intake from local files, email, drives and Microsoft 365.
+- Human review, an audit trail and provider-neutral intake. The workspace currently offers local PDF files as its source.
+
+## What is new
+
+- **Tasks:** every AI feature has a process guide. Unfinished steps show what to do next, computed from the dossier's own records.
+- **Data & AI Control Tower:** charts for step latency, the Bronze → Silver → Gold row flow, data-quality checks, RAG and citation accuracy, configured cost and valid observations per model. Simulated values are never charted. The dossier list opens dossiers that already have data first.
+- **Sources & integrations:** the workspace offers local PDF files. Gmail, Google Drive, Microsoft 365 and the planned adapters are not shown there.
+- **Clearer errors:** a failed action says whether the session ended, the role is not allowed, the item is gone, or a service did not answer. A stopped analysis says what to do next, without naming a provider.
+- **Power BI-ready export:** 19 tables, relationships and DAX measures are written to the ETL volume. The app does not connect to Power BI.
 
 ## Provider-neutral architecture
 
 ```mermaid
 flowchart LR
     L[Local PDFs and fictional fixtures] --> P
-    G[Gmail · Google Drive] -. optional .-> P
-    M[Microsoft 365 via the M365 service] -. optional .-> P
-    F[WebDAV · S3 · REST · Dataverse<br/>planned, disabled] -.-> P
     P[Shared intake<br/>authorization · real MIME · hash · ClamAV · durable queue] --> X[OCR · layout · tables<br/>Docling, Azure DI optional]
     X --> E[Normalization · RAG · evidence]
     E --> V[Deterministic validation]
@@ -34,12 +39,11 @@ Adapters only list and fetch documents or deliver an approved result. OCR, retri
 | Connector | Status | Notes |
 | --- | --- | --- |
 | Local files and fictional fixtures | `verified-local` | Default; runs offline |
-| Gmail attachments (read-only), Gmail drafts after approval | `implemented-not-live-verified` | Optional; tested with a mocked Gmail API only |
-| Google Drive (read-only) | `implemented-not-live-verified` | Optional; tested with a mocked Drive API only |
-| Microsoft 365 (SharePoint / OneDrive) through the M365 service | `simulated` (mock provider) | Optional; its Graph provider is implemented but not live-verified |
-| Azure Document Intelligence and Azure OpenAI | optional | Your own resources; one bounded live smoke test is recorded for the M365 service |
+| Gmail attachments (read-only), Gmail drafts after approval | `implemented-not-live-verified` | Adapter code kept; not shown in Sources & integrations; tested with a mocked Gmail API only |
+| Google Drive (read-only) | `implemented-not-live-verified` | Adapter code kept; not shown in Sources & integrations; tested with a mocked Drive API only |
+| Azure Document Intelligence and Azure OpenAI | optional | Your own resources; used only when you configure them |
 | CSV business data | `verified-local` | Deterministic project assessment |
-| WebDAV / Nextcloud, S3 / MinIO, PostgreSQL, generic REST, Dynamics 365 / Dataverse, webhook, CRM write-back | `future` | Disabled descriptors with no network code |
+| WebDAV / Nextcloud, S3 / MinIO, PostgreSQL, generic REST, Dynamics 365 / Dataverse, webhook, CRM write-back | `future` | Planned and disabled; not shown in the workspace |
 
 ## Use cases
 
@@ -50,7 +54,7 @@ The full matrix — where each use case runs, its fixture, entry point, tests, s
 | Use case | Deterministic result |
 | --- | --- |
 | Project and real-estate assessment | Total cost, cost variance, revenue scenarios, margin, cost per m² and schedule variance, all computed in code |
-| Document intake from email | Fictional Gmail message → PDF attachment → shared pipeline (mocked API offline) |
+| Document intake from email | Fictional e-mail attachment PDF → shared pipeline; the Gmail path is tested only with a mocked API |
 | Classification and extraction | Document type; net plus VAT equals gross |
 | Project status summary | Labelled status, progress and risks |
 | Contract and risk check | Penalty, cap and warranty compared with review thresholds; not legal advice |
@@ -58,7 +62,7 @@ The full matrix — where each use case runs, its fixture, entry point, tests, s
 | ESG evidence completeness | Present, missing and pending evidence; no certification |
 | Knowledge assistant with citations | Answers only with cited evidence; unsupported questions are refused |
 
-Run them in **Research datasets → Sample scenarios**; import their PDFs under **Sources & integrations** (local files). The CSV project assessment is in **Domain analysis**, and the report download and Gmail drafts sit next to reviewed results in **Documents & evidence**. A language model may explain the results or draft a report; it never computes them.
+Run them in **Research datasets → Sample scenarios**; import their PDFs under **Sources & integrations** (local files). The CSV project assessment is in **Domain analysis**, and the report download sits next to reviewed results in **Documents & evidence**. A language model may explain the results or draft a report; it never computes them.
 
 ### AI-103 lab: contractor pre-check before accounting
 
@@ -79,7 +83,7 @@ cd document-intelligence-lab
 node scripts/docker-local.mjs --prepare-model
 ```
 
-The first run builds the images and downloads the local model once. Open <http://localhost:3000/en>, sign in with the local development account `advisor.demo` / `demo-password`, and open **Sources & integrations**. Requirements, health checks and troubleshooting are in [Local Docker workspace](#local-docker-workspace). Gmail and Drive are added explicitly with `--with-google-connectors` ([setup](docs/CONNECTORS.md#optional-google-gmail-and-drive)).
+The first run builds the images and downloads the local model once. Open <http://localhost:3000/en>, sign in with the local development account `advisor.demo` / `demo-password`, and open **Sources & integrations**. Requirements, health checks and troubleshooting are in [Local Docker workspace](#local-docker-workspace). Google connectors are not shown in the workspace; the `--with-google-connectors` option is kept for developers ([notes](docs/CONNECTORS.md#optional-google-gmail-and-drive)).
 
 ## Evidence, confidence and human review
 
@@ -93,7 +97,7 @@ The first run builds the images and downloads the local model once. Open <http:/
 
 | Runs for real, locally | Simulated (fictional data) | Optional, needs your credentials |
 | --- | --- | --- |
-| Upload, ClamAV scan, durable queue, Docling extraction, retrieval, Nova with Ollama, DuckDB ETL, deterministic use-case checks, review and audit | Microsoft 365 documents through the M365 mock provider; the email use case's Gmail message | Gmail, Google Drive, Gmail drafts, Microsoft Graph, Azure Document Intelligence, Azure OpenAI |
+| Upload, ClamAV scan, durable queue, Docling extraction, retrieval, Nova with Ollama, DuckDB ETL, deterministic use-case checks, review and audit | The e-mail use case's Gmail path (tested with a mocked API) | Gmail, Google Drive, Gmail drafts (developer adapters, not shown in the workspace), Azure Document Intelligence, Azure OpenAI |
 
 ## Current limitations
 
@@ -151,9 +155,9 @@ Workflows share the selected extraction/Nova providers. MiniLM is English-focuse
 
 ## Walkthrough
 
-![English walkthrough: Keycloak, PDF evidence, Nova, data layers, RAG, document analytics and local MLflow](docs/screenshots/document-ai-workflow-en.gif)
+![English walkthrough: processing queue, local PDF sources, reviewed evidence, Control Tower charts, AI transparency and the activity log](docs/screenshots/document-ai-workflow-en.gif)
 
-English Docker UI captures, assembled into a 16-scene edited walkthrough of about 78 seconds. The refreshed Overview, analytics and classification scenes extend the core PDF flow: Keycloak, evidence inspection, Nova's local guide, a saved Ollama answer, ETL and the nine-PDF / 77-question RAG dossier. The classification scene uses its separate fictional PDF corpus. Processing, answer and experiment records were saved previously; waiting periods are omitted and existing review states remain unchanged. Source links support inspection, not automatic approval.
+English captures from the signed-in local app, assembled into an 11-scene edited walkthrough of about 54.5 seconds. The scenes show the processing queue, the local source list, reviewed evidence, PDF research counts without invented scores, the four Control Tower views, AI transparency, the AI-103 capability status and the activity log. The captures are real screens from the local stack; waiting periods are omitted and existing review states remain unchanged. No scene implies automatic approval.
 
 ## Python Quick Start
 
@@ -231,7 +235,7 @@ Subsequent starts reuse models and databases:
 node scripts/docker-local.mjs
 ```
 
-Wait for the helper's readiness message. Use `--no-build` only when source and images match. This command starts the **supported production stack**: Java API, Next.js, Keycloak, PostgreSQL, Redis, Qdrant, ClamAV, Docling, local Nova, the offline Python/DuckDB ETL and the read-only M365 evidence service (fictional mock data, `127.0.0.1:8765`). It clears Azure chat/extraction configuration and has no silent cloud fallback. **It never builds or starts Spark.** The file list lives in [`scripts/compose-files.mjs`](scripts/compose-files.mjs); prove what is rendered with:
+Wait for the helper's readiness message. Use `--no-build` only when source and images match. This command starts the **supported production stack**: Java API, Next.js, Keycloak, PostgreSQL, Redis, Qdrant, ClamAV, Docling, local Nova, the offline Python/DuckDB ETL and a fictional Microsoft 365 mock container that the workspace no longer uses (`127.0.0.1:8765`). It clears Azure chat/extraction configuration and has no silent cloud fallback. **It never builds or starts Spark.** The file list lives in [`scripts/compose-files.mjs`](scripts/compose-files.mjs); prove what is rendered with:
 
 ```bash
 node scripts/check-production-compose.mjs   # renders every profile; fails if any Spark service, image or build appears
@@ -242,9 +246,9 @@ curl --fail http://127.0.0.1:8765/health
 | Mode | What leaves the machine |
 | --- | --- |
 | Local (default) | No document, question or answer. Internet is used only for image builds, ClamAV signature updates and the explicit `--prepare-model` download. The ETL worker runs with `network_mode: none`. |
-| Azure (opt-in) | A PDF you confirm for analysis goes to your Azure Document Intelligence resource; Nova sends the question and selected evidence to your Azure OpenAI deployment. The M365 service sends data to Azure only with its own explicit live settings. |
+| Azure (opt-in) | A PDF you confirm for analysis goes to your Azure Document Intelligence resource; Nova sends the question and selected evidence to your Azure OpenAI deployment. |
 
-Health checks, the M365 service and safe shutdown are described in [Docker local setup](docs/DOCKER_LOCAL.md#production-stack-and-the-spark-experiment).
+Health checks and safe shutdown are described in [Docker local setup](docs/DOCKER_LOCAL.md#production-stack-and-the-spark-experiment).
 
 ### Sign in through Keycloak
 
@@ -635,7 +639,7 @@ OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose \
 | `python/src/document_evidence/contracts/` | Shared synthetic validation fixtures |
 | `app/`, `components/workspace/`, `lib/` | Localized web UI, contracts and frontend tests |
 | `services/credit-api/` | Java authorization, processing, evidence, workflows and audit |
-| `services/credit-api/src/main/java/dev/creditlab/sources/` | Provider-neutral source, business-data and destination contracts, Gmail/Drive/M365/local adapters, use-case checks |
+| `services/credit-api/src/main/java/dev/creditlab/sources/` | Provider-neutral source, business-data and destination contracts, Gmail, Drive and local adapters (the Microsoft 365 adapter was removed), use-case checks |
 | `services/credit-api/src/main/resources/use-cases/` | Fictional use-case PDFs, CSV, mock Gmail message and catalog (regenerate with `scripts/prepare-use-case-fixtures.py`) |
 | `services/document-etl/` | Offline DuckDB/dbt and Parquet |
 | `infra/keycloak/` | Local development realm |

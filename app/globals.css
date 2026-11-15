@@ -933,6 +933,52 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .overview-start-card>svg{color:var(--brand)}.overview-start-card strong{font-size:15px}.overview-start-card span{font-size:13px;line-height:1.6;color:var(--text-secondary)}.overview-start-card small{font-size:12px;color:var(--text-muted)}
 @media(max-width:860px){.overview-start-grid{grid-template-columns:1fr}}
 
+/* Task page: every AI feature as an end-to-end workflow; unfinished ones show the next step and where to do it. */
+.ai-workflows{padding:20px 22px;margin-top:16px}
+.ai-workflows>header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ai-workflows>header h2{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:700}
+.ai-workflows>header h2 svg{color:var(--brand)}
+.ai-workflows>header p{margin-top:4px;max-width:70ch;font-size:14px;line-height:1.6;color:var(--text-secondary)}
+.ai-workflows-filter{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--border);border-radius:999px;background:var(--surface-subtle)}
+.ai-workflows-filter button{padding:4px 12px;border:0;border-radius:999px;background:transparent;color:var(--text-secondary);font-size:13px;font-weight:600}
+.ai-workflows-filter button[aria-pressed=true]{background:var(--surface-card);color:var(--text-primary);box-shadow:0 0 0 1px var(--border)}
+.ai-workflows-counts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.ai-workflows-unlock{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;padding:12px 14px;border:1px solid var(--warning-border);border-radius:12px;background:var(--warning-bg);color:var(--warning-fg);font-size:14px;font-weight:600;line-height:1.6}
+.ai-workflows-unlock[data-tone=neutral]{border-color:var(--neutral-border);background:var(--neutral-bg);color:var(--neutral-fg);font-weight:500}
+.ai-workflows-unlock button,.ai-workflow-next button{display:inline-flex;align-items:center;gap:6px}
+.ai-workflows-group{margin-top:12px;border-top:1px solid var(--border)}
+.ai-workflows-group>summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 0;cursor:pointer}
+.ai-workflows-group>summary::before{content:'▸';color:var(--text-muted);font-size:12px}
+.ai-workflows-group[open]>summary::before{content:'▾'}
+.ai-workflows-group>summary::-webkit-details-marker{display:none}
+.ai-workflows-group>summary strong{font-size:15px}
+.ai-workflows-group>summary small{margin-right:auto;font-size:12px;color:var(--text-muted)}
+.ai-workflows-group>ul{display:grid;gap:10px;padding-bottom:14px}
+.ai-workflow{padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-card)}
+.ai-workflow-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ai-workflow-head strong{flex:1;min-width:180px;font-size:14px;overflow-wrap:anywhere}
+.ai-workflow-head small{font-size:12px;color:var(--text-muted)}
+.ai-workflow-next{display:grid;gap:4px;margin-top:8px;padding-left:12px;border-left:3px solid var(--brand)}
+.ai-workflow[data-status=blocked] .ai-workflow-next{border-left-color:var(--danger-border)}
+.ai-workflow[data-status=todo] .ai-workflow-next{border-left-color:var(--warning-border)}
+.ai-workflow-next p{font-size:13px;line-height:1.6}
+.ai-workflow-next button{justify-self:start;margin-top:4px}
+.ai-workflow-hint{color:var(--text-secondary)}
+.ai-workflow-process{margin-top:10px}
+.ai-workflow-process>summary{width:max-content;max-width:100%;cursor:pointer;color:var(--brand);font-size:13px;font-weight:600}
+.ai-workflow-purpose{margin-top:8px;font-size:13px;line-height:1.6;color:var(--text-secondary)}
+.ai-workflow-process ol{display:grid;gap:6px;margin:10px 0 0;padding:0;list-style:none}
+.ai-workflow-process ol>li{display:flex;align-items:flex-start;gap:10px;padding:6px 8px;border-radius:8px}
+.ai-workflow-process ol>li>svg{flex:none;margin-top:3px;color:var(--text-muted)}
+.ai-workflow-process ol>li[data-state=done]>svg{color:var(--success-fg)}
+.ai-workflow-process ol>li[data-state=blocked]>svg{color:var(--danger-fg)}
+.ai-workflow-process ol>li[data-state=user]>svg{color:var(--info-fg)}
+.ai-workflow-process ol>li[aria-current=step]{background:var(--brand-subtle)}
+.ai-workflow-process ol>li p{font-size:13px;line-height:1.6}
+.ai-workflow-state,.ai-workflow-detail{font-size:12px;font-weight:600;color:var(--text-muted)}
+.ai-workflow-process .ai-pdf-example{margin-top:10px}
+.ai-workflows-note{margin-top:12px;font-size:12px;line-height:1.6;color:var(--text-muted)}
+
 /* AI catalog: collapsed by default, opened by the toggle, a search, a filter or a direct link. */
 .ai-directory-toggle{margin-left:auto}
 .ai-directory-count{font-size:12px;color:var(--text-muted);margin:4px 0 0}
@@ -962,6 +1008,7 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .row-menu-panel>button{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;text-align:left;font-size:13px;color:var(--text-primary)}
 .row-menu-panel>button:hover,.row-menu-panel>button:focus-visible{background:var(--brand-subtle)}
 .row-menu-info{display:grid;gap:6px;padding:9px 10px;border-top:1px solid var(--border);font-size:12px;color:var(--text-secondary)}
+@media(max-width:760px){.row-menu{display:block}.row-menu-panel{position:static;max-width:none;min-width:0;margin-top:6px}}
 @media(max-width:760px){.document-table thead{display:none}.document-table,.document-table tbody,.document-table tr,.document-table th,.document-table td{display:block;width:100%}.document-table tr{padding:10px 14px;border-top:1px solid var(--border)}.document-table th,.document-table td{border:0;padding:4px 0}.document-row-actions{text-align:left}.row-menu-panel{left:0;right:auto}}
 
 /* Review dialog: errors and the confirm button stay visible while the PDF and fields scroll. */

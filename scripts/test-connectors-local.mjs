@@ -1,5 +1,5 @@
 // Local acceptance for the provider-neutral connectors, through the real Keycloak login, the Next.js
-// proxies and the Java API. Uses only bundled fictional PDFs and the simulated M365 service; it makes no
+// proxies and the Java API. Uses only bundled fictional PDFs; it makes no
 // Google, Microsoft or Azure call. It creates one dedicated fictional dossier and never approves anything.
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
@@ -14,7 +14,6 @@ export async function auditConnectors({request,check,bearer,web}){
   const providers=Object.fromEntries(overview.body.providers.map(p=>[p.id,p]));
   check(providers.local?.label==='verified-local'&&providers.local.enabled&&providers.local.connection==='NOT_REQUIRED','Local fixtures are the default verified-local source');
   check(providers.gmail?.label==='implemented-not-live-verified'&&providers.gmail.enabled===false&&providers['google-drive']?.enabled===false,'Gmail and Drive stay disabled without the Google layer');
-  check(providers['microsoft-365']?.label==='simulated'&&providers['microsoft-365'].live===false,'Microsoft 365 is labelled simulated, never live');
   check(['webdav','s3'].every(id=>providers[id]?.label==='future'&&providers[id].enabled===false),'Future adapters are disabled');
   check(!JSON.stringify(overview.body).includes('refresh_token')&&!JSON.stringify(overview.body).includes('"live-verified"'),'No token field and no live-verified label');
 
@@ -53,11 +52,9 @@ export async function auditConnectors({request,check,bearer,web}){
     return job;
   }
   const local=await importAndProcess('local','bauvertrag',i=>i.externalId==='use-cases/bauvertrag-musterquartier.pdf');
-  const m365=await importAndProcess('microsoft-365','',i=>i.externalId==='project-status-001');
   const dossier=(await json(`${web}/api/cases/${caseId}`)).body;
   const contract=dossier.documents.find(d=>d.id===local.document_id);
   check(contract&&contract.status!=='verified'&&contract.pages.some(p=>p.text.includes('Gewährleistungsfrist')),'Extracted text is kept for review and nothing is auto-approved');
-  check(dossier.documents.some(d=>d.id===m365.document_id),'Simulated Microsoft 365 document reached the same dossier');
 
   const draft=await post(`${base}/destinations/gmail-draft/preview`,{documentId:contract.id,fieldLabels:['x'],recipients:[],subject:'Check',note:'',includeEvidenceExcerpts:false});
   check(draft.status===409&&draft.body.error==='HUMAN_REVIEW_REQUIRED','Drafts need a human-reviewed document first');
@@ -66,6 +63,6 @@ export async function auditConnectors({request,check,bearer,web}){
   const trail=await json(`${base}/sources/imports`);
   const events=new Set(trail.body.audit.map(e=>e.event));
   check(['SOURCE_PREVIEWED','SOURCE_IMPORTED','USE_CASE_CHECKED','PROJECT_ASSESSED'].every(e=>events.has(e))&&!events.has('REPORT_EXPORTED'),'Audit records completed actions without claiming a report was exported');
-  check(trail.body.imports.some(i=>i.sourceId==='microsoft-365'&&i.label==='simulated')&&trail.body.imports.some(i=>i.sourceId==='local'),'Provenance keeps source, revision and label');
+  check(trail.body.imports.some(i=>i.sourceId==='local'),'Provenance keeps source and revision');
   console.log(`Connector acceptance dossier: ${caseId}`);
 }

@@ -4,15 +4,12 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.net.httpserver.HttpServer;
 import dev.creditlab.casework.CreditCase;
 import dev.creditlab.casework.CreditCaseService;
 import dev.creditlab.platform.*;
 import dev.creditlab.sources.SourceContracts.*;
-import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 /** The eight offline use cases and the capability labels shown on the Integrations page. */
@@ -70,78 +67,21 @@ class UseCasesAndLabelsTest {
     assertThat(google.configured()).isFalse();
     var future = new FutureAdapters();
     var sources = List.of(new LocalFileSource(catalog), new GmailSource(google, accounts), new GoogleDriveSource(google, accounts),
-        new MicrosoftGraphSource("", false), future.webDavSource(), future.s3Source());
+        future.webDavSource(), future.s3Source());
     var intake = new SourceIntake(sources, List.of(new Destinations.CsvBusinessData(), future.postgresBusinessData(), future.restBusinessData(), future.dataverseBusinessData()),
         List.of(future.webhookDestination(), future.crmWriteBack()), mock(CreditCaseService.class), mock(DocumentBatches.class),
         new LabStore(Optional.empty(), new ObjectMapper()), accounts, mock(DistributedLimits.class));
     var overview = intake.overview("tenant", "alice");
     @SuppressWarnings("unchecked") var providers = (List<Map<String, Object>>) overview.get("providers");
-    assertThat(providers).extracting(p -> p.get("id")).containsExactly("local", "gmail", "google-drive", "microsoft-365", "webdav", "s3");
+    assertThat(providers).extracting(p -> p.get("id")).containsExactly("local", "gmail", "google-drive", "webdav", "s3");
     assertThat(providers.getFirst()).containsEntry("label", "verified-local").containsEntry("live", false).containsEntry("enabled", true).containsEntry("connection", "NOT_REQUIRED");
     assertThat(providers.get(1)).containsEntry("label", "implemented-not-live-verified").containsEntry("enabled", false).containsEntry("connection", "DISCONNECTED");
-    assertThat(providers.get(3)).containsEntry("label", "simulated").containsEntry("enabled", false).containsEntry("live", false);
-    assertThat(providers.subList(4, 6)).allSatisfy(p -> assertThat(p).containsEntry("label", "future").containsEntry("enabled", false));
+    assertThat(providers.subList(3, 5)).allSatisfy(p -> assertThat(p).containsEntry("label", "future").containsEntry("enabled", false));
     assertThat(overview.toString()).doesNotContain("live-verified\"", "refresh_token", "sealed").contains("tokensInBrowser=false");
     assertThat(new ObjectMapper().writeValueAsString(overview)).doesNotContain("\"live-verified\"");
     assertThatThrownBy(() -> new Descriptor("x", Kind.DOCUMENT_SOURCE, "X", Label.FUTURE, true, false, true, List.of(), List.of(), "")).isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> new Descriptor("x", Kind.DOCUMENT_SOURCE, "X", Label.SIMULATED, true, true, true, List.of(), List.of(), "")).isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> future.s3Source().preview(new SourceRequest("t", "c", "a", "", 1))).hasMessage("CONNECTOR_NOT_IMPLEMENTED");
-  }
-
-  @Test void microsoft365AdapterIsSimulatedWithTheMockProvider() throws Exception {
-    byte[] pdf = catalog.read(catalog.fixture("use-cases/projektstatus-musterquartier.pdf").orElseThrow());
-    var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
-    server.createContext("/", exchange -> {
-      String path = exchange.getRequestURI().getPath();
-      byte[] body = switch (path) {
-        case "/health" -> "{\"status\":\"ok\",\"provider\":\"mock\",\"auth_mode\":\"local-dev\",\"live\":false}".getBytes(StandardCharsets.UTF_8);
-        case "/documents" -> "{\"results\":[{\"document_id\":\"project-status-001\",\"name\":\"Projektstatus\",\"location\":\"mock://fictional\",\"score\":0}]}".getBytes(StandardCharsets.UTF_8);
-        case "/documents/project-status-001/content" -> pdf;
-        default -> null;
-      };
-      exchange.sendResponseHeaders(body == null ? 404 : 200, body == null ? -1 : body.length);
-      if (body != null) exchange.getResponseBody().write(body);
-      exchange.close();
-    });
-    server.start();
-    try {
-      var m365 = new MicrosoftGraphSource("http://127.0.0.1:" + server.getAddress().getPort(), true);
-      assertThat(m365.descriptor().label()).isEqualTo(Label.SIMULATED);
-      assertThat(m365.descriptor().enabled()).isTrue();
-      assertThat(m365.descriptor().live()).isFalse();
-      var request = new SourceRequest("tenant", "case", "alice", "", 5);
-      assertThat(m365.preview(request)).extracting(SourceItem::externalId).containsExactly("project-status-001");
-      assertThat(m365.fetch(request, "project-status-001").bytes()).isEqualTo(pdf);
-      assertThatThrownBy(() -> m365.fetch(request, "missing-doc")).hasMessage("SOURCE_ITEM_NOT_FOUND");
-      assertThatThrownBy(() -> m365.fetch(request, "../health")).hasMessage("INVALID_SOURCE_ITEM");
-    } finally { server.stop(0); }
-    assertThatThrownBy(() -> new MicrosoftGraphSource("http://attacker.example:8765", false)).isInstanceOf(IllegalArgumentException.class);
-  }
-
-  @Test void microsoft365WorkspaceNeverCallsProtectedGraphDocumentRoutes() throws Exception {
-    var calls = new AtomicInteger();
-    var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
-    server.createContext("/", exchange -> {
-      if ("/health".equals(exchange.getRequestURI().getPath())) {
-        byte[] body = "{\"status\":\"ok\",\"provider\":\"graph\",\"auth_mode\":\"entra\",\"live\":true}".getBytes(StandardCharsets.UTF_8);
-        exchange.sendResponseHeaders(200, body.length);
-        exchange.getResponseBody().write(body);
-      } else {
-        calls.incrementAndGet();
-        exchange.sendResponseHeaders(401, -1);
-      }
-      exchange.close();
-    });
-    server.start();
-    try {
-      var source = new MicrosoftGraphSource("http://127.0.0.1:" + server.getAddress().getPort(), true);
-      var request = new SourceRequest("tenant", "case", "alice", "", 5);
-      assertThat(source.descriptor().enabled()).isFalse();
-      assertThat(source.descriptor().live()).isFalse();
-      assertThatThrownBy(() -> source.preview(request)).hasMessage("CONNECTOR_NOT_CONFIGURED");
-      assertThatThrownBy(() -> source.fetch(request, "doc")).hasMessage("CONNECTOR_NOT_CONFIGURED");
-      assertThat(calls.get()).isZero();
-    } finally { server.stop(0); }
   }
 
   @Test void reportIncludesOnlyHumanReviewedFields() {

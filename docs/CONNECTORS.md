@@ -1,21 +1,20 @@
 # Provider-neutral document sources and destinations
 
-The workspace does not depend on any single vendor. Local PDFs are the default, and every use case runs offline with bundled fictional documents. Gmail, Google Drive, Microsoft 365 and Azure are optional adapters. They only list and fetch documents or deliver a result that a person approved. All of them feed one shared pipeline.
+The workspace does not depend on any single vendor. Local PDFs are the only source the workspace offers, and every use case runs offline with bundled fictional documents. Gmail and Google Drive remain optional adapters that the workspace hides. The Microsoft 365 adapter was removed. Azure is an optional extraction engine. Every adapter only lists and fetches documents, or delivers a result that a person approved, and all of them feed one shared pipeline.
 
 ```mermaid
 flowchart LR
     subgraph Sources[Document sources]
       L[Local files and fictional fixtures · verified-local]
-      G[Gmail attachments · implemented-not-live-verified]
-      D[Google Drive · implemented-not-live-verified]
-      M[Microsoft 365 via the M365 service · simulated]
+      G[Gmail attachments · optional, hidden in the workspace]
+      D[Google Drive · optional, hidden in the workspace]
       F1[WebDAV / Nextcloud · S3 / MinIO · future]
     end
     subgraph Data[Business data]
       C[CSV export · verified-local]
       F2[PostgreSQL · REST · Dynamics 365 / Dataverse · future]
     end
-    L & G & D & M --> I[Shared intake · authorization · consent · real MIME check · safe name · provenance de-duplication]
+    L & G & D --> I[Shared intake · authorization · consent · real MIME check · safe name · provenance de-duplication]
     I --> Q[Existing batch receipt and durable queue · SHA-256 · ClamAV]
     Q --> X[Extraction · Docling / local / Azure Document Intelligence]
     X --> GU[Injection quarantine · normalization · RAG and evidence]
@@ -23,7 +22,7 @@ flowchart LR
     C --> PA[Deterministic project assessment]
     R --> DS{Approved destination}
     DS --> RP[Download report · verified-local]
-    DS --> GD[Gmail draft after approval · implemented-not-live-verified]
+    DS --> GD[Gmail draft after approval · shown only when enabled]
     DS --> F3[Webhook · CRM write-back · future]
     R & DS --> A[(Audit trail)]
 ```
@@ -39,11 +38,12 @@ Labels describe what was actually tested. Configuration alone never upgrades a l
 | Local files and fixtures | `verified-local` | Runs in tests and in Docker without a network call |
 | Gmail attachments | `implemented-not-live-verified` | Code and tests use a mocked Gmail API only. No real mailbox was tested |
 | Google Drive | `implemented-not-live-verified` | Mocked Drive API only. No real Drive was tested |
-| Microsoft 365 | `simulated` with the M365 mock provider in local-dev; Graph intake is disabled in the workspace | Fictional SharePoint-style documents. Graph intake requires delegated Entra authentication |
 | Download report | `verified-local` | Generated locally with human-reviewed documents and their fields. Source-import metadata is listed separately |
 | Gmail draft | `implemented-not-live-verified` | Mocked Gmail API only |
 | CSV business data | `verified-local` | Parsed locally for the deterministic assessment |
 | WebDAV, S3/MinIO, PostgreSQL, generic REST, Dynamics 365/Dataverse, webhook, CRM write-back | `future` | Disabled descriptors with no network code |
+
+Gmail and Google Drive are hidden from the workspace even when their adapters are configured. `GET /api/connectors` still lists them, and the Gmail draft action appears on a reviewed document only when its destination is enabled.
 
 `live-verified` is not assigned to any adapter, because no live run has been recorded.
 
@@ -58,9 +58,9 @@ The default stack contains no Google, Microsoft or Azure credential. Each featur
 1. **Sources & integrations**: choose **Local files and fictional fixtures**, preview, select up to four PDFs, confirm consent and import. They go through the same scan, extraction and review as uploads.
 2. **Research datasets → Sample scenarios**: run the deterministic check for any of the eight use cases. Each result reports `networkCalls: 0`.
 3. **Domain analysis → Project assessment**: calculate the deterministic figures from the fictional CSV.
-4. **Documents & evidence**: after a person confirms a document, download the report or, with Google connected, create a Gmail draft from that document's row menu.
+4. **Documents & evidence**: after a person confirms a document, download the JSON report. A Gmail draft action appears in the row menu only when a Gmail draft connection is enabled; the workspace has no connect step.
 
-The authenticated acceptance check runs the same flow through Keycloak, the Next.js proxies and Java. It creates one dedicated fictional dossier, imports a local fixture and a simulated Microsoft 365 document, waits for ClamAV and extraction, and checks labels, duplicates, review gating, the report and the audit trail:
+The authenticated acceptance check runs the same flow through Keycloak, the Next.js proxies and Java. It creates one dedicated fictional dossier, imports a local fixture, waits for ClamAV and extraction, and checks labels, duplicates, review gating, the report and the audit trail:
 
 ```bash
 TEST_CONNECTORS=1 node scripts/test-oauth.mjs
@@ -74,6 +74,8 @@ To confirm that nothing calls the cloud:
 - CI runs every connector test against loopback mocks without any credential.
 
 ## Optional: Google Gmail and Drive
+
+The workspace hides these two connectors. The steps below are for a developer who tests the adapters with a personal OAuth client.
 
 ### 1. Create a Google Cloud OAuth client
 
@@ -158,6 +160,6 @@ A language model may explain these results or draft a report. It never computes 
 - No adapter was tested against a real Google account or Microsoft tenant.
 - `gmail.compose` and `drive.readonly` are broader than ideal (see the scopes table).
 - Access-token caching is per Java instance, and a revoked token is detected on the next call.
-- In simulated mode, the Microsoft 365 adapter reads through the M365 service's fixed local principal. Live Graph access per user still needs Entra delegation, which the Java adapter does not implement.
+- The Microsoft 365 adapter was removed. Live Graph access per user would need Entra delegation, which is not implemented.
 - Excel files must be exported as CSV first; `.xlsx` parsing is not implemented.
 - The webhook and CRM destinations and the WebDAV, S3, PostgreSQL, REST and Dataverse adapters are planned descriptors only.

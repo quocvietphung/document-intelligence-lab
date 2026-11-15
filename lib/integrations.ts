@@ -66,6 +66,10 @@ export type CapabilityLabel=typeof capabilityLabels[number];
 /** Only these ids may be imported; future adapters are listed but disabled. */
 export function importable(provider:Provider){return provider.kind==='document-source'&&provider.enabled&&provider.label!=='future'&&(provider.connection==='CONNECTED'||provider.connection==='NOT_REQUIRED');}
 export function selectable(item:Preview['items'][number]){return item.canDownload&&!item.alreadyImported;}
+/** Google connectors are not offered in the workspace, and gmail drafts are not listed as a destination here. */
+const hiddenSourceIds=new Set(['gmail','google-drive']);
+export function visibleSources<T extends {id:string;label:string}>(providers:readonly T[]){return providers.filter(p=>p.label!=='future'&&!hiddenSourceIds.has(p.id));}
+export function visibleDestinations<T extends {id:string;label:string}>(destinations:readonly T[]){return destinations.filter(d=>d.label!=='future'&&d.id!=='gmail-draft');}
 export const maxImportItems=4;
 
 const en={
@@ -76,8 +80,8 @@ const en={
   conn_CONNECTED:'Connected',conn_DISCONNECTED:'Not connected',conn_REAUTH_REQUIRED:'Reconnect required (token expired or revoked)',conn_SCOPE_NOT_GRANTED:'Permission not granted',conn_NOT_REQUIRED:'No connection needed',
   disabled:'Not configured on this server',permissions:'Requested access',scopes:'Scopes requested',granted:'Scopes granted',lastSync:'Last successful sync',found:'Found',imported:'Imported',lastError:'Last error',never:'Never',
   loading:'Loading sources…',connectGoogle:'Connect Google (Gmail + Drive, read-only)',enableDrafts:'Allow Gmail drafts',disconnect:'Disconnect and revoke',refresh:'Refresh status',
-  flow:'Import documents',step1:'1. Choose a source',step2:'2. Preview documents',step3:'3. Select up to four',step4:'4. Check permissions and destination',step5:'5. Import',step6:'6. Follow the pipeline',step7:'7. Review fields and evidence',
-  query:'Search (Gmail query or label, Drive folder:<id> or name)',preview:'Preview',noItems:'No documents found.',alreadyImported:'Already imported',notDownloadable:'Not downloadable',
+  flow:'Import documents',step1:'1. Choose a source',
+  query:'Search (file name or use case)',preview:'Preview',noItems:'No documents found.',alreadyImported:'Already imported',notDownloadable:'Not downloadable',
   profile:'Extraction profile',consent:'I may process these documents in this dossier. They enter the existing scan, extraction and review pipeline; nothing is approved automatically.',
   importSelected:'Import selected',state_ACCEPTED:'Queued',state_DUPLICATE:'Duplicate · not imported again',state_REJECTED:'Rejected',state_PENDING:'Pending',
   openPipeline:'Open Processing & data',openDocuments:'Open Documents & evidence',
@@ -99,8 +103,8 @@ const de:Copy={
   conn_CONNECTED:'Verbunden',conn_DISCONNECTED:'Nicht verbunden',conn_REAUTH_REQUIRED:'Neu verbinden (Token abgelaufen oder widerrufen)',conn_SCOPE_NOT_GRANTED:'Berechtigung nicht erteilt',conn_NOT_REQUIRED:'Keine Verbindung nötig',
   disabled:'Auf diesem Server nicht konfiguriert',permissions:'Angefragter Zugriff',scopes:'Angefragte Scopes',granted:'Erteilte Scopes',lastSync:'Letzte erfolgreiche Synchronisierung',found:'Gefunden',imported:'Importiert',lastError:'Letzter Fehler',never:'Nie',
   loading:'Quellen werden geladen…',connectGoogle:'Google verbinden (Gmail + Drive, nur lesen)',enableDrafts:'Gmail-Entwürfe erlauben',disconnect:'Trennen und widerrufen',refresh:'Status aktualisieren',
-  flow:'Dokumente importieren',step1:'1. Quelle wählen',step2:'2. Dokumente ansehen',step3:'3. Bis zu vier auswählen',step4:'4. Berechtigung und Ziel prüfen',step5:'5. Importieren',step6:'6. Pipeline verfolgen',step7:'7. Felder und Evidenz prüfen',
-  query:'Suche (Gmail-Abfrage oder Label, Drive folder:<ID> oder Name)',preview:'Vorschau',noItems:'Keine Dokumente gefunden.',alreadyImported:'Bereits importiert',notDownloadable:'Nicht herunterladbar',
+  flow:'Dokumente importieren',step1:'1. Quelle wählen',
+  query:'Suche (Dateiname oder Anwendungsfall)',preview:'Vorschau',noItems:'Keine Dokumente gefunden.',alreadyImported:'Bereits importiert',notDownloadable:'Nicht herunterladbar',
   profile:'Extraktionsprofil',consent:'Ich darf diese Dokumente in diesem Vorgang verarbeiten. Sie durchlaufen die bestehende Prüf-, Extraktions- und Review-Pipeline; nichts wird automatisch freigegeben.',
   importSelected:'Auswahl importieren',state_ACCEPTED:'In Warteschlange',state_DUPLICATE:'Duplikat · nicht erneut importiert',state_REJECTED:'Abgelehnt',state_PENDING:'Ausstehend',
   openPipeline:'Verarbeitung & Daten öffnen',openDocuments:'Dokumente & Belege öffnen',
@@ -121,8 +125,8 @@ const vi:Copy={
   conn_CONNECTED:'Đã kết nối',conn_DISCONNECTED:'Chưa kết nối',conn_REAUTH_REQUIRED:'Cần kết nối lại (token hết hạn hoặc bị thu hồi)',conn_SCOPE_NOT_GRANTED:'Chưa được cấp quyền',conn_NOT_REQUIRED:'Không cần kết nối',
   disabled:'Chưa cấu hình trên máy chủ này',permissions:'Quyền được yêu cầu',scopes:'Scope yêu cầu',granted:'Scope đã cấp',lastSync:'Lần đồng bộ thành công gần nhất',found:'Tìm thấy',imported:'Đã nhập',lastError:'Lỗi gần nhất',never:'Chưa có',
   loading:'Đang tải nguồn…',connectGoogle:'Kết nối Google (Gmail + Drive, chỉ đọc)',enableDrafts:'Cho phép tạo bản nháp Gmail',disconnect:'Ngắt kết nối và thu hồi',refresh:'Làm mới trạng thái',
-  flow:'Nhập tài liệu',step1:'1. Chọn nguồn',step2:'2. Xem trước tài liệu',step3:'3. Chọn tối đa bốn tài liệu',step4:'4. Kiểm tra quyền và đích',step5:'5. Nhập',step6:'6. Theo dõi pipeline',step7:'7. Kiểm tra trường và chứng cứ',
-  query:'Tìm kiếm (truy vấn hoặc nhãn Gmail, Drive folder:<id> hoặc tên)',preview:'Xem trước',noItems:'Không tìm thấy tài liệu.',alreadyImported:'Đã nhập trước đó',notDownloadable:'Không tải được',
+  flow:'Nhập tài liệu',step1:'1. Chọn nguồn',
+  query:'Tìm kiếm (tên tệp hoặc tình huống mẫu)',preview:'Xem trước',noItems:'Không tìm thấy tài liệu.',alreadyImported:'Đã nhập trước đó',notDownloadable:'Không tải được',
   profile:'Hồ sơ trích xuất',consent:'Tôi được phép xử lý các tài liệu này trong hồ sơ này. Chúng đi qua pipeline quét, trích xuất và kiểm tra hiện có; không có gì được tự động phê duyệt.',
   importSelected:'Nhập các tài liệu đã chọn',state_ACCEPTED:'Đã vào hàng đợi',state_DUPLICATE:'Trùng · không nhập lại',state_REJECTED:'Bị từ chối',state_PENDING:'Đang chờ',
   openPipeline:'Mở Xử lý & dữ liệu',openDocuments:'Mở Tài liệu & chứng cứ',
@@ -167,7 +171,7 @@ export function connectorError(locale:string,code:string|undefined){
 type Text3={en:string;de:string;vi:string};
 const t3=(en:string,de:string,vi:string):Text3=>({en,de,vi});
 /** Localized adapter text by stable id, so no locale mixes languages. The Java text is only a fallback for unknown ids. */
-export const adapterCopy:Record<string,{name?:Text3;permissions:Text3[];note:Text3;simulatedNote?:Text3;unreachableNote?:Text3}>={
+export const adapterCopy:Record<string,{name?:Text3;permissions:Text3[];note:Text3}>={
   local:{name:t3('Local files and fictional fixtures','Lokale Dateien und fiktive Testdokumente','Tệp cục bộ và tài liệu giả lập'),
     permissions:[t3('Upload your own permitted PDFs under Processing & data','Eigene erlaubte PDFs unter Verarbeitung & Daten hochladen','Tải PDF được phép của bạn tại Xử lý & dữ liệu'),t3('Import bundled fictional use-case PDFs; no network call','Mitgelieferte fiktive Anwendungsfall-PDFs importieren; kein Netzwerkaufruf','Nhập PDF use case giả lập có sẵn; không gọi mạng')],
     note:t3('Default mode. Works without any cloud credential.','Standardmodus. Funktioniert ohne Cloud-Zugangsdaten.','Chế độ mặc định. Chạy không cần thông tin đăng nhập cloud.')},
@@ -175,10 +179,6 @@ export const adapterCopy:Record<string,{name?:Text3;permissions:Text3[];note:Tex
     note:t3('Tested with a mocked Gmail API only. Connect with your own Google OAuth client to use real mail.','Nur mit einer simulierten Gmail-API getestet. Für echte E-Mails mit einem eigenen Google-OAuth-Client verbinden.','Chỉ kiểm thử với Gmail API giả lập. Kết nối bằng OAuth client Google của bạn để dùng thư thật.')},
   'google-drive':{permissions:[t3('Read PDF metadata and content in My Drive and shared drives you can access','PDF-Metadaten und -Inhalte in Meine Ablage und zugänglichen geteilten Ablagen lesen','Đọc metadata và nội dung PDF trong My Drive và Shared Drive bạn có quyền'),t3('Never edits, moves, deletes or shares files','Bearbeitet, verschiebt, löscht oder teilt nie Dateien','Không bao giờ sửa, di chuyển, xóa hay chia sẻ tệp')],
     note:t3('Tested with a mocked Drive API only. drive.readonly is broader than drive.file; see the connector guide.','Nur mit einer simulierten Drive-API getestet. drive.readonly ist breiter als drive.file; siehe Connector-Anleitung.','Chỉ kiểm thử với Drive API giả lập. drive.readonly rộng hơn drive.file; xem hướng dẫn connector.')},
-  'microsoft-365':{permissions:[t3('Read-only listing and download through the M365 evidence service','Nur lesende Auflistung und Download über den M365-Evidenzdienst','Chỉ liệt kê và tải xuống qua dịch vụ chứng cứ M365'),t3('The service applies its own tenant and ACL checks','Der Dienst prüft Mandant und Berechtigungen selbst','Dịch vụ tự kiểm tra tenant và quyền truy cập')],
-    note:t3('Graph intake requires delegated Entra authentication, which this workspace adapter does not support.','Der Graph-Import erfordert delegierte Entra-Authentifizierung. Dieser Workspace-Adapter unterstützt sie noch nicht.','Nhập qua Graph cần xác thực Entra theo quyền người dùng. Workspace chưa hỗ trợ luồng này.'),
-    simulatedNote:t3('Mock provider with fictional documents; not a Microsoft 365 connection.','Mock-Provider mit fiktiven Dokumenten; keine Microsoft-365-Verbindung.','Provider mô phỏng với tài liệu giả lập; không phải kết nối Microsoft 365.'),
-    unreachableNote:t3('Simulated intake requires a reachable M365 mock service in local-dev mode.','Der simulierte Import benötigt einen erreichbaren M365-Mock-Dienst im local-dev-Modus.','Để nhập mô phỏng, cần dịch vụ M365 mock đang chạy ở chế độ local-dev.')},
   webdav:{permissions:[],note:t3('Planned read-only PROPFIND/GET with per-user app passwords.','Geplant: nur lesendes PROPFIND/GET mit App-Passwörtern pro Nutzer.','Dự kiến: PROPFIND/GET chỉ đọc với mật khẩu ứng dụng riêng từng người dùng.')},
   s3:{permissions:[],note:t3('Planned read-only GetObject with a scoped bucket policy.','Geplant: nur lesendes GetObject mit eingeschränkter Bucket-Richtlinie.','Dự kiến: GetObject chỉ đọc với chính sách bucket giới hạn.')},
   'csv-excel':{name:t3('CSV (Excel export)','CSV (Excel-Export)','CSV (xuất từ Excel)'),permissions:[t3('Parse an uploaded CSV with cost, area, revenue and milestone rows','Eine CSV mit Kosten-, Flächen-, Erlös- und Meilensteinzeilen auswerten','Đọc tệp CSV có dòng chi phí, diện tích, doanh thu và mốc tiến độ')],
@@ -196,6 +196,5 @@ export const adapterCopy:Record<string,{name?:Text3;permissions:Text3[];note:Tex
 export function describeAdapter(provider:Pick<Provider,'id'|'provider'|'permissions'|'note'|'label'|'enabled'>,locale:string){
   const language=locale==='vi'?'vi':locale==='de'?'de':'en',copy=adapterCopy[provider.id];
   if(!copy)return {name:provider.provider,permissions:provider.permissions,note:provider.note||''};
-  const note=provider.id==='microsoft-365'&&provider.label==='simulated'?(provider.enabled?copy.simulatedNote:copy.unreachableNote)??copy.note:copy.note;
-  return {name:copy.name?.[language]??provider.provider,permissions:copy.permissions.map(p=>p[language]),note:note[language]};
+  return {name:copy.name?.[language]??provider.provider,permissions:copy.permissions.map(p=>p[language]),note:copy.note[language]};
 }

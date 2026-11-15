@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import catalog from "../services/credit-api/src/main/resources/use-cases/catalog.json";
-import { adapterCopy, capabilityLabels, connectorError, describeAdapter, importable, integrationsLanguage, integrationsText, labelText, modeText, overviewSchema, previewSchema, selectable, useCaseCatalogSchema, type Provider } from "./integrations";
+import { adapterCopy, capabilityLabels, connectorError, describeAdapter, importable, integrationsLanguage, integrationsText, labelText, modeText, overviewSchema, previewSchema, selectable, useCaseCatalogSchema, visibleDestinations, visibleSources, type Provider } from "./integrations";
 import { proxyConnectors, readOauthCookie, oauthCookie } from "./connector-proxy";
 import { oauthCallbackRedirect } from "./oauth-callback";
 import { proxyCase } from "./case-proxy";
@@ -13,7 +13,7 @@ const overview = {
   providers: [
     { ...descriptor, id: "local", provider: "Local files and fictional fixtures", label: "verified-local", requiresConnection: false, connection: "NOT_REQUIRED", sync: {} },
     { ...descriptor, id: "gmail", provider: "Gmail", label: "implemented-not-live-verified", live: true, scopes: ["https://www.googleapis.com/auth/gmail.readonly"], connection: "DISCONNECTED", sync: { lastError: "CONNECTOR_REAUTH_REQUIRED" } },
-    { ...descriptor, id: "microsoft-365", provider: "Microsoft 365", label: "simulated", requiresConnection: false, connection: "NOT_REQUIRED", sync: { found: 7, imported: 2 } },
+    { ...descriptor, id: "mock-source", provider: "Mock provider", label: "simulated", requiresConnection: false, connection: "NOT_REQUIRED", sync: { found: 7, imported: 2 } },
     { ...descriptor, id: "s3", provider: "S3 / MinIO", label: "future", enabled: false, connection: "DISCONNECTED", sync: {} },
   ],
   businessData: [], destinations: [],
@@ -37,13 +37,13 @@ describe("integrations copy and contracts", () => {
   it("parses Java status without tokens and never treats simulated or future adapters as live imports", () => {
     const parsed = overviewSchema.parse(overview);
     expect(() => overviewSchema.parse({ ...overview, tokensInBrowser: true })).toThrow();
-    const [local, gmail, m365, s3] = parsed.providers as Provider[];
+    const [local, gmail, simulated, s3] = parsed.providers as Provider[];
     expect(importable(local)).toBe(true);
     expect(importable(gmail)).toBe(false);
-    expect(importable(m365)).toBe(true);
+    expect(importable(simulated)).toBe(true);
     expect(importable(s3)).toBe(false);
     const copy = integrationsText("en");
-    expect(modeText(copy, m365)).toBe(copy.modeSimulated);
+    expect(modeText(copy, simulated)).toBe(copy.modeSimulated);
     expect(modeText(copy, local)).toBe(copy.modeLocal);
     expect(modeText(copy, gmail)).toBe(copy.modeReal);
     expect(modeText(copy, s3)).toBe(copy.modeFuture);
@@ -55,7 +55,7 @@ describe("integrations copy and contracts", () => {
   });
 
   it("localizes every known adapter so no locale mixes languages", () => {
-    const known = ["local", "gmail", "google-drive", "microsoft-365", "webdav", "s3", "csv-excel", "postgresql", "generic-rest", "dynamics-dataverse", "download-report", "gmail-draft", "webhook", "crm-write-back"];
+    const known = ["local", "gmail", "google-drive", "webdav", "s3", "csv-excel", "postgresql", "generic-rest", "dynamics-dataverse", "download-report", "gmail-draft", "webhook", "crm-write-back"];
     expect(Object.keys(adapterCopy).sort()).toEqual([...known].sort());
     for (const id of known) for (const locale of ["en", "de", "vi"]) {
       const text = describeAdapter({ id, provider: "Fallback", permissions: ["English fallback"], note: "English fallback", label: "future", enabled: false }, locale);
@@ -63,10 +63,6 @@ describe("integrations copy and contracts", () => {
       expect(text.permissions.join(" ")).not.toContain("English fallback");
       if (locale !== "en") expect(text.note).not.toBe(describeAdapter({ id, provider: "x", permissions: [], note: "x", label: "future", enabled: false }, "en").note);
     }
-    const m365 = { id: "microsoft-365", provider: "Microsoft 365", permissions: [], note: null, label: "simulated" as const, enabled: true };
-    expect(describeAdapter(m365, "vi").note).toContain("mô phỏng");
-    expect(describeAdapter({ ...m365, enabled: false }, "de").note).toContain("local-dev");
-    expect(describeAdapter({ ...m365, enabled: false, label: "implemented-not-live-verified" }, "vi").note).toContain("Entra");
     expect(describeAdapter({ id: "new-adapter", provider: "New", permissions: ["p"], note: "n", label: "future", enabled: false }, "de")).toEqual({ name: "New", permissions: ["p"], note: "n" });
   });
 
@@ -172,5 +168,17 @@ describe("connector transport", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ error: "STALE_CASE" }, { status: 409 })));
     const other = await proxyCase(new Request("http://localhost:3000/api/cases/C/platform/search", { headers, method: "POST", body: "{}" }), ["C", "platform", "search"]);
     expect(await other.json()).toEqual({ error: "Request failed (409)" });
+  });
+});
+
+describe("workspace source list", () => {
+  it("offers only the sources the workspace can use and hides planned and Google entries", () => {
+    const list = [
+      {id: "local", label: "verified-local"}, {id: "gmail", label: "implemented-not-live-verified"},
+      {id: "google-drive", label: "implemented-not-live-verified"}, {id: "webdav", label: "future"},
+    ];
+    expect(visibleSources(list).map((p) => p.id)).toEqual(["local"]);
+    const destinations = [{id: "download-report", label: "verified-local"}, {id: "gmail-draft", label: "implemented-not-live-verified"}, {id: "webhook", label: "future"}];
+    expect(visibleDestinations(destinations).map((d) => d.id)).toEqual(["download-report"]);
   });
 });

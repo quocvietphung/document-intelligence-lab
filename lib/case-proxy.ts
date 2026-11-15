@@ -45,7 +45,7 @@ export async function proxyCase(request: Request, segments: string[] = []) {
   ) {
     return Response.json({ error: "Not found" }, { status: 404 });
   }
-  if (["document-analysis/status","ai-capabilities"].includes(path) && request.method !== "GET") {
+  if (["document-analysis/status","ai-capabilities","control-tower-runs"].includes(path) && request.method !== "GET") {
     return Response.json({ error: "Method not allowed" }, { status: 405 });
   }
   if (path.endsWith('/ocr-corrections') && request.method!=='POST') return Response.json({error:'Method not allowed'},{status:405});

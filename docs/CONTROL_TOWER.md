@@ -7,6 +7,10 @@ One page (`/en/control-tower`, `/de/control-tower`, `/vi/control-tower`; menu en
 3. **RAG & Citation Quality:** Hit@K, Recall@K, MRR, correct abstention, citation document, page and bounding-box accuracy, and the prompt-injection blocked rate.
 4. **AI Cost & Model Benchmark:** configured cost per document and the providers and models of the run.
 
+**Which dossier opens:** the dossier list shows dossiers that already have Control Tower data first (from `GET /api/cases/control-tower-runs`, which returns only dossier ids, run ids and times for the caller's tenant). A link with `?case=` opens that dossier; without it, the page opens the dossier with the newest run. A dossier without a run explains what to do, links to **Processing & data → Data layers & exports** and offers up to three dossiers that already have data. An older API without the list endpoint still shows every dossier.
+
+**Charts:** plain SVG and CSS drawn from the same marts, with no chart library, no Power BI login and no cloud call. Each number appears once: in a chart, a tile or a table. Pipeline: step latency with row counts, the Bronze → Silver → Gold row flow and the data-quality checks. Quality: the correction and OCR disagreement tiles, then the observations table. RAG: the ratio KPIs on a 0–100% scale, then the retrieval and citation case tables. Cost: the per-document cost, then configured cost and valid observations per model. Simulated values are never charted.
+
 Badges separate **Measured**, **Simulated** and **Configured only**. Deterministic rules on the run's own text count as measured and name the rule. Simulated values appear in their own box and never in a KPI tile.
 
 ## Data flow

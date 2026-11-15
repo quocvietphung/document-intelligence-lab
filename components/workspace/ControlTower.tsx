@@ -3,17 +3,13 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {ArrowLeft, RefreshCw} from "lucide-react";
 import {useAuth} from "@/components/auth/KeycloakProvider";
 import {
-  areaKpis, areas, badgeOf, controlTowerText, formatKpi, kpiDetail, latestControlTower, parseBox,
-  type Area, type ControlTower as Tower, type MeasurementMode,
+  areaKpis, areas, controlTowerText, defaultDossier, dossierChoices, formatKpi, kpiDetail, latestControlTower, parseBox,
+  type Area, type ControlTower as Tower, type DossierChoices, type DossierOption,
 } from "@/lib/control-tower";
+import {Badge, CheckChart, CostChart, FlowChart, KpiChart, ModelChart, StageChart} from "./ControlTowerCharts";
 
 type Copy = ReturnType<typeof controlTowerText>;
 type Loaded = ReturnType<typeof latestControlTower>;
-
-function Badge({mode, t}: {mode: MeasurementMode; t: Copy}) {
-  const badge = badgeOf(mode);
-  return <span className={`ct-badge ct-badge-${badge}`} title={mode === "deterministic" ? t.rule : undefined}>{t.badges[badge]}</span>;
-}
 
 function Kpis({tower, keys, t, locale}: {tower: Tower; keys: string[]; t: Copy; locale: string}) {
   const shown = tower.kpis.filter((kpi) => keys.includes(kpi.key));
@@ -24,23 +20,11 @@ function Kpis({tower, keys, t, locale}: {tower: Tower; keys: string[]; t: Copy; 
   </div>)}</div>;
 }
 
+/** Pipeline: two headline numbers, then the charts that carry the rest: step latency, layer flow and the checks. */
 function Pipeline({tower, t, locale}: {tower: Tower; t: Copy; locale: string}) {
   return <>
     <Kpis tower={tower} keys={areaKpis.pipeline} t={t} locale={locale}/>
-    <div className="ct-split">
-      <div className="ai103-scroll"><table className="ct-table"><caption>{t.captions.stages}</caption>
-        <thead><tr><th scope="col">{t.columns.stage}</th><th scope="col">{t.columns.latency}</th><th scope="col">{t.columns.rows}</th><th scope="col">{t.columns.mode}</th></tr></thead>
-        <tbody>{tower.stages.map((stage) => <tr key={stage.stage}><th scope="row">{t.stages[stage.stage] ?? stage.stage}</th><td>{formatKpi(stage.latencyMs, "ms", locale)}</td><td>{stage.rows ?? "—"}</td><td><Badge mode={stage.mode} t={t}/></td></tr>)}</tbody>
-      </table></div>
-      <div className="ai103-scroll"><table className="ct-table"><caption>{t.captions.lineage}</caption>
-        <thead><tr><th scope="col">{t.columns.from}</th><th scope="col">{t.columns.to}</th><th scope="col">{t.columns.rowsIn}</th><th scope="col">{t.columns.rowsOut}</th></tr></thead>
-        <tbody>{tower.lineage.map((edge) => <tr key={`${edge.from}-${edge.to}`}><td><code>{edge.from}</code></td><td><code>{edge.to}</code></td><td>{edge.rowsIn}</td><td>{edge.rowsOut}</td></tr>)}</tbody>
-      </table></div>
-    </div>
-    <div className="ai103-scroll"><table className="ct-table"><caption>{t.captions.quality}</caption>
-      <thead><tr><th scope="col">{t.columns.check}</th><th scope="col">{t.columns.result}</th></tr></thead>
-      <tbody>{tower.dataQuality.map((check) => <tr key={check.check}><td>{t.checks[check.check] ?? check.check}{check.detail ? ` · ${check.detail}` : ""}</td><td>{check.passed ? t.passed : t.failed}</td></tr>)}</tbody>
-    </table></div>
+    <div className="ct-charts"><StageChart tower={tower} t={t} locale={locale}/><FlowChart tower={tower} t={t} locale={locale}/><CheckChart tower={tower} t={t}/></div>
   </>;
 }
 
@@ -79,9 +63,10 @@ function Quality({tower, t, locale}: {tower: Tower; t: Copy; locale: string}) {
   </>;
 }
 
+/** RAG: each ratio once, as a bar with its detail, then the case tables behind them. */
 function Rag({tower, t, locale}: {tower: Tower; t: Copy; locale: string}) {
   return <>
-    <Kpis tower={tower} keys={areaKpis.rag} t={t} locale={locale}/>
+    <div className="ct-charts"><KpiChart tower={tower} keys={areaKpis.rag} id="ct-chart-rag" title={t.charts.ragKpis} note={t.charts.ragNote} t={t} locale={locale}/></div>
     <div className="ct-split">
       <div className="ai103-scroll"><table className="ct-table"><caption>{t.captions.retrieval}</caption>
         <thead><tr><th scope="col">{t.columns.case}</th><th scope="col">{t.columns.expected}</th><th scope="col">{t.columns.rank}</th><th scope="col">{t.columns.result}</th></tr></thead>
@@ -96,28 +81,21 @@ function Rag({tower, t, locale}: {tower: Tower; t: Copy; locale: string}) {
   </>;
 }
 
+/** Cost: the per-document figure, then the configured cost and the valid observations of each model. */
 function Cost({tower, t, locale}: {tower: Tower; t: Copy; locale: string}) {
   return <>
     <Kpis tower={tower} keys={areaKpis.cost} t={t} locale={locale}/>
-    <div className="ct-split">
-      <div className="ai103-scroll"><table className="ct-table"><caption>{t.captions.models}</caption>
-        <thead><tr><th scope="col">{t.columns.provider}</th><th scope="col">{t.columns.model}</th><th scope="col">{t.columns.observations}</th><th scope="col">{t.columns.valid}</th><th scope="col">{t.columns.reviewed}</th></tr></thead>
-        <tbody>{tower.models.map((entry) => <tr key={`${entry.provider}-${entry.model}`}><th scope="row">{entry.provider}</th><td><code>{entry.model}</code></td><td>{entry.observations}</td><td>{entry.valid}</td><td>{entry.reviewed}</td></tr>)}</tbody>
-      </table></div>
-      <div className="ai103-scroll"><table className="ct-table"><caption>{t.captions.cost}</caption>
-        <thead><tr><th scope="col">{t.columns.provider}</th><th scope="col">{t.columns.documents}</th><th scope="col">{t.columns.cost}</th><th scope="col">{t.columns.pricing}</th></tr></thead>
-        <tbody>{tower.cost.map((entry) => <tr key={`${entry.provider}-${entry.model}`}><th scope="row">{entry.provider}</th><td>{entry.documents}</td><td>{formatKpi(entry.estimatedCost, "EUR", locale)} <Badge mode={entry.mode} t={t}/></td><td>{entry.pricing}</td></tr>)}</tbody>
-      </table></div>
-    </div>
-    <p className="ct-note">{t.azure}</p>
+    <div className="ct-charts"><CostChart tower={tower} t={t} locale={locale}/><ModelChart tower={tower} t={t}/></div>
   </>;
 }
+
+const dossierOption = (entry: DossierOption) => <option key={entry.id} value={entry.id}>{entry.label}</option>;
 
 /** Reads one dossier's latest ETL run with Control Tower marts. Nothing on this page writes data or calls a cloud service. */
 export function ControlTower({locale}: {locale: string}) {
   const t = controlTowerText(locale);
   const auth = useAuth();
-  const [cases, setCases] = useState<{id: string; label: string}[]>([]);
+  const [choices, setChoices] = useState<DossierChoices>({known: false, ready: [], others: []});
   const [caseId, setCaseId] = useState<string>("");
   const [loaded, setLoaded] = useState<Loaded | undefined>();
   const [error, setError] = useState(false);
@@ -127,13 +105,18 @@ export function ControlTower({locale}: {locale: string}) {
   useEffect(() => {
     if (!auth.authenticated || !auth.token) return;
     const controller = new AbortController();
+    // The list of dossiers with marts is optional: an older API without it still shows every dossier.
+    const runs = fetch("/api/cases/control-tower-runs", {headers, cache: "no-store", signal: controller.signal})
+      .then((response) => response.ok ? response.json() as Promise<unknown> : undefined).catch(() => undefined);
     const timer = window.setTimeout(() => void fetch("/api/cases", {headers, cache: "no-store", signal: controller.signal}).then(async (response) => {
       if (!response.ok) throw new Error();
       const list = (await response.json()) as {id: string; applicant?: string; purpose?: string}[];
       const options = list.map((entry) => ({id: entry.id, label: `${entry.id}${entry.purpose ? ` · ${entry.purpose}` : ""}`}));
-      setCases(options);
+      const next = dossierChoices(options, await runs);
+      if (controller.signal.aborted) return;
+      setChoices(next);
       const requested = new URLSearchParams(window.location.search).get("case");
-      setCaseId((current) => current || (options.some((entry) => entry.id === requested) ? requested! : options[0]?.id ?? ""));
+      setCaseId((current) => current || defaultDossier(requested, next));
     }).catch(() => { if (!controller.signal.aborted) setError(true); }), 0);
     return () => { window.clearTimeout(timer); controller.abort(); };
   }, [auth.authenticated, auth.token, headers]);
@@ -165,7 +148,10 @@ export function ControlTower({locale}: {locale: string}) {
     <header className="ct-head">
       <div><h1>{t.title}</h1><p>{t.intro}</p></div>
       {auth.authenticated ? <div className="ct-controls">
-        <label>{t.dossier}<select value={caseId} onChange={(event) => setCaseId(event.target.value)}>{cases.map((entry) => <option key={entry.id} value={entry.id}>{entry.label}</option>)}</select></label>
+        <label>{t.dossier}<select value={caseId} onChange={(event) => setCaseId(event.target.value)}>{choices.known ? <>
+          {choices.ready.length ? <optgroup label={t.withData.replace("{count}", String(choices.ready.length))}>{choices.ready.map(dossierOption)}</optgroup> : null}
+          {choices.others.length ? <optgroup label={t.withoutData.replace("{count}", String(choices.others.length))}>{choices.others.map(dossierOption)}</optgroup> : null}
+        </> : choices.others.map(dossierOption)}</select></label>
         <button type="button" className="button-secondary" onClick={() => caseId && void load(caseId)}><RefreshCw size={15} aria-hidden="true"/>{t.refresh}</button>
       </div> : null}
     </header>
@@ -174,7 +160,15 @@ export function ControlTower({locale}: {locale: string}) {
       : !auth.authenticated ? <div className="surface ct-empty"><p>{t.signIn}</p><button type="button" className="button-primary" onClick={() => auth.login()}>{auth.displayName}</button></div>
       : error ? <p className="notice-error" role="alert">{t.error}</p>
       : !loaded ? <p className="ct-note" role="status">{t.loading}</p>
-      : loaded.state !== "ready" ? <div className="surface ct-empty"><p>{loaded.state === "older" ? t.older : t.noRun}</p><a className="button-secondary" href={`/${locale}?case=${encodeURIComponent(caseId)}#pipeline`}>{t.openPipeline}</a></div>
+      : loaded.state !== "ready" ? <div className="surface ct-empty">
+        <p>{loaded.state === "older" ? t.older : t.noRun}</p>
+        <a className="button-primary" href={`/${locale}?case=${encodeURIComponent(caseId)}&pipeline=assets#pipeline`}>{t.openPipeline}</a>
+        {choices.ready.some((entry) => entry.id !== caseId) ? <div className="ct-empty-alternatives">
+          <p>{t.openWithData}</p>
+          <ul>{choices.ready.filter((entry) => entry.id !== caseId).slice(0, 3).map((entry) =>
+            <li key={entry.id}><button type="button" className="button-link" onClick={() => setCaseId(entry.id)}>{entry.label}</button></li>)}</ul>
+        </div> : null}
+      </div>
       : tower ? <>
         <p className="ct-run">{t.run} <code>{loaded.run.id}</code> · {new Date(loaded.run.time).toLocaleString(locale)} · {t.method} <code>{loaded.run.method}</code>{loaded.run.current ? "" : ` · ${t.historical}`}</p>
         <section className="surface ct-board" aria-label={t.title}>
@@ -185,8 +179,10 @@ export function ControlTower({locale}: {locale: string}) {
         </section>
         <section className="surface ct-panel" aria-labelledby="ct-export-title">
           <h2 id="ct-export-title" className="section-heading">{t.captions.export}</h2>
-          <ul className="ct-files">{tower.export.map((file) => <li key={file.table}><code>{file.table}</code><span>{file.rows}</span></li>)}</ul>
-          <p className="ct-note">{t.exportNote}</p>
+          <details className="ct-more"><summary className="ct-note">{t.columns.table} · {tower.export.length}</summary>
+            <ul className="ct-files">{tower.export.map((file) => <li key={file.table}><code>{file.table}</code><span>{file.rows}</span></li>)}</ul>
+            <p className="ct-note">{t.exportNote}</p>
+          </details>
           <details><summary className="ct-note">{t.limitations}</summary><ul className="ai103-limits">{tower.limitations.map((entry) => <li key={entry}>{entry}</li>)}</ul></details>
         </section>
       </> : null}

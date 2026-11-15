@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {areaKpis, badgeOf, controlTowerTexts, formatKpi, kpiDetail, latestControlTower, parseBox, type ControlTower} from "./control-tower";
+import {areaKpis, badgeOf, controlTowerTexts, defaultDossier, dossierChoices, formatKpi, kpiDetail, latestControlTower, parseBox, type ControlTower} from "./control-tower";
 
 const tower: ControlTower = {
   schemaVersion: "control-tower-v1", partition: {tenantKey: "d".repeat(16), projectId: "CR-1"}, rowCounts: {bronze: 4, silver: 2, reviewedGold: 2},
@@ -54,6 +54,21 @@ describe("Control Tower data", () => {
     expect(kpiDetail({key: "hit_at_k", mode: "deterministic", detail: "k=5, BM25 over extracted text"}, controlTowerTexts.vi.details)).toContain("k=5");
     expect(kpiDetail({key: "new_kpi", mode: "measured", detail: "from the ETL"}, controlTowerTexts.vi.details)).toBe("from the ETL");
     expect(kpiDetail({key: "human_correction_rate", mode: "measured", detail: "changed wording"}, controlTowerTexts.vi.details)).toBe("changed wording");
+  });
+
+  it("lists dossiers with Control Tower data first and opens one of them unless the link names another dossier", () => {
+    const cases = [{id: "CR-a", label: "CR-a · empty"}, {id: "CR-b", label: "CR-b · contractor"}, {id: "CR-c", label: "CR-c · older contractor"}];
+    const runs = [{caseId: "CR-b", runId: "etl-2", time: "2026-11-15T11:46:00Z"}, {caseId: "CR-c", runId: "etl-1", time: "2026-11-14T20:03:00Z"}, {caseId: "CR-gone", runId: "etl-0", time: "2026-11-13T10:00:00Z"}];
+    const choices = dossierChoices(cases, runs);
+    expect(choices).toEqual({known: true, ready: [cases[1], cases[2]], others: [cases[0]]});
+    expect(defaultDossier(null, choices)).toBe("CR-b");
+    expect(defaultDossier("CR-a", choices)).toBe("CR-a");
+    expect(defaultDossier("CR-unknown", choices)).toBe("CR-b");
+    // Without the list (an older API), every dossier stays selectable and the first one opens, as before.
+    const unknown = dossierChoices(cases, {error: "Not found"});
+    expect(unknown).toEqual({known: false, ready: [], others: cases});
+    expect(defaultDossier(null, unknown)).toBe("CR-a");
+    expect(defaultDossier(null, dossierChoices([], []))).toBe("");
   });
 
   it("has the same text keys in English, German and Vietnamese", () => {

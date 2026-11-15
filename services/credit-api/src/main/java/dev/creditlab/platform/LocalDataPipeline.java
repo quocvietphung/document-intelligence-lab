@@ -27,6 +27,16 @@ public class LocalDataPipeline {
     return Map.of("caseId",id,"caseVersion",item.version(),"sourceHash",hash,"enabled",enabled,"workerReady",ready(),"cloudCalls",0,
         "runs",store.list(tenant,id,"medallion-run").stream().map(r->{var value=new LinkedHashMap<>(r);value.put("current",hash.equals(r.get("sourceHash"))&&(!"COMPLETE".equals(r.get("status"))||currentMethod(r)));return value;}).toList());
   }
+  /** Latest completed run with Control Tower marts per dossier of the tenant, newest first: ids and times only, never the marts. */
+  public List<Map<String,Object>> controlTowerRuns(String tenant){
+    var latest=new LinkedHashMap<String,Map<String,Object>>();
+    for(var entry:store.listByKind(tenant,"medallion-run",500)){
+      var run=entry.getValue();
+      if(!"COMPLETE".equals(run.get("status"))||!(run.get("result") instanceof Map<?,?> result)||result.get("controlTower")==null)continue;
+      latest.putIfAbsent(entry.getKey(),Map.of("caseId",entry.getKey(),"runId",String.valueOf(run.get("id")),"time",String.valueOf(run.getOrDefault("time",""))));
+    }
+    return List.copyOf(latest.values());
+  }
   public Map<String,Object> enqueue(String tenant,String id,String actor,Request request){
     cases.allowWrite();var item=cases.require(tenant,id);
     if(!request.consent())throw fail(422,"Private analytics consent required");

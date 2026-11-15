@@ -10,22 +10,17 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 SCENES = [
-    ("01-login.jpg", "Sign in with Keycloak", "Local workspace authentication; no credentials are shown.", 3000),
-    ("02-overview.jpg", "Find the right AI workflow", "18 AI-assisted workflows; catalogue entries are not live model calls.", 4000),
-    ("03-documents.jpg", "Open a prepared PDF result", "Saved Docling extraction; its recorded review state is unchanged for this walkthrough.", 4000),
-    ("04-evidence.jpg", "Compare extraction with the original PDF", "Inspect the source page, recorded fields and tables before using a value.", 4500),
-    ("05-source.jpg", "Inspect one source occurrence", "The PDF crop, recorded OCR and checked value are separate observations.", 5000),
-    ("06a-nova-guide.jpg", "Use Nova's app guidance", "Local navigation help in the expanded chat; this mode does not invoke an LLM.", 5000),
-    ("06-nova.jpg", "Review a saved local Nova answer", "Previously saved Ollama response; source-version warnings remain visible. No regeneration is implied.", 6500),
-    ("07-pipeline.jpg", "Inspect the recorded processing stages", "Source hashes and saved events keep scanning, extraction and reviewer confirmation separate.", 4000),
-    ("08-etl.jpg", "Inspect Bronze, Silver and Gold", "Saved local DuckDB / dbt artifacts; only reviewer-confirmed values are eligible for Gold.", 4500),
-    ("09-sources.jpg", "Switch to the PDF benchmark dossier", "9 prepared PDFs with publisher links and original-page mappings; no automatic cloud upload.", 4500),
-    ("09b-domains.jpg", "Browse DATEV and insurance sources", "Publisher pages stay explicit across payroll, policy wording and official coverage forms.", 4500),
-    ("10-research.jpg", "Compare retrieval on actual PDF evidence", "77 authored questions: 69 answerable, 8 unanswerable; no LLM judge score.", 5000),
-    ("11-holdout.jpg", "Check held-out results and missing evidence", "Inspect source-grouped metrics and incomplete multi-page results; retrieval is not answer accuracy.", 6000),
-    ("12-analytics.jpg", "Inspect source-bound document analytics", "Observed fields, invoice lines and quality findings link back to the PDF; no automatic approval.", 5500),
-    ("13-mlflow.jpg", "Track a real local cohort experiment", "The small PDF set has insufficient baseline data. No anomaly accuracy or fraud probability is claimed.", 5500),
-    ("14-classification.jpg", "Compare insurance document classifiers", "12 synthetic held-out PDFs, four template families, 0% gate coverage. These are research metrics, not business accuracy.", 6000),
+    ("01-processing.jpg", "Track each file from receipt to review", "Processing control room: each file moves through recorded stages, and extraction is not approval.", 5000),
+    ("02-sources.jpg", "Use local files as sources", "Local files and fictional fixtures are the only sources offered; each import uses the same scan, extraction and review path.", 4500),
+    ("03-documents.jpg", "Review extracted evidence", "A reviewer confirms each document before its JSON report can be downloaded.", 5000),
+    ("04-evaluation.jpg", "Read PDF evidence without invented scores", "Counts come from uploaded PDFs; OCR confidence is not measured accuracy, and no ground-truth score is shown.", 5000),
+    ("05-control-pipeline.jpg", "Measure the Bronze to Gold pipeline", "Step timings and row flow come from the latest ETL run; each value carries a Measured badge.", 5500),
+    ("06-control-quality.jpg", "Compare raw and reviewed values", "Each observation shows the raw and reviewed value; select one to follow it through the drill-through panel.", 5000),
+    ("07-control-rag.jpg", "Read retrieval and citation results", "Labelled evaluation cases; a dash marks a case that has not run yet.", 5000),
+    ("08-control-cost.jpg", "Separate measured from configured cost", "Estimated costs come from configuration and are labelled Configured only; local engines carry no per-token fee.", 5000),
+    ("09-trust.jpg", "Keep a person responsible for AI use", "A reviewer task is only a task: it does not approve evidence or credit.", 5000),
+    ("10-ai103.jpg", "Track AI-103 capability status", "Eighteen capability groups, each tied to a fictional document; statuses come from one manifest, and nothing here calls Azure.", 5000),
+    ("11-audit.jpg", "Review the recorded history", "Each upload and extraction step is recorded with its time and account ID.", 4500),
 ]
 
 

@@ -25,6 +25,20 @@ class LocalDataPipelineTest {
     assertThat((List<?>)etl.read("praxisbank-demo","CR-2026-1048").get("runs")).isEmpty();
     assertThatThrownBy(()->etl.read("foreign","CR-2026-1048")).isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
   }
+  @Test void controlTowerListShowsOnlyTheLatestCompletedRunWithMartsPerDossierOfTheCallersTenant(){
+    var store=new LabStore(Optional.empty(),new ObjectMapper());
+    var etl=new LocalDataPipeline(mock(CreditCaseService.class),store,mock(DocumentResearch.class),mock(DistributedLimits.class),true,root.toString());
+    store.insert("tenant","CR-A","medallion-run","etl-1",Map.of("id","etl-1","time","2026-11-15T10:00:00Z","status","COMPLETE","result",Map.of("controlTower",Map.of("schemaVersion","control-tower-v1"))));
+    store.insert("tenant","CR-A","medallion-run","etl-0",Map.of("id","etl-0","time","2026-11-14T10:00:00Z","status","COMPLETE","result",Map.of("controlTower",Map.of())));
+    store.insert("tenant","CR-B","medallion-run","etl-2",Map.of("id","etl-2","time","2026-11-15T11:00:00Z","status","COMPLETE","result",Map.of("method","document-medallion-v3")));
+    store.insert("tenant","CR-C","medallion-run","etl-3",Map.of("id","etl-3","time","2026-11-15T12:00:00Z","status","FAILED"));
+    store.insert("tenant","CR-D","medallion-run","etl-5",Map.of("id","etl-5","time","2026-11-15T09:00:00Z","status","COMPLETE","result",Map.of("controlTower",Map.of())));
+    store.insert("other","CR-E","medallion-run","etl-4",Map.of("id","etl-4","time","2026-11-15T13:00:00Z","status","COMPLETE","result",Map.of("controlTower",Map.of())));
+    assertThat(etl.controlTowerRuns("tenant")).containsExactly(
+      Map.of("caseId","CR-A","runId","etl-1","time","2026-11-15T10:00:00Z"),
+      Map.of("caseId","CR-D","runId","etl-5","time","2026-11-15T09:00:00Z"));
+    assertThat(etl.controlTowerRuns("nobody")).isEmpty();
+  }
   @Test void downloadPathsCannotEscapeTheAuthorizedScope(){
     var cases=mock(CreditCaseService.class);var store=new LabStore(Optional.empty(),new ObjectMapper());
     var etl=new LocalDataPipeline(cases,store,mock(DocumentResearch.class),mock(DistributedLimits.class),true,root.toString());

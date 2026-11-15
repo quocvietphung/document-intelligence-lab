@@ -37,6 +37,17 @@ export function canRetryDocumentJob(job:{name:string;sha256:string;status:string
   const digest=approvedDatevHashes[job.name as keyof typeof approvedDatevHashes]||kaggleReference(job.name)?.sha256;
   return !!digest&&digest===job.sha256&&job.status==="FAILED"&&recoverableJobErrors.has(job.error_code||"")&&Date.parse(job.expiresAt)>now;
 }
+/** The cause of a failed platform request, so the page can say what to do instead of one generic error. */
+export function platformFailureKey(status:number){
+  if(status===401)return "session";
+  if(status===403)return "forbidden";
+  if(status===404||status===410)return "gone";
+  if(status>=500)return "unavailable";
+  return "error";
+}
+const namedFailures=new Set(["session","forbidden","gone","unavailable","limit","duplicate","rejected","cancelRace"]);
+/** The message key of a thrown platform error: a named cause is shown, anything else keeps the generic text. */
+export function platformErrorKey(error:unknown){return error instanceof Error&&namedFailures.has(error.message)?error.message:"error";}
 export function documentJobErrorKey(code:string){
   if(code==='DOCUMENT_REJECTED')return 'documentRejected';
   if(code==='PROCESSING_CONFLICT')return 'processingConflict';

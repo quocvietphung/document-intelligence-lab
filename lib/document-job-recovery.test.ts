@@ -47,3 +47,14 @@ describe("approved DATEV recovery",()=>{
     expect(server).toContain("result.put(\"retryOf\",sourceJob)");
   });
 });
+
+describe("a stopped analysis explains the next step without naming a provider",()=>{
+  it("keeps the reason provider-neutral and tells the person to upload the file again",()=>{
+    for(const locale of ["en","de","vi"]){
+      const reason=platformText(locale)(documentJobErrorKey("ANALYSIS_HTTP_503"));
+      expect(reason,locale).not.toMatch(/Azure/);
+      expect(reason.length,locale).toBeGreaterThan(40);
+    }
+    expect(platformText("en")(documentJobErrorKey("ANALYSIS_HTTP_503"))).toMatch(/upload/i);
+  });
+});

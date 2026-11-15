@@ -3,7 +3,7 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import type {CreditDocument} from '@/lib/credit-data';
 import type {WorkspaceTab} from '@/lib/nova-guide';
 import {connectorError,describeAdapter,importable,importResultSchema,integrationsText,maxImportItems,
-  overviewSchema,previewSchema,selectable,type ImportResult,type Overview,type Preview,type Provider} from '@/lib/integrations';
+  overviewSchema,previewSchema,selectable,visibleDestinations,visibleSources,type ImportResult,type Overview,type Preview,type Provider} from '@/lib/integrations';
 import {workspacePageName} from '@/lib/workspace-presentation';
 import {workspaceUxText} from '@/lib/workspace-ux';
 import {fill,profileOptions,usabilityText} from '@/lib/workspace-usability';
@@ -45,18 +45,7 @@ export function IntegrationsWorkbench({caseId,caseVersion,locale,navigate,refres
   },[auth.token,load,request,run]);
 
   const providers=overview?.providers??[];
-  const sources=providers.filter(p=>p.label!=='future');
-  const google=providers.find(p=>p.id==='gmail');
-  const planned=[...providers,...(overview?.businessData??[]),...(overview?.destinations??[])].filter(p=>p.label==='future');
-
-  async function connect(features:string[]){
-    await run('connect',async()=>{
-      const value=await request('/api/connectors/google/authorize',{features}) as {authorizationUrl?:unknown};
-      const url=typeof value.authorizationUrl==='string'?value.authorizationUrl:'';
-      if(!url.startsWith('https://accounts.google.com/'))throw new ConnectorRequestError('OAUTH_STATE_INVALID');
-      window.location.assign(url);
-    });
-  }
+  const sources=visibleSources(providers);
   function toggle(id:string){setSelected(current=>current.includes(id)?current.filter(value=>value!==id):current.length>=maxImportItems?current:[...current,id]);}
   function status(p:Provider){
     if(p.enabled)return {text:t[`conn_${p.connection}`],hint:''};
@@ -87,16 +76,10 @@ export function IntegrationsWorkbench({caseId,caseVersion,locale,navigate,refres
           {p.sync.lastError?<><dt>{t.lastError}</dt><dd><code>{p.sync.lastError}</code>{p.sync.lastErrorAt?` · ${new Date(p.sync.lastErrorAt).toLocaleString(locale)}`:''}</dd></>:null}
         </dl></details>:null}
       </li>;})}</ul>
-      {google?.enabled&&canWrite?<div className="integration-connect">
-        {google.connection==='CONNECTED'?<button type="button" className="button-secondary" disabled={!!busy} onClick={()=>void run('disconnect',async()=>{await request('/api/connectors/google/disconnect',{});await load();})}>{t.disconnect}</button>
-          :<div><button type="button" className="button-primary" disabled={!!busy} aria-describedby="google-connect-notice" onClick={()=>void connect(['gmail','google-drive'])}>{t.connectGoogle}</button><p id="google-connect-notice" className="integration-notice">{u.connectNotice}</p></div>}
-        <div><button type="button" className="button-secondary" disabled={!!busy} aria-describedby="google-drafts-notice" onClick={()=>void connect(['gmail','google-drive','gmail-draft'])}>{t.enableDrafts}</button><p id="google-drafts-notice" className="integration-notice">{u.draftsNotice}</p></div>
-      </div>:null}
     </div>
 
     <div className="px-6 py-4 integration-flow" data-page-tour="integrations-import">
       <h3 className="section-heading">{t.flow}</h3>
-      <ol className="integration-steps">{[t.step1,t.step2,t.step3,t.step4,t.step5,t.step6,t.step7].map(step=><li key={step}>{step}</li>)}</ol>
       <div className="integration-row">
         <label>{t.step1}<select value={sourceId} onChange={e=>{setSourceId(e.target.value);setPreview(undefined);setSelected([]);setImported(undefined);}}>
           {sources.filter(importable).map(p=><option key={p.id} value={p.id}>{describeAdapter(p,locale).name}</option>)}</select></label>
@@ -121,17 +104,11 @@ export function IntegrationsWorkbench({caseId,caseVersion,locale,navigate,refres
 
     <div className="px-6 py-4 integration-outputs">
       <h3 className="section-heading">{t.destinations}</h3>
-      <ul className="integration-future">{(overview.destinations??[]).filter(d=>d.label!=='future').map(d=>{const text=describeAdapter(d,locale);return <li key={d.id}><strong>{text.name}</strong> <ConnectorBadge provider={d} locale={locale}/></li>;})}</ul>
+      <ul className="integration-future">{visibleDestinations(overview.destinations??[]).map(d=>{const text=describeAdapter(d,locale);return <li key={d.id}><strong>{text.name}</strong> <ConnectorBadge provider={d} locale={locale}/></li>;})}</ul>
       <p className="text-xs tone-secondary">{fill(u.outputsHint,{page:page('documents')})}</p>
       <p className="text-xs tone-secondary">{fill(u.movedHint,{datasets:page('evaluation'),domain:page('banking')})}</p>
-      <div className="integration-actions"><button type="button" className="button-secondary" onClick={()=>navigate('documents')}>{fill(u.openPage,{page:page('documents')})}</button>
-        <button type="button" className="button-secondary" onClick={()=>navigate('evaluation')}>{fill(u.openPage,{page:page('evaluation')})}</button>
-        <button type="button" className="button-secondary" onClick={()=>navigate('banking')}>{fill(u.openPage,{page:page('banking')})}</button></div>
     </div>
 
-    {planned.length?<details className="px-6 py-4 integration-planned"><summary className="section-heading">{t.future} · {planned.length}</summary>
-      <ul className="integration-future">{planned.map(p=>{const text=describeAdapter(p,locale);return <li key={`${p.kind}-${p.id}`}>
-        <strong>{text.name}</strong> <ConnectorBadge provider={p} locale={locale}/>{text.note?<small> — {text.note}</small>:null}</li>;})}</ul></details>:null}
     </>:null}
   </section>;
 }

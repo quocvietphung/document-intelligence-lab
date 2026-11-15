@@ -1,6 +1,6 @@
 import {describe,expect,it} from "vitest";
 import {platformText} from "./platform-language";
-import {percent,searchSchema,pipelineStage,noticeIsVisible,currentEvidenceSearch,type SearchData} from "./platform";
+import {percent,platformErrorKey,platformFailureKey,searchSchema,pipelineStage,noticeIsVisible,currentEvidenceSearch,type SearchData} from "./platform";
 
 describe("reliability workspace",()=>{
   it("hides retrieved evidence after the case version changes",()=>{
@@ -32,5 +32,27 @@ describe("reliability workspace",()=>{
   });
   it("rejects malformed evidence search responses",()=>{
     expect(searchSchema.safeParse({search:{hits:[{id:"invented"}]},plan:{},durationMs:0}).success).toBe(false);
+  });
+});
+
+describe("platform failures name their cause",()=>{
+  it("maps each failed status to one message key and keeps the generic one for the rest",()=>{
+    expect(platformFailureKey(401)).toBe("session");
+    expect(platformFailureKey(403)).toBe("forbidden");
+    expect(platformFailureKey(404)).toBe("gone");
+    expect(platformFailureKey(410)).toBe("gone");
+    expect(platformFailureKey(500)).toBe("unavailable");
+    expect(platformFailureKey(503)).toBe("unavailable");
+    expect(platformFailureKey(400)).toBe("error");
+    expect(platformErrorKey(new Error("forbidden"))).toBe("forbidden");
+    expect(platformErrorKey(new Error("Failed to fetch"))).toBe("error");
+    expect(platformErrorKey(new SyntaxError("Unexpected token"))).toBe("error");
+  });
+  it("words every named cause in English, German and Vietnamese",()=>{
+    for(const locale of ["en","de","vi"]) for(const key of ["session","forbidden","gone","unavailable"]){
+      const text=platformText(locale)(key);
+      expect(text,`${locale} ${key}`).not.toBe(key);
+      expect(text.length,`${locale} ${key}`).toBeGreaterThan(20);
+    }
   });
 });
