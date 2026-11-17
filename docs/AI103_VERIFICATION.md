@@ -42,7 +42,7 @@ The guide and the status of each service are in [AI103_CONTRACTOR_PRECHECK.md](A
 
 ## 2. Docker, browser and Nova
 
-**Stack.** The production stack was started with `node scripts/docker-local.mjs`. Port 3000 is held by another local process (a development server from a different repository), which was not stopped. The web app was therefore run on `127.0.0.1:3001` through a compose override kept outside the repository. Keycloak accepts `http://localhost:3001` only while the local client is changed at runtime for these tests; the original client settings are kept for restoring. Healthy in this pass: `keycloak`, `credit-api` (127.0.0.1:8081), `ollama`, `etl`, `docling` (internal network only, no host port), `clamav`, `qdrant`, `redis`, `case-db`, `identity-db`, `m365-poc` (127.0.0.1:8765) and `web` (127.0.0.1:3001).
+**Stack.** The production stack was started with `node scripts/docker-local.mjs`. Port 3000 is held by another local process (a development server from a different repository), which was not stopped. The web app was therefore run on `127.0.0.1:3001` through a compose override kept outside the repository. Keycloak accepts `http://localhost:3001` only while the local client is changed at runtime for these tests; the original client settings are kept for restoring. Healthy in this pass: `keycloak`, `credit-api` (127.0.0.1:8081), `ollama`, `etl`, `docling` (internal network only, no host port), `clamav`, `qdrant`, `redis`, `case-db`, `identity-db` and `web` (127.0.0.1:3001).
 
 **Ollama, hardened image.** Built from `services/ollama-cpu`. `docker inspect` on `credit-intelligence-lab-ollama-1` in this pass:
 

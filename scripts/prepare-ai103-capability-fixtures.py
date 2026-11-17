@@ -8,8 +8,8 @@ Outputs go to labs/ai103/fixtures/capability/:
 - manifest.json                   checksums and provenance of every file in this folder
 
 Output is deterministic (reportlab invariant mode), so checksums stay stable. Run with an environment that has
-reportlab, for example the M365 PoC development venv:
-    services/m365-mcp-poc/.venv/bin/python scripts/prepare-ai103-capability-fixtures.py
+reportlab, for example:
+    python3 scripts/prepare-ai103-capability-fixtures.py
 """
 from __future__ import annotations
 

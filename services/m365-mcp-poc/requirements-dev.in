@@ -1,8 +1,0 @@
--r requirements.in
-pytest
-reportlab
-ruff
-mypy
-bandit
-pip-audit
-build

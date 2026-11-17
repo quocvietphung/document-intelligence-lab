@@ -57,7 +57,7 @@ The export holds field values, page numbers, bounding boxes and a region snippet
 ## Azure later (documented only)
 
 ```
-Blob Storage or SharePoint → Data Factory or event ingestion → Bronze/Silver/Gold in ADLS or Azure SQL
+Blob Storage → Data Factory or event ingestion → Bronze/Silver/Gold in ADLS or Azure SQL
   → Power BI semantic model → Power BI Embedded or the customer's workspace
 ```
 

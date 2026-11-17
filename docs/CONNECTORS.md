@@ -1,6 +1,6 @@
 # Provider-neutral document sources and destinations
 
-The workspace does not depend on any single vendor. Local PDFs are the only source the workspace offers, and every use case runs offline with bundled fictional documents. Gmail and Google Drive remain optional adapters that the workspace hides. The Microsoft 365 adapter was removed. Azure is an optional extraction engine. Every adapter only lists and fetches documents, or delivers a result that a person approved, and all of them feed one shared pipeline.
+The workspace does not depend on any single vendor. Local PDFs are the only source the workspace offers, and every use case runs offline with bundled fictional documents. Gmail and Google Drive remain optional adapters that the workspace hides. Azure is an optional extraction engine. Every adapter only lists and fetches documents, or delivers a result that a person approved, and all of them feed one shared pipeline.
 
 ```mermaid
 flowchart LR
@@ -53,7 +53,7 @@ Gmail and Google Drive are hidden from the workspace even when their adapters ar
 node scripts/docker-local.mjs
 ```
 
-The default stack contains no Google, Microsoft or Azure credential. Each feature has one place in the workspace:
+The default stack contains no Google or Azure credential. Each feature has one place in the workspace:
 
 1. **Sources & integrations**: choose **Local files and fictional fixtures**, preview, select up to four PDFs, confirm consent and import. They go through the same scan, extraction and review as uploads.
 2. **Research datasets → Sample scenarios**: run the deterministic check for any of the eight use cases. Each result reports `networkCalls: 0`.
@@ -129,7 +129,7 @@ The variables are injected only into the Java API container. Never commit this f
 | Logs and errors | Responses carry stable codes (for example `CONNECTOR_REAUTH_REQUIRED`), never provider bodies or tokens |
 | Ownership | Credentials, sync statistics and imports are scoped to tenant, user and dossier. Every document operation re-checks dossier access in Java |
 | Redirect URI | Must be HTTPS (or loopback in development) with the exact path `/oauth/google/callback` |
-| SSRF | Provider endpoints must match an exact HTTPS host allowlist. Internal HTTP is allowed only for the named `m365-poc` service. URLs are never built from user or document text |
+| SSRF | Provider endpoints must match an exact HTTPS host allowlist. URLs are never built from user or document text |
 | Files | Magic-byte PDF check (the declared MIME is advisory), `%%EOF` presence, 3 MB limit before and after download, safe base names, executable double extensions rejected |
 | De-duplication | Provenance key (source, external ID, revision), then the queue's content hash per dossier |
 | Untrusted content | Subjects, names and PDF text are data. The existing injection guard quarantines instruction-like text before evidence is attached |
@@ -157,9 +157,8 @@ A language model may explain these results or draft a report. It never computes 
 
 ## Limitations
 
-- No adapter was tested against a real Google account or Microsoft tenant.
+- No adapter was tested against a real Google account.
 - `gmail.compose` and `drive.readonly` are broader than ideal (see the scopes table).
 - Access-token caching is per Java instance, and a revoked token is detected on the next call.
-- The Microsoft 365 adapter was removed. Live Graph access per user would need Entra delegation, which is not implemented.
 - Excel files must be exported as CSV first; `.xlsx` parsing is not implemented.
 - The webhook and CRM destinations and the WebDAV, S3, PostgreSQL, REST and Dataverse adapters are planned descriptors only.

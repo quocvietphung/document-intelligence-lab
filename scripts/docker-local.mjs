@@ -48,7 +48,7 @@ async function main(){
   if(!flags.includes('--no-build')){
     // Do not compete with resident model/cache RAM while rebuilding the app.
     run([...args,'stop','ollama'],{env});
-    for(const service of ['credit-api','etl','web','m365-poc',...(flags.includes('--with-analytics')?['ml-worker']:[])])run([...args,'build',service],{env});
+    for(const service of ['credit-api','etl','web',...(flags.includes('--with-analytics')?['ml-worker']:[])])run([...args,'build',service],{env});
   }
   run([...args,'up','-d','--no-build','--wait','--wait-timeout','420'],{env});
   if(flags.includes('--warmup')){

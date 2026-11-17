@@ -37,7 +37,7 @@ use-case fixture (`use-cases/eingangsrechnung-musterquartier.pdf`, from `scripts
 that is not part of this lab.
 
 Regenerate (deterministic hashes, checked by `ContractorPrecheckTest`):
-`services/m365-mcp-poc/.venv/bin/python scripts/prepare-contractor-dossier.py`.
+`python3 scripts/prepare-contractor-dossier.py`.
 
 ## 2. What runs where
 
@@ -146,7 +146,7 @@ mkdir -p .local/ai103/otel && chmod 777 .local/ai103/otel
 OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose \
   -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.docling.yml \
   -f docker-compose.nova-local.yml -f docker-compose.etl.yml -f docker-compose.local-resources.yml \
-  -f docker-compose.m365.yml -f docker-compose.ai103-otel.yml up -d otel-collector credit-api
+  -f docker-compose.ai103-otel.yml up -d otel-collector credit-api
 cd labs/ai103 && python3 -m contractor_lab agent --case CR-… --otlp http://127.0.0.1:4318/v1/traces
 python3 -m contractor_lab trace-report --trace <traceId printed in the result>
 ```

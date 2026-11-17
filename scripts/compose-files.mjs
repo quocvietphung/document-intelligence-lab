@@ -8,7 +8,6 @@ export const productionComposeFiles=Object.freeze([
   'docker-compose.nova-local.yml',
   'docker-compose.etl.yml',
   'docker-compose.local-resources.yml',
-  'docker-compose.m365.yml',
 ]);
 // Optional local analytics (DuckDB/Parquet consumers and the bounded ML worker). Still not Spark.
 export const analyticsComposeFiles=Object.freeze(['docker-compose.ml.yml']);
@@ -16,7 +15,7 @@ export const analyticsComposeFiles=Object.freeze(['docker-compose.ml.yml']);
 export const experimentalComposeFiles=Object.freeze(['docker-compose.spark.yml']);
 // Optional Google connectors (Gmail, Drive, Gmail drafts). Never part of the default production stack.
 export const googleConnectorComposeFiles=Object.freeze(['docker-compose.google.yml']);
-export const requiredProductionServices=Object.freeze(['case-db','identity-db','keycloak','credit-api','web','redis','qdrant','etl','m365-poc']);
+export const requiredProductionServices=Object.freeze(['case-db','identity-db','keycloak','credit-api','web','redis','qdrant','etl']);
 
 export function composeFileArgs(files){return files.flatMap(file=>['-f',file]);}
 

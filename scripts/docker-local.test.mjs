@@ -51,7 +51,6 @@ test('the normal stack uses only production Compose files and never Spark',()=>{
     const files=args.filter((_,index)=>args[index-1]==='-f');
     for(const file of experimentalComposeFiles)assert.ok(!files.includes(file),`${file} must not be in the normal stack`);
     assert.ok(!files.some(file=>/spark/i.test(file)));
-    assert.ok(files.includes('docker-compose.m365.yml'));
     assert.ok(!args.includes('spark'));
   }
   assert.ok(!productionComposeFiles.some(file=>/spark/i.test(file)));
@@ -67,5 +66,4 @@ test('Google connectors are an explicit layer and never part of the default stac
   assert.ok(!localCompose().args.includes('docker-compose.google.yml'));
   const google=localCompose(localModel,{google:true}).args;
   assert.ok(google.includes('docker-compose.google.yml'));
-  assert.ok(google.includes('docker-compose.m365.yml'));
 });

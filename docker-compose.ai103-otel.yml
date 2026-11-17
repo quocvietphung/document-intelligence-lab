@@ -3,7 +3,7 @@
 #   OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose \
 #     -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.docling.yml \
 #     -f docker-compose.nova-local.yml -f docker-compose.etl.yml -f docker-compose.local-resources.yml \
-#     -f docker-compose.m365.yml -f docker-compose.ai103-otel.yml up -d otel-collector credit-api
+#     -f docker-compose.ai103-otel.yml up -d otel-collector credit-api
 # Return to the normal stack afterwards with `node scripts/docker-local.mjs --no-build` (volumes are kept).
 # The collector listens on loopback only and writes .local/ai103/otel/traces.jsonl. No cloud export.
 services:

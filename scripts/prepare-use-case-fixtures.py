@@ -4,8 +4,8 @@ Every document is authored for this repository, labelled FIKTIVE DATEN and conta
 customer, vendor or property-developer material. Output is deterministic (reportlab invariant mode),
 so hashes stay stable; changing any text requires reviewing the catalog and its tests.
 
-Run with an environment that has reportlab, for example the M365 PoC development venv:
-    services/m365-mcp-poc/.venv/bin/python scripts/prepare-use-case-fixtures.py
+Run with an environment that has reportlab, for example:
+    python3 scripts/prepare-use-case-fixtures.py
 """
 from __future__ import annotations
 

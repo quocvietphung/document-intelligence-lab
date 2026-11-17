@@ -11,7 +11,7 @@ states its tax basis (netto/brutto), so the reconciliation compares like with li
 Everything is authored for this repository, labelled FIKTIVE DATEN and MIT-licensed. Output is
 deterministic (reportlab invariant mode, Pillow without timestamps), so hashes stay stable.
 
-    services/m365-mcp-poc/.venv/bin/python scripts/prepare-contractor-dossier.py
+    python3 scripts/prepare-contractor-dossier.py
 """
 from __future__ import annotations
 

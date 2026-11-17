@@ -426,8 +426,6 @@
       "connector",
       "gmail",
       "google drive",
-      "microsoft 365",
-      "sharepoint",
       "nguồn tài liệu",
       "dokumentquellen",
       "sources & integrations",
@@ -437,7 +435,7 @@
     ],
     "en": {
       "title": "Sources & integrations",
-      "description": "Connect optional document sources (local fixtures, Gmail, Google Drive, Microsoft 365), import selected PDFs into the shared pipeline and run the offline use cases. Tokens stay on the server.",
+      "description": "Connect optional document sources (local fixtures, Gmail, Google Drive), import selected PDFs into the shared pipeline and run the offline use cases. Tokens stay on the server.",
       "steps": [
         "Check each provider's label: verified-local, simulated or implemented but not live-verified.",
         "Preview a source, select up to four PDFs and confirm processing consent.",
@@ -446,7 +444,7 @@
     },
     "de": {
       "title": "Quellen & Integrationen",
-      "description": "Optionale Dokumentquellen verbinden (lokale Testdokumente, Gmail, Google Drive, Microsoft 365), ausgewählte PDFs in die gemeinsame Pipeline importieren und die Offline-Anwendungsfälle prüfen. Tokens bleiben auf dem Server.",
+      "description": "Optionale Dokumentquellen verbinden (lokale Testdokumente, Gmail, Google Drive), ausgewählte PDFs in die gemeinsame Pipeline importieren und die Offline-Anwendungsfälle prüfen. Tokens bleiben auf dem Server.",
       "steps": [
         "Das Label jedes Anbieters prüfen: verified-local, simuliert oder implementiert, aber nicht live geprüft.",
         "Quelle ansehen, bis zu vier PDFs auswählen und die Verarbeitung bestätigen.",
@@ -455,7 +453,7 @@
     },
     "vi": {
       "title": "Nguồn & tích hợp",
-      "description": "Kết nối nguồn tài liệu tùy chọn (fixture cục bộ, Gmail, Google Drive, Microsoft 365), nhập PDF đã chọn vào pipeline chung và chạy các use case offline. Token chỉ nằm trên máy chủ.",
+      "description": "Kết nối nguồn tài liệu tùy chọn (fixture cục bộ, Gmail, Google Drive), nhập PDF đã chọn vào pipeline chung và chạy các use case offline. Token chỉ nằm trên máy chủ.",
       "steps": [
         "Xem nhãn của từng nhà cung cấp: verified-local, mô phỏng hoặc đã triển khai nhưng chưa kiểm chứng thực tế.",
         "Xem trước một nguồn, chọn tối đa bốn PDF và xác nhận đồng ý xử lý.",

@@ -11,7 +11,6 @@ The Azure OpenAI and Document Intelligence resources used by local Docker are se
 | Frontend | Vercel project `document-intelligence-lab` at https://document-intelligence-lab.vercel.app. The project was renamed from `credit-intelligence-lab` on 2026-11-09, and the old `credit-intelligence-lab.vercel.app` address no longer resolves. Git-triggered deployments remain disabled in `vercel.json`. |
 | Backend | `credit-lab-vm` sits behind the Caddy HTTPS gateway. `/auth/*` serves Keycloak, and its admin paths return 404. `/api/*` and `/health` serve the Java API. Keycloak, two PostgreSQL databases, Qdrant, Redis and ClamAV run in Docker Compose. |
 | Sign-in | The Keycloak client `credit-intelligence-web` accepts the new Vercel origin as a redirect URI and rejects the old one. The cloud account `advisor.demo` has a generated password. The password is kept in the operator's private files and never in Git. Local example passwords do not work in the cloud. |
-| M365 PoC | Runs in mock mode and is private: it listens only on the VM loopback `127.0.0.1:8765` and the internal Docker network, with no gateway route. See the [PoC deployment plan](../services/m365-mcp-poc/docs/DEPLOYMENT_PLAN.md). |
 | Power | The DevTestLab daily auto-shutdown schedule exists but is **disabled**, so deallocate the VM yourself after use. The Automation account `credit-lab-scheduler` holds only two one-time interview schedules (start and stop). Both have already run, and no future run is scheduled. |
 | Terraform | A private state file outside Git tracks the current VM. `infra/azure/vm-lab/terraform.tfstate` is the empty post-teardown state of the removed VM. Never plan or apply changes to the current VM against it. Terraform does not manage the Automation account. |
 
@@ -22,7 +21,7 @@ az vm start -g credit-intelligence-lab-vm -n credit-lab-vm
 az vm deallocate -g credit-intelligence-lab-vm -n credit-lab-vm
 ```
 
-After a start, the Compose services, including the private M365 PoC, come back by themselves within about two minutes.
+After a start, the Compose services come back by themselves within about two minutes.
 
 ## Known drift before the next deployment
 

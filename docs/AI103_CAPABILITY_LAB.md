@@ -136,7 +136,7 @@ The stack keeps its Compose file groups (`scripts/compose-files.mjs`). They map 
 
 | Profile | Compose files | Default |
 | --- | --- | --- |
-| core | `docker-compose.yml`, `docker-compose.platform.yml`, `docker-compose.etl.yml`, `docker-compose.local-resources.yml`, `docker-compose.m365.yml` | yes |
+| core | `docker-compose.yml`, `docker-compose.platform.yml`, `docker-compose.etl.yml`, `docker-compose.local-resources.yml` | yes |
 | local-ai | `docker-compose.docling.yml`, `docker-compose.nova-local.yml` | yes |
 | observability | `docker-compose.monitoring.yml`, `docker-compose.observability.yml`, `docker-compose.ai103-otel.yml` | no |
 | ai103 | the lab runs on the host (`labs/ai103`) and on the `/ai103` page; no extra container | — |

@@ -21,37 +21,6 @@ docker compose -f docker-compose.yml -f docker-compose.platform.yml \
   up --build -d --wait --wait-timeout 900
 ```
 
-### Optional Microsoft 365 evidence PoC
-
-The read-only M365 document-evidence service is part of the full stack started by `node scripts/docker-local.mjs`
-(see [Production stack and the Spark experiment](#production-stack-and-the-spark-experiment)). With the smaller
-base + platform profile above it can be added on its own. It does not enable Microsoft Graph or Azure: its default
-is a fictional local dataset with deterministic answers, and live providers remain explicit opt-ins.
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.platform.yml \
-  -f docker-compose.m365.yml up -d --build --no-deps m365-poc
-curl --fail http://127.0.0.1:8765/health
-docker compose -f docker-compose.yml -f docker-compose.platform.yml \
-  -f docker-compose.m365.yml ps m365-poc
-```
-
-The service appears as `credit-intelligence-lab-m365-poc-1`, binds only to `127.0.0.1:8765`, runs as a
-non-root user with a read-only filesystem and has no database or persistent volume. Stop only this optional
-service with:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.platform.yml \
-  -f docker-compose.m365.yml stop m365-poc
-docker compose -f docker-compose.yml -f docker-compose.platform.yml \
-  -f docker-compose.m365.yml rm -f m365-poc
-```
-
-See [`services/m365-mcp-poc/README.md`](../services/m365-mcp-poc/README.md) for the API, MCP tools, Entra
-boundary and the explicit Graph/Azure configuration.
-
-There is **no required `.env` file** for this profile. Copying `.env.example` alone does not configure the Java container: Compose supplies its environment. The smaller base file alone is for limited OAuth checks, not the complete research platform.
-
 ## Optional layers ("profiles")
 
 | Layer | How to enable | Credentials |
@@ -62,7 +31,7 @@ There is **no required `.env` file** for this profile. Copying `.env.example` al
 | observability (traces) | `docker-compose.observability.yml`, see below | none |
 | analytics (ML worker, MLflow) | `--with-analytics` | none |
 
-The Integrations page (**Sources & integrations**) shows each adapter's label. Without the Google layer, Gmail and Drive are listed as not configured, and the simulated Microsoft 365 adapter reads fictional documents from the M365 service over the private Compose network.
+The Integrations page (**Sources & integrations**) shows each adapter's label. Without the Google layer, Gmail and Drive are listed as not configured.
 
 **Local model engine (Ollama).** The `ollama` service runs as the fixed user `10010:10010` (set in its image and in Compose).
 Its root filesystem is read-only, its only writable scratch space is a `tmpfs` at `/tmp` (also its `HOME`), it has no Linux
@@ -79,8 +48,7 @@ docker run --rm --pull never -v credit-intelligence-lab_lab_ollama:/data busybox
 
 The supported stack is defined once in [`scripts/compose-files.mjs`](../scripts/compose-files.mjs) and started by
 `node scripts/docker-local.mjs`: Java API, Next.js, Keycloak, PostgreSQL (cases and identity), Redis, Qdrant,
-ClamAV, Docling, local Nova (Ollama), the offline Python ETL with **DuckDB Bronze → Silver → Gold** and the M365
-evidence service. `--with-analytics` adds the optional ML worker and MLflow overlay. **DuckDB is the supported
+ClamAV, Docling, local Nova (Ollama), the offline Python ETL with **DuckDB Bronze → Silver → Gold**. `--with-analytics` adds the optional ML worker and MLflow overlay. **DuckDB is the supported
 analytics engine.** Spark is never built or started by this command, by the Azure VM files or by the production
 image gate.
 
@@ -94,8 +62,7 @@ Health checks while the stack runs:
 
 ```bash
 PROD="-f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.docling.yml \
-  -f docker-compose.nova-local.yml -f docker-compose.etl.yml -f docker-compose.local-resources.yml \
-  -f docker-compose.m365.yml"
+  -f docker-compose.nova-local.yml -f docker-compose.etl.yml -f docker-compose.local-resources.yml"
 OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose $PROD ps
 curl --fail http://localhost:8081/actuator/health
 curl --fail http://127.0.0.1:8765/health
@@ -111,8 +78,8 @@ OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose $PROD down
 
 | Mode | What leaves the machine |
 | --- | --- |
-| Local (default) | No document, question or answer. Internet is used for image builds, ClamAV signature updates and the explicit `--prepare-model` download only. The ETL worker runs with `network_mode: none`; the M365 service uses fictional mock data. |
-| Azure (opt-in) | A PDF you confirm for analysis is sent to your Azure Document Intelligence resource; Nova sends the question and selected evidence to your Azure OpenAI deployment. The M365 service contacts Azure only with its own explicit live settings. |
+| Local (default) | No document, question or answer. Internet is used for image builds, ClamAV signature updates and the explicit `--prepare-model` download only. The ETL worker runs with `network_mode: none`. |
+| Azure (opt-in) | A PDF you confirm for analysis is sent to your Azure Document Intelligence resource; Nova sends the question and selected evidence to your Azure OpenAI deployment. |
 
 **Spark is an experiment, not a deployment target.** It stays in `docker-compose.spark.yml` behind the `spark`
 profile and runs only when you ask for it, as a one-shot batch over an existing ETL export:

@@ -41,8 +41,8 @@ class IntakeAndPolicyTest {
         "https://127.0.0.1/", "file:///etc/passwd", "gopher://gmail.googleapis.com/", "not a url"))
       assertThatThrownBy(() -> OutboundPolicy.requireAllowed(bad, hosts, Set.of(), false)).isInstanceOf(IllegalArgumentException.class);
     assertThat(OutboundPolicy.requireAllowed("http://127.0.0.1:9999/mock", hosts, Set.of(), true).getPort()).isEqualTo(9999);
-    assertThat(OutboundPolicy.requireAllowed("http://m365-poc:8765", Set.of(), Set.of("m365-poc"), false).getHost()).isEqualTo("m365-poc");
-    assertThatThrownBy(() -> OutboundPolicy.requireAllowed("http://169.254.169.254/latest", Set.of(), Set.of("m365-poc"), false)).isInstanceOf(IllegalArgumentException.class);
+    assertThat(OutboundPolicy.requireAllowed("http://internal-poc:8765", Set.of(), Set.of("internal-poc"), false).getHost()).isEqualTo("internal-poc");
+    assertThatThrownBy(() -> OutboundPolicy.requireAllowed("http://169.254.169.254/latest", Set.of(), Set.of("internal-poc"), false)).isInstanceOf(IllegalArgumentException.class);
     for (String host : List.of("127.0.0.1", "10.0.0.7", "192.168.1.10", "172.16.0.1", "169.254.169.254", "100.64.0.1", "::1", "fd00::1", "0.0.0.0"))
       assertThatThrownBy(() -> OutboundPolicy.requirePublicAddresses(host)).isInstanceOf(IllegalArgumentException.class);
     assertThat(OutboundPolicy.join(java.net.URI.create("https://www.googleapis.com/drive/v3"), "/files", Map.of("q", "name contains 'a b'")))

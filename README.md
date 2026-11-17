@@ -15,7 +15,7 @@
 
 - **Tasks:** every AI feature has a process guide. Unfinished steps show what to do next, computed from the dossier's own records.
 - **Data & AI Control Tower:** charts for step latency, the Bronze → Silver → Gold row flow, data-quality checks, RAG and citation accuracy, configured cost and valid observations per model. Simulated values are never charted. The dossier list opens dossiers that already have data first.
-- **Sources & integrations:** the workspace offers local PDF files. Gmail, Google Drive, Microsoft 365 and the planned adapters are not shown there.
+- **Sources & integrations:** the workspace offers local PDF files. Gmail, Google Drive and the planned adapters are not shown there.
 - **Clearer errors:** a failed action says whether the session ended, the role is not allowed, the item is gone, or a service did not answer. A stopped analysis says what to do next, without naming a provider.
 - **Power BI-ready export:** 19 tables, relationships and DAX measures are written to the ETL volume. The app does not connect to Power BI.
 
@@ -235,7 +235,7 @@ Subsequent starts reuse models and databases:
 node scripts/docker-local.mjs
 ```
 
-Wait for the helper's readiness message. Use `--no-build` only when source and images match. This command starts the **supported production stack**: Java API, Next.js, Keycloak, PostgreSQL, Redis, Qdrant, ClamAV, Docling, local Nova, the offline Python/DuckDB ETL and a fictional Microsoft 365 mock container that the workspace no longer uses (`127.0.0.1:8765`). It clears Azure chat/extraction configuration and has no silent cloud fallback. **It never builds or starts Spark.** The file list lives in [`scripts/compose-files.mjs`](scripts/compose-files.mjs); prove what is rendered with:
+Wait for the helper's readiness message. Use `--no-build` only when source and images match. This command starts the **supported production stack**: Java API, Next.js, Keycloak, PostgreSQL, Redis, Qdrant, ClamAV, Docling, local Nova, the offline Python/DuckDB ETL. It clears Azure chat/extraction configuration and has no silent cloud fallback. **It never builds or starts Spark.** The file list lives in [`scripts/compose-files.mjs`](scripts/compose-files.mjs); prove what is rendered with:
 
 ```bash
 node scripts/check-production-compose.mjs   # renders every profile; fails if any Spark service, image or build appears
@@ -601,8 +601,7 @@ Platform CI checks web, Java, ETL (including the PDF-based DuckDB production flo
 | Workflow | Role |
 | --- | --- |
 | `Verify platform` | Production: web, Java, ETL, analytics, Keycloak, Docker/OIDC |
-| `Production dependency and image security` | Production, blocking: secret history, dependency audit, and Trivy HIGH/CRITICAL on every image this repository builds for the stack (API, web, ETL, analytics, M365); it first asserts that the production Compose stack has no Spark |
-| `M365 document evidence PoC` | Production, blocking for the M365 service: tests, lint, types, audit, image build, Trivy and health check |
+| `Production dependency and image security` | Production, blocking: secret history, dependency audit, and Trivy HIGH/CRITICAL on every image this repository builds for the stack (API, web, ETL, analytics); it first asserts that the production Compose stack has no Spark |
 | `Spark research experiment (non-production, not deployed)` | Research only: Spark parity tests and the real Spark image scan, expected to stay red until upstream fixes the bundled JARs |
 
 `develop` and `master` currently have no branch protection. When it is enabled, require the three production workflows above and do not require the Spark research workflow. Third-party base images (PostgreSQL, Keycloak, Redis, Qdrant, ClamAV, Docling, Ollama) are pulled as published and are not part of this repository's image scan.
@@ -626,7 +625,7 @@ Stop all local services without deleting their data:
 OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose \
   -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.docling.yml \
   -f docker-compose.nova-local.yml -f docker-compose.etl.yml \
-  -f docker-compose.local-resources.yml -f docker-compose.m365.yml stop
+  -f docker-compose.local-resources.yml stop
 ```
 
 `storage-init`/`etl-init` exiting 0 is expected. Ports bind to loopback. Historical `credit-*` realm/service/volume names preserve compatibility; changing the Compose project name does not migrate data. [Docker diagnostics](docs/DOCKER_LOCAL.md#logs-and-troubleshooting).
@@ -639,7 +638,7 @@ OLLAMA_CHAT_MODEL=qwen3:4b-instruct-2507-q4_K_M docker compose \
 | `python/src/document_evidence/contracts/` | Shared synthetic validation fixtures |
 | `app/`, `components/workspace/`, `lib/` | Localized web UI, contracts and frontend tests |
 | `services/credit-api/` | Java authorization, processing, evidence, workflows and audit |
-| `services/credit-api/src/main/java/dev/creditlab/sources/` | Provider-neutral source, business-data and destination contracts, Gmail, Drive and local adapters (the Microsoft 365 adapter was removed), use-case checks |
+| `services/credit-api/src/main/java/dev/creditlab/sources/` | Provider-neutral source, business-data and destination contracts, Gmail, Drive and local adapters, use-case checks |
 | `services/credit-api/src/main/resources/use-cases/` | Fictional use-case PDFs, CSV, mock Gmail message and catalog (regenerate with `scripts/prepare-use-case-fixtures.py`) |
 | `services/document-etl/` | Offline DuckDB/dbt and Parquet |
 | `infra/keycloak/` | Local development realm |

@@ -49,7 +49,7 @@ jobs:
       - name: Assert the production Compose stack contains no Spark
         run: node scripts/check-production-compose.mjs
       - name: Build production images only (no Spark)
-        run: docker compose -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.etl.yml -f docker-compose.ml.yml -f docker-compose.m365.yml build web credit-api etl ml-worker m365-poc
+        run: docker compose -f docker-compose.yml -f docker-compose.platform.yml -f docker-compose.etl.yml -f docker-compose.ml.yml build web credit-api etl ml-worker
       - uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: credit-intelligence-lab-credit-api
@@ -68,10 +68,5 @@ jobs:
       - uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: document-lab-analytics:1
-          severity: HIGH,CRITICAL
-          exit-code: "1"
-      - uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: credit-intelligence-lab-m365-poc:local
           severity: HIGH,CRITICAL
           exit-code: "1"

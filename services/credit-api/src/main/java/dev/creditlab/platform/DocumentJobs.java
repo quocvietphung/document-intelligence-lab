@@ -65,8 +65,10 @@ public class DocumentJobs {
     return Map.of("id",job,"status","QUEUED","expiresAt",now.plus(retention,java.time.temporal.ChronoUnit.DAYS).toString());
   }
   static boolean retryableCode(String code){return Set.of("AZURE_AUTH_UNAVAILABLE","AZURE_ACCESS_DENIED","AZURE_SERVICE_UNAVAILABLE","ANALYSIS_HTTP_503","ANALYSIS_HTTP_429","PROCESSING_UNAVAILABLE","PROCESSING_CONFLICT","WORKER_ATTEMPTS_EXHAUSTED").contains(Objects.requireNonNullElse(code,""));}
-  static boolean automaticRetry(String code,int attempt){return attempt<3&&Set.of("AZURE_SERVICE_UNAVAILABLE","ANALYSIS_HTTP_503","ANALYSIS_HTTP_429","PROCESSING_UNAVAILABLE","PROCESSING_CONFLICT").contains(code);}
-  static int retryDelaySeconds(int attempt){return Math.min(120,30*(1<<Math.min(2,Math.max(0,attempt-1))));}
+  /** Six attempts over about twelve and a half minutes, so a short analysis-service restart does not end the job. */
+  static final int AUTOMATIC_ATTEMPTS=6;
+  static boolean automaticRetry(String code,int attempt){return attempt<AUTOMATIC_ATTEMPTS&&Set.of("AZURE_SERVICE_UNAVAILABLE","ANALYSIS_HTTP_503","ANALYSIS_HTTP_429","PROCESSING_UNAVAILABLE","PROCESSING_CONFLICT").contains(code);}
+  static int retryDelaySeconds(int attempt){return Math.min(300,30*(1<<Math.min(4,Math.max(0,attempt-1))));}
   public Map<String,Object> retry(String tenant,String id,String actor,String sourceJob) {
     cases.require(tenant,id);cases.allowWrite();
     var rows=store.database().queryForList("SELECT * FROM lab_jobs WHERE tenant=? AND case_id=? AND id=?",tenant,id,sourceJob);

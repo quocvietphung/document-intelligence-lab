@@ -28,8 +28,11 @@ class DocumentPipelineTest {
     for(String code:List.of("MALWARE_BLOCKED","DOCUMENT_REJECTED","INJECTION_QUARANTINED","AZURE_AUTH_UNAVAILABLE","AZURE_ACCESS_DENIED","SOURCE_INTEGRITY_FAILED"))assertThat(DocumentJobs.automaticRetry(code,1)).isFalse();
     assertThat(DocumentJobs.automaticRetry("ANALYSIS_HTTP_503",1)).isTrue();
     assertThat(DocumentJobs.automaticRetry("ANALYSIS_HTTP_429",2)).isTrue();
-    assertThat(DocumentJobs.automaticRetry("ANALYSIS_HTTP_503",3)).isFalse();
+    assertThat(DocumentJobs.automaticRetry("ANALYSIS_HTTP_503",5)).isTrue();
+    assertThat(DocumentJobs.automaticRetry("ANALYSIS_HTTP_503",6)).isFalse();
     assertThat(DocumentJobs.retryDelaySeconds(1)).isEqualTo(30);assertThat(DocumentJobs.retryDelaySeconds(2)).isEqualTo(60);
+    assertThat(DocumentJobs.retryDelaySeconds(3)).isEqualTo(120);assertThat(DocumentJobs.retryDelaySeconds(4)).isEqualTo(240);
+    assertThat(DocumentJobs.retryDelaySeconds(5)).isEqualTo(300);
   }
   private LabStore sqlStore(){
     var source=new DriverManagerDataSource("jdbc:h2:mem:pipeline"+UUID.randomUUID()+";DB_CLOSE_DELAY=-1","sa","");
