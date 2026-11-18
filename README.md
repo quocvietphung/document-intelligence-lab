@@ -594,6 +594,10 @@ Prepare the [PDF sources](#pdf-examples) first for RAG acceptance. These checks 
 
 Labels and PDF hashes are recorded in each report. Synthetic labels come from generated content; the business-reference pack was prepared by the development agent, not independently human-approved. Parser tests, retrieval tests and model-generation tests measure different things.
 
+### Branches
+
+Only `master` and `develop` are kept. `develop` is the integration branch: finished work is squash-merged into it, and `master` is fast-forwarded to the same commit. Work branches are deleted after they are merged.
+
 ### CI and package releases
 
 Platform CI checks web, Java, ETL (including the PDF-based DuckDB production flow), local ML benchmarks, Keycloak and Docker/OIDC.
