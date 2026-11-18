@@ -12,7 +12,7 @@ flowchart LR
     end
     subgraph Data[Business data]
       C[CSV export · verified-local]
-      F2[PostgreSQL · REST · Dynamics 365 / Dataverse · future]
+      F2[PostgreSQL · REST · future]
     end
     L & G & D --> I[Shared intake · authorization · consent · real MIME check · safe name · provenance de-duplication]
     I --> Q[Existing batch receipt and durable queue · SHA-256 · ClamAV]
@@ -41,7 +41,7 @@ Labels describe what was actually tested. Configuration alone never upgrades a l
 | Download report | `verified-local` | Generated locally with human-reviewed documents and their fields. Source-import metadata is listed separately |
 | Gmail draft | `implemented-not-live-verified` | Mocked Gmail API only |
 | CSV business data | `verified-local` | Parsed locally for the deterministic assessment |
-| WebDAV, S3/MinIO, PostgreSQL, generic REST, Dynamics 365/Dataverse, webhook, CRM write-back | `future` | Disabled descriptors with no network code |
+| WebDAV, S3/MinIO, PostgreSQL, generic REST, webhook, CRM write-back | `future` | Disabled descriptors with no network code |
 
 Gmail and Google Drive are hidden from the workspace even when their adapters are configured. `GET /api/connectors` still lists them, and the Gmail draft action appears on a reviewed document only when its destination is enabled.
 
@@ -161,4 +161,4 @@ A language model may explain these results or draft a report. It never computes 
 - `gmail.compose` and `drive.readonly` are broader than ideal (see the scopes table).
 - Access-token caching is per Java instance, and a revoked token is detected on the next call.
 - Excel files must be exported as CSV first; `.xlsx` parsing is not implemented.
-- The webhook and CRM destinations and the WebDAV, S3, PostgreSQL, REST and Dataverse adapters are planned descriptors only.
+- The webhook and CRM destinations and the WebDAV, S3, PostgreSQL and REST adapters are planned descriptors only.

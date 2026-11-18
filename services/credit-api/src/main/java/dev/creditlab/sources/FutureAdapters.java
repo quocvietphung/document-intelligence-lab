@@ -35,9 +35,6 @@ public class FutureAdapters {
   @Bean BusinessDataSource restBusinessData() {
     return () -> future("generic-rest", Kind.BUSINESS_DATA, "Generic REST API", "Planned allowlisted HTTPS endpoints only.");
   }
-  @Bean BusinessDataSource dataverseBusinessData() {
-    return () -> future("dynamics-dataverse", Kind.BUSINESS_DATA, "Dynamics 365 / Dataverse", "Planned read-only Web API access; optional, never required.");
-  }
   @Bean ResultDestination webhookDestination() {
     return () -> future("webhook", Kind.DESTINATION, "Webhook", "Planned HTTPS-only delivery after approval, with public-address checks.");
   }

@@ -68,7 +68,7 @@ class UseCasesAndLabelsTest {
     var future = new FutureAdapters();
     var sources = List.of(new LocalFileSource(catalog), new GmailSource(google, accounts), new GoogleDriveSource(google, accounts),
         future.webDavSource(), future.s3Source());
-    var intake = new SourceIntake(sources, List.of(new Destinations.CsvBusinessData(), future.postgresBusinessData(), future.restBusinessData(), future.dataverseBusinessData()),
+    var intake = new SourceIntake(sources, List.of(new Destinations.CsvBusinessData(), future.postgresBusinessData(), future.restBusinessData()),
         List.of(future.webhookDestination(), future.crmWriteBack()), mock(CreditCaseService.class), mock(DocumentBatches.class),
         new LabStore(Optional.empty(), new ObjectMapper()), accounts, mock(DistributedLimits.class));
     var overview = intake.overview("tenant", "alice");

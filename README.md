@@ -43,7 +43,7 @@ Adapters only list and fetch documents or deliver an approved result. OCR, retri
 | Google Drive (read-only) | `implemented-not-live-verified` | Adapter code kept; not shown in Sources & integrations; tested with a mocked Drive API only |
 | Azure Document Intelligence and Azure OpenAI | optional | Your own resources; used only when you configure them |
 | CSV business data | `verified-local` | Deterministic project assessment |
-| WebDAV / Nextcloud, S3 / MinIO, PostgreSQL, generic REST, Dynamics 365 / Dataverse, webhook, CRM write-back | `future` | Planned and disabled; not shown in the workspace |
+| WebDAV / Nextcloud, S3 / MinIO, PostgreSQL, generic REST, webhook, CRM write-back | `future` | Planned and disabled; not shown in the workspace |
 
 ## Use cases
 
@@ -104,7 +104,7 @@ The first run builds the images and downloads the local model once. Open <http:/
 - No connector has been tested against a real Google account or Microsoft tenant. Labels say so.
 - The Google scopes `drive.readonly` and `gmail.compose` are broader than ideal; [why](docs/CONNECTORS.md#3-scopes-and-why-they-are-needed).
 - Excel files must be exported as CSV; `.xlsx` parsing is not implemented.
-- The planned adapters (WebDAV, S3, PostgreSQL, REST, Dataverse, webhook, CRM write-back) are not implemented.
+- The planned adapters (WebDAV, S3, PostgreSQL, REST, webhook, CRM write-back) are not implemented.
 - Benchmarks use small authored corpora; they are development measurements, not general accuracy.
 
 ## About the project
