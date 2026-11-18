@@ -122,7 +122,7 @@ describe("document analysis results journey",()=>{
   it("keeps result status refreshing on the documents page with scoped cancellable reads",()=>{
     const source=readFileSync("components/workspace/DocumentAnalysisWorkspace.tsx","utf8");
     expect(source).toContain("data.caseId!==caseId");expect(source).toContain("controller.abort()");expect(source).toContain("3500");
-    expect(source.indexOf("<DocumentResults")).toBeLessThan(source.indexOf("<PayrollSamples"));
+    expect(source.indexOf("<RecruiterSampleGallery")).toBeLessThan(source.indexOf("<DocumentResults"));
     expect(source).not.toContain('navigate("pipeline")');
     const parent=readFileSync("components/workspace/CreditWorkspace.tsx","utf8");
     expect(parent).toContain('queued.status===409');expect(parent).toContain('return documentReceiptSchema.parse');expect(parent).not.toContain('className="document-row"');

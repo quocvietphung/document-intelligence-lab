@@ -10,28 +10,29 @@ import type {DocumentBatch} from './document-batches';
 
 const receipt:DocumentBatch={id:'batch-1',name:'Invoice sources',source:'Pinned public source',profile:'invoice',time:'2026-10-18T10:00:00Z',state:'SUBMITTED',items:[{name:'invoice.pdf',sha256:'original-hash',size:100,state:'ACCEPTED',status:'COMPLETE',documentId:'D1'}],manifestHash:'manifest',persistent:true};
 describe('compact workspace presentation',()=>{
-  it('puts every page in exactly one workflow group, with no hidden subpages',()=>{
+  it('keeps only the three recruiter pages in the primary navigation',()=>{
     const pages=workspaceNavigation.flatMap(group=>[...group.pages]);
-    expect(pages).toHaveLength(workspaceTabs.length);
-    expect(new Set(pages)).toEqual(new Set(workspaceTabs));
-    expect(workspaceNavigation.map(group=>group.title)).toEqual(['','intake','review','analysis','research','governance']);
+    expect(pages).toEqual(['overview']);
+    expect(workspaceTabs).toEqual(expect.arrayContaining(pages));
+    expect(workspaceNavigation.map(group=>group.title)).toEqual(['']);
     expect(readFileSync('components/workspace/CreditWorkspace.tsx','utf8')).not.toContain('workspace-section-tabs');
   });
   it('gives each page one name, shared by the sidebar, the page title and the Nova catalog',()=>{
+    const visible=workspaceNavigation.flatMap(group=>[...group.pages]);
     for(const locale of ['en','de','vi'] as const){
       const names=workspaceTabs.map(page=>workspacePageName(locale,page));
       expect(new Set(names).size).toBe(names.length);
-      for(const page of workspaceTabs)expect(novaFeature(page,locale).title).toBe(workspacePageName(locale,page));
+      for(const page of visible)expect(novaFeature(page,locale).title).toBe(workspacePageName(locale,page));
     }
-    expect(workspacePageName('unknown','overview')).toBe('Tasks');
+    expect(workspacePageName('unknown','overview')).toBe('Dashboard');
     expect(workspacePageName('vi','review')).toBe('Kiểm duyệt');
   });
-  it('keeps the reference library expandable and automatically visible for a page tour',()=>{
+  it('keeps the focused sample gallery directly visible',()=>{
     const source=readFileSync('components/workspace/DocumentAnalysisWorkspace.tsx','utf8');
-    expect(source).toContain('className="document-reference-library" open={guiding||undefined}');
-    expect(source).toContain('library.current.open=true');expect(source).toContain('focusResults()');
+    expect(source).toContain('<RecruiterSampleGallery');
+    expect(source).toContain("getElementById('recruiter-samples')");expect(source).toContain('focusResults()');
     const workspace=readFileSync('components/workspace/CreditWorkspace.tsx','utf8');
-    expect(workspace).toContain("guiding={guide?.page==='documents'}");
+    expect(workspace).not.toContain("guiding={guide?.page==='documents'}");
     expect(workspace).not.toContain('document.getElementById("datev-library")?.scrollIntoView');
   });
   it('routes custom uploads from evidence review to the processing queue',()=>{
@@ -78,7 +79,8 @@ describe('compact workspace presentation',()=>{
     expect(source.match(/<h1[ >]/g)).toHaveLength(1);
     expect(source).not.toContain('workspace-hero');expect(source).not.toContain('className="trust-entry"');
     expect(source).toContain('<details className="workspace-case-context"');
-    for(const target of ['case-select','case-search','case-new'])expect(source).toContain(`data-page-tour="${target}"`);
+    expect(source).toContain('data-page-tour="case-select"');
+    for(const removed of ['case-search','case-new'])expect(source).not.toContain(`data-page-tour="${removed}"`);
     const nova=readFileSync('components/workspace/NovaChatSurface.tsx','utf8');
     expect(source).not.toContain('data-page-tour="page-guide-button"');expect(nova).toContain('data-page-tour="page-guide-button"');
     expect(source).toContain("if(tab==='overview')setCasePicker(true)");

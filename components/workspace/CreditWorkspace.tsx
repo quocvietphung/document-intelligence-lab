@@ -1,6 +1,6 @@
 "use client";
 import {useCallback,useEffect,useMemo,useRef,useState, type FormEvent} from "react";
-import {ArrowUpRight,CheckCircle2,ChevronDown,Compass,Eye,FileSearch,FlaskConical,FolderSearch,Inbox,ListChecks,ListTodo,LogOut,Menu,MessageSquareText,PlugZap,Plus,RefreshCw,ScanSearch,ScrollText,Search,Settings2,ShieldCheck,Square,Trash2,Upload,X} from "lucide-react";
+import {ArrowUpRight,ChevronDown,Compass,Eye,FileSearch,FlaskConical,FolderSearch,Inbox,ListChecks,ListTodo,LogOut,Menu,MessageSquareText,PlugZap,RefreshCw,ScanSearch,ScrollText,Settings2,ShieldCheck,Square,Trash2,Upload,X} from "lucide-react";
 import {useChat} from "@ai-sdk/react";
 import {DefaultChatTransport} from "ai";
 import {useAuth} from "@/components/auth/KeycloakProvider";
@@ -25,8 +25,8 @@ import {pageTour} from "@/lib/page-tour";
 import {PlatformWorkbench} from "./PlatformWorkbench";
 import {DocumentResearchPanel} from './DocumentResearchPanel';
 import {platformText} from "@/lib/platform-language";
-import {DocumentDomains,DomainResearch} from './DocumentDomains';
-import {researchSamples,researchSampleUrl} from '@/lib/research-samples';
+import {DomainResearch} from './DocumentDomains';
+import {kaggleReference,researchSampleUrl} from '@/lib/research-samples';
 import {documentDomains,domainOf,domainText,filterDomain,type DocumentDomain} from '@/lib/document-domains';
 import {downloadBlob} from "@/lib/browser-download";
 import {DocumentAnalysisWorkspace} from "./DocumentAnalysisWorkspace";
@@ -52,11 +52,8 @@ import {AIPageBanner} from "./AITransparency";
 import {TrustWorkbench} from "./TrustWorkbench";
 import {UseCaseLibrary} from "./UseCaseLibrary";
 import {ProjectAssessmentPanel} from "./ProjectAssessmentPanel";
-import {CaseReportButton,GmailDraftDialog} from "./CaseOutputs";
-import {useConnectorApi} from "./connector-api";
+
 import {trustAnswerFromSearch,trustHref,trustSectionFromSearch} from "@/lib/workspace-usability";
-import {NovaAnswerActions} from "./NovaEvidence";
-import {overviewSchema} from "@/lib/integrations";
 import {trustAnswerSchema,citationTarget,type DraftOptions,type TrustSection} from "@/lib/nova-trust";
 import {trustText} from "@/lib/nova-trust-language";
 import {workspaceNavigation,workspacePageName,workspacePresentation} from "@/lib/workspace-presentation";
@@ -65,7 +62,7 @@ import {novaRunSchema,novaRunText} from '@/lib/nova-runs';
 type Tab=WorkspaceTab;
 const navigationIcons:Record<WorkspaceTab,typeof FileSearch>={overview:ListTodo,integrations:PlugZap,pipeline:Inbox,documents:FileSearch,controls:ListChecks,audit:ScrollText,studio:FlaskConical,experiments:ScanSearch,banking:Compass,evaluation:FolderSearch,trust:Eye,operations:Settings2};
 
-function Copilot({item,locale,open,onOpen,close,initialQuestion,initialOptions,onDraft,openSource,navigate,currentTab,onPageGuide,pageGuideLabel,onTrust,onAnswerHistory,aiCapabilities}:{item:WorkspaceCase;locale:string;open:boolean;onOpen:()=>void;close:()=>void;initialQuestion?:string;initialOptions?:DraftOptions;onDraft:(question:string,options:DraftOptions)=>void;openSource:(id:string,context?:EvidenceContext)=>void;navigate:(tab:WorkspaceTab)=>void;currentTab:WorkspaceTab;aiCapabilities?:AICapabilities;onAnswerHistory?:()=>void} & NovaPageGuide) {
+function Copilot({item,locale,open,onOpen,close,initialQuestion,initialOptions,openSource,navigate,currentTab,onPageGuide,pageGuideLabel,aiCapabilities}:{item:WorkspaceCase;locale:string;open:boolean;onOpen:()=>void;close:()=>void;initialQuestion?:string;initialOptions?:DraftOptions;openSource:(id:string,context?:EvidenceContext)=>void;navigate:(tab:WorkspaceTab)=>void;currentTab:WorkspaceTab;aiCapabilities?:AICapabilities} & NovaPageGuide) {
   const auth=useAuth(); const base=workspaceText(locale),d=documentText(locale); const t=(key:string)=>key==="chatReady"?d("greeting"):key==="sources"?d("sources"):base(key); const [text,setText]=useState(initialQuestion||""); const [mode,setMode]=useState<string>();
   const pendingQuestion=useRef(""),sending=useRef(false);const [limit,setLimit]=useState<NovaLimit>();
   const [runId,setRunId]=useState<string>(),[runState,setRunState]=useState<string>();const runCopy=novaRunText(locale);
@@ -88,7 +85,7 @@ function Copilot({item,locale,open,onOpen,close,initialQuestion,initialOptions,o
   useEffect(()=>{if(initialQuestion===undefined)return;const timer=window.setTimeout(()=>{setText(initialQuestion);setSupportMode('analysis');setDraftOptions(initialOptions);},0);return()=>window.clearTimeout(timer);},[initialQuestion,initialOptions]);
   function guide(question:string,all=false){const data=novaGuideFor(question,currentTab,all);if(!data)return false;clearError();setLimit(undefined);setMessages(previous=>[...previous,{id:crypto.randomUUID(),role:"user",parts:[{type:"text",text:question}]},{id:crypto.randomUUID(),role:"assistant",parts:[{type:"text",text:novaGuideIntro(locale)},{type:"data-nova-guide",data}]}]);setMode("app-guide");return true;}
   function send(event?:FormEvent) { event?.preventDefault();if(!text.trim()||busy||cancelling||sending.current||!auth.token)return;pendingQuestion.current=text.trim();clearError();setLimit(undefined);setMode(undefined);setRunState(undefined);if(novaSendRoute(supportMode)==='guide'){if(!guide(text.trim(),true))return;}else{const id=crypto.randomUUID();setRunId(id);sending.current=true;void sendMessage({text:text.trim()},{body:{...draftOptions,requestId:id}}).catch(()=>{}).finally(()=>{sending.current=false;});}setText(""); }
-  return <NovaChatSurface aiCapabilities={aiCapabilities} title={t("nova")} locale={locale} open={open} onOpen={onOpen} close={close} onPageGuide={onPageGuide} pageGuideLabel={pageGuideLabel} onTrust={onTrust}>
+  return <NovaChatSurface aiCapabilities={aiCapabilities} title={t("nova")} locale={locale} open={open} onOpen={onOpen} close={close} onPageGuide={onPageGuide} pageGuideLabel={pageGuideLabel}>
     <div className="nova-mode-switch" role="group" aria-label={trust.modeHint}>{(['guide','analysis'] as const).map(value=><button type="button" key={value} disabled={busy} aria-pressed={supportMode===value} onClick={()=>{setSupportMode(value);if(value==='guide'){setDraftOptions(undefined);}}}>{value==='guide'?trust.guideMode:trust.analysisMode}</button>)}</div>
     <NovaConversation open={open} messages={messages} label={t("nova")} locale={locale}>
       <NovaChatContext locale={locale} caseId={item.id} hint={t("chatHint")} aiCapabilities={aiCapabilities} mode={!error?mode:undefined}>
@@ -99,11 +96,10 @@ function Copilot({item,locale,open,onOpen,close,initialQuestion,initialOptions,o
         {message.parts.filter(p=>p.type==="data-nova-guide").map((p,i)=><NovaGuideCard key={i} guide={"data" in p?p.data:undefined} locale={locale} item={item} navigate={navigate} openSource={openSource}/>)}
         {message.parts.some(p=>p.type==="source-document")?<details className="mt-4 border-t border-slate-200 pt-3 text-xs"><summary>{t("sources")}</summary><ul className="mt-2 space-y-2">{message.parts.filter(p=>p.type==="source-document").map(p=><li key={p.sourceId}>{item.documents.some(doc=>p.sourceId.startsWith(doc.id+":"))?<button className="button-link" onClick={()=>{void stop();openSource(p.sourceId);}}>{p.title||p.sourceId} → {d("preview")}</button>:<span>{p.title||p.sourceId} <code>[{p.sourceId}]</code></span>}</li>)}</ul></details>:null}
         {message.role==="assistant"&&message.id!=="nova-welcome"&&!message.parts.some(p=>p.type==="data-nova-guide")?<NovaCopyAnswer text={message.parts.filter(p=>p.type==="text").map(p=>p.text).join("")} locale={locale} speech={{id:`chat-${message.id}`,complete:!(busy&&message.id===messages.at(-1)?.id)}}/>:null}
-        {record.success?<NovaAnswerActions answer={record.data} caseId={item.id} caseVersion={item.version||0} locale={locale} onDraft={onDraft} openSource={openSource}/>:null}
       </article>;})}
       {busy?<p className="p-3 text-sm text-slate-500" role="status">{aiCapabilities?.chat.provider==='ollama'?(locale==='vi'?'Nova đang đọc chứng cứ bằng model local. Lần đầu trên CPU có thể hơn một phút; chưa có kết quả được phê duyệt.':locale==='de'?'Nova liest die Belege mit dem lokalen Modell. Der erste CPU-Aufruf kann über eine Minute dauern; noch kein geprüftes Ergebnis.':'Nova is reading evidence with the local model. The first CPU request can take over a minute; no approved result yet.'):t("loading")}</p>:null}
       {error?<div className="notice-error" role="alert"><p>{novaModelMessage(error.message,locale)||(error.message.includes("AI_SAFETY_FILTER")?novaSafetyMessage(locale):limit||error.message.toLowerCase().includes("limit")?novaLimitMessage(limit,locale):t("error"))}</p><p>{customerUx(locale).question}</p></div>:null}
-      {runState?<div className="notice-lab" role="status"><p>{runCopy[runState as keyof typeof runCopy]||runCopy.UNKNOWN}</p><code>{runId}</code><button type="button" className="button-link" onClick={()=>onAnswerHistory?.()}>{runCopy.history}</button></div>:null}
+      {runState?<div className="notice-lab" role="status"><p>{runCopy[runState as keyof typeof runCopy]||runCopy.UNKNOWN}</p><code>{runId}</code></div>:null}
       <NovaSuggestions locale={locale} page={currentTab} select={setText} disabled={busy}/>
       <div className="nova-chat-shortcuts"><button className="button-link" onClick={()=>guide(novaGuideLabels(locale).actions,true)} disabled={busy}><Compass size={14}/>{novaGuideLabels(locale).actions}</button></div>
     </NovaConversation>
@@ -139,14 +135,7 @@ export function CreditWorkspace({locale}:{locale:string}) {
   const [domainFilter,setDomainFilter]=useState<DocumentDomain|'all'>('all');
   const domainCases=filterDomain(cases,domainFilter);
   const [guide,setGuide]=useState<{page:WorkspaceTab;step:number}|null>(null);
-  const [trustSection,setTrustSection]=useState<TrustSection>('tasks');const [trustAnswer,setTrustAnswer]=useState<string>();const [draftDoc,setDraftDoc]=useState<CreditDocument|null>(null);
-  // The Gmail draft action is offered only when a draft connection is enabled; the workspace has no connect step.
-  const {auth:connectorAuth,request:connectorRequest,run:connectorRun}=useConnectorApi(locale);const [draftsReady,setDraftsReady]=useState(false);
-  useEffect(()=>{
-    if(!connectorAuth.token)return;
-    const timer=window.setTimeout(()=>void connectorRun('drafts',async()=>setDraftsReady(overviewSchema.parse(await connectorRequest('/api/connectors')).destinations.some(d=>d.id==='gmail-draft'&&d.enabled))),0);
-    return()=>window.clearTimeout(timer);
-  },[connectorAuth.token,connectorRequest,connectorRun]);
+  const [trustSection,setTrustSection]=useState<TrustSection>('tasks');const [trustAnswer,setTrustAnswer]=useState<string>();
   useEffect(()=>{const sync=()=>{const target=workspaceTarget(window.location.hash)||workspaceSectionFromSearch(window.location.search);if(target){setTab(target);setGuide(null);}const id=workspaceCaseFromSearch(window.location.search);if(id)setSelected(id);const trust=trustSectionFromSearch(window.location.search);if(trust)setTrustSection(trust);setTrustAnswer(trustAnswerFromSearch(window.location.search));};const timer=window.setTimeout(sync,0);window.addEventListener("hashchange",sync);window.addEventListener("popstate",sync);return()=>{window.clearTimeout(timer);window.removeEventListener("hashchange",sync);window.removeEventListener("popstate",sync);};},[]);
   function navigate(id:WorkspaceTab,href=`#${id}`){if(!workspaceTabs.includes(id))return;setTab(id);setMenu(false);setChat(false);setGuide(null);window.history.pushState(null,"",href);window.scrollTo({top:0,behavior:"instant"});}
   function openDocumentIntake() {
@@ -172,7 +161,6 @@ export function CreditWorkspace({locale}:{locale:string}) {
   const item=auth.authenticated?(domainCases.find(c=>c.id===selected)||domainCases.find(hasOnlyDatevPayroll)||domainCases.find(c=>c.documents.some(doc=>datevReference(doc.name)))||domainCases[0]):undefined;
   const Chat=auth.mode==="demo"?DemoCopilot:Copilot;
   const canWrite=auth.mode==="keycloak"&&auth.roles.some(r=>r==="ADVISOR"||r==="ADMIN");
-  const canReview=auth.roles.some(r=>r==="REVIEWER"||r==="ADMIN");
   const refresh=useCallback(async(signal?:AbortSignal)=>{
     if(!auth.ready||!auth.authenticated)return;
     if(auth.mode==="demo") {setCases([publicDemoCase]);setAnalysis(null);setLoading(false);return;}
@@ -215,7 +203,7 @@ export function CreditWorkspace({locale}:{locale:string}) {
     sampleInFlight.current=true;setBusy(true);setError("");setSuccess(false);
     try {
       const reference=domainOf(item.domain)==='banking'?datevReference(fileName):undefined;
-      const sample=researchSamples(domainOf(item.domain)).find(row=>row.file===fileName);
+      const sample=kaggleReference(fileName);
       if(!reference&&!sample)throw new Error("Unknown reference");
       const response=await fetch(reference?`/api/payroll-references?sample=${reference.id}`:researchSampleUrl(sample!),{headers:{Authorization:`Bearer ${auth.token}`},cache:"no-store"});
       if(!response.ok)throw new Error("Sample unavailable");
@@ -240,7 +228,6 @@ export function CreditWorkspace({locale}:{locale:string}) {
       downloadBlob(await response.blob(),doc.name);
     } catch {setError("error");}
   }
-  const status=(c:WorkspaceCase)=>t(c.status==="DRAFT"?"draft":c.status==="REVIEW_COMPLETE"?"complete":"humanReview");
   const shown=domainCases.filter(c=>searchText(`${c.applicant} ${c.id} ${c.purpose}`).includes(searchText(query)));
   const legacyDocs=item?.documents.filter(legacyPayroll)||[];
   const payrollUx=datevLibraryUx(locale);
@@ -256,21 +243,20 @@ export function CreditWorkspace({locale}:{locale:string}) {
     </aside>
     <main className="workspace-main"><header className="workspace-header workspace-header-compact">
       <div className="workspace-title-group"><button className="icon-button mobile-menu" onClick={()=>setMenu(true)} aria-label={t("workspace")}><Menu size={21}/></button><div><h1>{sectionLabel(tab)}</h1><small title={t('notice')}>{presentation.research}</small></div></div>
-      <div className="workspace-header-actions">{auth.authenticated&&auth.mode==='keycloak'?<button className="icon-button" aria-label={trustText(locale).open} title={trustText(locale).open} onClick={()=>openTrust()}><ShieldCheck size={19}/></button>:null}<span className="workspace-user">{auth.authenticated?auth.displayName:''}</span>{auth.mode==="demo"?<span className="lab-badge">{d("badge")}</span>:auth.authenticated?<button className="button-secondary workspace-session-action" disabled={!auth.ready} onClick={auth.logout} aria-label={t('signOut')} title={t('signOut')}><LogOut size={16}/><span>{t('signOut')}</span></button>:null}</div>
+      <div className="workspace-header-actions"><span className="workspace-user">{auth.authenticated?auth.displayName:''}</span>{auth.mode==="demo"?<span className="lab-badge">{d("badge")}</span>:auth.authenticated?<button className="button-secondary workspace-session-action" disabled={!auth.ready} onClick={auth.logout} aria-label={t('signOut')} title={t('signOut')}><LogOut size={16}/><span>{t('signOut')}</span></button>:null}</div>
     </header><div id="workspace-content" tabIndex={-1} className="workspace-content workspace-content-compact">
         {auth.error?<p className="notice-error" role="alert">{auth.authenticated?presentation.sessionError:presentation.signInError}</p>:null}
         {!auth.authenticated?<section className="surface p-8"><h2 className="text-lg font-bold">{t("noSession")}</h2><p className="my-4 text-sm leading-relaxed text-slate-600">{t("publicLogin")}</p><button className="button-primary" onClick={auth.login} disabled={!auth.ready}>{t(auth.ready?"signIn":"loading")}</button></section>:<>
           <details className="workspace-case-context" data-page-tour="case-select" open={casePicker||!item} onToggle={event=>{if(item)setCasePicker(event.currentTarget.open);}}>
             <summary><span className="workspace-case-identity"><span>{domainCopy[domainOf(item?.domain)]} · {item?.id||presentation.dossier}</span><strong>{item?.applicant||t('selectCase')}</strong></span><span className="workspace-case-switch">{presentation.switchCase}<ChevronDown size={16}/></span></summary>
             <div className="workspace-case-tools">
-          <DocumentDomains locale={locale} cases={cases} value={domainFilter} compact onChange={value=>{if(busy)return;setDomainFilter(value);setSelected('');setCasePicker(true);setChat(false);setGuide(null);setInspected(null);setEditor(null);setChatQuestion(undefined);setChatOptions(undefined);setQuery('');setSuccess(false);window.history.replaceState(null,'',`${window.location.pathname}#${tab}`);}}/>
-          <div className="case-toolbar"><div className="search-input"><Search size={17}/><input data-page-tour="case-search" aria-label={t("search")} placeholder={t("search")} value={query} onChange={e=>{setQuery(e.target.value);setCasePicker(true);}}/></div><button data-page-tour="case-refresh" className="button-secondary" disabled={loading||busy} onClick={()=>void refresh()}><RefreshCw size={16}/>{t("refresh")}</button><button data-page-tour="case-new" className="button-primary" disabled={!canWrite||busy} onClick={()=>{setEditor("new");setError("");}}><Plus size={17}/>{t("newCase")}</button></div>
-          {item?<div className="workspace-case-description"><div><strong>{presentation.details} · {t('version')} {item.version||0}</strong><p>{item.purpose}</p><p>{domainCopy.requirement}: {domainCopy[`${domainOf(item.domain)}Required`]}</p></div><button className="button-secondary" disabled={!canWrite||busy} onClick={()=>setEditor('edit')}>{t('editCase')}</button></div>:null}
-          {loading?<p className="p-4" role="status">{t("loading")}</p>:casePicker||!item?<div id="case-options" className="case-options" aria-label={t("selectCase")}>{shown.map(c=><button key={c.id} className={`case-card ${item?.id===c.id?"case-selected":""}`} aria-pressed={item?.id===c.id} onClick={()=>select(c.id)}><small>{c.id}</small><strong>{c.applicant}</strong><span>{status(c)}</span></button>)}{showCaseEmpty(shown.length,loading,error)?<p className="p-4 text-slate-600">{t("noCases")}</p>:null}</div>:null}
+          {item?<div className="workspace-case-description"><div><strong>{presentation.details}</strong><p>{item.purpose}</p></div><button data-page-tour="case-refresh" className="button-secondary" disabled={loading||busy} onClick={()=>void refresh()}><RefreshCw size={16}/>{t("refresh")}</button></div>:null}
+          {loading?<p className="p-4" role="status">{t("loading")}</p>:casePicker||!item?<div id="case-options" className="case-options recruiter-case-options" aria-label={t("selectCase")}>{shown.slice(0,6).map(c=><button key={c.id} className={`case-card ${item?.id===c.id?"case-selected":""}`} aria-pressed={item?.id===c.id} onClick={()=>select(c.id)}><small>{c.id}</small><strong>{c.applicant}</strong><span>{c.documents.length} · PDF</span></button>)}{showCaseEmpty(shown.length,loading,error)?<p className="p-4 text-slate-600">{t("noCases")}</p>:null}</div>:null}
           </div></details>
           {error?<div className="notice-error workspace-recovery" role="alert"><p>{t(error)}</p>{error==="sessionExpired"?<button className="button-secondary" onClick={auth.login}>{t("signIn")}</button>:error==="serviceUnavailable"?<button className="button-secondary" disabled={loading} onClick={()=>void refresh()}><RefreshCw size={16}/>{t("refresh")}</button>:null}</div>:null}{success?<p className="notice-success" role="status">{t("saved")}</p>:null}
           {item?<>
-            {tab==="overview"?<WorkspaceAIOverview caseId={item.id} locale={locale} demo={auth.mode==="demo"} documentMode={analysis?.mode} capabilities={aiCapabilities} navigate={navigate} openNova={()=>askNova()} documents={item.documents} openTrust={auth.mode==='keycloak'?openTrust:undefined} inspect={inspect} openIntake={openDocumentIntake} issueCount={item.issues.length}>{item.issues.length?<div className="overview-group workspace-attention"><h3>{t("issues")} <span>{item.issues.length}</span></h3><p className="overview-progress">{t('documentsCount')}: {item.documents.filter(d=>d.status!=='missing').length} · {t('progress')}: {item.progress}%</p>{item.issues.map((issue,i)=><div className="review-item" key={i}><span className="review-dot"/><div><strong>{t(issue.title.includes("Missing")?"missingDocument":issue.title.replaceAll(" ","_"))}</strong><p>{t(issue.detail)}</p></div><button className="button-link" onClick={()=>{const doc=item.documents.find(d=>d.id===issue.documentId);if(doc)inspect(doc);else navigate("documents");}}>{t("inspect")} →</button></div>)}</div>:null}</WorkspaceAIOverview>:null}
+            {tab==="overview"?<><WorkspaceAIOverview locale={locale} demo={auth.mode==="demo"} documentMode={analysis?.mode} capabilities={aiCapabilities} openSamples={()=>document.getElementById('recruiter-samples')?.scrollIntoView({behavior:'smooth',block:'start'})} openNova={()=>askNova()} documents={item.documents} inspect={inspect}/>
+              <div className="recruiter-dashboard-documents"><DocumentAnalysisWorkspace key={`dashboard-document-analysis:${item.id}`} caseId={item.id} documents={item.documents} locale={locale} busy={busy} canImport={canWrite&&!!analysis} azure={!!analysis&&analysis.mode.startsWith("azure")} importSample={uploadSample} refreshCase={refresh} open={inspect} ask={askNova} technical={()=>navigate("pipeline")}/></div></>:null}
             {tab!=="overview"&&tab!=="integrations"&&tab!=="trust"?<AIPageBanner page={tab} locale={locale} capabilities={aiCapabilities} demo={auth.mode==="demo"} ask={askNova}/>:null}
             {tab==='integrations'?<IntegrationsWorkbench key={`integrations:${item.id}`} caseId={item.id} caseVersion={item.version||0} locale={locale} documents={item.documents} navigate={navigate} refreshCase={()=>void refresh()}/>:null}
             {tab==='experiments'?<DocumentResearchPanel key={`${item.id}:${item.version}`} caseId={item.id} caseVersion={item.version||0} locale={locale} view="experiments" inspect={(id,page)=>{const doc=item.documents.find(d=>d.id===id);if(doc)inspect(doc,page);}}/>:null}
@@ -279,7 +265,7 @@ export function CreditWorkspace({locale}:{locale:string}) {
                 <div><h2 className="section-heading">{presentation.sourceInventory}</h2><p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-600">{presentation.uploadHint}</p></div>
                 <button type="button" data-page-tour="documents-upload" className="button-secondary" onClick={openDocumentIntake}><Upload size={16}/>{presentation.upload}<ArrowUpRight size={14}/></button>
               </header>
-              <DocumentAnalysisWorkspace key={`document-analysis:${item.id}`} caseId={item.id} documents={item.documents} locale={locale} busy={busy} canImport={canWrite&&!!analysis} azure={!!analysis&&analysis.mode.startsWith("azure")} importSample={uploadSample} refreshCase={refresh} open={inspect} ask={askNova} technical={()=>navigate("pipeline")} showPayroll={domainOf(item.domain)==='banking'} domain={domainOf(item.domain)} guiding={guide?.page==='documents'} draft={draftsReady?doc=>setDraftDoc(doc):undefined} report={<CaseReportButton caseId={item.id} locale={locale} documents={item.documents}/>}/>
+              <DocumentAnalysisWorkspace key={`document-analysis:${item.id}`} caseId={item.id} documents={item.documents} locale={locale} busy={busy} canImport={canWrite&&!!analysis} azure={!!analysis&&analysis.mode.startsWith("azure")} importSample={uploadSample} refreshCase={refresh} open={inspect} ask={askNova} technical={()=>navigate("pipeline")}/>
               {legacyDocs.length?<details className="payroll-legacy"><summary>{payrollUx.legacy} · {legacyDocs.length}</summary><p>{payrollUx.kept}</p>{legacyDocs.map(documentRow)}</details>:null}</section>:null}
             {(["studio","pipeline","controls","operations","evaluation"] as string[]).includes(tab)?<PlatformWorkbench key={item.id} domain={item.domain} caseId={item.id} locale={locale} view={tab as "studio"|"pipeline"|"controls"|"operations"|"evaluation"} guiding={guide?.page===tab} caseVersion={item.version||0} documents={item.documents} changed={refresh} ask={askNova} inspect={(id,page)=>{const doc=item.documents.find(d=>d.id===id);if(doc)inspect(doc,page);else navigate("documents");}}/>:null}
             {tab==='evaluation'?<UseCaseLibrary key={`use-cases:${item.id}`} caseId={item.id} locale={locale} navigate={navigate}/>:null}
@@ -293,10 +279,9 @@ export function CreditWorkspace({locale}:{locale:string}) {
       </div>
     </main>
     {editor&&auth.authenticated?<ModalSurface title={t(editor==="new"?"newCase":"editCase")} label={t("close")} close={()=>{if(!busy)setEditor(null);}}><form key={editor} onSubmit={saveDraft} className="draft-form"><label>{domainCopy.domain}<select name="domain" defaultValue={editor==='edit'?domainOf(item?.domain):domainFilter==='all'?'general':domainFilter}>{documentDomains.map(domain=><option value={domain} key={domain}>{domainCopy[domain]}</option>)}</select></label>{[["applicant","applicant",editor==="edit"?item?.applicant:""],["purpose","purpose",editor==="edit"?item?.purpose:""],["coApplicant","coApplicant",editor==="edit"?item?.coApplicant:""]].map(([name,label,value])=><label key={name}>{t(label!)}<input name={name} required={name!=="coApplicant"} maxLength={name==="purpose"?160:120} defaultValue={value}/></label>)}<p className="domain-requirement">{domainCopy.boundary}</p>{error?<p className="notice-error" role="alert">{t(error)}</p>:null}<div className="flex justify-end gap-2"><button type="button" className="button-secondary" disabled={busy} onClick={()=>setEditor(null)}>{t("cancel")}</button><button className="button-primary" disabled={busy}>{t(busy?"loading":"save")}</button></div></form></ModalSurface>:null}
-    {inspected&&item?<ModalSurface wide title={inspected.name} label={t("close")} close={()=>{if(!busy)setInspected(null);}}><p className="document-review-instruction">{inspected.originalAvailable?documentText(locale)("review"):t("fixture")}</p><DocumentEvidence context={evidenceContext} caseVersion={item.version||0} onOcrSaved={updated=>{setCases(list=>list.map(c=>c.id===updated.id?updated:c));setInspected(updated.documents.find(d=>d.id===inspected.id)||null);}} initialPage={inspectedPage} onExplain={question=>{setInspected(null);askNova(question);}} key={inspected.id} doc={inspected} caseId={item.id} locale={locale} editable={canReview&&!!inspected.originalAvailable&&!busy} values={reviewValues} onChange={(index,value)=>setReviewValues(v=>v.map((previous,i)=>i===index?value:previous))}/>
-      <div className="modal-sticky-actions">{error?<p className="notice-error" role="alert">{t(error)}</p>:null}<div className="flex flex-wrap justify-end gap-2">{inspected.originalAvailable?<button className="button-secondary" onClick={()=>void original(inspected)}>{t("original")}</button>:null}<button className="button-primary" disabled={!canReview||!inspected.originalAvailable||!inspected.fields?.length||reviewValues.some(v=>!v.trim())||busy} onClick={()=>void request(`/api/cases/${item.id}/documents/${inspected.id}/review`,"POST",JSON.stringify({version:item.version||0,values:reviewValues}))}><CheckCircle2 size={17}/>{t(busy?"loading":"confirm")}</button></div></div></ModalSurface>:null}
-    {draftDoc&&item&&auth.authenticated?<GmailDraftDialog caseId={item.id} locale={locale} document={draftDoc} close={()=>setDraftDoc(null)} navigate={navigate}/>:null}
-    {item&&auth.authenticated?<div hidden={Boolean(editor||inspected||draftDoc)}><Chat aiCapabilities={aiCapabilities} key={`${item.id}:${auth.tenantId}:${auth.displayName}`} item={item} locale={locale} open={chat} onOpen={()=>setChat(true)} navigate={navigate} currentTab={tab} onPageGuide={startPageGuide} pageGuideLabel={`${guideText.start} · ${sectionLabel(tab)}`} openSource={openCitation} initialQuestion={chatQuestion} initialOptions={chatOptions} onDraft={askNova} onTrust={auth.mode==='keycloak'?()=>openTrust():undefined} onAnswerHistory={()=>openTrust('history')} close={()=>{setChat(false);setChatQuestion(undefined);}}/></div>:null}
+    {inspected&&item?<ModalSurface wide title={inspected.name} label={t("close")} close={()=>{if(!busy)setInspected(null);}}><DocumentEvidence simple context={evidenceContext} caseVersion={item.version||0} initialPage={inspectedPage} onExplain={question=>{setInspected(null);askNova(question);}} key={inspected.id} doc={inspected} caseId={item.id} locale={locale} editable={false} values={reviewValues} onChange={()=>{}}/>
+      {inspected.originalAvailable?<div className="modal-sticky-actions"><button className="button-secondary" onClick={()=>void original(inspected)}>{t("original")}</button></div>:null}</ModalSurface>:null}
+    {item&&auth.authenticated?<div hidden={Boolean(editor||inspected)}><Chat aiCapabilities={aiCapabilities} key={`${item.id}:${auth.tenantId}:${auth.displayName}`} item={item} locale={locale} open={chat} onOpen={()=>setChat(true)} navigate={navigate} currentTab={tab} onPageGuide={startPageGuide} pageGuideLabel={`${guideText.start} · ${sectionLabel(tab)}`} openSource={openCitation} initialQuestion={chatQuestion} initialOptions={chatOptions} close={()=>{setChat(false);setChatQuestion(undefined);}}/></div>:null}
     {guide&&auth.authenticated&&!editor&&!inspected?<PageTour locale={locale} page={guide.page} domain={item?.domain} step={guide.step} onStep={step=>setGuide(previous=>previous?{...previous,step}:null)} close={()=>setGuide(null)}/>:null}
   </div>;
 }

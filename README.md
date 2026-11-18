@@ -1,35 +1,52 @@
 # Document Intelligence Lab
 
-**An open-source, provider-neutral Document AI research platform.** It studies how business PDFs become structured data, traceable answers and reviewable findings, with page evidence, deterministic checks and a person in control. Azure is an optional provider. The local workflow runs on your own PDFs and needs no cloud credential.
+**An open-source, provider-neutral Document AI portfolio project.** Its primary demo turns ten prepared business PDFs into structured data and page-grounded answers, then exposes measured data/AI operations and a compact AI-103 capability lab. Azure is optional; the complete default path runs locally with Docker.
 
 > Research support only. Results are not legal, financial, investment, payment, valuation, compliance or ESG certification decisions.
 
-## What the project researches
+## The three-screen product story
 
-- Text, layout, table and OCR extraction, with source locations kept for every value.
-- Classification, BM25, vector and hybrid retrieval, and answers that cite pages or refuse.
-- Deterministic validation, cross-document reconciliation and project metrics computed in code.
-- Human review, an audit trail and provider-neutral intake. The workspace currently offers local PDF files as its source.
+| Screen | What a recruiter can verify |
+| --- | --- |
+| **Dashboard** | Run one of **10 curated PDFs**, inspect extracted fields/tables and source pages, see the active Document Intelligence/Nova/search providers, and ask Nova a grounded question. |
+| **Data & AI Control Tower** | Inspect real ETL step latency, Bronze → Silver → Gold row flow, data-quality checks, RAG/citation observations and explicitly configured—not invented—cost data. |
+| **AI-103 Lab** | Explore **18 capability groups** with separate local and Azure status. `Azure-ready` never means `Azure-verified`. |
+
+The recruiter-facing navigation deliberately contains only these three entries. Experimental adapters, benchmarks and manual correction tools remain in the codebase, but do not compete with the main demo.
+
+## AI concepts used here
+
+- **Document Intelligence:** software that reads document text, layout and tables and returns structured observations. It does not establish that a document is genuine or correct.
+- **OCR (optical character recognition):** conversion of pixels into text. An OCR value can be plausible and still differ from the original PDF.
+- **Embedding:** a numeric representation used to retrieve semantically related evidence. Similarity is relevance, not factual accuracy.
+- **Hybrid search:** lexical retrieval (BM25-style term matching) combined with vector retrieval. The project keeps source page IDs so retrieved evidence can be inspected.
+- **RAG (retrieval-augmented generation):** retrieve authorized evidence first, then ask a language model to answer only from that evidence.
+- **Grounding and citation:** connecting a claim to a saved document/page. A citation helps inspection; it is not proof that OCR or interpretation is correct.
+- **Nova:** the project's evidence assistant. It uses local Ollama by default and can use Azure OpenAI when explicitly configured.
+- **Data & AI Control Tower:** an operational view of data lineage, quality, latency, retrieval and model observations—not an autonomous decision system.
+- **AI-103 Lab:** a learning and verification surface aligned to Microsoft AI-103 capability groups; it distinguishes local-real, deterministic, mocked/configured and live-Azure results.
 
 ## What is new
 
-- **Tasks:** every AI feature has a process guide. Unfinished steps show what to do next, computed from the dossier's own records.
+- **Focused Dashboard:** one product story—choose a prepared PDF, run extraction, inspect evidence and ask Nova. The old multi-section research navigation is no longer the portfolio entry point.
+- **Ten prepared samples:** five authored construction documents, four invoice examples and one insurance-wording example are available from the Dashboard.
 - **Data & AI Control Tower:** charts for step latency, the Bronze → Silver → Gold row flow, data-quality checks, RAG and citation accuracy, configured cost and valid observations per model. Simulated values are never charted. The dossier list opens dossiers that already have data first.
-- **Sources & integrations:** the workspace offers local PDF files. Gmail, Google Drive and the planned adapters are not shown there.
-- **Clearer errors:** a failed action says whether the session ended, the role is not allowed, the item is gone, or a service did not answer. A stopped analysis says what to do next, without naming a provider.
+- **Compact AI-103 Lab:** eighteen capabilities are grouped into five tabs with filters, explicit evidence and separate local/Azure status.
+- **Clear provider identity:** Dashboard shows the configured Document Intelligence, Nova and evidence-search implementations without implying cloud execution.
 - **Power BI-ready export:** 19 tables, relationships and DAX measures are written to the ETL volume. The app does not connect to Power BI.
 
 ## Provider-neutral architecture
 
 ```mermaid
 flowchart LR
-    L[Local PDFs and fictional fixtures] --> P
-    P[Shared intake<br/>authorization · real MIME · hash · ClamAV · durable queue] --> X[OCR · layout · tables<br/>Docling, Azure DI optional]
-    X --> E[Normalization · RAG · evidence]
-    E --> V[Deterministic validation]
-    V --> H[Human review]
-    H --> D[Approved destination<br/>report · Gmail draft]
-    H --> A[(Audit trail)]
+    L[10 prepared PDFs or local upload] --> P[Authorization · MIME · hash · ClamAV · durable queue]
+    P --> X[OCR · layout · tables<br/>Docling local / Azure DI optional]
+    X --> E[Normalized evidence · Qdrant · lexical retrieval]
+    E --> N[Nova grounded answer<br/>Ollama local / Azure OpenAI optional]
+    X --> C[Data & AI Control Tower]
+    E --> C
+    N --> C
+    X --> A[AI-103 capability checks]
 ```
 
 Adapters only list and fetch documents or deliver an approved result. OCR, retrieval, the queue, evidence and review exist once and are shared by every source. [Connector architecture, setup, scopes and security](docs/CONNECTORS.md).
@@ -62,7 +79,7 @@ The full matrix — where each use case runs, its fixture, entry point, tests, s
 | ESG evidence completeness | Present, missing and pending evidence; no certification |
 | Knowledge assistant with citations | Answers only with cited evidence; unsupported questions are refused |
 
-Run them in **Research datasets → Sample scenarios**; import their PDFs under **Sources & integrations** (local files). The CSV project assessment is in **Domain analysis**, and the report download sits next to reviewed results in **Documents & evidence**. A language model may explain the results or draft a report; it never computes them.
+The main portfolio flow is now **Dashboard → choose one of 10 samples → run extraction → open evidence → ask Nova**. Additional datasets and experiments remain available to developers and tests, but are not part of the three-entry recruiter navigation. A language model may explain saved evidence; deterministic values are still computed in code.
 
 ### AI-103 lab: contractor pre-check before accounting
 
@@ -83,7 +100,7 @@ cd document-intelligence-lab
 node scripts/docker-local.mjs --prepare-model
 ```
 
-The first run builds the images and downloads the local model once. Open <http://localhost:3000/en>, sign in with the local development account `advisor.demo` / `demo-password`, and open **Sources & integrations**. Requirements, health checks and troubleshooting are in [Local Docker workspace](#local-docker-workspace). Google connectors are not shown in the workspace; the `--with-google-connectors` option is kept for developers ([notes](docs/CONNECTORS.md#optional-google-gmail-and-drive)).
+The first run builds the images and downloads the local model once. Open <http://localhost:3000/en>, sign in with the local development account `advisor.demo` / `demo-password`, and stay on **Dashboard**. Choose a sample, run extraction and open its evidence; Nova is available from the same screen. Requirements, health checks and troubleshooting are in [Local Docker workspace](#local-docker-workspace). Google connectors remain developer-only ([notes](docs/CONNECTORS.md#optional-google-gmail-and-drive)).
 
 ## Evidence, confidence and human review
 
@@ -153,11 +170,11 @@ Overview distinguishes **18 AI-assisted workflows** from **15 rule-based, naviga
 
 Workflows share the selected extraction/Nova providers. MiniLM is English-focused; relevance scores are not accuracy percentages. Optional PaddleOCR, BGE-M3, reranking and vision need separately prepared weights and live evaluation. [Integration boundaries](docs/AI_INTEGRATIONS.md).
 
-## Walkthrough
+## Current interface
 
-![English walkthrough: processing queue, local PDF sources, reviewed evidence, Control Tower charts, AI transparency and the activity log](docs/screenshots/document-ai-workflow-en.gif)
+The signed-in local application now opens on **Dashboard** and exposes only **Dashboard**, **Data & AI Control Tower** and **AI-103 Lab** as top-level destinations. The earlier overview screenshot and long workflow GIF showed the retired research navigation, so they are intentionally no longer presented as the current product UI. Screenshots later in this README document individual research experiments and their limits; they are not additional top-level product screens.
 
-English captures from the signed-in local app, assembled into an 11-scene edited walkthrough of about 54.5 seconds. The scenes show the processing queue, the local source list, reviewed evidence, PDF research counts without invented scores, the four Control Tower views, AI transparency, the AI-103 capability status and the activity log. The captures are real screens from the local stack; waiting periods are omitted and existing review states remain unchanged. No scene implies automatic approval.
+![Current English Dashboard with the three-entry navigation, provider configuration and recruiter-ready PDF workflow](docs/screenshots/workspace-overview-en-2026-11-18.jpg)
 
 ## Python Quick Start
 

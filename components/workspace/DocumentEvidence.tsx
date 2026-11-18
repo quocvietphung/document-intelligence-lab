@@ -20,7 +20,7 @@ import {DocumentRecognitionDetails} from './DocumentResults';
 import {OcrCorrectionForm} from './OcrCorrectionForm';
 import {LocalInspectionPanel} from './LocalInspectionPanel';
 
-export function DocumentEvidence({doc,caseId,locale,editable,values,onChange,onExplain,initialPage=1,context,caseVersion=0,onOcrSaved}:{doc:CreditDocument;caseId:string;locale:string;editable:boolean;values:string[];onChange:(index:number,value:string)=>void;onExplain?:(question:string)=>void;initialPage?:number;context?:EvidenceContext;caseVersion?:number;onOcrSaved?:(item:WorkspaceCase)=>void}) {
+export function DocumentEvidence({doc,caseId,locale,editable,values,onChange,onExplain,initialPage=1,context,caseVersion=0,onOcrSaved,simple=false}:{doc:CreditDocument;caseId:string;locale:string;editable:boolean;values:string[];onChange:(index:number,value:string)=>void;onExplain?:(question:string)=>void;initialPage?:number;context?:EvidenceContext;caseVersion?:number;onOcrSaved?:(item:WorkspaceCase)=>void;simple?:boolean}) {
   const auth=useAuth(),t=workspaceText(locale),d=documentText(locale),copy=inspectionText(locale);
   const sourceHeading=useRef<HTMLHeadingElement>(null);
   const [page,setPage]=useState(initialPage);
@@ -58,8 +58,8 @@ export function DocumentEvidence({doc,caseId,locale,editable,values,onChange,onE
       {isPdf&&doc.originalAvailable&&auth.token?<LocalInspectionPanel key={`${doc.id}:${page}:${selection?.sourceId||''}`} caseId={caseId} documentId={doc.id} caseVersion={caseVersion} page={page} selection={selection} locale={locale} onSelect={candidate=>{
         setPage(candidate.page);setSelection({page:candidate.page,sourceId:candidate.id,ocrText:candidate.text,value:candidate.text,canonicalBox:candidate.bbox,inspectionMethod:candidate.method});sourceHeading.current?.scrollIntoView({block:'start'});
       }}/>:null}
-      {selection&&!selection.canonicalBox&&editable&&onOcrSaved?<OcrCorrectionForm key={`${selection.page}:${selection.sourceId}`} doc={doc} selection={selection} caseId={caseId} caseVersion={caseVersion} locale={locale} onSaved={onOcrSaved}/>:null}
-      {doc.ocrCorrections?.length?<details className="document-text-evidence"><summary>{copy.history} · {doc.ocrCorrections.length}</summary><p>{copy.pending}</p>{doc.ocrCorrections.map(c=><section key={c.id}><strong>{t('page')} {c.page} · {c.sourceId}</strong><blockquote>{c.originalText}</blockquote><p>→ {c.correctedText}</p><small>{c.reason} · {c.actor} · {c.time}</small></section>)}</details>:null}
+      {!simple&&selection&&!selection.canonicalBox&&editable&&onOcrSaved?<OcrCorrectionForm key={`${selection.page}:${selection.sourceId}`} doc={doc} selection={selection} caseId={caseId} caseVersion={caseVersion} locale={locale} onSaved={onOcrSaved}/>:null}
+      {!simple&&doc.ocrCorrections?.length?<details className="document-text-evidence"><summary>{copy.history} · {doc.ocrCorrections.length}</summary><p>{copy.pending}</p>{doc.ocrCorrections.map(c=><section key={c.id}><strong>{t('page')} {c.page} · {c.sourceId}</strong><blockquote>{c.originalText}</blockquote><p>→ {c.correctedText}</p><small>{c.reason} · {c.actor} · {c.time}</small></section>)}</details>:null}
       <details className="document-text-evidence"><summary>{d('text')}</summary>{(doc.pages||[]).map(source=><section className="source-page" key={source.number}><header>{t('page')} {source.number} · {t('method')}: {source.method}</header><pre>{source.text}</pre></section>)}</details>
       <TableEvidence doc={doc} locale={locale} select={selectRegion}/>
       <StructureEvidence doc={doc} locale={locale} select={selectRegion}/>

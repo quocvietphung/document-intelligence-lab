@@ -89,32 +89,23 @@ export function workspacePresentation(locale: string) {
   return workspacePresentationLanguages[locale === "vi" ? "vi" : locale === "de" ? "de" : "en"];
 }
 
-/**
- * Navigation follows the work: take documents in, review them, analyse, then govern.
- * Every page is one click away; there are no hidden subpages and no page-level tab rows.
- * Hashes stay the same, so Nova links and page tours keep working.
- */
+/** The recruiter flow is deliberately small. Legacy deep links stay valid, but do not compete in the sidebar. */
 export const workspaceNavigation = [
   {title:'',pages:['overview']},
-  {title:'intake',pages:['integrations','pipeline']},
-  {title:'review',pages:['documents','controls','audit']},
-  {title:'analysis',pages:['studio','banking']},
-  {title:'research',pages:['experiments','evaluation']},
-  {title:'governance',pages:['trust','operations']},
 ] as const satisfies readonly {title:string;pages:readonly WorkspaceTab[]}[];
-export type WorkspaceGroup=Exclude<typeof workspaceNavigation[number]['title'],''>;
+export type WorkspaceGroup='intake'|'review'|'analysis'|'research'|'governance';
 
 type PageNames=Record<WorkspaceTab|WorkspaceGroup,string>;
 /** The single name of each page and group. The sidebar, page title, page tour and Nova catalog all use it. */
 export const workspacePageNameLanguages:Record<'en'|'de'|'vi',PageNames>={
-  en:{overview:'Tasks',integrations:'Sources & integrations',pipeline:'Processing & data',documents:'Documents & evidence',controls:'Reconciliation',audit:'Activity log',
-    studio:'Ask documents',experiments:'Quality evaluation',banking:'Domain analysis',evaluation:'Research datasets',trust:'AI transparency',operations:'Operations',
+  en:{overview:'Dashboard',integrations:'Sources & integrations',pipeline:'Processing & data',documents:'Document Intelligence',controls:'Reconciliation',audit:'Activity log',
+    studio:'Nova',experiments:'Quality evaluation',banking:'Domain analysis',evaluation:'Research datasets',trust:'AI transparency',operations:'Operations',
     intake:'Intake',review:'Review',analysis:'Analysis',research:'Research',governance:'Governance'},
-  de:{overview:'Aufgaben',integrations:'Quellen & Integrationen',pipeline:'Verarbeitung & Daten',documents:'Dokumente & Belege',controls:'Abgleich',audit:'Aktivitätsprotokoll',
-    studio:'Dokumente fragen',experiments:'Qualitätsbewertung',banking:'Bereichsanalyse',evaluation:'Forschungsdatensätze',trust:'KI-Transparenz',operations:'Betrieb',
+  de:{overview:'Dashboard',integrations:'Quellen & Integrationen',pipeline:'Verarbeitung & Daten',documents:'Document Intelligence',controls:'Abgleich',audit:'Aktivitätsprotokoll',
+    studio:'Nova',experiments:'Qualitätsbewertung',banking:'Bereichsanalyse',evaluation:'Forschungsdatensätze',trust:'KI-Transparenz',operations:'Betrieb',
     intake:'Eingang',review:'Prüfung',analysis:'Analyse',research:'Forschung',governance:'Steuerung'},
-  vi:{overview:'Việc cần làm',integrations:'Nguồn & tích hợp',pipeline:'Xử lý & dữ liệu',documents:'Tài liệu & chứng cứ',controls:'Đối chiếu dữ liệu',audit:'Nhật ký hoạt động',
-    studio:'Hỏi tài liệu',experiments:'Đánh giá chất lượng',banking:'Phân tích lĩnh vực',evaluation:'Bộ dữ liệu nghiên cứu',trust:'Minh bạch AI',operations:'Vận hành',
+  vi:{overview:'Dashboard',integrations:'Nguồn & tích hợp',pipeline:'Xử lý & dữ liệu',documents:'Document Intelligence',controls:'Đối chiếu dữ liệu',audit:'Nhật ký hoạt động',
+    studio:'Nova',experiments:'Đánh giá chất lượng',banking:'Phân tích lĩnh vực',evaluation:'Bộ dữ liệu nghiên cứu',trust:'Minh bạch AI',operations:'Vận hành',
     intake:'Nhận tài liệu',review:'Kiểm duyệt',analysis:'Phân tích',research:'Nghiên cứu',governance:'Quản trị'},
 };
 export function workspacePageName(locale:string,page:WorkspaceTab|WorkspaceGroup){

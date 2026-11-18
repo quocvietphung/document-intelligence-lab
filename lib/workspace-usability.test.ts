@@ -54,28 +54,25 @@ describe('links into the reorganised workspace',()=>{
   });
 });
 
-describe('task page priorities',()=>{
+describe('recruiter demo priorities',()=>{
   it('lists failed processing and documents awaiting review before anything else',()=>{
     const {failed,review:waiting}=overviewTasks([review,verified],[job('j-failed','FAILED','broken.pdf'),job('j-ok','COMPLETE')]);
     expect(failed.map(item=>item.name)).toEqual(['broken.pdf']);
     expect(waiting.map(item=>item.id)).toEqual(['doc-review']);
     expect(recentDocuments([review,{...verified,status:'missing'}],[]).map(item=>item.id)).toEqual(['doc-review']);
   });
-  it('renders work for a person first, then recent documents, entry points and the AI-103 summary, without the catalogue',()=>{
-    const html=renderToStaticMarkup(createElement(WorkspaceAIOverview,{locale:'vi',demo:false,documentMode:'docling',navigate:()=>{},openNova:()=>{},documents:[review,verified],caseId:'CR-1'}));
-    const order=['overview-attention','overview-recent','data-page-tour="overview-ai"','data-page-tour="overview-ai103"'].map(marker=>html.indexOf(marker));
-    expect(order.every(index=>index>=0)).toBe(true);expect([...order].sort((a,b)=>a-b)).toEqual(order);
-    expect(html).toContain('Kiểm duyệt ngay');expect(html).toContain('Hỏi tài liệu');expect(html).toContain('Đánh giá chất lượng');
-    // The feature catalogue moved to AI transparency; the Tasks page links to the lab and states what the counts mean.
-    expect(html).not.toContain('ai-directory');expect(html).toContain('href="/vi/ai103"');expect(html).toContain('không phải số dịch vụ Azure chạy thật');
-    expect(renderToStaticMarkup(createElement(WorkspaceAIOverview,{locale:'en',demo:false,navigate:()=>{},openNova:()=>{}}))).toContain('Nothing waits for you');
+  it('renders the three-step story, recent results and the two portfolio proof pages',()=>{
+    const html=renderToStaticMarkup(createElement(WorkspaceAIOverview,{locale:'vi',demo:false,documentMode:'docling',navigate:()=>{},openNova:()=>{},documents:[review,verified]}));
+    expect(html).toContain('Từ 10 PDF mẫu');expect(html).toContain('1 · Chạy một mẫu');expect(html).toContain('2 · Kiểm tra chứng cứ');expect(html).toContain('3 · Hỏi Nova');
+    expect(html).toContain('href="/vi/control-tower"');expect(html).toContain('href="/vi/ai103"');
+    expect(html).not.toContain('ai-directory');expect(html).not.toContain('Kiểm duyệt ngay');
+    expect(renderToStaticMarkup(createElement(WorkspaceAIOverview,{locale:'en',demo:false,navigate:()=>{},openNova:()=>{}}))).toContain('Run a sample to create the first result');
   });
-  it('counts dossier checks, failed files and reviews together, like the menu badge',()=>{
-    const html=renderToStaticMarkup(createElement(WorkspaceAIOverview,{locale:'en',demo:false,navigate:()=>{},openNova:()=>{},documents:[review],issueCount:3}));
-    expect(html).toContain('Needs attention <span>4</span>');expect(html).not.toContain('Nothing waits for you');
+  it('keeps operational complexity out of the recruiter overview',()=>{
+    const html=renderToStaticMarkup(createElement(WorkspaceAIOverview,{locale:'en',demo:false,navigate:()=>{},openNova:()=>{},documents:[review]}));
+    expect(html).toContain('1</strong><span>documents in this dossier');expect(html).not.toContain('Needs attention');
     const workspace=readFileSync('components/workspace/CreditWorkspace.tsx','utf8');
     expect(workspace).toContain("id==='overview'?item.issues.length+reviewCount");
-    // Catalogue actions name the page they open; the catalogue itself now lives on AI transparency.
     expect(renderToStaticMarkup(createElement(WorkspaceAICatalog,{locale:'en',demo:false,navigate:()=>{},openNova:()=>{}}))).toContain('Open AI transparency');
   });
   it('names document types for people',()=>{

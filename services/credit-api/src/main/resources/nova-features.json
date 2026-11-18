@@ -19,30 +19,30 @@
       "viec can lam"
     ],
     "en": {
-      "title": "Tasks",
-      "description": "Select a case, see review progress, missing documents and conflicts.",
+      "title": "Dashboard",
+      "description": "Run one of 10 focused PDF samples, inspect extraction metrics and ask Nova from the same page.",
       "steps": [
-        "Select a case card.",
-        "Open a flagged issue to inspect its evidence.",
-        "Create/edit is available only locally to authorized advisors."
+        "Choose a prepared PDF and run extraction.",
+        "Open fields, tables and the exact source page.",
+        "Ask Nova a grounded question and follow its citations."
       ]
     },
     "de": {
-      "title": "Aufgaben",
-      "description": "Vorgang auswählen, Prüfstand, fehlende Unterlagen und Widersprüche ansehen.",
+      "title": "Dashboard",
+      "description": "Eines von 10 fokussierten PDFs extrahieren, Kennzahlen prüfen und Nova auf derselben Seite fragen.",
       "steps": [
-        "Eine Vorgangskarte auswählen.",
-        "Einen Hinweis öffnen und die Belege prüfen.",
-        "Anlegen/Bearbeiten ist nur lokal mit Beraterberechtigung möglich."
+        "Ein vorbereitetes PDF auswählen und extrahieren.",
+        "Felder, Tabellen und die genaue Quellseite öffnen.",
+        "Nova eine belegte Frage stellen und Quellen öffnen."
       ]
     },
     "vi": {
-      "title": "Việc cần làm",
-      "description": "Chọn hồ sơ, xem tiến độ kiểm duyệt, tài liệu thiếu và thông tin mâu thuẫn.",
+      "title": "Dashboard",
+      "description": "Chạy một trong 10 PDF trọng tâm, xem thông số trích xuất và hỏi Nova ngay trên cùng trang.",
       "steps": [
-        "Chọn thẻ hồ sơ cần xem.",
-        "Mở mục cảnh báo để xem chứng cứ.",
-        "Tạo/sửa hồ sơ chỉ có trong bản local với quyền tư vấn."
+        "Chọn PDF đã chuẩn bị và chạy trích xuất.",
+        "Mở trường dữ liệu, bảng và đúng trang nguồn.",
+        "Hỏi Nova dựa trên chứng cứ và mở trích dẫn."
       ]
     }
   },

@@ -48,12 +48,12 @@ describe("workspace guidance and recovery", () => {
     const render = (documentMode?: string, demo = false) => renderToStaticMarkup(createElement(WorkspaceAIOverview, {
       locale: "en", demo, documentMode, navigate: () => {}, openNova: () => {},
     }));
-    expect(render("azure")).toContain("Azure Document Intelligence configured");
-    expect(render("local")).toContain("Local PDFBox / Tesseract extraction");
-    expect(render()).toContain("not yet confirmed");
-    expect(render(undefined, true)).toContain("Read-only sample evidence");
+    expect(render("azure")).toContain("Azure Document Intelligence");
+    expect(render("local")).toContain("Local extraction");
+    expect(render()).toContain("Provider not reported");
+    expect(render(undefined, true)).toContain("Provider not reported");
     expect(render("azure")).not.toContain("100% accurate");
-    expect(render("azure")).toContain("Ask documents");
-    expect(render("azure")).toContain("Chat with Nova");
+    expect(render("azure")).toContain("Document Intelligence");
+    expect(render("azure")).toContain("Open Nova");
   });
 });

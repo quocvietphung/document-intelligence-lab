@@ -68,11 +68,18 @@ function DocumentTable({docs,locale,caption,historical=false,...actions}:{docs:r
     <thead><tr><th scope="col">{u.colDocument}</th><th scope="col">{u.colType}</th><th scope="col">{u.colStatus}</th><th scope="col"><span className="sr-only">{u.colActions}</span></th></tr></thead>
     <tbody>{docs.map(doc=><DocumentRow key={doc.id} doc={doc} locale={locale} historical={historical} {...actions}/>)}</tbody></table></div>;
 }
-export function DocumentResults({documents,jobs,locale,loading,error,refresh,open,ask,choose:chooseSample,technical,payroll=true,draft,report}:{documents:readonly CreditDocument[];jobs:readonly DocumentJob[];locale:string;loading:boolean;error:boolean;refresh:()=>void;open:(doc:CreditDocument)=>void;ask:(question:string)=>void;choose:()=>void;technical:()=>void;payroll?:boolean;draft?:(doc:CreditDocument)=>void;report?:React.ReactNode}){
+export function DocumentResults({documents,jobs,locale,loading,error,refresh,open,ask,choose:chooseSample,technical,payroll=true,simple=false,draft,report}:{documents:readonly CreditDocument[];jobs:readonly DocumentJob[];locale:string;loading:boolean;error:boolean;refresh:()=>void;open:(doc:CreditDocument)=>void;ask:(question:string)=>void;choose:()=>void;technical:()=>void;payroll?:boolean;simple?:boolean;draft?:(doc:CreditDocument)=>void;report?:React.ReactNode}){
   const t={...documentUi(locale),...(!payroll?{empty:researchSampleLabels(locale).hint,choose:researchSampleLabels(locale).title}:{})},u=workspacePresentation(locale);
   const [query,setQuery]=useState(''),[filter,setFilter]=useState<ResultFilter>('all');
   const {latest,history,missing}=resultDocumentGroups(documents),visible=filterResultDocuments(latest,query,filter);
   const reset=()=>{setQuery('');setFilter('all');};
+  if(simple&&!jobs.length&&!loading&&!error)return <section id="document-analysis-results" className="document-analysis-results document-results-simple" tabIndex={-1}/>;
+  if(simple)return <section id="document-analysis-results" className="document-analysis-results document-results-simple" aria-labelledby="document-results-title" tabIndex={-1}>
+    <header><div><h3 id="document-results-title">{t.processing}</h3></div><button className="button-secondary" onClick={refresh} disabled={loading}><RefreshCw size={15}/>{t.refresh}</button></header>
+    {error?<p className="notice-error" role="alert">{t.statusError}</p>:null}
+    {loading?<p className="lab-caption" role="status">{t.loading}</p>:null}
+    {jobs.length?<div className="document-processing-list">{jobs.map(job=><DocumentProcessingCard key={job.id} job={job} locale={locale} open={open} technical={technical}/>)}</div>:null}
+  </section>;
   return <section id="document-analysis-results" className="document-analysis-results document-results-compact" data-page-tour="documents-list" aria-labelledby="document-results-title" tabIndex={-1}>
     <header><div><h3 id="document-results-title">{t.results} <span>{latest.length}</span></h3></div><div className="document-results-actions">{report}<button className="button-secondary" onClick={refresh} disabled={loading}><RefreshCw size={15}/>{t.refresh}</button></div></header>
     {error?<p className="notice-error" role="alert">{t.statusError}</p>:null}
