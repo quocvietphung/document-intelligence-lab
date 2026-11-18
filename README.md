@@ -172,9 +172,13 @@ Workflows share the selected extraction/Nova providers. MiniLM is English-focuse
 
 ## Current interface
 
-The signed-in local application now opens on **Dashboard** and exposes only **Dashboard**, **Data & AI Control Tower** and **AI-103 Lab** as top-level destinations. The earlier overview screenshot and long workflow GIF showed the retired research navigation, so they are intentionally no longer presented as the current product UI. Screenshots later in this README document individual research experiments and their limits; they are not additional top-level product screens.
+The signed-in local application now opens on **Dashboard** and exposes only **Dashboard**, **Data & AI Control Tower** and **AI-103 Lab** as top-level destinations. All screenshots below were recaptured from this focused interface on 2026-11-18. Advanced experiments remain available through developer commands and tests; they are not additional recruiter-facing pages.
 
 ![Current English Dashboard with the three-entry navigation, provider configuration and recruiter-ready PDF workflow](docs/screenshots/workspace-overview-en-2026-11-18.jpg)
+
+![Current Data and AI Control Tower with measured pipeline latency, Bronze to Silver to Gold lineage and data-quality checks](docs/screenshots/document-analytics-en.jpg)
+
+![Current AI-103 Lab with eighteen capability groups and separate local, Azure-ready and Azure-verified status](docs/screenshots/insurance-classification-en.jpg)
 
 ## Python Quick Start
 
@@ -280,12 +284,12 @@ These are development credentials for a **fresh identity database**. Existing vo
 
 ### Try a complete workflow
 
-1. Create a **General documents** dossier and prepare a permitted [PDF example](#pdf-examples).
-2. In **Documents & evidence → Reference library**, select invoice **51109301**, preview it and confirm **Import & analyze**.
-3. Follow its job in **Processing & data**, then open **Analysis results → View result & PDF**. Inspect the original, fields and tables.
-4. Open Nova's portrait, select **Evidence analysis** and ask: *“What invoice number, currency and gross total are stated? Cite the source page.”* Enter sends; Shift+Enter adds a line break.
+1. Stay on **Dashboard** and choose one of the ten prepared PDF samples, for example invoice **51109301**.
+2. Run the sample and wait for the local pipeline to finish scanning, extraction, indexing and evidence preparation.
+3. Open the result from **Recent results**. Compare the original page with extracted fields, tables and saved evidence.
+4. Open Nova and ask: *“What invoice number, currency and gross total are stated? Cite the source page.”* Enter sends; Shift+Enter adds a line break.
 5. Wait for a completed **Ollama · Local LLM** answer. Open its citations and compare the PDF; source identity is not semantic verification.
-6. In **Quality evaluation**, independently check reference values/pages before comparing retrieval, chunking or prompts.
+6. Open **Data & AI Control Tower** to inspect measured latency, data-quality checks and RAG/citation observations. Open **AI-103 Lab** to see which capabilities are local, configured, Azure-ready or live-Azure verified.
 
 For the construction/real-estate example, create a **Construction & real estate** dossier and import the five authored fictional PDFs from the same library. The deterministic review links project/order references, compares the order plus approved change against the invoice, and carries open defects and their deadline into human review. It flags the deliberate **EUR 1,200** variance; it never approves acceptance, payment or a legal conclusion.
 
@@ -376,7 +380,7 @@ Review the publisher's terms and download the unchanged [official DATEV LODAS sa
 python scripts/prepare-datev-reference.py .local/datev-lodas-musterauswertung-2025.pdf
 ```
 
-In **Banking & payroll → Documents & evidence → Reference library**, keep `Netto-Verdienst` separate from `Auszahlungsbetrag`. Publisher PDFs retain DATEV's rights. The Python reader can inspect these permitted pages, but its generic label checks do not implement every Java payroll-layout rule.
+When running the prepared DATEV sample from **Dashboard**, keep `Netto-Verdienst` separate from `Auszahlungsbetrag`. Publisher PDFs retain DATEV's rights. The Python reader can inspect these permitted pages, but its generic label checks do not implement every Java payroll-layout rule.
 
 ### Official forms for RAG evaluation
 
@@ -384,13 +388,13 @@ After preparing DATEV and Kaggle, add the reviewed CMS coverage example and IRS 
 
 ## Document pipeline operations
 
-**Processing & data** separates processing, batch intake and exports. Batch intake accepts one to four permitted files, a source note and check profile. Each file is scanned; provider limits still apply per file. Profiles are versioned field checks, not trained classifiers.
+The recruiter-facing **Dashboard** runs one prepared sample at a time and keeps the result compact. The underlying developer workflow still supports processing receipts, batch intake and exports. Batch intake accepts one to four permitted files, a source note and check profile. Each file is scanned; provider limits still apply per file. Profiles are versioned field checks, not trained classifiers.
 
 Receipts record hashes, provider, extraction counts, attempts and actual stages. The same request UUID/content returns its receipt; changed content is rejected. Duplicate/cancel/retry controls do not guarantee exactly-once inference. Manual retry is limited to hash-pinned reference bytes within retention; inspect arbitrary failed uploads before resubmitting. [Queue details](docs/DOCKER_LOCAL.md).
 
 ### Bronze, Silver and Gold
 
-After extraction, open **Data layers & exports**, review the private-copy notice and choose **Build data layers**:
+After extraction, the offline worker can build the versioned data layers below. The current **Data & AI Control Tower** shows their measured row flow and quality checks; detailed build/export operations remain developer workflows rather than a fourth product page.
 
 - **Bronze:** immutable extraction snapshots and recorded hashes, without another PDF/OCR copy.
 - **Silver:** raw fields, normalized amounts, currency and quality findings; ambiguous `03/07/2023` remains unchanged.
@@ -400,9 +404,9 @@ The offline DuckDB/dbt worker has no network, public port or database password. 
 
 ### Document analytics and local ML
 
-Build current data layers, then inspect **Document analytics** on the same page. Overview links to this panel. The versioned export includes `document_facts`, `field_observations`, `invoice_lines` and `quality_findings`, alongside Bronze/Silver/Gold. Fields preserve raw/original values and page references. Invoice lines require uniquely observed table headers and cells; unsupported layouts remain unparsed. Findings cover missing invoice fields, duplicate original hashes, ambiguous values and differences between observed line sums and the recorded total. A line-sum finding requests inspection of completeness, taxes and rounding; it does not establish an invalid invoice.
+The current **Data & AI Control Tower** summarizes measured ETL latency, lineage and data-quality checks. The versioned export includes `document_facts`, `field_observations`, `invoice_lines` and `quality_findings`, alongside Bronze/Silver/Gold. Fields preserve raw/original values and page references. Invoice lines require uniquely observed table headers and cells; unsupported layouts remain unparsed. Findings cover missing invoice fields, duplicate original hashes, ambiguous values and differences between observed line sums and the recorded total. A line-sum finding requests inspection of completeness, taxes and rounding; it does not establish an invalid invoice.
 
-![English document analytics: observed fields, invoice lines and a date ambiguity linked to the original PDF](docs/screenshots/document-analytics-en.jpg)
+![Current Data and AI Control Tower pipeline view with measured latency, lineage and seven data-quality checks](docs/screenshots/document-analytics-en.jpg)
 
 Java projects run/finding records into PostgreSQL with tenant, dossier and source version. Only REVIEWER/ADMIN can record a finding review; it never approves the PDF or changes OCR. Source changes invalidate current results. Older ETL methods remain in history; rebuild once to produce the current analytical tables.
 
@@ -424,9 +428,9 @@ docker compose -f docker-compose.yml -f docker-compose.platform.yml \
   --profile tracking up -d --build mlflow
 ```
 
-Open [local MLflow](http://localhost:5005), choose **Model training → Experiments → document-cohort-evaluation**. In **Settings → General**, turn off browser UI telemetry as well; that preference is separate from the configured server/SDK telemetry flag. Its UI image is built only on explicit request. Stop that UI when finished with the same Compose files followed by `stop mlflow`. Application reads, experiment submission and finding reviews still require a valid API Bearer token. Derived analytics and tracking have separate retention from the original PDF.
+Open [local MLflow](http://localhost:5005), choose **Model training → Experiments → document-cohort-evaluation**. In **Settings → General**, turn off browser UI telemetry as well; that preference is separate from the configured server/SDK telemetry flag. Its UI image is built only on explicit request. Stop that UI when finished with the same Compose files followed by `stop mlflow`. Application reads, experiment submission and finding reviews still require a valid API Bearer token. Derived analytics and tracking have separate retention from the original PDF. MLflow is an optional operator tool and is intentionally absent from the three-entry recruiter navigation.
 
-![Local MLflow run: insufficient baseline data, no held-out predictions and no labelled anomaly ground truth](docs/screenshots/document-mlflow-en.jpg)
+![Current AI cost and model benchmark view with configured cost, valid observations and Power BI-ready export](docs/screenshots/document-mlflow-en.jpg)
 
 The [measured Docker acceptance report](docs/benchmarks/document-analytics.json) covers a real prepared invoice and the nine-PDF dossier. Both correctly abstain from anomaly training. It also records the one-invoice Spark/DuckDB parity check; these bounded checks do not establish business anomaly accuracy.
 
@@ -511,7 +515,7 @@ The lab studies document extraction, insurance-document classification, cross-do
 
 ### Insurance classification benchmark
 
-Open **Quality evaluation → Insurance document classification** after enabling the [optional local ML worker](#document-analytics-and-local-ml). Expand **Dataset & run controls**, preview a labelled PDF, opt into the local comparison, then inspect the held-out metrics, per-class precision/recall/F1, confusion matrices and PDF-by-PDF predictions. After a completed run, setup collapses so the results come first. **Overview → Insurance classification benchmark** links to the same page. No new service, deep-learning weights or Azure resource is required.
+The insurance classifier remains a developer benchmark run through the optional local ML worker and its one-shot script; it is no longer a separate product page. The current **AI-103 Lab** links capability claims to evidence and explicitly separates local execution from Azure configuration and live verification. No new service, deep-learning weights or Azure resource is required for the local classifier benchmark.
 
 The [corpus manifest](services/credit-api/src/main/resources/classification/manifest.json) identifies **66 authored fictional one-page PDFs**, with MIT-licensed generated content. Four labels are used: *Schadenmeldung, Versicherungsschein, Rechnung, Sonstiges*. Five template families per class produce three variants each: **36 train / 12 validation / 12 test**, plus **6 challenge packets**. The test set has only **four held-out template families, one per class**, with three variants each. An entire family stays in one split, as do exact source/text hashes. These fixtures are separate from the existing DATEV/Kaggle library. They are not customer records, documents from a real insurer or a representative insurance corpus.
 
@@ -529,11 +533,11 @@ The helper builds the shared ML image and prints the private report/model direct
 
 To regenerate fixtures, run `python scripts/prepare-classification-benchmark.py` in a development environment with ReportLab. Regeneration can change PDF hashes; update the corpus version, rerun the Java extraction and benchmark, and review the resulting labels. The included v2 fixes a fictional damaged-object field; it is not a fresh independent test set.
 
-![English insurance classification comparison: synthetic held-out metrics and explicit review coverage](docs/screenshots/insurance-classification-en.jpg)
+![Current AI-103 Lab with compact capability tabs, local evidence and explicit Azure verification status](docs/screenshots/insurance-classification-en.jpg)
 
 ### Evidence inspection
 
-Open **Documents & evidence → View result & PDF** and inspect a field, table cell or recorded source occurrence:
+On **Dashboard**, open a completed sample from **Recent results** and inspect a field, table cell or recorded source occurrence:
 
 - Compare the **original crop, recorded OCR and answer value**. Matching a citation does not prove the OCR read the original correctly.
 - Repeated values retain separate occurrence IDs. Selecting a candidate is explicit; page references cannot identify the correct occurrence by themselves.
@@ -541,14 +545,12 @@ Open **Documents & evidence → View result & PDF** and inspect a field, table c
 - Choose **Check source location & OCR → Inspect locally** for an independent PDFium/Tesseract inspection through the offline ETL worker. Geometry and unsupported orientations remain visible limitations.
 - Reviewer OCR corrections, field confirmation and revised AI answers are separate, audited actions. Original OCR and previous answers remain unchanged.
 
-![Original table cell, recorded OCR and a saved Nova claim shown together](docs/screenshots/evidence-inspection-en.jpg)
+![Current Dashboard evidence view with the original invoice page, extracted values, source evidence and Nova explanation actions](docs/screenshots/evidence-inspection-en.jpg)
 
 <details>
 <summary>Structure and independent local inspection</summary>
 
-![Docling structure, native tags and reading order](docs/screenshots/document-structure-en.jpg)
-
-![Local source crop, recorded OCR and independent Tesseract observation](docs/screenshots/local-inspection-en.jpg)
+![Current evidence view showing Docling structure, native tags and reading order](docs/screenshots/document-structure-en.jpg)
 
 Agreement is labelled **not verified**. Reports contain private source text/crops and must stay private. For exact-location inspection and `evaluate_document`, use the **source/wheel preview 0.2.0a1**; these APIs are not in the published PyPI 0.1.0a1. See the [Python inspection guide](python/README.md#inspect-native-tags-and-exact-pdf-locations), [quality dimensions](python/README.md#source-bound-quality-dimensions) and [measured reports](#development-and-tests).
 
@@ -558,7 +560,7 @@ Agreement is labelled **not verified**. Reports contain private source text/crop
 
 The lab now includes a [registry of nine prepared PDF references](lib/rag-pdf-sources.json) and [77 authored questions](lib/rag-pdf-questions.json) covering DATEV payroll, invoices, insurance and blank tax forms. CMS and IRS add official examples; publisher-owned references stay private. CFPB links that could not be downloaded are recorded separately and are not counted in measured results.
 
-In **Quality evaluation**, compare **BM25 / Vector / Hybrid / RRF / Previous Hybrid** with multiple relevant pages, tuning/held-out groups, Hit@5, Recall@5, unique-source Precision@5, nDCG@5, MRR@5 and ranking p50/p95. Unanswerable questions remain explicit; retrieval does not certify a model's refusal or answer correctness. Lexical matching now uses term frequency, compound identifiers and a small explicit EN/DE/VI glossary; it never rewrites stored source amounts.
+The current **Data & AI Control Tower → RAG & Citation Quality** tab shows only observations that have actually run and labels unavailable metrics as **Not run**. The developer benchmark compares **BM25 / Vector / Hybrid / RRF / Previous Hybrid** with multiple relevant pages, tuning/held-out groups, Hit@5, Recall@5, unique-source Precision@5, nDCG@5, MRR@5 and ranking p50/p95. Unanswerable questions remain explicit; retrieval does not certify a model's refusal or answer correctness. Lexical matching uses term frequency, compound identifiers and a small explicit EN/DE/VI glossary; it never rewrites stored source amounts.
 
 All nine prepared PDFs passed the local ClamAV/Docling intake. The [measured report](docs/benchmarks/rag-pdf-retrieval.json) compares the same 69 answerable questions; eight unanswerable questions are kept separately:
 
@@ -569,7 +571,7 @@ All nine prepared PDFs passed the local ClamAV/Docling intake. The [measured rep
 
 These are development measurements, not overall RAG accuracy. Excerpts of the same original stay in one group; two invoice originals still share a template. BM25 alone performs competitively and RRF does not consistently improve results. The report includes every method, separate tuning/held-out metrics and a separate native-text comparison. Cross-page text retains its own page spans; overlapping table predictions are withheld with an explicit warning while source text remains inspectable.
 
-![English Research lab: Hybrid metrics, held-out group and an incomplete multi-source result](docs/screenshots/rag-pdf-evaluation-en.jpg)
+![Current RAG and Citation Quality view with honest Not run states and a measured prompt-injection blocked rate](docs/screenshots/rag-pdf-evaluation-en.jpg)
 
 [Preparation, actual Docker pipeline, native-text comparison and metric definitions](docs/RESEARCH_WORKSPACES.md#reproducible-multi-domain-pdf-rag-benchmark). No new model download or paid Azure service is required for this benchmark.
 
