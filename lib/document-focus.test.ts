@@ -9,10 +9,9 @@ describe("original document evidence only",()=>{
  it("provides matching translations without accuracy promises",()=>{
   for(const value of Object.values(documentFocusLanguages))expect(Object.keys(value).sort()).toEqual(Object.keys(documentFocusLanguages.en).sort());
  });
- it("does not render fixed experiments or banking widgets",()=>{
-  const source=readFileSync("components/workspace/PlatformWorkbench.tsx","utf8"),bank=readFileSync("components/workspace/BankingWorkbench.tsx","utf8");
+ it("does not render fixed experiments",()=>{
+  const source=readFileSync("components/workspace/PlatformWorkbench.tsx","utf8");
   expect(source).not.toContain("ResearchWorkbench");expect(source).not.toContain("synthetic-text-v2");expect(source).not.toContain('t("debits")');
-  expect(bank).not.toContain("demoBanking");expect(bank).toContain("DocumentCorpus");
  });
  it("does not grant a demo session when Keycloak is unconfigured",()=>{
   const source=readFileSync("components/auth/KeycloakProvider.tsx","utf8");

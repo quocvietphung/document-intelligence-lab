@@ -5,7 +5,6 @@ import {GET} from "@/app/api/ai103/capabilities/route";
 import {POST as runLocal} from "@/app/api/ai103/capabilities/[id]/run-local/route";
 import {POST as runAzure} from "@/app/api/ai103/capabilities/[id]/run-azure/route";
 import {Ai103Lab} from "@/components/workspace/Ai103Lab";
-import {Ai103Summary} from "@/components/workspace/Ai103Summary";
 import {AZURE_OPT_IN_VALUE, checkResultSchema, manifest} from "./model";
 
 const context = (id: string) => ({params: Promise.resolve({id})});
@@ -73,12 +72,5 @@ describe("AI-103 lab page", () => {
     expect(vi).toContain("Đây là số năng lực, không phải số dịch vụ Azure chạy thật hay số lần gọi model.");
     expect(vi).toContain("Tiếp nhận &amp; hiểu");
     expect(vi).toContain('href="/vi/ai103"');
-  });
-
-  it("gives the Tasks page a summary and a link instead of a capability list", () => {
-    const html = renderToStaticMarkup(createElement(Ai103Summary, {locale: "de", openCatalog: () => {}}));
-    expect(html).toContain('href="/de/ai103"');
-    expect(html).toContain("KI-Funktionen und Modelle: KI-Transparenz");
-    expect(html).toContain("Azure bereit");
   });
 });

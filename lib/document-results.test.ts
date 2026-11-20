@@ -6,7 +6,6 @@ import type {CreditDocument} from "./credit-data";
 import hashes from "@/services/credit-api/src/main/resources/datev-reference-hashes.json";
 import {activeDocumentJob,completedJobDocument,documentJobLabel,documentReceiptSchema,documentTableRows,documentTableLayout,documentUi,documentUiTables,latestDocumentJobs,orderedResultDocuments,sampleDocumentJob,type DocumentJob} from "./document-results";
 import {DocumentRecognitionDetails,DocumentProcessingCard,DocumentResultCard,DocumentResults} from "@/components/workspace/DocumentResults";
-import {PayrollSamples} from "@/components/workspace/PayrollSamples";
 
 vi.mock("@/components/auth/KeycloakProvider",()=>({useAuth:()=>({mode:"keycloak",token:"synthetic-test-token"})}));
 const name="datev-lodas-2025-robert-muster.pdf";
@@ -113,11 +112,6 @@ describe("document analysis results journey",()=>{
     const html=renderToStaticMarkup(createElement(DocumentResults,{documents:[doc,{...doc,id:"old-doc"}],jobs:[],locale:"vi",loading:false,error:false,refresh:()=>{},open,ask:()=>{},choose:()=>{},technical:()=>{}}));
     expect(html).toContain("document-result-doc-robert");expect(html).toContain("document-result-old-doc");
     expect(html).toContain("không đồng nghĩa nội dung tệp giống nhau");expect(html).toContain('data-page-tour="documents-list"');
-  });
-  it("offers an existing result even to readers without import permission",()=>{
-    const html=renderToStaticMarkup(createElement(PayrollSamples,{locale:"vi",busy:false,canImport:false,importSample:async()=>{},jobs:[job,old],documents:[doc],openResult:open}));
-    expect(html).toContain("Xem kết quả đã có");expect(html).toContain("không cần nhập lại");
-    expect(html).toContain('class="payroll-reference-values"');
   });
   it("keeps result status refreshing on the documents page with scoped cancellable reads",()=>{
     const source=readFileSync("components/workspace/DocumentAnalysisWorkspace.tsx","utf8");

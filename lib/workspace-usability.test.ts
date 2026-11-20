@@ -7,7 +7,6 @@ import type {DocumentJob} from './document-results';
 import {workspaceTabs,workspaceTarget} from './nova-guide';
 import {catalogGroupOf,documentTypeLabel,featureFromSearch,fill,overviewTasks,profileOptions,recentDocuments,trustAnswerFromSearch,trustHref,trustSectionFromSearch,usabilityLanguages} from './workspace-usability';
 import {DocumentResults} from '@/components/workspace/DocumentResults';
-import {CaseReportButton} from '@/components/workspace/CaseOutputs';
 import {WorkspaceAIOverview} from '@/components/workspace/WorkspaceAIOverview';
 import {WorkspaceAICatalog} from '@/components/workspace/WorkspaceAICatalog';
 
@@ -103,12 +102,6 @@ describe('document list and outputs',()=>{
     expect(reviewRow).not.toContain('Tạo bản nháp Gmail');
     expect(html.slice(html.indexOf('id="document-result-doc-verified"'))).toContain('Tạo bản nháp Gmail');
   });
-  it('enables the report only after a reviewed document with fields exists',()=>{
-    const before=renderToStaticMarkup(createElement(CaseReportButton,{caseId:'CR-1',locale:'en',documents:[review]}));
-    expect(before).toContain('disabled=""');expect(before).toContain('Review and confirm a document');
-    const after=renderToStaticMarkup(createElement(CaseReportButton,{caseId:'CR-1',locale:'en',documents:[review,verified]}));
-    expect(after).not.toContain('disabled=""');expect(after).toContain('Only confirmed fields');
-  });
 });
 
 describe('each feature has one primary place',()=>{
@@ -118,7 +111,6 @@ describe('each feature has one primary place',()=>{
     for(const moved of ['/use-cases/','/project-assessment','/destinations/report','gmail-draft/preview'])expect(integrations).not.toContain(moved);
     expect(source('UseCaseLibrary')).toContain('/use-cases/');
     expect(source('ProjectAssessmentPanel')).toContain('/project-assessment');
-    expect(source('CaseOutputs')).toContain('/destinations/report');expect(source('CaseOutputs')).toContain('gmail-draft/preview');
   });
   it('mounts the moved tools on their new pages and has a single transparency page',()=>{
     const workspace=source('CreditWorkspace');

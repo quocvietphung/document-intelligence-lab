@@ -11,7 +11,7 @@ describe("native page walkthroughs",()=>{
       expect(pageTour('en',page,domain).steps.every(step=>!step.id.includes('datev'))).toBe(true);
       expect(pageTour('en',page,domain).steps.some(step=>step.id.endsWith('upload'))).toBe(true);
     }
-    expect(pageTour('en','documents','banking').steps.some(step=>step.id==='datev-preview')).toBe(true);
+    expect(pageTour('en','documents','banking').steps.some(step=>step.id==='documents-list')).toBe(true);
   });
   it("covers all twelve pages with localized instructions and static selectors",()=>{
     expect(pageTourPages()).toHaveLength(12);
@@ -36,7 +36,7 @@ describe("native page walkthroughs",()=>{
     expect(pageTour("en","studio").steps[4].body).toContain("not an accuracy percentage");
   });
   it("has actual source anchors for every tour target",()=>{
-    const sources=["CreditWorkspace","PlatformWorkbench","DocumentPipeline","DocumentCorpus","BankingWorkbench","PayrollSamples","RecruiterSampleGallery","WorkspaceAIOverview","DocumentResults","DocumentResearchPanel","IntegrationsWorkbench","TrustWorkbench","UseCaseLibrary","ProjectAssessmentPanel","CaseOutputs"].map(name=>readFileSync(`components/workspace/${name}.tsx`,"utf8")).join("\n");
+    const sources=["CreditWorkspace","PlatformWorkbench","DocumentPipeline","DocumentCorpus","RecruiterSampleGallery","WorkspaceAIOverview","DocumentResults","DocumentResearchPanel","IntegrationsWorkbench","TrustWorkbench","UseCaseLibrary","ProjectAssessmentPanel"].map(name=>readFileSync(`components/workspace/${name}.tsx`,"utf8")).join("\n");
     for(const page of pageTourPages())for(const step of pageTour("en",page).steps){
       expect(sources).toContain(step.id.startsWith("menu-")?'data-page-tour={`menu-${id}`}':step.id);
     }

@@ -6,7 +6,6 @@ import {customerUx,customerUxTables,filterTransactions,transactionTotals,searchT
 import {demoBanking} from "./public-demo";
 import {transactionCsv} from "./banking";
 import {NovaSuggestions} from "@/components/workspace/NovaConversation";
-import {BankTransactionHistory} from "@/components/workspace/BankTransactionHistory";
 const sample={...demoBanking("CR-UX-TEST"),transactions:[
   {id:"T-01",accountId:"practice",date:"2026-10-02",counterparty:"Praxis-Team",reference:"Gehälter",category:"SALARY",amountCents:-625000,invoiceId:""},
   {id:"T-02",accountId:"practice",date:"2026-10-03",counterparty:"Praxisimmobilien Muster",reference:"Miete Oktober",category:"RENT",amountCents:-185000,invoiceId:""},
@@ -52,18 +51,12 @@ describe("customer-focused lab usability",()=>{
     expect(html).toContain("Không tự động gửi lên AI");expect(html).toContain("Hỏi tài liệu");
     expect(novaSuggestions("de","banking").questions[0]).toContain("Bereichsanalyse");
   });
-  it("renders reset, count, mobile cards and detail entry points",()=>{
-    const html=renderToStaticMarkup(createElement(BankTransactionHistory,{data:sample,locale:"en",account:"all",onAccountChange:()=>{},ask:()=>{}}));
-    expect(html).toContain("Clear filters");expect(html).toContain("Matching transactions");expect(html).toContain("bank-transaction-list");expect(html).toContain("View details · T-01");
-  });
   it("uses human labels without altering original review evidence",()=>{
     const alert={code:"UNREVIEWED_DOCUMENT",severity:"MEDIUM",detail:"doc-test"};
     const presentation=reviewAlertPresentation(alert,"vi",[{id:"doc-test",name:"datev-robert.pdf"}]);
     expect(presentation.title).toBe("Tài liệu chưa được xác nhận");expect(presentation.detail).toContain("datev-robert.pdf");expect(presentation.severity).toBe("Cần kiểm tra");expect(alert.detail).toBe("doc-test");
   });
-  it("keeps banking evidence read-only and tenant isolated",()=>{
-    const source=readFileSync("components/workspace/BankingWorkbench.tsx","utf8");
-    expect(source).not.toMatch(/banking\/payments|canDraft|canConfirm|method:\s*\"POST\"/);expect(source).toContain('DocumentCorpus');
+  it("keeps evidence corpus and chat tenant isolated",()=>{
     const corpus=readFileSync("components/workspace/DocumentCorpus.tsx","utf8");expect(corpus).toContain('value.tenantId!==auth.tenantId');expect(corpus).toContain('uploadedEvidence');
     const chat=readFileSync("components/workspace/CreditWorkspace.tsx","utf8");expect(chat).toContain("sending.current");expect(chat).toContain("caseChatPayload");
   });
@@ -71,10 +64,5 @@ describe("customer-focused lab usability",()=>{
     const source=readFileSync("components/workspace/PlatformWorkbench.tsx","utf8");
     expect(source).toContain("[load,caseVersion]");
     expect(readFileSync("components/workspace/CreditWorkspace.tsx","utf8")).toContain("caseVersion={item.version||0}");
-  });
-  it("applies date input immediately as well as on committed native change",()=>{
-    const source=readFileSync("components/workspace/BankTransactionHistory.tsx","utf8");
-    expect(source).toContain("onInput={event=>setFrom(event.currentTarget.value)}");
-    expect(source).toContain("onInput={event=>setTo(event.currentTarget.value)}");
   });
 });

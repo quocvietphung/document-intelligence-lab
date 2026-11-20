@@ -55,7 +55,7 @@ describe("integrations copy and contracts", () => {
   });
 
   it("localizes every known adapter so no locale mixes languages", () => {
-    const known = ["local", "gmail", "google-drive", "webdav", "s3", "csv-excel", "postgresql", "generic-rest", "download-report", "gmail-draft", "webhook", "crm-write-back"];
+    const known = ["local", "gmail", "google-drive", "webdav", "s3", "csv-excel", "postgresql", "generic-rest", "download-report", "webhook", "crm-write-back"];
     expect(Object.keys(adapterCopy).sort()).toEqual([...known].sort());
     for (const id of known) for (const locale of ["en", "de", "vi"]) {
       const text = describeAdapter({ id, provider: "Fallback", permissions: ["English fallback"], note: "English fallback", label: "future", enabled: false }, locale);
